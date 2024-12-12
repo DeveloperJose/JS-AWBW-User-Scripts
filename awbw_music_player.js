@@ -1,16 +1,16 @@
 // ==UserScript==
-// @name         AWBW Music Player
+// @name         AWBW Music Player (DeveloperJose Edition)
 // @namespace    https://awbw.amarriner.com/
 // @version      2.0.8
-// @description  A comprehensive audio player that attempts to recreate the cart experience
-// @author       twiggy_
+// @description  A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.
+// @author       Original by twiggy_, modified by DeveloperJose
 // @match        https://awbw.amarriner.com/*?games_id=*
 // @match        https://awbw.amarriner.com/*?replays_id=*
 // @match        https://awbw.amarriner.com/*editmap*
 // @icon         https://awbw.amarriner.com/favicon.ico
 // @license MIT
-// @downloadURL https://update.greasyfork.org/scripts/459630/AWBW%20Music%20Player.user.js
-// @updateURL https://update.greasyfork.org/scripts/459630/AWBW%20Music%20Player.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/518170/AWBW%20Music%20Player%20%28DeveloperJose%20Edition%29.user.js
+// @updateURL https://update.greasyfork.org/scripts/518170/AWBW%20Music%20Player%20%28DeveloperJose%20Edition%29.meta.js
 // ==/UserScript==
 
 const MY_VERSION = "2.0.8";
@@ -493,13 +493,15 @@ var on = (function() {
 
 let replayForwardBtn = document.getElementsByClassName('replay-forward')[0];
 let replayBackwardBtn = document.getElementsByClassName('replay-backward')[0];
+let replayDaySelectorCheckBox = document.getElementsByClassName('replay-day-selector')[0];
 
 if (replayForwardBtn != null)
 {
     on(replayForwardBtn, "click", function(){
         if (isPlaying == false) return;
-        stopTunes();
-        setTimeout(()=>{ playTunes(); }, 1000);
+        stopAndPlayTunes(500);
+        //stopTunes();
+        //setTimeout(()=>{ stopAndPlayTunes(); }, 1000);
     });
 }
 
@@ -507,8 +509,16 @@ if (replayBackwardBtn != null)
 {
     on(replayBackwardBtn, "click", function(){
         if (isPlaying == false) return;
-        stopTunes();
-        setTimeout(()=>{ playTunes(); }, 1000);
+        stopAndPlayTunes(500);
+        //stopTunes();
+        //setTimeout(()=>{ stopAndPlayTunes(); }, 1000);
+    });
+}
+
+if (replayDaySelectorCheckBox != null) {
+    on(replayDaySelectorCheckBox, "click", function() {
+        if (isPlaying == false) return;
+        stopAndPlayTunes(500);
     });
 }
 
@@ -589,8 +599,9 @@ if (isMapEditor == false)
         }
         else if (eventHeader.innerText.includes("Day") )
         {
-            stopTunes();
-            playTunes();
+            //stopTunes();
+            //playTunes();
+            stopAndPlayTunes();
         }
         else if (eventHeader.innerText.includes(myName))
         {
@@ -617,6 +628,18 @@ function playTunes()
     if (isRandomCOTheme) { determineRandomCO(); };
 
     currentTheme.src = themeSource;
+}
+
+function stopAndPlayTunes(timeout_interval=null){
+    if (timeout_interval != null) { setTimeout(()=>{ stopAndPlayTunes(); }, timeout_interval); }
+    let oldThemeSource = themeSource;
+    if (isClassicCOTheme) { determineCurrentCO(); };
+    if (isRandomCOTheme) { determineRandomCO(); };
+
+    if (oldThemeSource != themeSource){
+        stopTunes();
+        currentTheme.src = themeSource;
+    }
 }
 
 function playVictoryTheme()
