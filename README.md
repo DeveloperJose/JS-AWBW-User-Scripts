@@ -3,6 +3,7 @@ This repo contains the code for my custom user scripts for Advance Wars by Web.
 
 The code in this repo is in active development, the latest stable versions can be installed here https://greasyfork.org/en/users/1399453-developerjose
 
+All code is formatted using [prettier](https://prettier.io)
 # Script List
 
 ## 1) AWBW Music Player (DeveloperJose Edition)
