@@ -1,34 +1,44 @@
-/******/ (() => { // webpackBootstrap
 // ==UserScript==
-// @name         AWBW Music Player (DeveloperJose Edition)
-// @namespace    https://awbw.amarriner.com/
-// @version      2.0.8
-// @description  A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.
-// @author       Original by twiggy_, modified by DeveloperJose
-// @match        https://awbw.amarriner.com/*?games_id=*
-// @match        https://awbw.amarriner.com/*?replays_id=*
-// @match        https://awbw.amarriner.com/*editmap*
-// @icon         https://awbw.amarriner.com/favicon.ico
+// @name AWBW Music Player (DeveloperJose Edition)
+// @description A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.
+// @version 2.0.8
+// @author Original by twiggy_, modified by DeveloperJose
+// @homepage https://github.com/DeveloperJose/JS-AWBW-User-Scripts#readme
+// @supportURL https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
+// @match https://awbw.amarriner.com/*?games_id=*
+// @match https://awbw.amarriner.com/*?replays_id=*
+// @match https://awbw.amarriner.com/*editmap*
+// @icon https://awbw.amarriner.com/favicon.ico
 // @license MIT
-// @downloadURL https://update.greasyfork.org/scripts/518170/AWBW%20Music%20Player%20%28DeveloperJose%20Edition%29.user.js
-// @updateURL https://update.greasyfork.org/scripts/518170/AWBW%20Music%20Player%20%28DeveloperJose%20Edition%29.meta.js
+// @namespace https://awbw.amarriner.com/
 // ==/UserScript==
 
-const MY_VERSION = "2.0.8";
-var NEWEST_VERSION = "FETCHING...";
+var __webpack_exports__ = {};
+
+;// ./music_player/resources.js
+
+let neutralImgLink = "https://macroland.one/img/music-player-icon.png";let playingImgLink = "https://macroland.one/img/music-player-playing.gif";
+
+
+;// ./music_player/settings.js
 
 let musicPlayerSettings = {};
 
+;// ./music_player/site_utils.js
 let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
-
-let neutralImgLink = "https://macroland.one/img/music-player-icon.png";
-let playingImgLink = "https://macroland.one/img/music-player-playing.gif";
-
 let myName = document
   .querySelector("#profile-menu")
   .getElementsByClassName("dropdown-menu-link")[0]
   .href.split("username=")[1];
 let myID = -1;
+
+;// ./music_player/main.js
+
+
+
+
+const MY_VERSION = "2.0.8";
+var NEWEST_VERSION = "FETCHING...";
 
 let clicked = false;
 
@@ -446,6 +456,7 @@ currentSFX.onloadedmetadata = function () {
   currentSFX.play();
 };
 
+console.log('D');
 var on = (function () {
   if (window.addEventListener) {
     return function (target, type, listener) {
@@ -2397,5 +2408,3 @@ getVersionNumber();
 
 // debugger;
 
-/******/ })()
-;
