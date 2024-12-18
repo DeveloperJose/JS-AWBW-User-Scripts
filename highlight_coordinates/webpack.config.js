@@ -4,23 +4,22 @@ const { UserscriptPlugin } = require("webpack-userscript");
 
 module.exports = merge(common, {
   entry: {
-    music_player: { import: "./music_player/main.js", filename: "./awbw_music_player.js" },
+    music_player: { import: "./highlight_coordinates/main.js", filename: "./awbw_highlight_cursor_coordinates.js" },
   },
   plugins: [
     new UserscriptPlugin({
       headers: {
-        name: "AWBW Music Player (DeveloperJose Edition)",
+        name: "AWBW Highlight Cursor Coordinates",
         namespace: "https://awbw.amarriner.com/",
-        version: "2.0.8",
+        version: "1.0.1",
         description:
-          "A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.",
-        author: "Original by twiggy_, modified by DeveloperJose",
+          "Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.",
+        author: "DeveloperJose",
         match: [
           "https://awbw.amarriner.com/*?games_id=*",
           "https://awbw.amarriner.com/*?replays_id=*",
-          "https://awbw.amarriner.com/*editmap*",
         ],
-        icon: "https://awbw.amarriner.com/favicon.ico",
+        icon: "https://awbw.amarriner.com/terrain/unit_select.gif",
         license: "MIT",
       },
       proxyScript: {

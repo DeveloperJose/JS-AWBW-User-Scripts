@@ -1,17 +1,3 @@
-// ==UserScript==
-// @name         AWBW Highlight Cursor Coordinates
-// @namespace    https://awbw.amarriner.com/
-// @version      1.0.1
-// @description  Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
-// @author       DeveloperJose
-// @homepage     https://github.com/DeveloperJose/JS-AWBW-User-Scripts#readme
-// @supportURL   https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
-// @match        https://awbw.amarriner.com/*?games_id=*
-// @match        https://awbw.amarriner.com/*?replays_id=*
-// @icon         https://awbw.amarriner.com/terrain/unit_select.gif
-// @license MIT
-// ==/UserScript==
-
 /********************** AWBW Variables ***********************/
 let gameMap = document.getElementById("gamemap");
 let gameMapContainer = document.getElementById("gamemap-container");

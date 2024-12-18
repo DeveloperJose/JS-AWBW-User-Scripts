@@ -6,9 +6,11 @@
   "scripts": {
     "lint": "eslint */main.js",
     "clean": "rm dist/*.js",
-    "build": "webpack --config ./music_player/webpack.config.js",
-    "build:dev": "npm run build -- --mode development",
-    "build:prod": "npm run build -- --mode production",
+    "build:music_player": "webpack --config ./music_player/webpack.config.js",
+    "build:highlight_coordinates": "webpack --config ./highlight_coordinates/webpack.config.js",
+    "build": "npm run build:music_player -- -- ; npm run build:highlight_coordinates -- -- ",
+    "build:dev": "npm run build -- -- --mode development",
+    "build:prod": "npm run build -- -- --mode production",
     "parcel": "npx parcel build --no-optimize --no-source-maps"
   },
   "awbw_music_player": "dist/awbw_music_player.user.js",

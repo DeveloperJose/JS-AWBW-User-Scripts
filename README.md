@@ -7,6 +7,8 @@ This project is managed with [npm](https://www.npmjs.com/). All code is formatte
 
 I am using [webpack](https://webpack.js.org/) so I can have code across many files and then bundle them into a single userscript, making everything easier to organize and read instead of having a huge single file for each project.
 
+I configured npm to use PowerShell with the command ```npm config set script-shell powershell```
+
 # File Structure
 * **dist/** - Contains all the final bundled userscripts.
 * **<SCRIPT_NAME>/** - Source code directory for each script as detailed in the script list.
