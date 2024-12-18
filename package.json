@@ -4,30 +4,52 @@
   "description": "My custom user scripts for Advance Wars by Web written in JS",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "serve": "webpack serve"
+    "lint": "eslint */main.js",
+    "clean": "rm dist/*.js",
+    "build": "webpack --config ./music_player/webpack.config.js",
+    "build:dev": "npm run build -- --mode development",
+    "build:prod": "npm run build -- --mode production",
+    "parcel": "npx parcel build --no-optimize --no-source-maps"
+  },
+  "awbw_music_player": "dist/awbw_music_player.user.js",
+  "awbw_highlight_coordinates": "dist/awbw_highlight_cursor_coordinates.user.js",
+  "targets": {
+    "main": false,
+    "awbw_music_player": {
+      "source": "./music_player/main.js",
+      "isLibrary": false
+    },
+    "awbw_highlight_coordinates": {
+      "source": "./highlight_coordinates/main.js",
+      "isLibrary": false
+    }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DeveloperJose/JS-AWBW-User-Scripts.git"
   },
   "author": "DeveloperJose",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues"
   },
   "homepage": "https://github.com/DeveloperJose/JS-AWBW-User-Scripts#readme",
   "devDependencies": {
-    "@webpack-cli/generators": "^3.0.7",
-    "css-loader": "^7.1.2",
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.0",
+    "@eslint/js": "^9.17.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "eslint": "^9.17.0",
+    "globals": "^15.13.0",
+    "gulp": "^5.0.0",
+    "parcel": "^2.13.3",
     "prettier": "^3.4.2",
-    "style-loader": "^4.0.0",
+    "rollup": "^4.28.1",
     "surge": "^0.24.6",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.2.0",
+    "webpack-merge": "^6.0.1",
     "webpack-userscript": "^3.2.2"
   }
 }

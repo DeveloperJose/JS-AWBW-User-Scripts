@@ -1,9 +1,18 @@
-import { neutralImgLink, playingImgLink } from "./resources.js";
-import { musicPlayerSettings } from "./settings.js";
-import { isMapEditor, myID, myName } from "./site_utils.js";
+const { isMapEditor } = require("./site_utils");
 
 const MY_VERSION = "2.0.8";
 var NEWEST_VERSION = "FETCHING...";
+
+let musicPlayerSettings = {};
+
+let neutralImgLink = "https://macroland.one/img/music-player-icon.png";
+let playingImgLink = "https://macroland.one/img/music-player-playing.gif";
+
+let myName = document
+  .querySelector("#profile-menu")
+  .getElementsByClassName("dropdown-menu-link")[0]
+  .href.split("username=")[1];
+let myID = -1;
 
 let clicked = false;
 
@@ -61,7 +70,6 @@ let playerCOObj = {};
 
 let playerNames = [];
 
-// TODO: Javascript sets for O(1) check-ups, const non-changing
 let blackHoleCOs = [
   "Adder",
   "Flak",
@@ -119,56 +127,25 @@ let COPThemeBHRBC = "https://macroland.one/themes/rbc/loop/t-bh-power-2.wav";
 let victoryThemeRBC = "https://macroland.one/themes/rbc/loop/t-no-loop-victory.wav";
 let defeatThemeRBC = "https://macroland.one/themes/rbc/loop/t-no-loop-defeat.wav";
 
-// let andyThemeRBC = "https://macroland.one/themes/rbc/loop/t-andy.wav";
-// let hachiThemeRBC = "https://macroland.one/themes/rbc/loop/t-hachi.wav";
-// let maxThemeRBC = "https://macroland.one/themes/rbc/loop/t-max.wav";
-// let nellThemeRBC = "https://macroland.one/themes/rbc/loop/t-nell.wav";
-// let samiThemeRBC = "https://macroland.one/themes/rbc/loop/t-sami.wav";
-// let colinThemeRBC = "https://macroland.one/themes/rbc/loop/t-colin.wav";
-// let gritThemeRBC = "https://macroland.one/themes/rbc/loop/t-grit.wav";
-// let olafThemeRBC = "https://macroland.one/themes/rbc/loop/t-olaf.wav";
-// let drakeThemeRBC = "https://macroland.one/themes/rbc/loop/t-drake.wav";
-// let eagleThemeRBC = "https://macroland.one/themes/rbc/loop/t-eagle.wav";
-// let jessThemeRBC = "https://macroland.one/themes/rbc/loop/t-jess.wav";
-// let kanbeiThemeRBC = "https://macroland.one/themes/rbc/loop/t-kanbei.wav";
-// let senseiThemeRBC = "https://macroland.one/themes/rbc/loop/t-sensei.wav";
-// let sonjaThemeRBC = "https://macroland.one/themes/rbc/loop/t-sonja.wav";
-// let adderThemeRBC = "https://macroland.one/themes/rbc/loop/t-adder.wav";
-// let flakThemeRBC = "https://macroland.one/themes/rbc/loop/t-flak.wav";
-// let hawkeThemeRBC = "https://macroland.one/themes/rbc/loop/t-hawke.wav";
-// let lashThemeRBC = "https://macroland.one/themes/rbc/loop/t-lash.wav";
-// let sturmThemeRBC = "https://macroland.one/themes/rbc/loop/t-sturm.wav";
-
-const GameType = Object.freeze({
-  AW1: 0,
-  AW2: 1,
-  AWDS: 2,
-  RBC: 3,
-});
-
-const GameTypeToURL = new Map([
-  [GameType.AW1, "https://devj.surge.sh/music/awds"],
-  [GameType.AW2, "https://devj.surge.sh/music/awds"],
-  [GameType.AWDS, "https://devj.surge.sh/music/awds"],
-  [GameType.RBC, "https://devj.surge.sh/music/rbc"],
-]);
-
-const ThemeType = Object.freeze({
-  NORMAL: 0,
-  CO_POWER: 1,
-  SUPER_CO_POWER: 2,
-});
-
-function getCOTheme(characterName, gameType, alternate = 0) {
-  characterName = characterName.toLowerCase();
-  let baseURL = GameTypeToURL.get(gameType);
-  let ext = ".ogg";
-  let suffix = alternate > 0 ? "-" + alternate : "";
-
-  let filepath = `${baseURL}\\t-${characterName}${suffix}${ext}`;
-  // debugger;
-  return filepath;
-}
+let andyThemeRBC = "https://macroland.one/themes/rbc/loop/t-andy.wav";
+let hachiThemeRBC = "https://macroland.one/themes/rbc/loop/t-hachi.wav";
+let maxThemeRBC = "https://macroland.one/themes/rbc/loop/t-max.wav";
+let nellThemeRBC = "https://macroland.one/themes/rbc/loop/t-nell.wav";
+let samiThemeRBC = "https://macroland.one/themes/rbc/loop/t-sami.wav";
+let colinThemeRBC = "https://macroland.one/themes/rbc/loop/t-colin.wav";
+let gritThemeRBC = "https://macroland.one/themes/rbc/loop/t-grit.wav";
+let olafThemeRBC = "https://macroland.one/themes/rbc/loop/t-olaf.wav";
+let drakeThemeRBC = "https://macroland.one/themes/rbc/loop/t-drake.wav";
+let eagleThemeRBC = "https://macroland.one/themes/rbc/loop/t-eagle.wav";
+let jessThemeRBC = "https://macroland.one/themes/rbc/loop/t-jess.wav";
+let kanbeiThemeRBC = "https://macroland.one/themes/rbc/loop/t-kanbei.wav";
+let senseiThemeRBC = "https://macroland.one/themes/rbc/loop/t-sensei.wav";
+let sonjaThemeRBC = "https://macroland.one/themes/rbc/loop/t-sonja.wav";
+let adderThemeRBC = "https://macroland.one/themes/rbc/loop/t-adder.wav";
+let flakThemeRBC = "https://macroland.one/themes/rbc/loop/t-flak.wav";
+let hawkeThemeRBC = "https://macroland.one/themes/rbc/loop/t-hawke.wav";
+let lashThemeRBC = "https://macroland.one/themes/rbc/loop/t-lash.wav";
+let sturmThemeRBC = "https://macroland.one/themes/rbc/loop/t-sturm.wav";
 
 let allCOThemes = [
   andyTheme,
@@ -199,25 +176,25 @@ let allCOThemes = [
   lashTheme,
   sturmTheme,
   vonboltTheme,
-  // andyThemeRBC,
-  // hachiThemeRBC,
-  // maxThemeRBC,
-  // nellThemeRBC,
-  // samiThemeRBC,
-  // colinThemeRBC,
-  // gritThemeRBC,
-  // olafThemeRBC,
-  // drakeThemeRBC,
-  // eagleThemeRBC,
-  // jessThemeRBC,
-  // kanbeiThemeRBC,
-  // senseiThemeRBC,
-  // sonjaThemeRBC,
-  // adderThemeRBC,
-  // flakThemeRBC,
-  // hawkeThemeRBC,
-  // lashThemeRBC,
-  // sturmThemeRBC,
+  andyThemeRBC,
+  hachiThemeRBC,
+  maxThemeRBC,
+  nellThemeRBC,
+  samiThemeRBC,
+  colinThemeRBC,
+  gritThemeRBC,
+  olafThemeRBC,
+  drakeThemeRBC,
+  eagleThemeRBC,
+  jessThemeRBC,
+  kanbeiThemeRBC,
+  senseiThemeRBC,
+  sonjaThemeRBC,
+  adderThemeRBC,
+  flakThemeRBC,
+  hawkeThemeRBC,
+  lashThemeRBC,
+  sturmThemeRBC,
 ];
 
 let moveInf_1 = "https://macroland.one/movement/inf_move_chopped_1.mp3";
@@ -374,8 +351,168 @@ function determineCurrentCO() {
     playerNames.push(playersInfo[playerID]["users_username"]);
   });
 
-  let gameType = rbcThemesOn ? GameType.RBC : GameType.AWDS;
-  themeSource = getCOTheme(COName, gameType);
+  switch (COName) {
+    case "Andy":
+      if (rbcThemesOn) {
+        themeSource = andyThemeRBC;
+      } else {
+        themeSource = andyTheme;
+      }
+      break;
+    case "Hachi":
+      if (rbcThemesOn) {
+        themeSource = hachiThemeRBC;
+      } else {
+        themeSource = hachiTheme;
+      }
+      break;
+    case "Jake":
+      themeSource = jakeTheme;
+      break;
+    case "Max":
+      if (rbcThemesOn) {
+        themeSource = maxThemeRBC;
+      } else {
+        themeSource = maxTheme;
+      }
+      break;
+    case "Nell":
+      if (rbcThemesOn) {
+        themeSource = nellThemeRBC;
+      } else {
+        themeSource = nellTheme;
+      }
+      break;
+    case "Rachel":
+      themeSource = rachelTheme;
+      break;
+    case "Sami":
+      if (rbcThemesOn) {
+        themeSource = samiThemeRBC;
+      } else {
+        themeSource = samiTheme;
+      }
+      break;
+    case "Colin":
+      if (rbcThemesOn) {
+        themeSource = colinThemeRBC;
+      } else {
+        themeSource = colinTheme;
+      }
+      break;
+    case "Grit":
+      if (rbcThemesOn) {
+        themeSource = gritThemeRBC;
+      } else {
+        themeSource = gritTheme;
+      }
+      break;
+    case "Olaf":
+      if (rbcThemesOn) {
+        themeSource = olafThemeRBC;
+      } else {
+        themeSource = olafTheme;
+      }
+      break;
+    case "Sasha":
+      themeSource = sashaTheme;
+      break;
+    case "Drake":
+      if (rbcThemesOn) {
+        themeSource = drakeThemeRBC;
+      } else {
+        themeSource = drakeTheme;
+      }
+      break;
+    case "Eagle":
+      if (rbcThemesOn) {
+        themeSource = eagleThemeRBC;
+      } else {
+        themeSource = eagleTheme;
+      }
+      break;
+    case "Javier":
+      themeSource = javierTheme;
+      break;
+    case "Jess":
+      if (rbcThemesOn) {
+        themeSource = jessThemeRBC;
+      } else {
+        themeSource = jessTheme;
+      }
+      break;
+    case "Grimm":
+      themeSource = grimmTheme;
+      break;
+    case "Kanbei":
+      if (rbcThemesOn) {
+        themeSource = kanbeiThemeRBC;
+      } else {
+        themeSource = kanbeiTheme;
+      }
+      break;
+    case "Sensei":
+      if (rbcThemesOn) {
+        themeSource = senseiThemeRBC;
+      } else {
+        themeSource = senseiTheme;
+      }
+      break;
+    case "Sonja":
+      if (rbcThemesOn) {
+        themeSource = sonjaThemeRBC;
+      } else {
+        themeSource = sonjaTheme;
+      }
+      break;
+    case "Adder":
+      if (rbcThemesOn) {
+        themeSource = adderThemeRBC;
+      } else {
+        themeSource = adderTheme;
+      }
+      break;
+    case "Flak":
+      if (rbcThemesOn) {
+        themeSource = flakThemeRBC;
+      } else {
+        themeSource = flakTheme;
+      }
+      break;
+    case "Hawke":
+      if (rbcThemesOn) {
+        themeSource = hawkeThemeRBC;
+      } else {
+        themeSource = hawkeTheme;
+      }
+      break;
+    case "Jugger":
+      themeSource = juggerTheme;
+      break;
+    case "Kindle":
+      themeSource = kindleTheme;
+      break;
+    case "Koal":
+      themeSource = koalTheme;
+      break;
+    case "Lash":
+      if (rbcThemesOn) {
+        themeSource = lashThemeRBC;
+      } else {
+        themeSource = lashTheme;
+      }
+      break;
+    case "Sturm":
+      if (rbcThemesOn) {
+        themeSource = sturmThemeRBC;
+      } else {
+        themeSource = sturmTheme;
+      }
+      break;
+    case "Von Bolt":
+      themeSource = vonboltTheme;
+      break;
+  }
 }
 
 // Event listener for when the audio data is actually loaded
@@ -421,7 +558,6 @@ currentSFX.onloadedmetadata = function () {
   currentSFX.play();
 };
 
-console.log('D');
 var on = (function () {
   if (window.addEventListener) {
     return function (target, type, listener) {
@@ -434,29 +570,33 @@ var on = (function () {
   }
 })();
 
-
 let replayForwardBtn = document.getElementsByClassName("replay-forward")[0];
 let replayBackwardBtn = document.getElementsByClassName("replay-backward")[0];
-let replayCloseBtn = document.getElementsByClassName("replay-close")[0];
-let replayBtn = document.getElementsByClassName("game-tools-btn replay-open")[0];
-let replayDaySelectorComboBox = document.getElementsByClassName("replay-day-selector")[0];
-let replayButtons = [replayForwardBtn, replayBackwardBtn, replayCloseBtn, replayBtn];
+let replayDaySelectorCheckBox = document.getElementsByClassName("replay-day-selector")[0];
 
-function replayBtnHandler() {
-  if (isPlaying == false) return;
-  setTimeout(() => {
-    stopAndPlayNewTunesIfNeeded();
-  }, 500);
+if (replayForwardBtn != null) {
+  on(replayForwardBtn, "click", function () {
+    if (isPlaying == false) return;
+    stopAndPlayTunes(500);
+    //stopTunes();
+    //setTimeout(()=>{ stopAndPlayTunes(); }, 1000);
+  });
 }
 
-for (let btn in replayButtons) {
-  if (btn != null) {
-    on(btn, "click", replayBtnHandler);
-  }
+if (replayBackwardBtn != null) {
+  on(replayBackwardBtn, "click", function () {
+    if (isPlaying == false) return;
+    stopAndPlayTunes(500);
+    //stopTunes();
+    //setTimeout(()=>{ stopAndPlayTunes(); }, 1000);
+  });
 }
 
-if (replayDaySelectorComboBox != null) {
-  on(replayDaySelectorComboBox, replayBtnHandler);
+if (replayDaySelectorCheckBox != null) {
+  on(replayDaySelectorCheckBox, "click", function () {
+    if (isPlaying == false) return;
+    stopAndPlayTunes(500);
+  });
 }
 
 // Wrap the event screen to update the current theme
@@ -520,7 +660,9 @@ if (isMapEditor == false) {
         playCOPBHTheme();
       }
     } else if (eventHeader.innerText.includes("Day")) {
-      stopAndPlayNewTunesIfNeeded();
+      //stopTunes();
+      //playTunes();
+      stopAndPlayTunes();
     } else if (eventHeader.innerText.includes(myName)) {
       stopTunes();
       playDefeatTheme();
@@ -547,7 +689,12 @@ function playTunes() {
   currentTheme.src = themeSource;
 }
 
-function stopAndPlayNewTunesIfNeeded() {
+function stopAndPlayTunes(timeout_interval = null) {
+  if (timeout_interval != null) {
+    setTimeout(() => {
+      stopAndPlayTunes();
+    }, timeout_interval);
+  }
   let oldThemeSource = themeSource;
   if (isClassicCOTheme) {
     determineCurrentCO();
@@ -1098,6 +1245,7 @@ waitUnit = function () {
 
 ahCursorMove = updateCursor;
 let lastCursorCall = Date.now();
+
 updateCursor = function () {
   ahCursorMove.apply(updateCursor, arguments);
 
@@ -2370,5 +2518,3 @@ preloadThemes();
 setDefaultThemeMode();
 loadSettings();
 getVersionNumber();
-
-// debugger;

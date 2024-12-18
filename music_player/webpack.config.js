@@ -1,27 +1,10 @@
-const path = require("path");
+const { merge } = require("webpack-merge");
+const common = require("./webpack.common.js");
 const { UserscriptPlugin } = require("webpack-userscript");
 
-module.exports = {
-  mode: "none",
+module.exports = merge(common, {
   entry: {
     music_player: { import: "./music_player/main.js", filename: "./awbw_music_player.js" },
-  },
-  output: {
-    module: true,
-    library: {
-      type: "module",
-    },
-  },
-  optimization: {
-    minimize: false,
-    usedExports: true,
-    concatenateModules: true,
-  },
-  experiments: {
-    outputModule: true,
-  },
-  devServer: {
-    port: "12345",
   },
   plugins: [
     new UserscriptPlugin({
@@ -46,4 +29,4 @@ module.exports = {
       },
     }),
   ],
-};
+});
