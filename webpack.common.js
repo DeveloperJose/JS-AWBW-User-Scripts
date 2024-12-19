@@ -1,3 +1,5 @@
+const { devPort } = require("./config");
+
 module.exports = {
   mode: "production",
   output: {
@@ -15,6 +17,6 @@ module.exports = {
     outputModule: true,
   },
   devServer: {
-    port: "12345",
-  },
+    port: devPort,
+  }
 };

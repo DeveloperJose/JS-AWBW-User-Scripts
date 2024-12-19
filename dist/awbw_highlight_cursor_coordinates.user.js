@@ -12,32 +12,133 @@
 // @namespace https://awbw.amarriner.com/
 // ==/UserScript==
 
-/*
- * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
- * This devtool is neither made for production nor for readable output files.
- * It uses "eval()" calls to create a separate source file in the browser devtools.
- * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
- * or disable the default devtool with "devtool: false".
- * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
- */
-/******/ var __webpack_modules__ = ({
+var __webpack_exports__ = {};
+/********************** AWBW Variables ***********************/
+let gameMap = document.getElementById("gamemap");
+let gameMapContainer = document.getElementById("gamemap-container");
+let zoomInBtn = document.getElementById("zoom-in");
+let zoomOutBtn = document.getElementById("zoom-out");
+let mapCols = maxX;
+let mapRows = maxY;
 
-/***/ "./highlight_coordinates/main.js":
-/*!***************************************!*\
-  !*** ./highlight_coordinates/main.js ***!
-  \***************************************/
-/***/ (() => {
+// Intercepted action handlers
+let oldUpdateCursor = updateCursor;
 
-eval("/********************** AWBW Variables ***********************/\r\nlet gameMap = document.getElementById(\"gamemap\");\r\nlet gameMapContainer = document.getElementById(\"gamemap-container\");\r\nlet zoomInBtn = document.getElementById(\"zoom-in\");\r\nlet zoomOutBtn = document.getElementById(\"zoom-out\");\r\nlet mapCols = maxX;\r\nlet mapRows = maxY;\r\n\r\n// Intercepted action handlers\r\nlet oldUpdateCursor = updateCursor;\r\n\r\n/********************** Script Variables ***********************/\r\nconst CURSOR_THRESHOLD_MS = 30;\r\nlet previousHighlight = null;\r\nlet lastCursorCall = Date.now();\r\n\r\nlet spotSpanTemplate = document.createElement(\"span\");\r\nspotSpanTemplate.style.width = \"16px\";\r\nspotSpanTemplate.style.height = \"16px\";\r\nspotSpanTemplate.style.left = \"-16px\";\r\nspotSpanTemplate.style.top = mapRows * 16 + \"px\";\r\nspotSpanTemplate.style.fontFamily = \"monospace\";\r\nspotSpanTemplate.style.position = \"absolute\";\r\nspotSpanTemplate.style.fontSize = \"11px\";\r\nspotSpanTemplate.style.zIndex = \"100\";\r\n// spotSpanTemplate.style.visibility = \"hidden\";\r\n\r\nfunction setHighlight(node, highlight) {\r\n  let fontWeight = \"\";\r\n  let color = \"\";\r\n  let backgroundColor = \"\";\r\n\r\n  if (highlight) {\r\n    fontWeight = \"bold\";\r\n    color = \"#FFFFFF\";\r\n    backgroundColor = \"#FF0000\";\r\n  }\r\n  node.style.fontWeight = fontWeight;\r\n  node.style.color = color;\r\n  node.style.backgroundColor = backgroundColor;\r\n}\r\n\r\n/********************** Userscript Variables (for other custom scripts that might interfere with this one) ***********************/\r\nlet maximizeBtn = document.getElementsByClassName(\"AWBWMaxmiseButton\")[0];\r\nlet isMaximizeToggled = false;\r\n\r\n/********************** Functions **********************/\r\nfunction onZoomChangeEvent(eventPointer = null, zoom = null) {\r\n  if (zoom == null) {\r\n    zoom = parseFloat(zoomLevel.textContent);\r\n  }\r\n\r\n  let padding = 16 * zoom;\r\n\r\n  gameMapContainer.style.paddingBottom = padding + \"px\";\r\n  gameMapContainer.style.paddingLeft = padding + \"px\";\r\n}\r\n\r\n/******************************************************************\r\n * SCRIPT ENTRY (MAIN FUNCTION)\r\n ******************************************************************/\r\n\r\nif (zoomInBtn != null) {\r\n  zoomInBtn.onclick = onZoomChangeEvent;\r\n}\r\n\r\nif (zoomOutBtn != null) {\r\n  zoomOutBtn.onclick = onZoomChangeEvent;\r\n}\r\n\r\nif (maximizeBtn != null) {\r\n  console.log(\"AWBW Numbered Grid script found AWBW Maximize script\");\r\n  old_fn = maximizeBtn.onclick;\r\n  maximizeBtn.onclick = (event) => {\r\n    old_fn(event);\r\n    isMaximizeToggled = !isMaximizeToggled;\r\n    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);\r\n  };\r\n}\r\n\r\n// Scale to current zoom level\r\nonZoomChangeEvent();\r\n\r\n// Create squares\r\nfor (let row = 0; row < mapRows; row++) {\r\n  let spotSpan = spotSpanTemplate.cloneNode(true);\r\n  spotSpan.id = \"grid-spot-row-\" + row;\r\n  spotSpan.style.top = row * 16 + \"px\";\r\n  spotSpan.textContent = row;\r\n  gameMap.appendChild(spotSpan);\r\n}\r\n\r\nfor (let col = 0; col < mapCols; col++) {\r\n  let spotSpan = spotSpanTemplate.cloneNode(true);\r\n  spotSpan.id = \"grid-spot-col-\" + col;\r\n  spotSpan.style.left = col * 16 + \"px\";\r\n  spotSpan.textContent = col;\r\n  gameMap.appendChild(spotSpan);\r\n}\r\n\r\n// Override updateCursor() function\r\nupdateCursor = function () {\r\n  oldUpdateCursor.apply(updateCursor, arguments);\r\n\r\n  if (Date.now() - lastCursorCall <= CURSOR_THRESHOLD_MS) {\r\n    lastCursorCall = Date.now();\r\n    return;\r\n  }\r\n\r\n  // Get cursor row and column indices then the span\r\n  let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));\r\n  let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));\r\n  let highlightRow = document.getElementById(\"grid-spot-row-\" + cursorRow);\r\n  let highlightCol = document.getElementById(\"grid-spot-col-\" + cursorCol);\r\n\r\n  // Remove highlight for previous\r\n  if (previousHighlight != null) {\r\n    setHighlight(previousHighlight[0], false);\r\n    setHighlight(previousHighlight[1], false);\r\n  }\r\n\r\n  // Highlight current\r\n  setHighlight(highlightRow, true);\r\n  setHighlight(highlightCol, true);\r\n  previousHighlight = [highlightRow, highlightCol];\r\n\r\n  lastCursorCall = Date.now();\r\n};\r\n\n\n//# sourceURL=webpack://js-awbw-user-scripts/./highlight_coordinates/main.js?");
+/********************** Script Variables ***********************/
+const CURSOR_THRESHOLD_MS = 30;
+let previousHighlight = null;
+let lastCursorCall = Date.now();
 
-/***/ })
+let spotSpanTemplate = document.createElement("span");
+spotSpanTemplate.style.width = "16px";
+spotSpanTemplate.style.height = "16px";
+spotSpanTemplate.style.left = "-16px";
+spotSpanTemplate.style.top = mapRows * 16 + "px";
+spotSpanTemplate.style.fontFamily = "monospace";
+spotSpanTemplate.style.position = "absolute";
+spotSpanTemplate.style.fontSize = "11px";
+spotSpanTemplate.style.zIndex = "100";
+// spotSpanTemplate.style.visibility = "hidden";
 
-/******/ });
-/************************************************************************/
-/******/ 
-/******/ // startup
-/******/ // Load entry module and return exports
-/******/ // This entry module can't be inlined because the eval devtool is used.
-/******/ var __webpack_exports__ = {};
-/******/ __webpack_modules__["./highlight_coordinates/main.js"]();
-/******/ 
+function setHighlight(node, highlight) {
+  let fontWeight = "";
+  let color = "";
+  let backgroundColor = "";
+
+  if (highlight) {
+    fontWeight = "bold";
+    color = "#FFFFFF";
+    backgroundColor = "#FF0000";
+  }
+  node.style.fontWeight = fontWeight;
+  node.style.color = color;
+  node.style.backgroundColor = backgroundColor;
+}
+
+/********************** Userscript Variables (for other custom scripts that might interfere with this one) ***********************/
+let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0];
+let isMaximizeToggled = false;
+
+/********************** Functions **********************/
+function onZoomChangeEvent(eventPointer = null, zoom = null) {
+  if (zoom == null) {
+    zoom = parseFloat(zoomLevel.textContent);
+  }
+
+  let padding = 16 * zoom;
+
+  gameMapContainer.style.paddingBottom = padding + "px";
+  gameMapContainer.style.paddingLeft = padding + "px";
+}
+
+/******************************************************************
+ * SCRIPT ENTRY (MAIN FUNCTION)
+ ******************************************************************/
+
+if (zoomInBtn != null) {
+  zoomInBtn.onclick = onZoomChangeEvent;
+}
+
+if (zoomOutBtn != null) {
+  zoomOutBtn.onclick = onZoomChangeEvent;
+}
+
+if (maximizeBtn != null) {
+  console.log("AWBW Numbered Grid script found AWBW Maximize script");
+  old_fn = maximizeBtn.onclick;
+  maximizeBtn.onclick = (event) => {
+    old_fn(event);
+    isMaximizeToggled = !isMaximizeToggled;
+    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
+  };
+}
+
+// Scale to current zoom level
+onZoomChangeEvent();
+
+// Create squares
+for (let row = 0; row < mapRows; row++) {
+  let spotSpan = spotSpanTemplate.cloneNode(true);
+  spotSpan.id = "grid-spot-row-" + row;
+  spotSpan.style.top = row * 16 + "px";
+  spotSpan.textContent = row;
+  gameMap.appendChild(spotSpan);
+}
+
+for (let col = 0; col < mapCols; col++) {
+  let spotSpan = spotSpanTemplate.cloneNode(true);
+  spotSpan.id = "grid-spot-col-" + col;
+  spotSpan.style.left = col * 16 + "px";
+  spotSpan.textContent = col;
+  gameMap.appendChild(spotSpan);
+}
+
+// Override updateCursor() function
+updateCursor = function () {
+  oldUpdateCursor.apply(updateCursor, arguments);
+
+  if (Date.now() - lastCursorCall <= CURSOR_THRESHOLD_MS) {
+    lastCursorCall = Date.now();
+    return;
+  }
+
+  // Get cursor row and column indices then the span
+  let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
+  let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
+  let highlightRow = document.getElementById("grid-spot-row-" + cursorRow);
+  let highlightCol = document.getElementById("grid-spot-col-" + cursorCol);
+
+  // Remove highlight for previous
+  if (previousHighlight != null) {
+    setHighlight(previousHighlight[0], false);
+    setHighlight(previousHighlight[1], false);
+  }
+
+  // Highlight current
+  setHighlight(highlightRow, true);
+  setHighlight(highlightCol, true);
+  previousHighlight = [highlightRow, highlightCol];
+
+  lastCursorCall = Date.now();
+};
+

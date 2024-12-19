@@ -1,6 +1,8 @@
 const { merge } = require("webpack-merge");
-const common = require("../webpack.common.js");
 const { UserscriptPlugin } = require("webpack-userscript");
+
+const common = require("../webpack.common.js");
+const { proxyScript } = require("../config");
 
 module.exports = merge(common, {
   entry: {
@@ -23,10 +25,7 @@ module.exports = merge(common, {
         icon: "https://awbw.amarriner.com/favicon.ico",
         license: "MIT",
       },
-      proxyScript: {
-        baseURL: "http://127.0.0.1:12345",
-        filename: "[basename].proxy.user.js",
-      },
+      proxyScript: proxyScript,
     }),
   ],
 });

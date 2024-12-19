@@ -6,12 +6,13 @@
   "scripts": {
     "lint": "eslint */main.js",
     "clean": "rm dist/*.js",
+    "serve:music_player": "webpack serve --config ./music_player/webpack.config.js",
+    "serve:highlight_coordinates": "webpack serve --config ./highlight_coordinates/webpack.config.js",
     "build:music_player": "webpack --config ./music_player/webpack.config.js",
     "build:highlight_coordinates": "webpack --config ./highlight_coordinates/webpack.config.js",
     "build": "npm run build:music_player -- -- ; npm run build:highlight_coordinates -- -- ",
     "build:dev": "npm run build -- -- --mode development",
-    "build:prod": "npm run build -- -- --mode production",
-    "parcel": "npx parcel build --no-optimize --no-source-maps"
+    "build:prod": "npm run build -- -- --mode production"
   },
   "awbw_music_player": "dist/awbw_music_player.user.js",
   "awbw_highlight_coordinates": "dist/awbw_highlight_cursor_coordinates.user.js",
@@ -44,6 +45,7 @@
     "surge": "^0.24.6",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.0",
     "webpack-merge": "^6.0.1",
     "webpack-userscript": "^3.2.2"
   }

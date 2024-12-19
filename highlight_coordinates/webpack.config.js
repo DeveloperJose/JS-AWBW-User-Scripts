@@ -1,10 +1,15 @@
 const { merge } = require("webpack-merge");
-const common = require("../webpack.common.js");
 const { UserscriptPlugin } = require("webpack-userscript");
+
+const common = require("../webpack.common.js");
+const { proxyScript } = require("../config");
 
 module.exports = merge(common, {
   entry: {
-    music_player: { import: "./highlight_coordinates/main.js", filename: "./awbw_highlight_cursor_coordinates.js" },
+    music_player: {
+      import: "./highlight_coordinates/main.js",
+      filename: "./awbw_highlight_cursor_coordinates.js",
+    },
   },
   plugins: [
     new UserscriptPlugin({
@@ -22,10 +27,7 @@ module.exports = merge(common, {
         icon: "https://awbw.amarriner.com/terrain/unit_select.gif",
         license: "MIT",
       },
-      proxyScript: {
-        baseURL: "http://127.0.0.1:12345",
-        filename: "[basename].proxy.user.js",
-      },
+      proxyScript: proxyScript,
     }),
   ],
 });
