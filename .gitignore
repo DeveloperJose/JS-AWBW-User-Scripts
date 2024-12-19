@@ -1,5 +1,5 @@
 node_modules/
 .parcel-cache/
 
-dist/*.proxy.js
+dist/*.proxy.user.js
 dist/*.meta.js
