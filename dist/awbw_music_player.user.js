@@ -15,16 +15,41 @@
 
 /******/ var __webpack_modules__ = ({
 
-/***/ 554:
+/***/ 60:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   isMapEditor: () => (/* binding */ isMapEditor)
+/* harmony export */   cursor: () => (/* binding */ cursor),
+/* harmony export */   gamemap: () => (/* binding */ gamemap),
+/* harmony export */   gamemapContainer: () => (/* binding */ gamemapContainer),
+/* harmony export */   isMapEditor: () => (/* binding */ isMapEditor),
+/* harmony export */   mapCols: () => (/* binding */ mapCols),
+/* harmony export */   mapRows: () => (/* binding */ mapRows),
+/* harmony export */   zoomInBtn: () => (/* binding */ zoomInBtn),
+/* harmony export */   zoomLevel: () => (/* binding */ zoomLevel),
+/* harmony export */   zoomOutBtn: () => (/* binding */ zoomOutBtn)
 /* harmony export */ });
+/*
+ * Constants, functions, and computed variables that come from analyzing the web pages of AWBW.
+ * Another way to think of this file is that it represents the AWBW "API".
+ */
+/********************** AWBW Page Elements ***********************/
+// More can be easily found here https://awbw.amarriner.com/js/lib/game.js?1733945699
+let gamemap = document.querySelector("#gamemap");
+let gamemapContainer = document.querySelector("#gamemap-container");
+let zoomInBtn = document.querySelector("#zoom-in");
+let zoomOutBtn = document.querySelector("#zoom-out")
+let zoomLevel = document.querySelector(".zoom-level");
+let cursor = document.querySelector("#cursor");
 
+/********************** AWBW Page Variables ***********************/
+/* global maxX, maxY */
+let mapCols = maxX;
+let mapRows = maxY;
+
+/********************** AWBW Computed Variables ***********************/
 let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
-
 
 /***/ })
 
@@ -85,7 +110,7 @@ let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
 /******/ 
 /************************************************************************/
 var __webpack_exports__ = {};
-const { isMapEditor } = __webpack_require__(554);
+const { isMapEditor } = __webpack_require__(60);
 
 const MY_VERSION = "2.0.8";
 var NEWEST_VERSION = "FETCHING...";

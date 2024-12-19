@@ -13,21 +13,49 @@
 // ==/UserScript==
 
 var __webpack_exports__ = {};
-/********************** AWBW Variables ***********************/
-let gameMap = document.getElementById("gamemap");
-let gameMapContainer = document.getElementById("gamemap-container");
-let zoomInBtn = document.getElementById("zoom-in");
-let zoomOutBtn = document.getElementById("zoom-out");
+
+;// ./shared/awbw_site.js
+/*
+ * Constants, functions, and computed variables that come from analyzing the web pages of AWBW.
+ * Another way to think of this file is that it represents the AWBW "API".
+ */
+/********************** AWBW Page Elements ***********************/
+// More can be easily found here https://awbw.amarriner.com/js/lib/game.js?1733945699
+let gamemap = document.querySelector("#gamemap");
+let gamemapContainer = document.querySelector("#gamemap-container");
+let zoomInBtn = document.querySelector("#zoom-in");
+let zoomOutBtn = document.querySelector("#zoom-out")
+let zoomLevel = document.querySelector(".zoom-level");
+let cursor = document.querySelector("#cursor");
+
+/********************** AWBW Page Variables ***********************/
+/* global maxX, maxY */
 let mapCols = maxX;
 let mapRows = maxY;
 
-// Intercepted action handlers
-let oldUpdateCursor = updateCursor;
+/********************** AWBW Computed Variables ***********************/
+let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
+;// ./shared/other_userscripts.js
+/*
+ * Constants, functions, and computed variables that come from other userscripts.
+ * These are useful when we want to have better synergy with other userscripts.
+ */
+
+/********************** AWBW Maximize ***********************/
+let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0];
+
+;// ./highlight_coordinates/main.js
+/********************** AWBW Variables ***********************/
+console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
+
+
+
 
 /********************** Script Variables ***********************/
 const CURSOR_THRESHOLD_MS = 30;
 let previousHighlight = null;
 let lastCursorCall = Date.now();
+let isMaximizeToggled = false;
 
 let spotSpanTemplate = document.createElement("span");
 spotSpanTemplate.style.width = "16px";
@@ -55,67 +83,23 @@ function setHighlight(node, highlight) {
   node.style.backgroundColor = backgroundColor;
 }
 
-/********************** Userscript Variables (for other custom scripts that might interfere with this one) ***********************/
-let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0];
-let isMaximizeToggled = false;
-
-/********************** Functions **********************/
-function onZoomChangeEvent(eventPointer = null, zoom = null) {
+/********************** Script Functions **********************/
+function onZoomChangeEvent(_pointerEvent = null, zoom = null) {
   if (zoom == null) {
     zoom = parseFloat(zoomLevel.textContent);
   }
 
   let padding = 16 * zoom;
-
-  gameMapContainer.style.paddingBottom = padding + "px";
-  gameMapContainer.style.paddingLeft = padding + "px";
+  gamemapContainer.style.paddingBottom = padding + "px";
+  gamemapContainer.style.paddingLeft = padding + "px";
 }
 
-/******************************************************************
- * SCRIPT ENTRY (MAIN FUNCTION)
- ******************************************************************/
+/********************** Intercepted Action Handlers ***********************/
+/* global updateCursor:writeable */
+let oldUpdateCursor = updateCursor;
 
-if (zoomInBtn != null) {
-  zoomInBtn.onclick = onZoomChangeEvent;
-}
-
-if (zoomOutBtn != null) {
-  zoomOutBtn.onclick = onZoomChangeEvent;
-}
-
-if (maximizeBtn != null) {
-  console.log("AWBW Numbered Grid script found AWBW Maximize script");
-  old_fn = maximizeBtn.onclick;
-  maximizeBtn.onclick = (event) => {
-    old_fn(event);
-    isMaximizeToggled = !isMaximizeToggled;
-    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
-  };
-}
-
-// Scale to current zoom level
-onZoomChangeEvent();
-
-// Create squares
-for (let row = 0; row < mapRows; row++) {
-  let spotSpan = spotSpanTemplate.cloneNode(true);
-  spotSpan.id = "grid-spot-row-" + row;
-  spotSpan.style.top = row * 16 + "px";
-  spotSpan.textContent = row;
-  gameMap.appendChild(spotSpan);
-}
-
-for (let col = 0; col < mapCols; col++) {
-  let spotSpan = spotSpanTemplate.cloneNode(true);
-  spotSpan.id = "grid-spot-col-" + col;
-  spotSpan.style.left = col * 16 + "px";
-  spotSpan.textContent = col;
-  gameMap.appendChild(spotSpan);
-}
-
-// Override updateCursor() function
 updateCursor = function () {
-  oldUpdateCursor.apply(updateCursor, arguments);
+  oldUpdateCursor.apply(window.updateCursor, arguments);
 
   if (Date.now() - lastCursorCall <= CURSOR_THRESHOLD_MS) {
     lastCursorCall = Date.now();
@@ -141,4 +125,47 @@ updateCursor = function () {
 
   lastCursorCall = Date.now();
 };
+
+/******************************************************************
+ * SCRIPT ENTRY (MAIN FUNCTION)
+ ******************************************************************/
+
+if (zoomInBtn != null) {
+  zoomInBtn.onclick = onZoomChangeEvent;
+}
+
+if (zoomOutBtn != null) {
+  zoomOutBtn.onclick = onZoomChangeEvent;
+}
+
+// Synergize with AWBW Maximize if that script is running as well
+if (maximizeBtn != null) {
+  console.log("AWBW Highlight Cursor Coordinates script found AWBW Maximize script");
+  let old_fn = maximizeBtn.onclick;
+  maximizeBtn.onclick = (event) => {
+    old_fn(event);
+    isMaximizeToggled = !isMaximizeToggled;
+    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
+  };
+}
+
+// Scale to current zoom level
+onZoomChangeEvent();
+
+// Create squares
+for (let row = 0; row < mapRows; row++) {
+  let spotSpan = spotSpanTemplate.cloneNode(true);
+  spotSpan.id = "grid-spot-row-" + row;
+  spotSpan.style.top = row * 16 + "px";
+  spotSpan.textContent = row;
+  gamemap.appendChild(spotSpan);
+}
+
+for (let col = 0; col < mapCols; col++) {
+  let spotSpan = spotSpanTemplate.cloneNode(true);
+  spotSpan.id = "grid-spot-col-" + col;
+  spotSpan.style.left = col * 16 + "px";
+  spotSpan.textContent = col;
+  gamemap.appendChild(spotSpan);
+}
 

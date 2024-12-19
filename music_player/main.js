@@ -1,4 +1,4 @@
-const { isMapEditor } = require("./site_utils");
+const { isMapEditor } = require("../shared/awbw_site");
 
 const MY_VERSION = "2.0.8";
 var NEWEST_VERSION = "FETCHING...";

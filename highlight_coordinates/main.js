@@ -1,30 +1,27 @@
 /********************** AWBW Variables ***********************/
-let gameMap = document.getElementById("gamemap");
-let gameMapContainer = document.getElementById("gamemap-container");
-let zoomInBtn = document.getElementById("zoom-in");
-let zoomOutBtn = document.getElementById("zoom-out");
-let mapCols = maxX;
-let mapRows = maxY;
+console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
 
-// Intercepted action handlers
-let oldUpdateCursor = updateCursor;
+import * as awbw_site from "../shared/awbw_site";
+import * as other_scripts from "../shared/other_userscripts";
 
 /********************** Script Variables ***********************/
 const CURSOR_THRESHOLD_MS = 30;
 let previousHighlight = null;
+let isMaximizeToggled = false;
 let lastCursorCall = Date.now();
 
 let spotSpanTemplate = document.createElement("span");
 spotSpanTemplate.style.width = "16px";
 spotSpanTemplate.style.height = "16px";
 spotSpanTemplate.style.left = "-16px";
-spotSpanTemplate.style.top = mapRows * 16 + "px";
+spotSpanTemplate.style.top = awbw_site.mapRows * 16 + "px";
 spotSpanTemplate.style.fontFamily = "monospace";
 spotSpanTemplate.style.position = "absolute";
 spotSpanTemplate.style.fontSize = "11px";
 spotSpanTemplate.style.zIndex = "100";
 // spotSpanTemplate.style.visibility = "hidden";
 
+/********************** Script Functions **********************/
 function setHighlight(node, highlight) {
   let fontWeight = "";
   let color = "";
@@ -40,67 +37,22 @@ function setHighlight(node, highlight) {
   node.style.backgroundColor = backgroundColor;
 }
 
-/********************** Userscript Variables (for other custom scripts that might interfere with this one) ***********************/
-let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0];
-let isMaximizeToggled = false;
-
-/********************** Functions **********************/
-function onZoomChangeEvent(eventPointer = null, zoom = null) {
+function onZoomChangeEvent(_pointerEvent = null, zoom = null) {
   if (zoom == null) {
-    zoom = parseFloat(zoomLevel.textContent);
+    zoom = parseFloat(awbw_site.zoomLevel.textContent);
   }
 
   let padding = 16 * zoom;
-
-  gameMapContainer.style.paddingBottom = padding + "px";
-  gameMapContainer.style.paddingLeft = padding + "px";
+  awbw_site.gamemapContainer.style.paddingBottom = padding + "px";
+  awbw_site.gamemapContainer.style.paddingLeft = padding + "px";
 }
 
-/******************************************************************
- * SCRIPT ENTRY (MAIN FUNCTION)
- ******************************************************************/
+/********************** Intercepted Action Handlers ***********************/
+/* global updateCursor:writeable */
+let oldUpdateCursor = updateCursor;
 
-if (zoomInBtn != null) {
-  zoomInBtn.onclick = onZoomChangeEvent;
-}
-
-if (zoomOutBtn != null) {
-  zoomOutBtn.onclick = onZoomChangeEvent;
-}
-
-if (maximizeBtn != null) {
-  console.log("AWBW Numbered Grid script found AWBW Maximize script");
-  old_fn = maximizeBtn.onclick;
-  maximizeBtn.onclick = (event) => {
-    old_fn(event);
-    isMaximizeToggled = !isMaximizeToggled;
-    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
-  };
-}
-
-// Scale to current zoom level
-onZoomChangeEvent();
-
-// Create squares
-for (let row = 0; row < mapRows; row++) {
-  let spotSpan = spotSpanTemplate.cloneNode(true);
-  spotSpan.id = "grid-spot-row-" + row;
-  spotSpan.style.top = row * 16 + "px";
-  spotSpan.textContent = row;
-  gameMap.appendChild(spotSpan);
-}
-
-for (let col = 0; col < mapCols; col++) {
-  let spotSpan = spotSpanTemplate.cloneNode(true);
-  spotSpan.id = "grid-spot-col-" + col;
-  spotSpan.style.left = col * 16 + "px";
-  spotSpan.textContent = col;
-  gameMap.appendChild(spotSpan);
-}
-
-// Override updateCursor() function
 updateCursor = function () {
-  oldUpdateCursor.apply(updateCursor, arguments);
+  oldUpdateCursor.apply(window.updateCursor, arguments);
 
   if (Date.now() - lastCursorCall <= CURSOR_THRESHOLD_MS) {
     lastCursorCall = Date.now();
@@ -108,8 +60,8 @@ updateCursor = function () {
   }
 
   // Get cursor row and column indices then the span
-  let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
-  let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
+  let cursorRow = Math.abs(Math.ceil(parseInt(awbw_site.cursor.style.top) / 16));
+  let cursorCol = Math.abs(Math.ceil(parseInt(awbw_site.cursor.style.left) / 16));
   let highlightRow = document.getElementById("grid-spot-row-" + cursorRow);
   let highlightCol = document.getElementById("grid-spot-col-" + cursorCol);
 
@@ -126,3 +78,46 @@ updateCursor = function () {
 
   lastCursorCall = Date.now();
 };
+
+/******************************************************************
+ * SCRIPT ENTRY (MAIN FUNCTION)
+ ******************************************************************/
+
+if (awbw_site.zoomInBtn != null) {
+  awbw_site.zoomInBtn.onclick = onZoomChangeEvent;
+}
+
+if (awbw_site.zoomOutBtn != null) {
+  awbw_site.zoomOutBtn.onclick = onZoomChangeEvent;
+}
+
+// Synergize with AWBW Maximize if that script is running as well
+if (other_scripts.maximizeBtn != null) {
+  console.log("AWBW Highlight Cursor Coordinates script found AWBW Maximize script");
+  let old_fn = other_scripts.maximizeBtn.onclick;
+  other_scripts.maximizeBtn.onclick = (event) => {
+    old_fn(event);
+    isMaximizeToggled = !isMaximizeToggled;
+    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
+  };
+}
+
+// Scale to current zoom level
+onZoomChangeEvent();
+
+// Create squares
+for (let row = 0; row < awbw_site.mapRows; row++) {
+  let spotSpan = spotSpanTemplate.cloneNode(true);
+  spotSpan.id = "grid-spot-row-" + row;
+  spotSpan.style.top = row * 16 + "px";
+  spotSpan.textContent = row;
+  awbw_site.gamemap.appendChild(spotSpan);
+}
+
+for (let col = 0; col < awbw_site.mapCols; col++) {
+  let spotSpan = spotSpanTemplate.cloneNode(true);
+  spotSpan.id = "grid-spot-col-" + col;
+  spotSpan.style.left = col * 16 + "px";
+  spotSpan.textContent = col;
+  awbw_site.gamemap.appendChild(spotSpan);
+}

@@ -11,6 +11,7 @@ I configured npm to use PowerShell with the command ```npm config set script-she
 
 # File Structure
 * **dist/** - Contains all the final bundled userscripts with filenames ending in **.user.js**
+* **shared/** - Contains all shared code between userscripts.
 * **<SCRIPT_NAME>/** - Source code directory for each script. Each script has a **main.js** file which is the base file used to bundle everything together.
 * **.prettierrc** - Configuration for [prettier](https://prettier.io).
 * **config.js** - Constants and other project configuration settings that could be used by any scripts.
