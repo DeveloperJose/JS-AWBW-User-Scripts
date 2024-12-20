@@ -734,10 +734,10 @@ var on = (() => {
 const STORAGE_KEY = "musicPlayerSettings";
 
 const GAME_TYPE = Object.freeze({
-  AW1: "aw1",
-  AW2: "aw2",
-  AWDS: "awds",
-  AWRBC: "awrbc",
+  AW1: "AW1",
+  AW2: "AW2",
+  AW_RBC: "AW_RBC",
+  AW_DS: "AW_DS",
 });
 
 const onSettingsChangeListeners = [];
@@ -751,7 +751,7 @@ const musicPlayerSettings = {
   __volume: 0.5,
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
-  __gameType: GAME_TYPE.AWDS,
+  __gameType: GAME_TYPE.AW_DS,
   // TODO: Shuffle
   // TODO: Alternate Themes
   // TODO: Powers
@@ -942,8 +942,64 @@ const uiSFX = {
   powerBHSCOPIntro: "https://macroland.one/game/power_bh_scop.wav",
 };
 
-function getMusicURL(coName) {
-  return `${BASE_URL}/${musicPlayerSettings.gameType}/t-${coName}.ogg`;
+// const AW1_CO_LIST = new Map([
+//   "andy",
+//   "max",
+//   "sami",
+//   "olaf",
+//   "grit",
+//   "eagle",
+//   "drake",
+//   "sturm"
+// ]);
+
+// const AW2_CO_LIST = new Map([
+//   "hachi",
+//   "nell",
+//   "colin",
+//   "sensei",
+//   "flak",
+//   "lash",
+//   "adder",
+//   "hawke"
+// ]);
+
+// const AWDS_CO_LIST = new Map([
+//   "jake",
+//   "rachel",
+//   "sasha",
+//   "javier",
+//   "jugger",
+//   "koal",
+//   "kindle",
+//   "von_bolt"
+// ]);
+
+// const BLACK_HOLE_CO_LIST = new Map([
+//   "flak",
+//   "lash",
+//   "adder",
+//   "hawke",
+//   "sturm",
+//   "jugger",
+//   "koal",
+//   "kindle",
+//   "von_bolt"
+// ]);
+
+// const CO_LIST_FOR_GAME_TYPE = new Map([
+//   [GAME_TYPE.AW1, AW1_CO_LIST],
+//   [GAME_TYPE.AW2, AW2_CO_LIST],
+//   [GAME_TYPE.AW_RBC, AW2_CO_LIST],
+//   [GAME_TYPE.AW_DS, AWDS_CO_LIST]
+// ]);
+
+function getMusicURL(coName, gameType = null) {
+  if (gameType === null) {
+    gameType = musicPlayerSettings.gameType.toLowerCase();
+  }
+  let filename = "t-" + coName;
+  return `${BASE_URL}/${gameType}/${filename}.ogg`;
 }
 
 // EXTERNAL MODULE: ./shared/config.js
@@ -1003,6 +1059,7 @@ function onSettingsChange(_key) {
   volumeSlider.value = musicPlayerSettings.volume;
   sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
   uiVolumeSlider.value = musicPlayerSettings.uiVolume;
+  gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
 }
 
 /**
@@ -1140,6 +1197,59 @@ uiVolumeSliderFlexContainer.appendChild(uiVolumeSliderSpanDiv);
 uiVolumeSliderSpanDiv.appendChild(uiVolumeSliderSpan);
 contextMenu.appendChild(uiVolumeSliderFlexContainer);
 contextMenu.appendChild(uiVolumeSlider);
+
+/********************** Game Type **********************/
+let themeFlexContainer = document.createElement("div");
+themeFlexContainer.id = "music-player-theme-slider-flex-container";
+themeFlexContainer.style.display = "flex";
+themeFlexContainer.style.flexDirection = "row";
+themeFlexContainer.style.marginTop = "5.5px";
+themeFlexContainer.style.alignItems = "center";
+themeFlexContainer.style.backgroundColor = "#F0F0F0";
+contextMenu.appendChild(themeFlexContainer);
+
+let themeSpanDiv = document.createElement("div");
+themeSpanDiv.id = "music-player-theme-slider-div";
+themeSpanDiv.style.display = "inline-block";
+themeSpanDiv.style.width = "100%";
+themeSpanDiv.style.textAlign = "center";
+themeFlexContainer.appendChild(themeSpanDiv);
+
+let themeSpan = document.createElement("span");
+themeSpan.id = "music-player-theme-slider-desc";
+themeSpan.textContent = "Game Soundtrack";
+themeSpan.style.fontSize = "13px";
+themeSpanDiv.appendChild(themeSpan);
+
+let themeSliderFlexContainer = document.createElement("div");
+themeSliderFlexContainer.id = "music-player-classic-slider-flex-container";
+themeSliderFlexContainer.style.display = "flex";
+themeSliderFlexContainer.style.flexDirection = "row";
+themeSliderFlexContainer.style.marginTop = "5.5px";
+themeSliderFlexContainer.style.alignItems = "center";
+themeSliderFlexContainer.style.justifyContent = "space-around";
+contextMenu.appendChild(themeSliderFlexContainer);
+
+let gameTypeSelectorSpan = document.createElement("select");
+gameTypeSelectorSpan.id = "music-player-game-type-selector";
+gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
+on(gameTypeSelectorSpan, "change", () => {
+  let newGameType = gameTypeSelectorSpan.value;
+  musicPlayerSettings.gameType = newGameType;
+});
+
+for (let key in GAME_TYPE) {
+  let gameTypeOption = document.createElement("option");
+  gameTypeOption.id = "music-player-game-type-option-" + key;
+
+  let gameTypeOptionText = document.createTextNode(key);
+  gameTypeOptionText.id = "music-player-game-type-option-name-" + key;
+
+  gameTypeOption.appendChild(gameTypeOptionText);
+  gameTypeSelectorSpan.appendChild(gameTypeOption);
+}
+
+themeSliderFlexContainer.appendChild(gameTypeSelectorSpan);
 
 /********************** Version **********************/
 let versionDiv = document.createElement("div");
@@ -1339,14 +1449,14 @@ function stopMovementSound(unitType = null) {
  * Preloads the current game COs' themes and common sound effect audios.
  */
 function preloadCommonAudio() {
-  // Preload CO Themes
-  let coNames = [];
-  if (isMapEditor === false) {
-    coNames = getAllCONames();
-  } else {
-    coNames.push("map-editor");
+  let audioList = [];
+
+  // Preload the themes of the COs in this match
+  // We preload the themes for each game version
+  let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
+  for (let gameType in GAME_TYPE) {
+    audioList.push(coNames.map(getMusicURL, gameType));
   }
-  let audioList = coNames.map(getMusicURL);
 
   // Preload SFX
   for (let key in movementSFX) {
@@ -1371,6 +1481,7 @@ function playMusicURL(srcURL, loop = false) {
   }
   currentTheme.src = srcURL;
   currentTheme.loop = loop;
+  console.log("Now Playing:" + srcURL);
 }
 
 function playOneShotURL(srcURL, volume) {
@@ -1418,14 +1529,17 @@ function music_onSettingsChange(key) {
   currentSFX.volume = musicPlayerSettings.sfxVolume;
   currentUI.volume = musicPlayerSettings.uiVolume;
 
-  if (key !== "isPlaying") {
-    return;
-  }
-
-  if (musicPlayerSettings.isPlaying) {
-    playMusic();
-  } else {
-    stopMusic();
+  switch (key) {
+    case "isPlaying":
+      if (musicPlayerSettings.isPlaying) {
+        playMusic();
+      } else {
+        stopMusic();
+      }
+      break;
+    case "gameType":
+      console.log("new game type");
+      playMusic();
   }
 }
 

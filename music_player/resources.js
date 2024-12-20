@@ -1,4 +1,4 @@
-import { musicPlayerSettings } from "./music_settings";
+import { GAME_TYPE, musicPlayerSettings } from "./music_settings";
 
 /*
  * All external resources used by this userscript like URLs.
@@ -95,6 +95,62 @@ export const uiSFX = {
   powerBHSCOPIntro: "https://macroland.one/game/power_bh_scop.wav",
 };
 
-export function getMusicURL(coName) {
-  return `${BASE_URL}/${musicPlayerSettings.gameType}/t-${coName}.ogg`;
+// const AW1_CO_LIST = new Map([
+//   "andy",
+//   "max",
+//   "sami",
+//   "olaf",
+//   "grit",
+//   "eagle",
+//   "drake",
+//   "sturm"
+// ]);
+
+// const AW2_CO_LIST = new Map([
+//   "hachi",
+//   "nell",
+//   "colin",
+//   "sensei",
+//   "flak",
+//   "lash",
+//   "adder",
+//   "hawke"
+// ]);
+
+// const AWDS_CO_LIST = new Map([
+//   "jake",
+//   "rachel",
+//   "sasha",
+//   "javier",
+//   "jugger",
+//   "koal",
+//   "kindle",
+//   "von_bolt"
+// ]);
+
+// const BLACK_HOLE_CO_LIST = new Map([
+//   "flak",
+//   "lash",
+//   "adder",
+//   "hawke",
+//   "sturm",
+//   "jugger",
+//   "koal",
+//   "kindle",
+//   "von_bolt"
+// ]);
+
+// const CO_LIST_FOR_GAME_TYPE = new Map([
+//   [GAME_TYPE.AW1, AW1_CO_LIST],
+//   [GAME_TYPE.AW2, AW2_CO_LIST],
+//   [GAME_TYPE.AW_RBC, AW2_CO_LIST],
+//   [GAME_TYPE.AW_DS, AWDS_CO_LIST]
+// ]);
+
+export function getMusicURL(coName, gameType = null) {
+  if (gameType === null) {
+    gameType = musicPlayerSettings.gameType.toLowerCase();
+  }
+  let filename = "t-" + coName;
+  return `${BASE_URL}/${gameType}/${filename}.ogg`;
 }

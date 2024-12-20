@@ -3,7 +3,7 @@ import { isMapEditor } from "../shared/awbw_site";
 import { versions } from "../shared/config.js";
 import { on } from "../shared/utils.js";
 
-import { addSettingsChangeListener, musicPlayerSettings } from "./music_settings.js";
+import { addSettingsChangeListener, GAME_TYPE, musicPlayerSettings } from "./music_settings.js";
 
 // Used to close the right-click settings menu when you right-click twice
 export let isSettingsMenuOpen = false;
@@ -52,6 +52,7 @@ function onSettingsChange(_key) {
   volumeSlider.value = musicPlayerSettings.volume;
   sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
   uiVolumeSlider.value = musicPlayerSettings.uiVolume;
+  gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
 }
 
 /**
@@ -189,6 +190,59 @@ uiVolumeSliderFlexContainer.appendChild(uiVolumeSliderSpanDiv);
 uiVolumeSliderSpanDiv.appendChild(uiVolumeSliderSpan);
 contextMenu.appendChild(uiVolumeSliderFlexContainer);
 contextMenu.appendChild(uiVolumeSlider);
+
+/********************** Game Type **********************/
+let themeFlexContainer = document.createElement("div");
+themeFlexContainer.id = "music-player-theme-slider-flex-container";
+themeFlexContainer.style.display = "flex";
+themeFlexContainer.style.flexDirection = "row";
+themeFlexContainer.style.marginTop = "5.5px";
+themeFlexContainer.style.alignItems = "center";
+themeFlexContainer.style.backgroundColor = "#F0F0F0";
+contextMenu.appendChild(themeFlexContainer);
+
+let themeSpanDiv = document.createElement("div");
+themeSpanDiv.id = "music-player-theme-slider-div";
+themeSpanDiv.style.display = "inline-block";
+themeSpanDiv.style.width = "100%";
+themeSpanDiv.style.textAlign = "center";
+themeFlexContainer.appendChild(themeSpanDiv);
+
+let themeSpan = document.createElement("span");
+themeSpan.id = "music-player-theme-slider-desc";
+themeSpan.textContent = "Game Soundtrack";
+themeSpan.style.fontSize = "13px";
+themeSpanDiv.appendChild(themeSpan);
+
+let themeSliderFlexContainer = document.createElement("div");
+themeSliderFlexContainer.id = "music-player-classic-slider-flex-container";
+themeSliderFlexContainer.style.display = "flex";
+themeSliderFlexContainer.style.flexDirection = "row";
+themeSliderFlexContainer.style.marginTop = "5.5px";
+themeSliderFlexContainer.style.alignItems = "center";
+themeSliderFlexContainer.style.justifyContent = "space-around";
+contextMenu.appendChild(themeSliderFlexContainer);
+
+let gameTypeSelectorSpan = document.createElement("select");
+gameTypeSelectorSpan.id = "music-player-game-type-selector";
+gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
+on(gameTypeSelectorSpan, "change", () => {
+  let newGameType = gameTypeSelectorSpan.value;
+  musicPlayerSettings.gameType = newGameType;
+});
+
+for (let key in GAME_TYPE) {
+  let gameTypeOption = document.createElement("option");
+  gameTypeOption.id = "music-player-game-type-option-" + key;
+
+  let gameTypeOptionText = document.createTextNode(key);
+  gameTypeOptionText.id = "music-player-game-type-option-name-" + key;
+
+  gameTypeOption.appendChild(gameTypeOptionText);
+  gameTypeSelectorSpan.appendChild(gameTypeOption);
+}
+
+themeSliderFlexContainer.appendChild(gameTypeSelectorSpan);
 
 /********************** Version **********************/
 let versionDiv = document.createElement("div");

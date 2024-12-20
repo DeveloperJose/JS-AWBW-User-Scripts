@@ -8,7 +8,7 @@ import {
   onMovementStartMap,
   uiSFX,
 } from "./resources";
-import { musicPlayerSettings, addSettingsChangeListener } from "./music_settings";
+import { musicPlayerSettings, addSettingsChangeListener, GAME_TYPE } from "./music_settings";
 
 // Set default audio settings
 const currentTheme = new Audio();
@@ -79,14 +79,14 @@ export function stopMovementSound(unitType = null) {
  * Preloads the current game COs' themes and common sound effect audios.
  */
 export function preloadCommonAudio() {
-  // Preload CO Themes
-  let coNames = [];
-  if (isMapEditor === false) {
-    coNames = getAllCONames();
-  } else {
-    coNames.push("map-editor");
+  let audioList = [];
+
+  // Preload the themes of the COs in this match
+  // We preload the themes for each game version
+  let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
+  for (let gameType in GAME_TYPE) {
+    audioList.push(coNames.map(getMusicURL, gameType));
   }
-  let audioList = coNames.map(getMusicURL);
 
   // Preload SFX
   for (let key in movementSFX) {
@@ -111,6 +111,7 @@ function playMusicURL(srcURL, loop = false) {
   }
   currentTheme.src = srcURL;
   currentTheme.loop = loop;
+  console.log("Now Playing:" + srcURL);
 }
 
 function playOneShotURL(srcURL, volume) {
@@ -158,13 +159,16 @@ function onSettingsChange(key) {
   currentSFX.volume = musicPlayerSettings.sfxVolume;
   currentUI.volume = musicPlayerSettings.uiVolume;
 
-  if (key !== "isPlaying") {
-    return;
-  }
-
-  if (musicPlayerSettings.isPlaying) {
-    playMusic();
-  } else {
-    stopMusic();
+  switch (key) {
+    case "isPlaying":
+      if (musicPlayerSettings.isPlaying) {
+        playMusic();
+      } else {
+        stopMusic();
+      }
+      break;
+    case "gameType":
+      console.log("new game type");
+      playMusic();
   }
 }

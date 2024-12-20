@@ -1,10 +1,10 @@
 export const STORAGE_KEY = "musicPlayerSettings";
 
 export const GAME_TYPE = Object.freeze({
-  AW1: "aw1",
-  AW2: "aw2",
-  AWDS: "awds",
-  AWRBC: "awrbc",
+  AW1: "AW1",
+  AW2: "AW2",
+  AW_RBC: "AW_RBC",
+  AW_DS: "AW_DS",
 });
 
 const onSettingsChangeListeners = [];
@@ -18,7 +18,7 @@ export const musicPlayerSettings = {
   __volume: 0.5,
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
-  __gameType: GAME_TYPE.AWDS,
+  __gameType: GAME_TYPE.AW_DS,
   // TODO: Shuffle
   // TODO: Alternate Themes
   // TODO: Powers
