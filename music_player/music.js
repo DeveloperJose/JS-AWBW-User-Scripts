@@ -8,19 +8,25 @@ import {
   onMovementStartMap,
   uiSFX,
 } from "./resources";
-import { musicPlayerSettings } from "./music_settings";
+import { musicPlayerSettings, addSettingsChangeListener } from "./music_settings";
 
+// Set default audio settings
 const currentTheme = new Audio();
 const currentSFX = new Audio();
 const currentUI = new Audio();
 currentSFX.loop = true;
 
+// Always play any music that finishes loading
 currentTheme.onloadedmetadata = function () {
   currentTheme.play();
 };
 
+// Listen for setting changes to update the internal variables accordingly
+addSettingsChangeListener(onSettingsChange);
+
 /**
  * Plays the appropriate music based on the settings and the current game state.
+ * Determines the music automatically so just call this anytime the game state changes.
  */
 export function playMusic() {
   if (!musicPlayerSettings.isPlaying) return;
@@ -32,13 +38,12 @@ export function playMusic() {
  * Stops all music if there's any playing.
  */
 export function stopMusic() {
-  if (!musicPlayerSettings.isPlaying) return;
   currentTheme.pause();
 }
 
 /**
  * Plays the movement sound of the given unit.
- * @param {*} unitType  String containing the name of the unit.
+ * @param {*} unitType String containing the name of the unit.
  */
 export function playMovementSound(unitType) {
   if (!musicPlayerSettings.isPlaying) {
@@ -53,7 +58,7 @@ export function playMovementSound(unitType) {
 /**
  * Stops any movement sound currently playing.
  * Optionally plays a rolloff sound afterwards if a unit is provided.
- * @param {*} unitType  (Optional) String containing the name of the unit for rolloff.
+ * @param {*} unitType (Optional) String containing the name of the unit for rolloff.
  */
 export function stopMovementSound(unitType = null) {
   // Can't stop if there's nothing playing
@@ -137,7 +142,6 @@ function preloadAudioList(audioList) {
   };
 
   audioList.forEach((url) => {
-    console.log(url);
     let audio = new Audio();
     audio.addEventListener("canplaythrough", onLoadAudio, false);
     audio.src = url;
@@ -145,11 +149,22 @@ function preloadAudioList(audioList) {
 }
 
 /**
- * Updates the internal audio components to match the current music player settings.
- * Use this every time you change the music player settings internally.
+ * Updates the internal audio components to match the current music player settings when the settings change.
+ *
+ * @param {*} _key Key of the setting which has been changed.
  */
-export function syncSettingsToMusicPlayer() {
+function onSettingsChange(key) {
   currentTheme.volume = musicPlayerSettings.volume;
   currentSFX.volume = musicPlayerSettings.sfxVolume;
   currentUI.volume = musicPlayerSettings.uiVolume;
+
+  if (key !== "isPlaying") {
+    return;
+  }
+
+  if (musicPlayerSettings.isPlaying) {
+    playMusic();
+  } else {
+    stopMusic();
+  }
 }

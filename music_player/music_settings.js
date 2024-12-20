@@ -1,6 +1,3 @@
-import { syncSettingsToUI } from "./settings_menu";
-import { playMusic, stopMusic, syncSettingsToMusicPlayer } from "./music";
-
 export const STORAGE_KEY = "musicPlayerSettings";
 
 export const GAME_TYPE = Object.freeze({
@@ -10,26 +7,25 @@ export const GAME_TYPE = Object.freeze({
   AWRBC: "awrbc",
 });
 
+const onSettingsChangeListeners = [];
+
+export function addSettingsChangeListener(fn) {
+  onSettingsChangeListeners.push(fn);
+}
+
 export const musicPlayerSettings = {
   __isPlaying: false,
   __volume: 0.5,
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
   __gameType: GAME_TYPE.AWDS,
-
   // TODO: Shuffle
   // TODO: Alternate Themes
   // TODO: Powers
 
   set isPlaying(val) {
     this.__isPlaying = val;
-    this.onSettingChangeEvent();
-
-    if (this.__isPlaying) {
-      playMusic();
-    } else {
-      stopMusic();
-    }
+    this.onSettingChangeEvent("isPlaying");
   },
 
   get isPlaying() {
@@ -38,7 +34,7 @@ export const musicPlayerSettings = {
 
   set volume(val) {
     this.__volume = val;
-    this.onSettingChangeEvent();
+    this.onSettingChangeEvent("volume");
   },
 
   get volume() {
@@ -47,7 +43,7 @@ export const musicPlayerSettings = {
 
   set sfxVolume(val) {
     this.__sfxVolume = val;
-    this.onSettingChangeEvent();
+    this.onSettingChangeEvent("sfxVolume");
   },
 
   get sfxVolume() {
@@ -56,7 +52,7 @@ export const musicPlayerSettings = {
 
   set uiVolume(val) {
     this.__uiVolume = val;
-    this.onSettingChangeEvent();
+    this.onSettingChangeEvent("uiVolume");
   },
   get uiVolume() {
     return this.__uiVolume;
@@ -65,15 +61,14 @@ export const musicPlayerSettings = {
   set gameType(val) {
     // TODO: Validate
     this.__gameType = val;
-    this.onSettingChangeEvent();
+    this.onSettingChangeEvent("gameType");
   },
   get gameType() {
     return this.__gameType;
   },
 
-  onSettingChangeEvent() {
-    syncSettingsToMusicPlayer();
-    syncSettingsToUI();
+  onSettingChangeEvent(key) {
+    onSettingsChangeListeners.forEach((fn) => fn(key));
   },
 };
 
@@ -82,26 +77,36 @@ export const musicPlayerSettings = {
  */
 export function loadSettingsFromLocalStorage() {
   let storageData = localStorage.getItem(STORAGE_KEY);
-  if (storageData != null) {
-    let savedSettings = JSON.parse(storageData);
 
-    // Only keep and set settings that are in the current version
-    for (let key in musicPlayerSettings) {
-      if (Object.hasOwn(savedSettings, key)) {
-        musicPlayerSettings[key] = savedSettings[key];
-      }
-    }
-
-    syncSettingsToMusicPlayer();
-    syncSettingsToUI();
+  // Store defaults if nothing is stored
+  if (storageData === null) {
+    updateSettingsInLocalStorage();
   }
-  updateSettingsInLocalStorage();
+
+  // Only keep and set settings that are in the current version
+  // Only keep internal __vars
+  let savedSettings = JSON.parse(storageData);
+  for (let key in musicPlayerSettings) {
+    if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
+      // Key without __ prefix
+      let regularKey = key.substring(2);
+      console.log(
+        "[AWBW Improved Music Player] Loaded setting:" + regularKey + "=" + savedSettings[key],
+      );
+      musicPlayerSettings[regularKey] = savedSettings[key];
+    }
+  }
+
+  // From now on, any setting changes will be saved
+  addSettingsChangeListener(updateSettingsInLocalStorage);
 }
 
 /**
  * Saves the current music player settings in the local storage.
  */
 function updateSettingsInLocalStorage() {
-  debugger;
+  console.log(
+    "[AWBW Improved Music Player] Saving settings:" + JSON.stringify(musicPlayerSettings),
+  );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(musicPlayerSettings));
 }

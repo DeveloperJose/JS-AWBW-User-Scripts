@@ -730,6 +730,222 @@ var on = (() => {
   }
 })();
 
+;// ./music_player/music_settings.js
+const STORAGE_KEY = "musicPlayerSettings";
+
+const GAME_TYPE = Object.freeze({
+  AW1: "aw1",
+  AW2: "aw2",
+  AWDS: "awds",
+  AWRBC: "awrbc",
+});
+
+const onSettingsChangeListeners = [];
+
+function addSettingsChangeListener(fn) {
+  onSettingsChangeListeners.push(fn);
+}
+
+const musicPlayerSettings = {
+  __isPlaying: false,
+  __volume: 0.5,
+  __sfxVolume: 0.35,
+  __uiVolume: 0.425,
+  __gameType: GAME_TYPE.AWDS,
+  // TODO: Shuffle
+  // TODO: Alternate Themes
+  // TODO: Powers
+
+  set isPlaying(val) {
+    this.__isPlaying = val;
+    this.onSettingChangeEvent("isPlaying");
+  },
+
+  get isPlaying() {
+    return this.__isPlaying;
+  },
+
+  set volume(val) {
+    this.__volume = val;
+    this.onSettingChangeEvent("volume");
+  },
+
+  get volume() {
+    return this.__volume;
+  },
+
+  set sfxVolume(val) {
+    this.__sfxVolume = val;
+    this.onSettingChangeEvent("sfxVolume");
+  },
+
+  get sfxVolume() {
+    return this.__sfxVolume;
+  },
+
+  set uiVolume(val) {
+    this.__uiVolume = val;
+    this.onSettingChangeEvent("uiVolume");
+  },
+  get uiVolume() {
+    return this.__uiVolume;
+  },
+
+  set gameType(val) {
+    // TODO: Validate
+    this.__gameType = val;
+    this.onSettingChangeEvent("gameType");
+  },
+  get gameType() {
+    return this.__gameType;
+  },
+
+  onSettingChangeEvent(key) {
+    onSettingsChangeListeners.forEach((fn) => fn(key));
+  },
+};
+
+/**
+ * Loads the music player settings stored in the local storage.
+ */
+function loadSettingsFromLocalStorage() {
+  let storageData = localStorage.getItem(STORAGE_KEY);
+
+  // Store defaults if nothing is stored
+  if (storageData === null) {
+    updateSettingsInLocalStorage();
+  }
+
+  // Only keep and set settings that are in the current version
+  // Only keep internal __vars
+  let savedSettings = JSON.parse(storageData);
+  for (let key in musicPlayerSettings) {
+    if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
+      // Key without __ prefix
+      let regularKey = key.substring(2);
+      console.log(
+        "[AWBW Improved Music Player] Loaded setting:" + regularKey + "=" + savedSettings[key],
+      );
+      musicPlayerSettings[regularKey] = savedSettings[key];
+    }
+  }
+
+  // From now on, any setting changes will be saved
+  addSettingsChangeListener(updateSettingsInLocalStorage);
+}
+
+/**
+ * Saves the current music player settings in the local storage.
+ */
+function updateSettingsInLocalStorage() {
+  console.log(
+    "[AWBW Improved Music Player] Saving settings:" + JSON.stringify(musicPlayerSettings),
+  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(musicPlayerSettings));
+}
+
+;// ./music_player/resources.js
+
+
+/*
+ * All external resources used by this userscript like URLs.
+ */
+const BASE_URL = "https://devj.surge.sh/music";
+const neutralImgLink = "https://macroland.one/img/music-player-icon.png";
+const playingImgLink = "https://macroland.one/img/music-player-playing.gif";
+
+const movementSFX = {
+  moveBCopterLoop: "https://macroland.one/movement/move_bcopter.wav",
+  moveBCopterOneShot: "https://macroland.one/movement/move_bcopter_rolloff.wav",
+  moveInfLoop: "https://macroland.one/movement/move_inf.wav",
+  moveMechLoop: "https://macroland.one/movement/move_mech.wav",
+  moveNavalLoop: "https://macroland.one/movement/move_naval.wav",
+  movePiperunnerLoop: "https://macroland.one/movement/move_piperunner.wav",
+  movePlaneLoop: "https://macroland.one/movement/move_plane.wav",
+  movePlaneOneShot: "https://macroland.one/movement/move_plane_rolloff.wav",
+  moveSubLoop: "https://macroland.one/movement/move_sub.wav",
+  moveTCopterLoop: "https://macroland.one/movement/move_tcopter.wav",
+  moveTCopterOneShot: "https://macroland.one/movement/move_tcopter_rolloff.wav",
+  moveTiresHeavyLoop: "https://macroland.one/movement/move_tires_heavy.wav",
+  moveTiresHeavyOneShot: "https://macroland.one/movement/move_tires_heavy_rolloff.wav",
+  moveTiresLightLoop: "https://macroland.one/movement/move_tires_light.wav",
+  moveTiresLightOneShot: "https://macroland.one/movement/move_tires_light_rolloff.wav",
+  moveTreadHeavyLoop: "https://macroland.one/movement/move_tread_heavy.wav",
+  moveTreadHeavyOneShot: "https://macroland.one/movement/move_tread_heavy_rolloff.wav",
+  moveTreadLightLoop: "https://macroland.one/movement/move_tread_light.wav",
+  moveTreadLightOneShot: "https://macroland.one/movement/move_tread_light_rolloff.wav",
+};
+
+const onMovementStartMap = new Map([
+  ["APC", movementSFX.moveTreadLightLoop],
+  ["Anti-Air", movementSFX.moveTreadLightLoop],
+  ["Artillery", movementSFX.moveTreadLightLoop],
+  ["B-Copter", movementSFX.moveBCopterLoop],
+  ["Battleship", movementSFX.moveNavalLoop],
+  ["Black Boat", movementSFX.moveNavalLoop],
+  ["Black Bomb", movementSFX.movePlaneLoop],
+  ["Bomber", movementSFX.movePlaneLoop],
+  ["Carrier", movementSFX.moveNavalLoop],
+  ["Cruiser", movementSFX.moveNavalLoop],
+  ["Fighter", movementSFX.movePlaneLoop],
+  ["Infantry", movementSFX.moveInfLoop],
+  ["Lander", movementSFX.moveNavalLoop],
+  ["Md. Tank", movementSFX.moveTreadHeavyLoop],
+  ["Mech", movementSFX.moveMechLoop],
+  ["Mega Tank", movementSFX.moveTreadHeavyLoop],
+  ["Missile", movementSFX.moveTiresHeavyLoop],
+  ["Neotank", movementSFX.moveTreadHeavyLoop],
+  ["Piperunner", movementSFX.movePiperunnerLoop],
+  ["Recon", movementSFX.moveTiresLightLoop],
+  ["Rocket", movementSFX.moveTiresHeavyLoop],
+  ["Stealth", movementSFX.movePlaneLoop],
+  ["Sub", movementSFX.moveSubLoop],
+  ["T-Copter", movementSFX.moveTCopterLoop],
+  ["Tank", movementSFX.moveTreadLightLoop],
+]);
+
+const onMovementRollOffMap = new Map([
+  ["APC", movementSFX.moveTreadLightOneShot],
+  ["Anti-Air", movementSFX.moveTreadLightOneShot],
+  ["Artillery", movementSFX.moveTreadLightOneShot],
+  ["B-Copter", movementSFX.moveBCopterOneShot],
+  ["Black Bomb", movementSFX.movePlaneOneShot],
+  ["Bomber", movementSFX.movePlaneOneShot],
+  ["Fighter", movementSFX.movePlaneOneShot],
+  ["Md. Tank", movementSFX.moveTreadHeavyOneShot],
+  ["Mega Tank", movementSFX.moveTreadHeavyOneShot],
+  ["Missile", movementSFX.moveTiresHeavyOneShot],
+  ["Neotank", movementSFX.moveTreadHeavyOneShot],
+  ["Recon", movementSFX.moveTiresLightOneShot],
+  ["Rocket", movementSFX.moveTiresHeavyOneShot],
+  ["Stealth", movementSFX.movePlaneOneShot],
+  ["T-Copter", movementSFX.moveTCopterOneShot],
+  ["Tank", movementSFX.moveTreadLightOneShot],
+]);
+
+const gameSFX = {
+  actionLoadSFX: "https://macroland.one/game/action_load.wav",
+  actionUnloadSFX: "https://macroland.one/game/action_unload.wav",
+  actionCaptAllySFX: "https://macroland.one/game/capture_ally.wav",
+  actionCaptEnemySFX: "https://macroland.one/game/capture_enemy.wav",
+  actionUnitExplode: "https://macroland.one/game/unit_explode.wav",
+  actionSupplyRepair: "https://macroland.one/game/action_resupply_repair.wav",
+};
+
+const uiSFX = {
+  uiCursorMove: "https://macroland.one/game/ui_cursormove.wav",
+  uiMenuOpen: "https://macroland.one/game/ui_openmenu.wav",
+  uiMenuClose: "https://macroland.one/game/ui_closemenu.wav",
+  uiMenuMove: "https://macroland.one/game/ui_menumove.wav",
+  uiUnitClick: "https://macroland.one/game/ui_unitclick.wav",
+  powerSCOPIntro: "https://macroland.one/game/power_co_scop.wav",
+  powerBHSCOPIntro: "https://macroland.one/game/power_bh_scop.wav",
+};
+
+function getMusicURL(coName) {
+  return `${BASE_URL}/${musicPlayerSettings.gameType}/t-${coName}.ogg`;
+}
+
 // EXTERNAL MODULE: ./shared/config.js
 var config = __webpack_require__(373);
 ;// ./music_player/settings_menu.js
@@ -740,11 +956,15 @@ var config = __webpack_require__(373);
 
 
 
-let isMenuOpen = false;
+// Used to close the right-click settings menu when you right-click twice
+let isSettingsMenuOpen = false;
+
+// Listen for setting changes to update the settings UI
+addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the right-click context menu with the music player settings to the given node.
- * @param {*} musicPlayerDiv  The node whose right click will open the context menu.
+ * @param {*} musicPlayerDiv The node whose right click will open the context menu.
  */
 function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
   // Add context menu to music player
@@ -755,9 +975,9 @@ function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
     let elmnt = e.target;
     if (elmnt.id.startsWith("music-player")) {
       e.preventDefault();
-      isMenuOpen = !isMenuOpen;
+      isSettingsMenuOpen = !isSettingsMenuOpen;
 
-      if (isMenuOpen) {
+      if (isSettingsMenuOpen) {
         openSettingsMenu();
       } else {
         closeSettingsMenu();
@@ -773,13 +993,13 @@ function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
 }
 
 /**
- * Updates the music player settings menu (context menu) so it matches the internal settings.
+ * Updates the music player settings menu (context menu) so it matches the internal settings when the settings change.
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * Use this every time you load new settings internally and need to update the UI.
+ * @param {*} _key Key of the setting which has been changed.
  */
-function syncSettingsToUI() {
+function onSettingsChange(_key) {
   volumeSlider.value = musicPlayerSettings.volume;
   sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
   uiVolumeSlider.value = musicPlayerSettings.uiVolume;
@@ -937,23 +1157,136 @@ versionSpan.style.color = "#888888";
 versionDiv.appendChild(versionSpan);
 contextMenu.appendChild(versionDiv);
 
+;// ./music_player/music_player_menu.js
+
+
+
+
+
+
+// Listen for setting changes to update the menu UI
+addSettingsChangeListener(music_player_menu_onSettingsChange);
+
+/**
+ * Adds the music player to the game menu.
+ */
+function addMusicPlayerMenu() {
+  addSettingsMenuToMusicPlayer(musicPlayerDiv);
+  menu.appendChild(musicPlayerDiv);
+}
+
+/**
+ * Sets the loading progress for the music player. Used when preloading audio.
+ * @param {*} percentage Integer from 0 to 100 representing the progress of loading the music player.
+ */
+function setMusicPlayerLoadPercentage(percentage) {
+  musicPlayerDivBackground.style.backgroundImage =
+    "linear-gradient(to right, #ffffff " + String(percentage) + "% , #888888 0%)";
+}
+
+/**
+ * Event handler for when the music button is clicked that turns the music ON/OFF.
+ */
+function onMusicBtnClick(_e) {
+  musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
+}
+
+/**
+ *
+ * @param {*} key
+ */
+function music_player_menu_onSettingsChange(key) {
+  if (key != "isPlaying") {
+    return;
+  }
+
+  // Update UI
+  if (musicPlayerSettings.isPlaying) {
+    musicPlayerDivBackgroundImg.src = playingImgLink;
+    musicPlayerDivHoverSpan.innerText = "Stop Tunes";
+    musicPlayerDivBackground.style.backgroundColor = "#e1e1e1";
+  } else {
+    musicPlayerDivBackgroundImg.src = neutralImgLink;
+    musicPlayerDivHoverSpan.innerText = "Play Tunes";
+    musicPlayerDivBackground.style.backgroundColor = "#ffffff";
+  }
+}
+
+/********************** Music Player Menu **********************/
+const musicPlayerDiv = document.createElement("div");
+musicPlayerDiv.id = "music-player-parent";
+musicPlayerDiv.classList.add("game-tools-btn");
+musicPlayerDiv.classList.add("cls-context-menu-root");
+musicPlayerDiv.style.width = "34px";
+musicPlayerDiv.style.height = "30px";
+musicPlayerDiv.style.border = isMapEditor ? "none" : "1px solid #888888";
+musicPlayerDiv.style.borderLeft = isMapEditor ? "1px solid #888888" : "0px";
+
+const musicPlayerDivHoverSpan = document.createElement("span");
+musicPlayerDivHoverSpan.id = "adji-hover-span";
+musicPlayerDivHoverSpan.classList.add("game-tools-btn-text");
+musicPlayerDivHoverSpan.classList.add("small_text");
+musicPlayerDivHoverSpan.classList.add("cls-context-menu-root");
+musicPlayerDivHoverSpan.innerText = "Play Tunes";
+
+const musicPlayerDivBackground = document.createElement("div");
+musicPlayerDivBackground.id = "music-player-background";
+musicPlayerDivBackground.classList.add("game-tools-bg");
+musicPlayerDivBackground.classList.add("cls-context-menu-root");
+musicPlayerDivBackground.style.backgroundImage =
+  "linear-gradient(to right, #ffffff 0% , #888888 0%)";
+// #0066CC
+
+const musicPlayerDivBackgroundSpan = document.createElement("span");
+musicPlayerDivBackgroundSpan.id = "music-player-background-span";
+musicPlayerDivBackgroundSpan.classList.add("norm2");
+musicPlayerDivBackgroundSpan.classList.add("cls-context-menu-root");
+
+const musicPlayerDivBackgroundLink = document.createElement("a");
+musicPlayerDivBackgroundLink.id = "music-player-background-link";
+musicPlayerDivBackgroundLink.classList.add("norm2");
+musicPlayerDivBackgroundLink.classList.add("cls-context-menu-root");
+
+const musicPlayerDivBackgroundImg = document.createElement("img");
+musicPlayerDivBackgroundImg.id = "music-player-background-link";
+musicPlayerDivBackgroundImg.classList.add("cls-context-menu-root");
+musicPlayerDivBackgroundImg.src = neutralImgLink;
+musicPlayerDivBackgroundImg.style.verticalAlign = "middle";
+musicPlayerDivBackgroundImg.style.width = "17px";
+musicPlayerDivBackgroundImg.style.height = "17px";
+
+musicPlayerDiv.appendChild(musicPlayerDivBackground);
+musicPlayerDiv.appendChild(musicPlayerDivHoverSpan);
+musicPlayerDivBackground.appendChild(musicPlayerDivBackgroundSpan);
+musicPlayerDivBackgroundSpan.appendChild(musicPlayerDivBackgroundLink);
+musicPlayerDivBackgroundLink.appendChild(musicPlayerDivBackgroundImg);
+
+// Determine who will catch when the user clicks the play/stop button
+on(musicPlayerDivBackground, "click", onMusicBtnClick);
+
 ;// ./music_player/music.js
 
 
 
 
 
+// Set default audio settings
 const currentTheme = new Audio();
 const currentSFX = new Audio();
 const currentUI = new Audio();
 currentSFX.loop = true;
 
+// Always play any music that finishes loading
 currentTheme.onloadedmetadata = function () {
   currentTheme.play();
 };
 
+// Listen for setting changes to update the internal variables accordingly
+addSettingsChangeListener(music_onSettingsChange);
+
 /**
  * Plays the appropriate music based on the settings and the current game state.
+ * Determines the music automatically so just call this anytime the game state changes.
  */
 function playMusic() {
   if (!musicPlayerSettings.isPlaying) return;
@@ -965,13 +1298,12 @@ function playMusic() {
  * Stops all music if there's any playing.
  */
 function stopMusic() {
-  if (!musicPlayerSettings.isPlaying) return;
   currentTheme.pause();
 }
 
 /**
  * Plays the movement sound of the given unit.
- * @param {*} unitType  String containing the name of the unit.
+ * @param {*} unitType String containing the name of the unit.
  */
 function playMovementSound(unitType) {
   if (!musicPlayerSettings.isPlaying) {
@@ -986,7 +1318,7 @@ function playMovementSound(unitType) {
 /**
  * Stops any movement sound currently playing.
  * Optionally plays a rolloff sound afterwards if a unit is provided.
- * @param {*} unitType  (Optional) String containing the name of the unit for rolloff.
+ * @param {*} unitType (Optional) String containing the name of the unit for rolloff.
  */
 function stopMovementSound(unitType = null) {
   // Can't stop if there's nothing playing
@@ -1070,7 +1402,6 @@ function preloadAudioList(audioList) {
   };
 
   audioList.forEach((url) => {
-    console.log(url);
     let audio = new Audio();
     audio.addEventListener("canplaythrough", onLoadAudio, false);
     audio.src = url;
@@ -1078,317 +1409,25 @@ function preloadAudioList(audioList) {
 }
 
 /**
- * Updates the internal audio components to match the current music player settings.
- * Use this every time you change the music player settings internally.
+ * Updates the internal audio components to match the current music player settings when the settings change.
+ *
+ * @param {*} _key Key of the setting which has been changed.
  */
-function syncSettingsToMusicPlayer() {
+function music_onSettingsChange(key) {
   currentTheme.volume = musicPlayerSettings.volume;
   currentSFX.volume = musicPlayerSettings.sfxVolume;
   currentUI.volume = musicPlayerSettings.uiVolume;
-}
 
-;// ./music_player/music_settings.js
-
-
-
-const STORAGE_KEY = "musicPlayerSettings";
-
-const GAME_TYPE = Object.freeze({
-  AW1: "aw1",
-  AW2: "aw2",
-  AWDS: "awds",
-  AWRBC: "awrbc",
-});
-
-const musicPlayerSettings = {
-  __isPlaying: false,
-  __volume: 0.5,
-  __sfxVolume: 0.35,
-  __uiVolume: 0.425,
-  __gameType: GAME_TYPE.AWDS,
-
-  // TODO: Shuffle
-  // TODO: Alternate Themes
-  // TODO: Powers
-
-  set isPlaying(val) {
-    this.__isPlaying = val;
-    this.onSettingChangeEvent();
-
-    if (this.__isPlaying) {
-      playMusic();
-    } else {
-      stopMusic();
-    }
-  },
-
-  get isPlaying() {
-    return this.__isPlaying;
-  },
-
-  set volume(val) {
-    this.__volume = val;
-    this.onSettingChangeEvent();
-  },
-
-  get volume() {
-    return this.__volume;
-  },
-
-  set sfxVolume(val) {
-    this.__sfxVolume = val;
-    this.onSettingChangeEvent();
-  },
-
-  get sfxVolume() {
-    return this.__sfxVolume;
-  },
-
-  set uiVolume(val) {
-    this.__uiVolume = val;
-    this.onSettingChangeEvent();
-  },
-  get uiVolume() {
-    return this.__uiVolume;
-  },
-
-  set gameType(val) {
-    // TODO: Validate
-    this.__gameType = val;
-    this.onSettingChangeEvent();
-  },
-  get gameType() {
-    return this.__gameType;
-  },
-
-  onSettingChangeEvent() {
-    syncSettingsToMusicPlayer();
-    syncSettingsToUI();
-  },
-};
-
-/**
- * Loads the music player settings stored in the local storage.
- */
-function loadSettingsFromLocalStorage() {
-  let storageData = localStorage.getItem(STORAGE_KEY);
-  if (storageData != null) {
-    let savedSettings = JSON.parse(storageData);
-
-    // Only keep and set settings that are in the current version
-    for (let key in musicPlayerSettings) {
-      if (Object.hasOwn(savedSettings, key)) {
-        musicPlayerSettings[key] = savedSettings[key];
-      }
-    }
-
-    syncSettingsToMusicPlayer();
-    syncSettingsToUI();
+  if (key !== "isPlaying") {
+    return;
   }
-  updateSettingsInLocalStorage();
-}
 
-/**
- * Saves the current music player settings in the local storage.
- */
-function updateSettingsInLocalStorage() {
-  debugger;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(musicPlayerSettings));
-}
-
-;// ./music_player/resources.js
-
-
-/*
- * All external resources used by this userscript like URLs.
- */
-const BASE_URL = "https://devj.surge.sh/music";
-const neutralImgLink = "https://macroland.one/img/music-player-icon.png";
-const playingImgLink = "https://macroland.one/img/music-player-playing.gif";
-
-const movementSFX = {
-  moveBCopterLoop: "https://macroland.one/movement/move_bcopter.wav",
-  moveBCopterOneShot: "https://macroland.one/movement/move_bcopter_rolloff.wav",
-  moveInfLoop: "https://macroland.one/movement/move_inf.wav",
-  moveMechLoop: "https://macroland.one/movement/move_mech.wav",
-  moveNavalLoop: "https://macroland.one/movement/move_naval.wav",
-  movePiperunnerLoop: "https://macroland.one/movement/move_piperunner.wav",
-  movePlaneLoop: "https://macroland.one/movement/move_plane.wav",
-  movePlaneOneShot: "https://macroland.one/movement/move_plane_rolloff.wav",
-  moveSubLoop: "https://macroland.one/movement/move_sub.wav",
-  moveTCopterLoop: "https://macroland.one/movement/move_tcopter.wav",
-  moveTCopterOneShot: "https://macroland.one/movement/move_tcopter_rolloff.wav",
-  moveTiresHeavyLoop: "https://macroland.one/movement/move_tires_heavy.wav",
-  moveTiresHeavyOneShot: "https://macroland.one/movement/move_tires_heavy_rolloff.wav",
-  moveTiresLightLoop: "https://macroland.one/movement/move_tires_light.wav",
-  moveTiresLightOneShot: "https://macroland.one/movement/move_tires_light_rolloff.wav",
-  moveTreadHeavyLoop: "https://macroland.one/movement/move_tread_heavy.wav",
-  moveTreadHeavyOneShot: "https://macroland.one/movement/move_tread_heavy_rolloff.wav",
-  moveTreadLightLoop: "https://macroland.one/movement/move_tread_light.wav",
-  moveTreadLightOneShot: "https://macroland.one/movement/move_tread_light_rolloff.wav",
-};
-
-const onMovementStartMap = new Map([
-  ["APC", movementSFX.moveTreadLightLoop],
-  ["Anti-Air", movementSFX.moveTreadLightLoop],
-  ["Artillery", movementSFX.moveTreadLightLoop],
-  ["B-Copter", movementSFX.moveBCopterLoop],
-  ["Battleship", movementSFX.moveNavalLoop],
-  ["Black Boat", movementSFX.moveNavalLoop],
-  ["Black Bomb", movementSFX.movePlaneLoop],
-  ["Bomber", movementSFX.movePlaneLoop],
-  ["Carrier", movementSFX.moveNavalLoop],
-  ["Cruiser", movementSFX.moveNavalLoop],
-  ["Fighter", movementSFX.movePlaneLoop],
-  ["Infantry", movementSFX.moveInfLoop],
-  ["Lander", movementSFX.moveNavalLoop],
-  ["Md. Tank", movementSFX.moveTreadHeavyLoop],
-  ["Mech", movementSFX.moveMechLoop],
-  ["Mega Tank", movementSFX.moveTreadHeavyLoop],
-  ["Missile", movementSFX.moveTiresHeavyLoop],
-  ["Neotank", movementSFX.moveTreadHeavyLoop],
-  ["Piperunner", movementSFX.movePiperunnerLoop],
-  ["Recon", movementSFX.moveTiresLightLoop],
-  ["Rocket", movementSFX.moveTiresHeavyLoop],
-  ["Stealth", movementSFX.movePlaneLoop],
-  ["Sub", movementSFX.moveSubLoop],
-  ["T-Copter", movementSFX.moveTCopterLoop],
-  ["Tank", movementSFX.moveTreadLightLoop],
-]);
-
-const onMovementRollOffMap = new Map([
-  ["APC", movementSFX.moveTreadLightOneShot],
-  ["Anti-Air", movementSFX.moveTreadLightOneShot],
-  ["Artillery", movementSFX.moveTreadLightOneShot],
-  ["B-Copter", movementSFX.moveBCopterOneShot],
-  ["Black Bomb", movementSFX.movePlaneOneShot],
-  ["Bomber", movementSFX.movePlaneOneShot],
-  ["Fighter", movementSFX.movePlaneOneShot],
-  ["Md. Tank", movementSFX.moveTreadHeavyOneShot],
-  ["Mega Tank", movementSFX.moveTreadHeavyOneShot],
-  ["Missile", movementSFX.moveTiresHeavyOneShot],
-  ["Neotank", movementSFX.moveTreadHeavyOneShot],
-  ["Recon", movementSFX.moveTiresLightOneShot],
-  ["Rocket", movementSFX.moveTiresHeavyOneShot],
-  ["Stealth", movementSFX.movePlaneOneShot],
-  ["T-Copter", movementSFX.moveTCopterOneShot],
-  ["Tank", movementSFX.moveTreadLightOneShot],
-]);
-
-const gameSFX = {
-  actionLoadSFX: "https://macroland.one/game/action_load.wav",
-  actionUnloadSFX: "https://macroland.one/game/action_unload.wav",
-  actionCaptAllySFX: "https://macroland.one/game/capture_ally.wav",
-  actionCaptEnemySFX: "https://macroland.one/game/capture_enemy.wav",
-  actionUnitExplode: "https://macroland.one/game/unit_explode.wav",
-  actionSupplyRepair: "https://macroland.one/game/action_resupply_repair.wav",
-};
-
-const uiSFX = {
-  uiCursorMove: "https://macroland.one/game/ui_cursormove.wav",
-  uiMenuOpen: "https://macroland.one/game/ui_openmenu.wav",
-  uiMenuClose: "https://macroland.one/game/ui_closemenu.wav",
-  uiMenuMove: "https://macroland.one/game/ui_menumove.wav",
-  uiUnitClick: "https://macroland.one/game/ui_unitclick.wav",
-  powerSCOPIntro: "https://macroland.one/game/power_co_scop.wav",
-  powerBHSCOPIntro: "https://macroland.one/game/power_bh_scop.wav",
-};
-
-function getMusicURL(coName) {
-  return `${BASE_URL}/${musicPlayerSettings.gameType}/t-${coName}.ogg`;
-}
-
-;// ./music_player/music_player_menu.js
-
-
-
-
-
-/**
- * Adds the music player to the game menu.
- */
-function addMusicPlayerMenu() {
-  addSettingsMenuToMusicPlayer(musicPlayerDiv);
-  menu.appendChild(musicPlayerDiv);
-}
-
-/**
- * Sets the loading progress for the music player. Used when preloading audio.
- * @param {*} percentage  Integer from 0 to 100 representing the progress of loading the music player.
- */
-function setMusicPlayerLoadPercentage(percentage) {
-  musicPlayerDivBackground.style.backgroundImage =
-    "linear-gradient(to right, #ffffff " + String(percentage) + "% , #888888 0%)";
-}
-
-/**
- * Event handler for when the music button is clicked that turns the music ON/OFF.
- */
-function onMusicBtnClick() {
-  musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
-
-  // Update UI
   if (musicPlayerSettings.isPlaying) {
-    musicPlayerDivBackgroundImg.src = playingImgLink;
-    musicPlayerDivHoverSpan.innerText = "Stop Tunes";
-    musicPlayerDivBackground.style.backgroundColor = "#e1e1e1";
+    playMusic();
   } else {
-    musicPlayerDivBackgroundImg.src = neutralImgLink;
-    musicPlayerDivHoverSpan.innerText = "Play Tunes";
-    musicPlayerDivBackground.style.backgroundColor = "#ffffff";
+    stopMusic();
   }
 }
-
-/********************** Music Player Menu **********************/
-const musicPlayerDiv = document.createElement("div");
-musicPlayerDiv.id = "music-player-parent";
-musicPlayerDiv.classList.add("game-tools-btn");
-musicPlayerDiv.classList.add("cls-context-menu-root");
-musicPlayerDiv.style.width = "34px";
-musicPlayerDiv.style.height = "30px";
-musicPlayerDiv.style.border = isMapEditor ? "none" : "1px solid #888888";
-musicPlayerDiv.style.borderLeft = isMapEditor ? "1px solid #888888" : "0px";
-
-const musicPlayerDivHoverSpan = document.createElement("span");
-musicPlayerDivHoverSpan.id = "adji-hover-span";
-musicPlayerDivHoverSpan.classList.add("game-tools-btn-text");
-musicPlayerDivHoverSpan.classList.add("small_text");
-musicPlayerDivHoverSpan.classList.add("cls-context-menu-root");
-musicPlayerDivHoverSpan.innerText = "Play Tunes";
-
-const musicPlayerDivBackground = document.createElement("div");
-musicPlayerDivBackground.id = "music-player-background";
-musicPlayerDivBackground.classList.add("game-tools-bg");
-musicPlayerDivBackground.classList.add("cls-context-menu-root");
-musicPlayerDivBackground.style.backgroundImage =
-  "linear-gradient(to right, #ffffff 0% , #888888 0%)";
-// #0066CC
-
-const musicPlayerDivBackgroundSpan = document.createElement("span");
-musicPlayerDivBackgroundSpan.id = "music-player-background-span";
-musicPlayerDivBackgroundSpan.classList.add("norm2");
-musicPlayerDivBackgroundSpan.classList.add("cls-context-menu-root");
-
-const musicPlayerDivBackgroundLink = document.createElement("a");
-musicPlayerDivBackgroundLink.id = "music-player-background-link";
-musicPlayerDivBackgroundLink.classList.add("norm2");
-musicPlayerDivBackgroundLink.classList.add("cls-context-menu-root");
-
-const musicPlayerDivBackgroundImg = document.createElement("img");
-musicPlayerDivBackgroundImg.id = "music-player-background-link";
-musicPlayerDivBackgroundImg.classList.add("cls-context-menu-root");
-musicPlayerDivBackgroundImg.src = neutralImgLink;
-musicPlayerDivBackgroundImg.style.verticalAlign = "middle";
-musicPlayerDivBackgroundImg.style.width = "17px";
-musicPlayerDivBackgroundImg.style.height = "17px";
-musicPlayerDiv.appendChild(musicPlayerDivBackground);
-musicPlayerDiv.appendChild(musicPlayerDivHoverSpan);
-musicPlayerDivBackground.appendChild(musicPlayerDivBackgroundSpan);
-musicPlayerDivBackgroundSpan.appendChild(musicPlayerDivBackgroundLink);
-musicPlayerDivBackgroundLink.appendChild(musicPlayerDivBackgroundImg);
-
-// Determine who will catch when the user clicks the play/stop button
-musicPlayerDiv.onclick = onMusicBtnClick;
 
 // EXTERNAL MODULE: ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js
 var injectStylesIntoStyleTag = __webpack_require__(72);
@@ -1438,9 +1477,6 @@ var update = injectStylesIntoStyleTag_default()(style/* default */.A, options);
        /* harmony default export */ const music_player_style = (style/* default */.A && style/* default */.A.locals ? style/* default */.A.locals : undefined);
 
 ;// ./music_player/main.js
-/********************** AWBW Variables ***********************/
-console.log("[AWBW Improved Music Player] Script loaded!");
-
 
 
 
@@ -1451,15 +1487,15 @@ console.log("[AWBW Improved Music Player] Script loaded!");
 
 function addReplayHandlers() {
   if (replayForwardBtn != null) {
-    on(replayForwardBtn, "click", setTimeout(playMusic, 500));
+    on(replayForwardBtn, "click", () => setTimeout(playMusic, 500));
   }
 
   if (replayBackwardBtn != null) {
-    on(replayBackwardBtn, "click", setTimeout(playMusic, 500));
+    on(replayBackwardBtn, "click", () => setTimeout(playMusic, 500));
   }
 
   if (replayDaySelectorCheckBox != null) {
-    on(replayDaySelectorCheckBox, "click", setTimeout(playMusic, 500));
+    on(replayDaySelectorCheckBox, "click", () => setTimeout(playMusic, 500));
   }
 }
 

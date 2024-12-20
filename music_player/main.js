@@ -1,6 +1,3 @@
-/********************** AWBW Variables ***********************/
-console.log("[AWBW Improved Music Player] Script loaded!");
-
 import {
   replayBackwardBtn,
   replayDaySelectorCheckBox,
@@ -15,15 +12,15 @@ import "./style.css";
 
 function addReplayHandlers() {
   if (replayForwardBtn != null) {
-    on(replayForwardBtn, "click", setTimeout(playMusic, 500));
+    on(replayForwardBtn, "click", () => setTimeout(playMusic, 500));
   }
 
   if (replayBackwardBtn != null) {
-    on(replayBackwardBtn, "click", setTimeout(playMusic, 500));
+    on(replayBackwardBtn, "click", () => setTimeout(playMusic, 500));
   }
 
   if (replayDaySelectorCheckBox != null) {
-    on(replayDaySelectorCheckBox, "click", setTimeout(playMusic, 500));
+    on(replayDaySelectorCheckBox, "click", () => setTimeout(playMusic, 500));
   }
 }
 

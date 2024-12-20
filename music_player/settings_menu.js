@@ -3,13 +3,17 @@ import { isMapEditor } from "../shared/awbw_site";
 import { versions } from "../shared/config.js";
 import { on } from "../shared/utils.js";
 
-import { musicPlayerSettings } from "./music_settings.js";
+import { addSettingsChangeListener, musicPlayerSettings } from "./music_settings.js";
 
-let isMenuOpen = false;
+// Used to close the right-click settings menu when you right-click twice
+export let isSettingsMenuOpen = false;
+
+// Listen for setting changes to update the settings UI
+addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the right-click context menu with the music player settings to the given node.
- * @param {*} musicPlayerDiv  The node whose right click will open the context menu.
+ * @param {*} musicPlayerDiv The node whose right click will open the context menu.
  */
 export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
   // Add context menu to music player
@@ -20,9 +24,9 @@ export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
     let elmnt = e.target;
     if (elmnt.id.startsWith("music-player")) {
       e.preventDefault();
-      isMenuOpen = !isMenuOpen;
+      isSettingsMenuOpen = !isSettingsMenuOpen;
 
-      if (isMenuOpen) {
+      if (isSettingsMenuOpen) {
         openSettingsMenu();
       } else {
         closeSettingsMenu();
@@ -38,13 +42,13 @@ export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
 }
 
 /**
- * Updates the music player settings menu (context menu) so it matches the internal settings.
+ * Updates the music player settings menu (context menu) so it matches the internal settings when the settings change.
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * Use this every time you load new settings internally and need to update the UI.
+ * @param {*} _key Key of the setting which has been changed.
  */
-export function syncSettingsToUI() {
+function onSettingsChange(_key) {
   volumeSlider.value = musicPlayerSettings.volume;
   sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
   uiVolumeSlider.value = musicPlayerSettings.uiVolume;

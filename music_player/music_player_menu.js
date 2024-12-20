@@ -1,7 +1,11 @@
 import { isMapEditor, menu } from "../shared/awbw_site";
 import { neutralImgLink, playingImgLink } from "./resources";
 import { addSettingsMenuToMusicPlayer } from "./settings_menu";
-import { musicPlayerSettings } from "./music_settings";
+import { addSettingsChangeListener, musicPlayerSettings } from "./music_settings";
+import { on } from "../shared/utils";
+
+// Listen for setting changes to update the menu UI
+addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the music player to the game menu.
@@ -13,7 +17,7 @@ export function addMusicPlayerMenu() {
 
 /**
  * Sets the loading progress for the music player. Used when preloading audio.
- * @param {*} percentage  Integer from 0 to 100 representing the progress of loading the music player.
+ * @param {*} percentage Integer from 0 to 100 representing the progress of loading the music player.
  */
 export function setMusicPlayerLoadPercentage(percentage) {
   musicPlayerDivBackground.style.backgroundImage =
@@ -23,8 +27,18 @@ export function setMusicPlayerLoadPercentage(percentage) {
 /**
  * Event handler for when the music button is clicked that turns the music ON/OFF.
  */
-function onMusicBtnClick() {
+function onMusicBtnClick(_e) {
   musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
+}
+
+/**
+ *
+ * @param {*} key
+ */
+function onSettingsChange(key) {
+  if (key != "isPlaying") {
+    return;
+  }
 
   // Update UI
   if (musicPlayerSettings.isPlaying) {
@@ -80,6 +94,7 @@ musicPlayerDivBackgroundImg.src = neutralImgLink;
 musicPlayerDivBackgroundImg.style.verticalAlign = "middle";
 musicPlayerDivBackgroundImg.style.width = "17px";
 musicPlayerDivBackgroundImg.style.height = "17px";
+
 musicPlayerDiv.appendChild(musicPlayerDivBackground);
 musicPlayerDiv.appendChild(musicPlayerDivHoverSpan);
 musicPlayerDivBackground.appendChild(musicPlayerDivBackgroundSpan);
@@ -87,4 +102,4 @@ musicPlayerDivBackgroundSpan.appendChild(musicPlayerDivBackgroundLink);
 musicPlayerDivBackgroundLink.appendChild(musicPlayerDivBackgroundImg);
 
 // Determine who will catch when the user clicks the play/stop button
-musicPlayerDiv.onclick = onMusicBtnClick;
+on(musicPlayerDivBackground, "click", onMusicBtnClick);
