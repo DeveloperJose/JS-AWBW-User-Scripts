@@ -24,17 +24,66 @@ var __webpack_exports__ = {};
 let gamemap = document.querySelector("#gamemap");
 let gamemapContainer = document.querySelector("#gamemap-container");
 let zoomInBtn = document.querySelector("#zoom-in");
-let zoomOutBtn = document.querySelector("#zoom-out")
+let zoomOutBtn = document.querySelector("#zoom-out");
 let zoomLevel = document.querySelector(".zoom-level");
 let cursor = document.querySelector("#cursor");
+let eventUsername = document.querySelector(".event-username");
+let replayForwardBtn = document.querySelector(".replay-forward");
+let replayBackwardBtn = document.querySelector(".replay-backward");
+let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
 /********************** AWBW Page Variables ***********************/
-/* global maxX, maxY */
+/* global maxX, maxY, playersInfo, currentTurn */
 let mapCols = maxX;
 let mapRows = maxY;
 
 /********************** AWBW Computed Variables ***********************/
 let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
+let myName = document
+  .querySelector("#profile-menu")
+  .getElementsByClassName("dropdown-menu-link")[0]
+  .href.split("username=")[1];
+
+let menu = isMapEditor
+  ? document.querySelector("#replay-misc-controls")
+  : document.querySelector("#game-map-menu").parentNode;
+
+let myID = null;
+function getMyID() {
+  if (myID === null) {
+    Object.values(playersInfo).forEach((entry) => {
+      if (entry.users_username === myName) {
+        myID = entry.players_id;
+      }
+    });
+  }
+  return myID;
+}
+
+/**
+ * Determine who the current CO is and return their name.
+ * @returns String with the name of the current CO.
+ */
+function getCurrentCOName() {
+  return playersInfo[currentTurn]["co_name"];
+}
+
+/**
+ * Determine who all the COs of the match are and return a list of their names.
+ * @returns List with the names of each CO in the match.
+ */
+function getAllCONames() {
+  let coNames = [];
+  Object.keys(playersInfo).forEach((playerID) => {
+    coNames.push(playersInfo[playerID]["co_name"]);
+  });
+  return coNames;
+} // preloadThemes();
+// musicPlayerSettings.currentSFX.onloadedmetadata = function () {
+//   musicPlayerSettings.currentSFX.loop = false;
+//   musicPlayerSettings.currentSFX.play();
+// };
+
 ;// ./shared/other_userscripts.js
 /*
  * Constants, functions, and computed variables that come from other userscripts.
@@ -54,8 +103,8 @@ console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
 /********************** Script Variables ***********************/
 const CURSOR_THRESHOLD_MS = 30;
 let previousHighlight = null;
-let lastCursorCall = Date.now();
 let isMaximizeToggled = false;
+let lastCursorCall = Date.now();
 
 let spotSpanTemplate = document.createElement("span");
 spotSpanTemplate.style.width = "16px";
@@ -68,6 +117,7 @@ spotSpanTemplate.style.fontSize = "11px";
 spotSpanTemplate.style.zIndex = "100";
 // spotSpanTemplate.style.visibility = "hidden";
 
+/********************** Script Functions **********************/
 function setHighlight(node, highlight) {
   let fontWeight = "";
   let color = "";
@@ -83,7 +133,6 @@ function setHighlight(node, highlight) {
   node.style.backgroundColor = backgroundColor;
 }
 
-/********************** Script Functions **********************/
 function onZoomChangeEvent(_pointerEvent = null, zoom = null) {
   if (zoom == null) {
     zoom = parseFloat(zoomLevel.textContent);

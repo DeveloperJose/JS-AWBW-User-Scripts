@@ -6,3 +6,9 @@ const proxyScript = {
   filename: "[basename].proxy.user.js",
 };
 exports.proxyScript = proxyScript;
+
+const versions = {
+  musicPlayer: "2.0.8",
+  highlightCoordinates: "1.0.1",
+};
+exports.versions = versions;

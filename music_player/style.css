@@ -1,0 +1,170 @@
+/* Context Menu */
+.cls-context-menu-link {
+  display: block;
+  padding: 20px;
+  background: #ececec;
+}
+
+.cls-context-menu {
+  position: absolute;
+  display: none;
+  width: 175px;
+  height: 347px;
+  padding-top: 4px;
+}
+
+.cls-context-menu ul,
+#context-menu li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+.cls-context-menu {
+  border: 1px solid #888888 !important;
+}
+.cls-context-menu li {
+  border: 1px solid #888888;
+}
+.cls-context-menu li:last-child {
+  border: none;
+}
+.cls-context-menu li a {
+  display: block;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: blue;
+}
+.cls-context-menu li a:hover {
+  background: blue;
+  color: #fff;
+}
+
+/* Input Range */
+:root {
+  --shadow-len: -60px;
+}
+input[type="range"] {
+  margin: auto;
+  -webkit-appearance: none;
+  position: relative;
+  overflow: hidden;
+  height: 25px;
+  cursor: pointer;
+  border-radius: 0; /* iOS */
+}
+
+::-webkit-slider-runnable-track {
+  background: #ddd;
+}
+
+/*
+     * 1. Set to 0 width and remove border for a slider without a thumb
+     * 2. Shadow is negative the full width of the input and has a spread
+     *    of the width of the input.
+     */
+::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; /* 1 */
+  height: 25px;
+  background: #fff;
+  box-shadow: -200px 0 0 200px #0066cc; /* 2 */
+  border: 2px solid #888888; /* 1 */
+  clip-path: inset(0px 0px 0px let(--shadow-len));
+}
+
+::-moz-range-track {
+  height: 25px;
+  background: #888888;
+}
+
+::-moz-range-thumb {
+  background: #fff;
+  height: 25px;
+  width: 20px;
+  border: 3px solid #888888;
+  border-radius: 0 !important;
+  box-shadow: -200px 0 0 200px #0066cc;
+  box-sizing: border-box;
+  clip-path: inset(0px 0px 0px let(--shadow-len));
+}
+
+::-ms-fill-lower {
+  background: #0066cc;
+}
+
+::-ms-thumb {
+  background: #fff;
+  border: 3px solid #999;
+  height: 25px;
+  width: 20px;
+  box-sizing: border-box;
+}
+
+::-ms-ticks-after {
+  display: none;
+}
+
+::-ms-ticks-before {
+  display: none;
+}
+
+::-ms-track {
+  background: #888888;
+  color: transparent;
+  height: 25px;
+  border: none;
+}
+
+::-ms-tooltip {
+  display: none;
+}
+
+.theme-radio-btn {
+  height: 14px;
+  width: 14px;
+}
+
+.theme-radio-btn:hover {
+  cursor: pointer;
+}
+
+#shuffle-button {
+  font-family: "Nova Square", cursive;
+  line-height: 25px;
+}
+
+.shuffle-button-enabled {
+  color: white;
+  background: #0066cc;
+  border: 2px solid #0066cc;
+}
+
+.shuffle-button-enabled:hover {
+  cursor: pointer;
+}
+
+.shuffle-button-enabled:active {
+  color: black;
+  background: white;
+  border: 2px solid #888888;
+}
+
+.shuffle-button-disabled {
+  color: white;
+  background: #888888;
+  border: 2px solid #888888;
+}
+
+.blob {
+  animation: shine 1.5s ease-in-out infinite;
+  animation-fill-mode: forwards;
+  animation-direction: alternate;
+}
+
+#version-link {
+  color: #0066cc;
+  font-weight: bold;
+  text-decoration: underline;
+}

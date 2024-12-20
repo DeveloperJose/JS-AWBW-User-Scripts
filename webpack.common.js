@@ -1,4 +1,4 @@
-const { devPort } = require("./config");
+const { devPort } = require("./shared/config");
 
 module.exports = {
   mode: "production",
@@ -18,5 +18,13 @@ module.exports = {
   },
   devServer: {
     port: devPort,
-  }
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
+    ],
+  },
 };

@@ -2,7 +2,7 @@ const { merge } = require("webpack-merge");
 const { UserscriptPlugin } = require("webpack-userscript");
 
 const common = require("../webpack.common.js");
-const { proxyScript } = require("../config");
+const { proxyScript, versions } = require("../shared/config");
 
 module.exports = merge(common, {
   entry: {
@@ -13,7 +13,7 @@ module.exports = merge(common, {
       headers: {
         name: "AWBW Music Player (DeveloperJose Edition)",
         namespace: "https://awbw.amarriner.com/",
-        version: "2.0.8",
+        version: versions.musicPlayer,
         description:
           "A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.",
         author: "Original by twiggy_, modified by DeveloperJose",

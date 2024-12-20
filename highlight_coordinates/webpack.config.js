@@ -2,7 +2,7 @@ const { merge } = require("webpack-merge");
 const { UserscriptPlugin } = require("webpack-userscript");
 
 const common = require("../webpack.common.js");
-const { proxyScript } = require("../config");
+const { proxyScript, versions } = require("../shared/config");
 
 module.exports = merge(common, {
   entry: {
@@ -16,7 +16,7 @@ module.exports = merge(common, {
       headers: {
         name: "AWBW Highlight Cursor Coordinates",
         namespace: "https://awbw.amarriner.com/",
-        version: "1.0.1",
+        version: versions.highlightCoordinates,
         description:
           "Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.",
         author: "DeveloperJose",
