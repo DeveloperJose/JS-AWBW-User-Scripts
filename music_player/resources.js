@@ -1,35 +1,81 @@
-import { GAME_TYPE, musicPlayerSettings } from "./music_settings";
+import { GAME_TYPE, THEME_TYPE, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
 /*
  * All external resources used by this userscript like URLs.
+ *
+ * TODO:
+ *  -DS/MapEditor, edit music
  */
-export const BASE_URL = "https://devj.surge.sh/music";
-export const neutralImgLink = "https://macroland.one/img/music-player-icon.png";
-export const playingImgLink = "https://macroland.one/img/music-player-playing.gif";
+const BASE_URL = "https://devj.surge.sh";
+const BASE_URL_MUSIC = BASE_URL + "/music";
+const BASE_URL_SFX = BASE_URL_MUSIC + "/sfx";
 
-export const movementSFX = {
-  moveBCopterLoop: "https://macroland.one/movement/move_bcopter.wav",
-  moveBCopterOneShot: "https://macroland.one/movement/move_bcopter_rolloff.wav",
-  moveInfLoop: "https://macroland.one/movement/move_inf.wav",
-  moveMechLoop: "https://macroland.one/movement/move_mech.wav",
-  moveNavalLoop: "https://macroland.one/movement/move_naval.wav",
-  movePiperunnerLoop: "https://macroland.one/movement/move_piperunner.wav",
-  movePlaneLoop: "https://macroland.one/movement/move_plane.wav",
-  movePlaneOneShot: "https://macroland.one/movement/move_plane_rolloff.wav",
-  moveSubLoop: "https://macroland.one/movement/move_sub.wav",
-  moveTCopterLoop: "https://macroland.one/movement/move_tcopter.wav",
-  moveTCopterOneShot: "https://macroland.one/movement/move_tcopter_rolloff.wav",
-  moveTiresHeavyLoop: "https://macroland.one/movement/move_tires_heavy.wav",
-  moveTiresHeavyOneShot: "https://macroland.one/movement/move_tires_heavy_rolloff.wav",
-  moveTiresLightLoop: "https://macroland.one/movement/move_tires_light.wav",
-  moveTiresLightOneShot: "https://macroland.one/movement/move_tires_light_rolloff.wav",
-  moveTreadHeavyLoop: "https://macroland.one/movement/move_tread_heavy.wav",
-  moveTreadHeavyOneShot: "https://macroland.one/movement/move_tread_heavy_rolloff.wav",
-  moveTreadLightLoop: "https://macroland.one/movement/move_tread_light.wav",
-  moveTreadLightOneShot: "https://macroland.one/movement/move_tread_light_rolloff.wav",
+export const neutralImgLink = BASE_URL + "/img/music-player-icon.png";
+export const playingImgLink = BASE_URL + "/img/music-player-playing.gif";
+
+export const gameSFX = {
+  actionSuperCOPowerAvailable: "sfx-action-super-co-power-available",
+  actionCOPowerAvailable: "sfx-action-co-power-available",
+  actionAllyActivateSCOP: "sfx-action-ally-activate-scop",
+  actionBHActivateSCOP: "sfx-action-bh-activate-scop",
+  actionCaptureAlly: "sfx-action-capture-ally",
+  actionCaptureEnemy: "sfx-action-capture-enemy",
+  actionCaptureProgress: "sfx-action-capture-progress",
+  actionMissileHit: "sfx-action-missile-hit",
+  actionMissleSend: "sfx-action-missile-send",
+  actionUnitHide: "sfx-action-unit-hide",
+  actionUnitUnhide: "sfx-action-unit-unhide",
+  actionUnitSupply: "sfx-action-unit-supply",
+  actionUnitTrap: "sfx-action-unit-trap",
+  actionUnitLoad: "sfx-action-unit-load",
+  actionUnitUnload: "sfx-action-unit-unload",
+  actionUnitExplode: "sfx-action-unit-explode",
+  uiCursorMove: "sfx-ui-cursor-move",
+  uiMenuOpen: "sfx-ui-menu-open",
+  uiMenuClose: "sfx-ui-menu-close",
+  uiMenuMove: "sfx-ui-menu-move",
+  uiUnitSelect: "sfx-ui-unit-select",
 };
 
-export const onMovementStartMap = new Map([
+const BLACK_HOLE_CO_LIST = new Set([
+  "flak",
+  "lash",
+  "adder",
+  "hawke",
+  "sturm",
+  "jugger",
+  "koal",
+  "kindle",
+  "vonbolt",
+]);
+
+export function isBlackHoleCO(coName) {
+  return BLACK_HOLE_CO_LIST.has(coName.toLowerCase());
+}
+
+const movementSFX = {
+  moveBCopterLoop: BASE_URL_SFX + "/move_bcopter.ogg",
+  moveBCopterOneShot: BASE_URL_SFX + "/move_bcopter_rolloff.ogg",
+  moveInfLoop: BASE_URL_SFX + "/move_inf.ogg",
+  moveMechLoop: BASE_URL_SFX + "/move_mech.ogg",
+  moveNavalLoop: BASE_URL_SFX + "/move_naval.ogg",
+  movePiperunnerLoop: BASE_URL_SFX + "/move_piperunner.ogg",
+  movePlaneLoop: BASE_URL_SFX + "/move_plane.ogg",
+  movePlaneOneShot: BASE_URL_SFX + "/move_plane_rolloff.ogg",
+  moveSubLoop: BASE_URL_SFX + "/move_sub.ogg",
+  moveTCopterLoop: BASE_URL_SFX + "/move_tcopter.ogg",
+  moveTCopterOneShot: BASE_URL_SFX + "/move_tcopter_rolloff.ogg",
+  moveTiresHeavyLoop: BASE_URL_SFX + "/move_tires_heavy.ogg",
+  moveTiresHeavyOneShot: BASE_URL_SFX + "/move_tires_heavy_rolloff.ogg",
+  moveTiresLightLoop: BASE_URL_SFX + "/move_tires_light.ogg",
+  moveTiresLightOneShot: BASE_URL_SFX + "/move_tires_light_rolloff.ogg",
+  moveTreadHeavyLoop: BASE_URL_SFX + "/move_tread_heavy.ogg",
+  moveTreadHeavyOneShot: BASE_URL_SFX + "/move_tread_heavy_rolloff.ogg",
+  moveTreadLightLoop: BASE_URL_SFX + "/move_tread_light.ogg",
+  moveTreadLightOneShot: BASE_URL_SFX + "/move_tread_light_rolloff.ogg",
+};
+
+const onMovementStartMap = new Map([
   ["APC", movementSFX.moveTreadLightLoop],
   ["Anti-Air", movementSFX.moveTreadLightLoop],
   ["Artillery", movementSFX.moveTreadLightLoop],
@@ -57,7 +103,7 @@ export const onMovementStartMap = new Map([
   ["Tank", movementSFX.moveTreadLightLoop],
 ]);
 
-export const onMovementRollOffMap = new Map([
+const onMovementRollOffMap = new Map([
   ["APC", movementSFX.moveTreadLightOneShot],
   ["Anti-Air", movementSFX.moveTreadLightOneShot],
   ["Artillery", movementSFX.moveTreadLightOneShot],
@@ -76,81 +122,60 @@ export const onMovementRollOffMap = new Map([
   ["Tank", movementSFX.moveTreadLightOneShot],
 ]);
 
-export const gameSFX = {
-  actionLoadSFX: "https://macroland.one/game/action_load.wav",
-  actionUnloadSFX: "https://macroland.one/game/action_unload.wav",
-  actionCaptAllySFX: "https://macroland.one/game/capture_ally.wav",
-  actionCaptEnemySFX: "https://macroland.one/game/capture_enemy.wav",
-  actionUnitExplode: "https://macroland.one/game/unit_explode.wav",
-  actionSupplyRepair: "https://macroland.one/game/action_resupply_repair.wav",
-};
+function getMusicFilename(coName, gameType, themeType) {
+  let isPowerActive = themeType !== THEME_TYPE.REGULAR;
 
-export const uiSFX = {
-  uiCursorMove: "https://macroland.one/game/ui_cursormove.wav",
-  uiMenuOpen: "https://macroland.one/game/ui_openmenu.wav",
-  uiMenuClose: "https://macroland.one/game/ui_closemenu.wav",
-  uiMenuMove: "https://macroland.one/game/ui_menumove.wav",
-  uiUnitClick: "https://macroland.one/game/ui_unitclick.wav",
-  powerSCOPIntro: "https://macroland.one/game/power_co_scop.wav",
-  powerBHSCOPIntro: "https://macroland.one/game/power_bh_scop.wav",
-};
-
-// const AW1_CO_LIST = new Map([
-//   "andy",
-//   "max",
-//   "sami",
-//   "olaf",
-//   "grit",
-//   "eagle",
-//   "drake",
-//   "sturm"
-// ]);
-
-// const AW2_CO_LIST = new Map([
-//   "hachi",
-//   "nell",
-//   "colin",
-//   "sensei",
-//   "flak",
-//   "lash",
-//   "adder",
-//   "hawke"
-// ]);
-
-// const AWDS_CO_LIST = new Map([
-//   "jake",
-//   "rachel",
-//   "sasha",
-//   "javier",
-//   "jugger",
-//   "koal",
-//   "kindle",
-//   "von_bolt"
-// ]);
-
-// const BLACK_HOLE_CO_LIST = new Map([
-//   "flak",
-//   "lash",
-//   "adder",
-//   "hawke",
-//   "sturm",
-//   "jugger",
-//   "koal",
-//   "kindle",
-//   "von_bolt"
-// ]);
-
-// const CO_LIST_FOR_GAME_TYPE = new Map([
-//   [GAME_TYPE.AW1, AW1_CO_LIST],
-//   [GAME_TYPE.AW2, AW2_CO_LIST],
-//   [GAME_TYPE.AW_RBC, AW2_CO_LIST],
-//   [GAME_TYPE.AW_DS, AWDS_CO_LIST]
-// ]);
-
-export function getMusicURL(coName, gameType = null) {
-  if (gameType === null) {
-    gameType = musicPlayerSettings.gameType.toLowerCase();
+  // Regular theme
+  if (!isPowerActive) {
+    return `t-${coName}`;
   }
-  let filename = "t-" + coName;
-  return `${BASE_URL}/${gameType}/${filename}.ogg`;
+
+  // For RBC, we play the new power themes
+  // TODO: RBC factory themes
+  if (gameType === GAME_TYPE.AW_RBC) {
+    return `t-${coName}-cop`;
+  }
+  // For all other games, play the ally or black hole themes
+  // during the CO and Super CO powers
+  let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+  return `t-${faction}-${themeType}`;
+}
+
+export function getMusicURL(coName, gameType = null, themeType = null) {
+  if (gameType === null) {
+    gameType = musicPlayerSettings.gameType;
+  }
+
+  if (themeType === null) {
+    themeType = getCurrentThemeType();
+  }
+
+  let gameDir = gameType;
+  let filename = getMusicFilename(coName, gameType, themeType);
+  let url = `${BASE_URL_MUSIC}/${gameDir}/${filename}.ogg`;
+  return url.toLowerCase().replaceAll("_", "-");
+}
+
+export function getSoundEffectURL(sfx) {
+  return `${BASE_URL_SFX}/${sfx}.ogg`;
+}
+
+export function getMovementSoundURL(unitName) {
+  return onMovementStartMap.get(unitName);
+}
+
+export function getMovementRollOffURL(unitName) {
+  return onMovementRollOffMap.get(unitName);
+}
+
+export function hasMovementRollOff(unitName) {
+  return onMovementRollOffMap.has(unitName);
+}
+
+// TODO: Should we preload SFX?
+export function getAllSoundEffectURLS() {
+  let sfx = Object.values(gameSFX).map(getSoundEffectURL);
+  let moreSFX = Object.values(movementSFX);
+  return sfx.concat(moreSFX);
+  // return [];
 }

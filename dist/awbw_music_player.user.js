@@ -668,9 +668,12 @@ let replayBackwardActionBtn = document.querySelector(".replay-backward-action");
 let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
 /********************** AWBW Page Variables ***********************/
-/* global maxX, maxY, playersInfo, currentTurn */
+/* global maxX, maxY, gameAnims */
+/* global playersInfo, unitsInfo, currentTurn */
+/* global playerKeys */
 let mapCols = (/* unused pure expression or super */ null && (maxX));
 let mapRows = (/* unused pure expression or super */ null && (maxY));
+let gameAnimations = gameAnims;
 
 /********************** AWBW Computed Variables ***********************/
 let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
@@ -695,13 +698,55 @@ function getMyID() {
   return myID;
 }
 
-/**
- * Determine who the current CO is and return their name.
- * @returns String with the name of the current CO.
- */
-function getCurrentCOName() {
-  return playersInfo[currentTurn]["co_name"];
+function isPlayerSpectator(pid) {
+  return !playerKeys.includes(pid);
 }
+
+function canPlayerActivateCOPower(pid) {
+  let info = playersInfo[pid];
+  return info.players_co_power >= info.players_co_max_power;
+}
+
+function canPlayerActivateSuperCOPower(pid) {
+  let info = playersInfo[pid];
+  return info.players_co_power >= info.players_co_max_spower;
+}
+
+/**
+ * Useful variables related to the current turn's player.
+ */
+const currentPlayer = {
+  /**
+   * Get the internal info object containing the state of the current player.
+   */
+  get info() {
+    return playersInfo[currentTurn];
+  },
+
+  /**
+   * Whether a CO Power or Super CO Power is activated
+   */
+  get isPowerActivated() {
+    return this.coPowerState !== "N";
+  },
+
+  /**
+   * The state of the CO Power represented as a single letter.
+   * N = No Power
+   * Y = CO Power
+   * S = Super CO Power
+   */
+  get coPowerState() {
+    return this.info.players_co_power_on;
+  },
+
+  /**
+   * The name of the current CO.
+   */
+  get coName() {
+    return this.info.co_name;
+  },
+};
 
 /**
  * Determine who all the COs of the match are and return a list of their names.
@@ -713,6 +758,22 @@ function getAllCONames() {
     coNames.push(playersInfo[playerID]["co_name"]);
   });
   return coNames;
+}
+
+function getUnitInfo(unitID) {
+  return unitsInfo[unitID];
+}
+
+function getUnitName(unitID) {
+  return getUnitInfo(unitID)?.units_name;
+}
+
+function isValidUnit(unitID) {
+  return unitID !== undefined && unitsInfo[unitID] !== undefined;
+}
+
+function hasUnitMovedThisTurn(unitID) {
+  return isValidUnit(unitID) && getUnitInfo(unitID)?.units_moved == 1;
 }
 
 ;// ./shared/utils.js
@@ -744,7 +805,13 @@ var on = (() => {
 })();
 
 ;// ./music_player/music_settings.js
+
+
 const STORAGE_KEY = "musicPlayerSettings";
+
+// Enums
+// Keys and values must match exactly for it to work properly
+// It's the easiest solution
 
 const GAME_TYPE = Object.freeze({
   AW1: "AW1",
@@ -753,8 +820,24 @@ const GAME_TYPE = Object.freeze({
   AW_DS: "AW_DS",
 });
 
-const onSettingsChangeListeners = [];
+const THEME_TYPE = Object.freeze({
+  REGULAR: "REGULAR",
+  CO_POWER: "CO_POWER",
+  SUPER_CO_POWER: "SUPER_CO_POWER",
+});
 
+const coPowerStateToThemeType = new Map([
+  ["N", THEME_TYPE.REGULAR],
+  ["Y", THEME_TYPE.CO_POWER],
+  ["S", THEME_TYPE.SUPER_CO_POWER],
+]);
+
+function getCurrentThemeType() {
+  let currentCOPowerState = currentPlayer.coPowerState;
+  return coPowerStateToThemeType.get(currentCOPowerState);
+}
+
+const onSettingsChangeListeners = [];
 function addSettingsChangeListener(fn) {
   onSettingsChangeListeners.push(fn);
 }
@@ -765,9 +848,9 @@ const musicPlayerSettings = {
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
   __gameType: GAME_TYPE.AW_DS,
+
   // TODO: Shuffle
   // TODO: Alternate Themes
-  // TODO: Powers
 
   set isPlaying(val) {
     this.__isPlaying = val;
@@ -836,14 +919,11 @@ function loadSettingsFromLocalStorage() {
     if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
       // Key without __ prefix
       let regularKey = key.substring(2);
-      console.log(
-        "[AWBW Improved Music Player] Loaded setting:" + regularKey + "=" + savedSettings[key],
-      );
       musicPlayerSettings[regularKey] = savedSettings[key];
     }
   }
 
-  // From now on, any setting changes will be saved
+  // From now on, any setting changes will be saved and any listeners will be called
   addSettingsChangeListener(updateSettingsInLocalStorage);
 }
 
@@ -851,10 +931,8 @@ function loadSettingsFromLocalStorage() {
  * Saves the current music player settings in the local storage.
  */
 function updateSettingsInLocalStorage() {
-  console.log(
-    "[AWBW Improved Music Player] Saving settings:" + JSON.stringify(musicPlayerSettings),
-  );
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(musicPlayerSettings));
+  let jsonSettings = JSON.stringify(musicPlayerSettings);
+  localStorage.setItem(STORAGE_KEY, jsonSettings);
 }
 
 ;// ./music_player/resources.js
@@ -862,157 +940,182 @@ function updateSettingsInLocalStorage() {
 
 /*
  * All external resources used by this userscript like URLs.
+ *
+ * TODO:
+ *  -DS/MapEditor, edit music
  */
-const BASE_URL = "https://devj.surge.sh/music";
-const neutralImgLink = "https://macroland.one/img/music-player-icon.png";
-const playingImgLink = "https://macroland.one/img/music-player-playing.gif";
+const BASE_URL = "https://devj.surge.sh";
+const BASE_URL_MUSIC = BASE_URL + "/music";
+const BASE_URL_SFX = BASE_URL_MUSIC + "/sfx";
 
-const resources_movementSFX = {
-  moveBCopterLoop: "https://macroland.one/movement/move_bcopter.wav",
-  moveBCopterOneShot: "https://macroland.one/movement/move_bcopter_rolloff.wav",
-  moveInfLoop: "https://macroland.one/movement/move_inf.wav",
-  moveMechLoop: "https://macroland.one/movement/move_mech.wav",
-  moveNavalLoop: "https://macroland.one/movement/move_naval.wav",
-  movePiperunnerLoop: "https://macroland.one/movement/move_piperunner.wav",
-  movePlaneLoop: "https://macroland.one/movement/move_plane.wav",
-  movePlaneOneShot: "https://macroland.one/movement/move_plane_rolloff.wav",
-  moveSubLoop: "https://macroland.one/movement/move_sub.wav",
-  moveTCopterLoop: "https://macroland.one/movement/move_tcopter.wav",
-  moveTCopterOneShot: "https://macroland.one/movement/move_tcopter_rolloff.wav",
-  moveTiresHeavyLoop: "https://macroland.one/movement/move_tires_heavy.wav",
-  moveTiresHeavyOneShot: "https://macroland.one/movement/move_tires_heavy_rolloff.wav",
-  moveTiresLightLoop: "https://macroland.one/movement/move_tires_light.wav",
-  moveTiresLightOneShot: "https://macroland.one/movement/move_tires_light_rolloff.wav",
-  moveTreadHeavyLoop: "https://macroland.one/movement/move_tread_heavy.wav",
-  moveTreadHeavyOneShot: "https://macroland.one/movement/move_tread_heavy_rolloff.wav",
-  moveTreadLightLoop: "https://macroland.one/movement/move_tread_light.wav",
-  moveTreadLightOneShot: "https://macroland.one/movement/move_tread_light_rolloff.wav",
+const neutralImgLink = BASE_URL + "/img/music-player-icon.png";
+const playingImgLink = BASE_URL + "/img/music-player-playing.gif";
+
+const gameSFX = {
+  actionSuperCOPowerAvailable: "sfx-action-super-co-power-available",
+  actionCOPowerAvailable: "sfx-action-co-power-available",
+  actionAllyActivateSCOP: "sfx-action-ally-activate-scop",
+  actionBHActivateSCOP: "sfx-action-bh-activate-scop",
+  actionCaptureAlly: "sfx-action-capture-ally",
+  actionCaptureEnemy: "sfx-action-capture-enemy",
+  actionCaptureProgress: "sfx-action-capture-progress",
+  actionMissileHit: "sfx-action-missile-hit",
+  actionMissleSend: "sfx-action-missile-send",
+  actionUnitHide: "sfx-action-unit-hide",
+  actionUnitUnhide: "sfx-action-unit-unhide",
+  actionUnitSupply: "sfx-action-unit-supply",
+  actionUnitTrap: "sfx-action-unit-trap",
+  actionUnitLoad: "sfx-action-unit-load",
+  actionUnitUnload: "sfx-action-unit-unload",
+  actionUnitExplode: "sfx-action-unit-explode",
+  uiCursorMove: "sfx-ui-cursor-move",
+  uiMenuOpen: "sfx-ui-menu-open",
+  uiMenuClose: "sfx-ui-menu-close",
+  uiMenuMove: "sfx-ui-menu-move",
+  uiUnitSelect: "sfx-ui-unit-select",
+};
+
+const BLACK_HOLE_CO_LIST = new Set([
+  "flak",
+  "lash",
+  "adder",
+  "hawke",
+  "sturm",
+  "jugger",
+  "koal",
+  "kindle",
+  "vonbolt",
+]);
+
+function isBlackHoleCO(coName) {
+  return BLACK_HOLE_CO_LIST.has(coName.toLowerCase());
+}
+
+const movementSFX = {
+  moveBCopterLoop: BASE_URL_SFX + "/move_bcopter.ogg",
+  moveBCopterOneShot: BASE_URL_SFX + "/move_bcopter_rolloff.ogg",
+  moveInfLoop: BASE_URL_SFX + "/move_inf.ogg",
+  moveMechLoop: BASE_URL_SFX + "/move_mech.ogg",
+  moveNavalLoop: BASE_URL_SFX + "/move_naval.ogg",
+  movePiperunnerLoop: BASE_URL_SFX + "/move_piperunner.ogg",
+  movePlaneLoop: BASE_URL_SFX + "/move_plane.ogg",
+  movePlaneOneShot: BASE_URL_SFX + "/move_plane_rolloff.ogg",
+  moveSubLoop: BASE_URL_SFX + "/move_sub.ogg",
+  moveTCopterLoop: BASE_URL_SFX + "/move_tcopter.ogg",
+  moveTCopterOneShot: BASE_URL_SFX + "/move_tcopter_rolloff.ogg",
+  moveTiresHeavyLoop: BASE_URL_SFX + "/move_tires_heavy.ogg",
+  moveTiresHeavyOneShot: BASE_URL_SFX + "/move_tires_heavy_rolloff.ogg",
+  moveTiresLightLoop: BASE_URL_SFX + "/move_tires_light.ogg",
+  moveTiresLightOneShot: BASE_URL_SFX + "/move_tires_light_rolloff.ogg",
+  moveTreadHeavyLoop: BASE_URL_SFX + "/move_tread_heavy.ogg",
+  moveTreadHeavyOneShot: BASE_URL_SFX + "/move_tread_heavy_rolloff.ogg",
+  moveTreadLightLoop: BASE_URL_SFX + "/move_tread_light.ogg",
+  moveTreadLightOneShot: BASE_URL_SFX + "/move_tread_light_rolloff.ogg",
 };
 
 const onMovementStartMap = new Map([
-  ["APC", resources_movementSFX.moveTreadLightLoop],
-  ["Anti-Air", resources_movementSFX.moveTreadLightLoop],
-  ["Artillery", resources_movementSFX.moveTreadLightLoop],
-  ["B-Copter", resources_movementSFX.moveBCopterLoop],
-  ["Battleship", resources_movementSFX.moveNavalLoop],
-  ["Black Boat", resources_movementSFX.moveNavalLoop],
-  ["Black Bomb", resources_movementSFX.movePlaneLoop],
-  ["Bomber", resources_movementSFX.movePlaneLoop],
-  ["Carrier", resources_movementSFX.moveNavalLoop],
-  ["Cruiser", resources_movementSFX.moveNavalLoop],
-  ["Fighter", resources_movementSFX.movePlaneLoop],
-  ["Infantry", resources_movementSFX.moveInfLoop],
-  ["Lander", resources_movementSFX.moveNavalLoop],
-  ["Md. Tank", resources_movementSFX.moveTreadHeavyLoop],
-  ["Mech", resources_movementSFX.moveMechLoop],
-  ["Mega Tank", resources_movementSFX.moveTreadHeavyLoop],
-  ["Missile", resources_movementSFX.moveTiresHeavyLoop],
-  ["Neotank", resources_movementSFX.moveTreadHeavyLoop],
-  ["Piperunner", resources_movementSFX.movePiperunnerLoop],
-  ["Recon", resources_movementSFX.moveTiresLightLoop],
-  ["Rocket", resources_movementSFX.moveTiresHeavyLoop],
-  ["Stealth", resources_movementSFX.movePlaneLoop],
-  ["Sub", resources_movementSFX.moveSubLoop],
-  ["T-Copter", resources_movementSFX.moveTCopterLoop],
-  ["Tank", resources_movementSFX.moveTreadLightLoop],
+  ["APC", movementSFX.moveTreadLightLoop],
+  ["Anti-Air", movementSFX.moveTreadLightLoop],
+  ["Artillery", movementSFX.moveTreadLightLoop],
+  ["B-Copter", movementSFX.moveBCopterLoop],
+  ["Battleship", movementSFX.moveNavalLoop],
+  ["Black Boat", movementSFX.moveNavalLoop],
+  ["Black Bomb", movementSFX.movePlaneLoop],
+  ["Bomber", movementSFX.movePlaneLoop],
+  ["Carrier", movementSFX.moveNavalLoop],
+  ["Cruiser", movementSFX.moveNavalLoop],
+  ["Fighter", movementSFX.movePlaneLoop],
+  ["Infantry", movementSFX.moveInfLoop],
+  ["Lander", movementSFX.moveNavalLoop],
+  ["Md. Tank", movementSFX.moveTreadHeavyLoop],
+  ["Mech", movementSFX.moveMechLoop],
+  ["Mega Tank", movementSFX.moveTreadHeavyLoop],
+  ["Missile", movementSFX.moveTiresHeavyLoop],
+  ["Neotank", movementSFX.moveTreadHeavyLoop],
+  ["Piperunner", movementSFX.movePiperunnerLoop],
+  ["Recon", movementSFX.moveTiresLightLoop],
+  ["Rocket", movementSFX.moveTiresHeavyLoop],
+  ["Stealth", movementSFX.movePlaneLoop],
+  ["Sub", movementSFX.moveSubLoop],
+  ["T-Copter", movementSFX.moveTCopterLoop],
+  ["Tank", movementSFX.moveTreadLightLoop],
 ]);
 
 const onMovementRollOffMap = new Map([
-  ["APC", resources_movementSFX.moveTreadLightOneShot],
-  ["Anti-Air", resources_movementSFX.moveTreadLightOneShot],
-  ["Artillery", resources_movementSFX.moveTreadLightOneShot],
-  ["B-Copter", resources_movementSFX.moveBCopterOneShot],
-  ["Black Bomb", resources_movementSFX.movePlaneOneShot],
-  ["Bomber", resources_movementSFX.movePlaneOneShot],
-  ["Fighter", resources_movementSFX.movePlaneOneShot],
-  ["Md. Tank", resources_movementSFX.moveTreadHeavyOneShot],
-  ["Mega Tank", resources_movementSFX.moveTreadHeavyOneShot],
-  ["Missile", resources_movementSFX.moveTiresHeavyOneShot],
-  ["Neotank", resources_movementSFX.moveTreadHeavyOneShot],
-  ["Recon", resources_movementSFX.moveTiresLightOneShot],
-  ["Rocket", resources_movementSFX.moveTiresHeavyOneShot],
-  ["Stealth", resources_movementSFX.movePlaneOneShot],
-  ["T-Copter", resources_movementSFX.moveTCopterOneShot],
-  ["Tank", resources_movementSFX.moveTreadLightOneShot],
+  ["APC", movementSFX.moveTreadLightOneShot],
+  ["Anti-Air", movementSFX.moveTreadLightOneShot],
+  ["Artillery", movementSFX.moveTreadLightOneShot],
+  ["B-Copter", movementSFX.moveBCopterOneShot],
+  ["Black Bomb", movementSFX.movePlaneOneShot],
+  ["Bomber", movementSFX.movePlaneOneShot],
+  ["Fighter", movementSFX.movePlaneOneShot],
+  ["Md. Tank", movementSFX.moveTreadHeavyOneShot],
+  ["Mega Tank", movementSFX.moveTreadHeavyOneShot],
+  ["Missile", movementSFX.moveTiresHeavyOneShot],
+  ["Neotank", movementSFX.moveTreadHeavyOneShot],
+  ["Recon", movementSFX.moveTiresLightOneShot],
+  ["Rocket", movementSFX.moveTiresHeavyOneShot],
+  ["Stealth", movementSFX.movePlaneOneShot],
+  ["T-Copter", movementSFX.moveTCopterOneShot],
+  ["Tank", movementSFX.moveTreadLightOneShot],
 ]);
 
-const gameSFX = {
-  actionLoadSFX: "https://macroland.one/game/action_load.wav",
-  actionUnloadSFX: "https://macroland.one/game/action_unload.wav",
-  actionCaptAllySFX: "https://macroland.one/game/capture_ally.wav",
-  actionCaptEnemySFX: "https://macroland.one/game/capture_enemy.wav",
-  actionUnitExplode: "https://macroland.one/game/unit_explode.wav",
-  actionSupplyRepair: "https://macroland.one/game/action_resupply_repair.wav",
-};
+function getMusicFilename(coName, gameType, themeType) {
+  let isPowerActive = themeType !== THEME_TYPE.REGULAR;
 
-const uiSFX = {
-  uiCursorMove: "https://macroland.one/game/ui_cursormove.wav",
-  uiMenuOpen: "https://macroland.one/game/ui_openmenu.wav",
-  uiMenuClose: "https://macroland.one/game/ui_closemenu.wav",
-  uiMenuMove: "https://macroland.one/game/ui_menumove.wav",
-  uiUnitClick: "https://macroland.one/game/ui_unitclick.wav",
-  powerSCOPIntro: "https://macroland.one/game/power_co_scop.wav",
-  powerBHSCOPIntro: "https://macroland.one/game/power_bh_scop.wav",
-};
-
-// const AW1_CO_LIST = new Map([
-//   "andy",
-//   "max",
-//   "sami",
-//   "olaf",
-//   "grit",
-//   "eagle",
-//   "drake",
-//   "sturm"
-// ]);
-
-// const AW2_CO_LIST = new Map([
-//   "hachi",
-//   "nell",
-//   "colin",
-//   "sensei",
-//   "flak",
-//   "lash",
-//   "adder",
-//   "hawke"
-// ]);
-
-// const AWDS_CO_LIST = new Map([
-//   "jake",
-//   "rachel",
-//   "sasha",
-//   "javier",
-//   "jugger",
-//   "koal",
-//   "kindle",
-//   "von_bolt"
-// ]);
-
-// const BLACK_HOLE_CO_LIST = new Map([
-//   "flak",
-//   "lash",
-//   "adder",
-//   "hawke",
-//   "sturm",
-//   "jugger",
-//   "koal",
-//   "kindle",
-//   "von_bolt"
-// ]);
-
-// const CO_LIST_FOR_GAME_TYPE = new Map([
-//   [GAME_TYPE.AW1, AW1_CO_LIST],
-//   [GAME_TYPE.AW2, AW2_CO_LIST],
-//   [GAME_TYPE.AW_RBC, AW2_CO_LIST],
-//   [GAME_TYPE.AW_DS, AWDS_CO_LIST]
-// ]);
-
-function getMusicURL(coName, gameType = null) {
-  if (gameType === null) {
-    gameType = musicPlayerSettings.gameType.toLowerCase();
+  // Regular theme
+  if (!isPowerActive) {
+    return `t-${coName}`;
   }
-  let filename = "t-" + coName;
-  return `${BASE_URL}/${gameType}/${filename}.ogg`;
+
+  // For RBC, we play the new power themes
+  // TODO: RBC factory themes
+  if (gameType === GAME_TYPE.AW_RBC) {
+    return `t-${coName}-cop`;
+  }
+  // For all other games, play the ally or black hole themes
+  // during the CO and Super CO powers
+  let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+  return `t-${faction}-${themeType}`;
+}
+
+function getMusicURL(coName, gameType = null, themeType = null) {
+  if (gameType === null) {
+    gameType = musicPlayerSettings.gameType;
+  }
+
+  if (themeType === null) {
+    themeType = getCurrentThemeType();
+  }
+
+  let gameDir = gameType;
+  let filename = getMusicFilename(coName, gameType, themeType);
+  let url = `${BASE_URL_MUSIC}/${gameDir}/${filename}.ogg`;
+  return url.toLowerCase().replaceAll("_", "-");
+}
+
+function getSoundEffectURL(sfx) {
+  return `${BASE_URL_SFX}/${sfx}.ogg`;
+}
+
+function getMovementSoundURL(unitName) {
+  return onMovementStartMap.get(unitName);
+}
+
+function getMovementRollOffURL(unitName) {
+  return onMovementRollOffMap.get(unitName);
+}
+
+function hasMovementRollOff(unitName) {
+  return onMovementRollOffMap.has(unitName);
+}
+
+// TODO: Should we preload SFX?
+function getAllSoundEffectURLS() {
+  let sfx = Object.values(gameSFX).map(getSoundEffectURL);
+  let moreSFX = Object.values(movementSFX);
+  return sfx.concat(moreSFX);
+  // return [];
 }
 
 // EXTERNAL MODULE: ./shared/config.js
@@ -1393,131 +1496,50 @@ on(musicPlayerDivBackground, "click", onMusicBtnClick);
 
 
 
-// Set default audio settings
-const currentTheme = new Audio();
-const currentSFX = new Audio();
-const currentUI = new Audio();
+/**
+ *
+ */
+let delayThemeMS = 0;
+let currentlyDelaying = false;
 
-// Always play any music that finishes loading
-currentTheme.onloadedmetadata = function () {
-  currentTheme.play();
-};
+/**
+ *
+ */
+let currentThemeKey = "";
+
+/**
+ *
+ */
+const urlAudioMap = new Map();
+
+/**
+ *
+ */
+const unitIDAudioMap = new Map();
 
 // Listen for setting changes to update the internal variables accordingly
 addSettingsChangeListener(music_onSettingsChange);
 
-/**
- * Plays the appropriate music based on the settings and the current game state.
- * Determines the music automatically so just call this anytime the game state changes.
- */
-function playMusic() {
-  if (!musicPlayerSettings.isPlaying) return;
-  let coName = isMapEditor ? "map-editor" : getCurrentCOName();
-  playCOTheme(coName);
-}
-
-/**
- * Stops all music if there's any playing.
- */
-function stopMusic() {
-  currentTheme.pause();
-}
-
-/**
- * Plays the movement sound of the given unit.
- * @param {*} unitType String containing the name of the unit.
- */
-function playMovementSound(unitType) {
-  if (!musicPlayerSettings.isPlaying) {
-    return;
-  }
-  currentSFX.src = onMovementStartMap.get(unitType);
-  currentSFX.currentTime = 0;
-  currentSFX.loop = true;
-  currentSFX.volume = musicPlayerSettings.sfxVolume;
-  currentSFX.play();
-}
-
-/**
- * Stops any movement sound currently playing.
- * Optionally plays a rolloff sound afterwards if a unit is provided.
- * @param {*} unitType (Optional) String containing the name of the unit for rolloff.
- */
-function stopMovementSound(unitType = null) {
-  // Can't stop if there's nothing playing
-  if (!musicPlayerSettings.isPlaying || currentSFX.paused) {
-    return;
-  }
-
-  currentSFX.currentTime = 0;
-  currentSFX.pause();
-
-  if (unitType !== null) {
-    let audioURL = onMovementRollOffMap.get(unitType);
-    playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
-  }
-}
-
-function playSFXSound(sfxURL) {
-  if (!musicPlayerSettings.isPlaying) {
-    return;
-  }
-
-  currentSFX.src = sfxURL;
-  currentSFX.currentTime = 0;
-  currentSFX.loop = false;
-  currentSFX.volume = musicPlayerSettings.sfxVolume;
-  currentSFX.play();
-}
-
-function playUISound(soundURL) {
-  if (!musicPlayerSettings.isPlaying) {
-    return;
-  }
-  currentUI.src = soundURL;
-  currentUI.currentTime = 0;
-  currentUI.volume = musicPlayerSettings.uiVolume;
-  currentUI.loop = false;
-  currentUI.play();
-}
-
-/**
- * Preloads the current game COs' themes and common sound effect audios.
- */
-function preloadCommonAudio() {
-  let audioList = [];
-
-  // Preload the themes of the COs in this match
-  // We preload the themes for each game version
-  let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
-  for (let gameType in GAME_TYPE) {
-    audioList.push(coNames.map(getMusicURL, gameType));
-  }
-
-  // Preload SFX
-  for (let key in resources_movementSFX) {
-    audioList.push(resources_movementSFX[key]);
-  }
-  for (let key in gameSFX) {
-    audioList.push(gameSFX[key]);
-  }
-  for (let key in uiSFX) {
-    audioList.push(uiSFX[key]);
-  }
-
-  preloadAudioList(audioList);
-}
-
 function playMusicURL(srcURL, loop = false) {
-  if (srcURL === currentTheme.src) {
-    if (currentTheme.paused) {
-      currentTheme.play();
-    }
+  let currentTheme = urlAudioMap.get(currentThemeKey);
+
+  // We want to play the same song we already are playing
+  if (srcURL === currentThemeKey) {
+    // The song was paused, so resume it
+    if (currentTheme.paused) currentTheme.play();
     return;
   }
-  currentTheme.src = srcURL;
+
+  // We want to play a new song, so pause the previous one (if exists)
+  currentTheme?.pause();
+
+  // Start new theme
+  console.log("[AWBW Improved Music Player] Now Playing: " + srcURL);
+  currentThemeKey = srcURL;
+  currentTheme = urlAudioMap.get(srcURL);
+  currentTheme.volume = musicPlayerSettings.volume;
   currentTheme.loop = loop;
-  console.log("Now Playing:" + srcURL);
+  currentTheme.play();
 }
 
 function playOneShotURL(srcURL, volume) {
@@ -1528,30 +1550,148 @@ function playOneShotURL(srcURL, volume) {
 }
 
 function playCOTheme(coName) {
-  coName = coName.toLowerCase();
   let srcURL = getMusicURL(coName);
   playMusicURL(srcURL, true);
 }
 
-function preloadAudioList(audioList) {
+/**
+ * Plays the appropriate music based on the settings and the current game state.
+ * Determines the music automatically so just call this anytime the game state changes.
+ */
+function playMusic() {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  // Someone wants us to delay playing the theme, so wait a little bit then play
+  // Ignore all calls to play() while delaying, we are guaranteed to play eventually
+  if (currentlyDelaying) return;
+  if (delayThemeMS > 0) {
+    // Delay until I say so
+    setTimeout(() => {
+      currentlyDelaying = false;
+      playMusic();
+    }, delayThemeMS);
+
+    delayThemeMS = 0;
+    currentlyDelaying = true;
+    return;
+  }
+  let coName = isMapEditor ? "map-editor" : currentPlayer.coName;
+  playCOTheme(coName);
+}
+
+/**
+ * Stops all music if there's any playing.
+ * Optionally, you can also delay the start of the next theme.
+ * @param {*} delayMS (Optional) Time to delay before we start the next theme.
+ */
+function stopMusic(delayMS = 0) {
+  delayThemeMS = delayMS;
+
+  let currentTheme = urlAudioMap.get(currentThemeKey);
+  currentTheme?.pause();
+}
+
+/**
+ * Plays the movement sound of the given unit.
+ * @param {*} unitID The ID of the unit who is moving.
+ */
+function playMovementSound(unitID) {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  if (!unitIDAudioMap.has(unitID)) {
+    let unitName = getUnitName(unitID);
+    let movementSoundURL = getMovementSoundURL(unitName);
+    unitIDAudioMap.set(unitID, new Audio(movementSoundURL));
+  }
+
+  let movementAudio = unitIDAudioMap.get(unitID);
+  movementAudio.currentTime = 0;
+  movementAudio.loop = true;
+  movementAudio.volume = musicPlayerSettings.sfxVolume;
+  movementAudio.play();
+  console.log("Moving: ", unitID, ",", movementAudio.src);
+}
+
+/**
+ * Stops the movement sound of a given unit if it's playing.
+ * @param {*} unitID The ID of the unit whose movement sound will be stopped.
+ */
+function stopMovementSound(unitID) {
+  // Can't stop if there's nothing playing or nothing to be played
+  if (!musicPlayerSettings.isPlaying || !unitIDAudioMap.has(unitID)) return;
+
+  // Can't stop if the sound is already stopped
+  let movementAudio = unitIDAudioMap.get(unitID);
+  if (movementAudio.paused) return;
+
+  // Stop sound
+  console.log("Pausing", unitID, ",", movementAudio.src);
+  movementAudio.pause();
+  movementAudio.currentTime = 0;
+
+  // If unit has rolloff, play it
+  let unitName = getUnitName(unitID);
+  if (hasMovementRollOff(unitName)) {
+    let audioURL = getMovementRollOffURL(unitName);
+    playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
+  }
+}
+
+function playSFX(sfx) {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  // Figure out which volume to use
+  let sfxURL = getSoundEffectURL(sfx);
+  let vol = musicPlayerSettings.sfxVolume;
+  if (sfx.startsWith("sfx-ui")) {
+    vol = musicPlayerSettings.uiVolume;
+  }
+  playOneShotURL(sfxURL, vol);
+}
+
+/**
+ * Preloads the current game COs' themes and common sound effect audios.
+ * @param {*} afterPreloadFunction Function to run after the audio is pre-loaded.
+ */
+function preloadCommonAudio(afterPreloadFunction) {
+  // Preload the themes of the COs in this match
+  // We preload the themes for each game version
+  let audioList = [];
+  let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
+  for (let gameType in GAME_TYPE) {
+    for (let themeType in THEME_TYPE) {
+      let gameList = coNames.map((name) => getMusicURL(name, gameType, themeType));
+      audioList = audioList.concat(gameList);
+    }
+  }
+
+  // Preload SFX
+  audioList = audioList.concat(getAllSoundEffectURLS());
+
   // Only unique audios, remove duplicates
   audioList = new Set(audioList);
 
-  let numLoadedAudios = 1;
+  let numLoadedAudios = 0;
   let onLoadAudio = function () {
     numLoadedAudios++;
     let loadPercentage = (numLoadedAudios / audioList.size) * 100;
     setMusicPlayerLoadPercentage(loadPercentage);
 
     if (numLoadedAudios >= audioList.size) {
-      console.log("[AWBW Improved Music Player] All audio has been pre-loaded!");
+      if (afterPreloadFunction) afterPreloadFunction();
     }
   };
 
+  let onLoadAudioError = (event) => {
+    onLoadAudio();
+    console.log("[AWBW Improved Music Player] Could not pre-load: " + event.target.src);
+  };
+
   audioList.forEach((url) => {
-    let audio = new Audio();
-    audio.addEventListener("canplaythrough", onLoadAudio, false);
-    audio.src = url;
+    let audio = new Audio(url);
+    urlAudioMap.set(url, audio);
+    audio.addEventListener("loadedmetadata", onLoadAudio, false);
+    audio.addEventListener("error", onLoadAudioError, false);
   });
 }
 
@@ -1561,10 +1701,6 @@ function preloadAudioList(audioList) {
  * @param {*} _key Key of the setting which has been changed.
  */
 function music_onSettingsChange(key) {
-  currentTheme.volume = musicPlayerSettings.volume;
-  currentSFX.volume = musicPlayerSettings.sfxVolume;
-  currentUI.volume = musicPlayerSettings.uiVolume;
-
   switch (key) {
     case "isPlaying":
       if (musicPlayerSettings.isPlaying) {
@@ -1574,8 +1710,23 @@ function music_onSettingsChange(key) {
       }
       break;
     case "gameType":
-      console.log("new game type");
       playMusic();
+      break;
+    case "volume": {
+      // Adjust the volume of the current theme
+      let currentTheme = urlAudioMap.get(currentThemeKey);
+      if (currentTheme) {
+        currentTheme.volume = musicPlayerSettings.volume;
+      }
+      break;
+    }
+    case "sfxVolume":
+      // Very rare for these sound effects to be playing when messing with the settings
+      // but just in case adjust the volume as well
+      unitIDAudioMap.forEach((unitAudio) => {
+        unitAudio.volume = musicPlayerSettings.sfxVolume;
+      });
+      break;
   }
 }
 
@@ -1635,6 +1786,8 @@ var update = injectStylesIntoStyleTag_default()(style/* default */.A, options);
 
 
 
+// Add our CSS to the page using webpack
+
 
 function addReplayHandlers() {
   let refreshMusic = () => setTimeout(playMusic, 500);
@@ -1649,19 +1802,18 @@ function addReplayHandlers() {
 }
 
 // Action Handlers
-/* global unitsInfo */
 
 /* global updateCursor:writeable */
 let ahCursorMove = updateCursor;
 let lastCursorCall = Date.now();
-const CURSOR_THRESHOLD = 30;
+const CURSOR_THRESHOLD = 25;
 
-updateCursor = function () {
-  ahCursorMove.apply(updateCursor, arguments);
+updateCursor = (cursorX, cursorY) => {
+  ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
   if (!musicPlayerSettings.isPlaying) return;
 
   if (Date.now() - lastCursorCall > CURSOR_THRESHOLD) {
-    playUISound(uiSFX.uiCursorMove);
+    playSFX(gameSFX.uiCursorMove);
   }
   lastCursorCall = Date.now();
 };
@@ -1670,10 +1822,11 @@ updateCursor = function () {
 let ahOpenMenu = openMenu;
 let menuItemClick = false;
 let menuOpen = false;
-openMenu = function () {
-  ahOpenMenu.apply(openMenu, arguments);
+openMenu = (menu, x, y) => {
+  ahOpenMenu.apply(openMenu, [menu, x, y]);
   if (!musicPlayerSettings.isPlaying) return;
 
+  console.log("menu open: " + menu + "," + x + "," + y);
   let menuOptions = document.getElementsByClassName("menu-option");
 
   for (var i = 0; i < menuOptions.length; i++) {
@@ -1681,7 +1834,7 @@ openMenu = function () {
       if (e.target !== this) {
         return;
       }
-      playUISound(uiSFX.uiMenuMove);
+      playSFX(gameSFX.uiMenuMove);
     });
 
     on(menuOptions[i], "click", function () {
@@ -1690,20 +1843,21 @@ openMenu = function () {
   }
 
   menuOpen = true;
-  playUISound(uiSFX.uiMenuOpen);
+  playSFX(gameSFX.uiMenuOpen);
 };
 
 /* global closeMenu:writeable */
 let ahCloseMenu = closeMenu;
-closeMenu = function () {
-  ahCloseMenu.apply(closeMenu, arguments);
+closeMenu = () => {
+  ahCloseMenu.apply(closeMenu, []);
   if (!musicPlayerSettings.isPlaying) return;
+  console.log("menu closed");
 
   if (menuItemClick && menuOpen) {
-    playUISound(uiSFX.uiMenuOpen);
+    playSFX(gameSFX.uiMenuOpen);
   }
   if (!menuItemClick && menuOpen) {
-    playUISound(uiSFX.uiMenuClose);
+    playSFX(gameSFX.uiMenuClose);
   }
 
   menuOpen = false;
@@ -1712,144 +1866,255 @@ closeMenu = function () {
 
 /* global unitClickHandler:writeable */
 let ahUnitClick = unitClickHandler;
-unitClickHandler = function () {
-  ahUnitClick.apply(unitClickHandler, arguments);
+unitClickHandler = (clicked) => {
+  ahUnitClick.apply(unitClickHandler, [clicked]);
   if (!musicPlayerSettings.isPlaying) return;
-  playUISound(uiSFX.uiUnitClick);
+  playSFX(gameSFX.uiUnitSelect);
 };
 
 /* global waitUnit:writeable */
+let movementResponseMap = new Map();
 let ahWait = waitUnit;
 waitUnit = (unitID) => {
   ahWait.apply(waitUnit, [unitID]);
+  stopMovementSound(unitID);
 
-  let isValid =
-    unitID !== undefined && unitsInfo[unitID] !== undefined && unitsInfo[unitID].units_moved;
-  if (isValid) {
-    let unitType = unitsInfo[unitID].units_name;
-    stopMovementSound(unitType);
+  if (movementResponseMap.has(unitID)) {
+    let response = movementResponseMap.get(unitID);
+    if (response.trapped) {
+      playSFX(gameSFX.actionUnitTrap);
+    }
+    movementResponseMap.delete(unitID);
   }
-};
-
-/* global joinUnits:writeable */
-let ahJoin = joinUnits;
-joinUnits = function () {
-  ahJoin.apply(joinUnits, arguments);
-  debugger;
-  stopMovementSound();
 };
 
 /* global updateAirUnitFogOnMove:writeable */
 let ahFog = updateAirUnitFogOnMove;
-updateAirUnitFogOnMove = function () {
-  ahFog.apply(updateAirUnitFogOnMove, arguments);
+updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change) => {
+  ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change]);
 
   if (!musicPlayerSettings.isPlaying) return;
+  debugger;
 
-  if (arguments[5] === "Add") {
-    setTimeout(() => {
-      if (movementSFX != null) {
-        stopMovementSound(movingUnit);
-      }
-    }, arguments[6]);
+  var delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
+  if (change === "Add") {
+    // setTimeout(() => stopMovementSound(), delay);
   }
-};
-
-/* global hideUnit:writeable */
-let ahHide = hideUnit;
-hideUnit = function () {
-  ahHide.apply(hideUnit, arguments);
-  stopMovementSound();
-};
-
-/* global animExplosion:writeable */
-let ahExplode = animExplosion;
-animExplosion = function () {
-  ahExplode.apply(animExplosion, arguments);
-  playSFXSound(gameSFX.actionUnitExplode);
 };
 
 /* global actionHandlers:writeable */
+let ahFire = actionHandlers.Fire;
+actionHandlers.Fire = (fireResponse) => {
+  let attackerID = fireResponse.copValues.attacker.playerId;
+  let defenderID = fireResponse.copValues.defender.playerId;
+
+  // Calculate charge before attack
+  let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
+  let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
+  let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
+  let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
+
+  // Let the attack proceed normally
+  ahFire.apply(actionHandlers.Fire, [fireResponse]);
+
+  // Check if the attack gave enough charge for a power to either side
+  // Give it a little bit of time for the animation if needed
+  var delay = gameAnimations ? 750 : 0;
+  setTimeout(() => {
+    let canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
+    let canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
+
+    let canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
+    let canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
+
+    let madeSCOPAvailable =
+      (!couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter) ||
+      (!couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter);
+
+    let madeCOPAvailable =
+      (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
+      (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
+
+    if (madeSCOPAvailable) {
+      playSFX(gameSFX.actionSuperCOPowerAvailable);
+    } else if (madeCOPAvailable) {
+      playSFX(gameSFX.actionCOPowerAvailable);
+    }
+  }, delay);
+};
+
+let ahAttackSeam = actionHandlers.AttackSeam;
+actionHandlers.AttackSeam = (seamResponse) => {
+  ahAttackSeam.apply(actionHandlers.AttackSeam, [seamResponse]);
+};
+
 let ahMove = actionHandlers.Move;
-actionHandlers.Move = function () {
-  ahMove.apply(actionHandlers.Move, arguments);
+actionHandlers.Move = (moveResponse, loadFlag) => {
+  ahMove.apply(actionHandlers.Move, [moveResponse, loadFlag]);
+  let unitID = moveResponse.unit.units_id;
+  movementResponseMap.set(unitID, moveResponse);
 
-  stopMovementSound();
-  var movementDist = arguments[0].path.length;
+  var movementDist = moveResponse.path.length;
   if (movementDist > 1) {
-    var unitType = unitsInfo[arguments[0].unit.units_id].units_name;
-    playMovementSound(unitType);
+    playMovementSound(unitID);
   }
-};
-
-let ahLoad = actionHandlers.Load;
-actionHandlers.Load = function () {
-  ahLoad.apply(actionHandlers.Load, arguments);
-  playSFXSound(gameSFX.actionLoadSFX);
-};
-
-let ahUnload = actionHandlers.Unload;
-actionHandlers.Unload = function () {
-  ahUnload.apply(actionHandlers.Unload, arguments);
-  playSFXSound(gameSFX.actionUnloadSFX);
 };
 
 let ahCapt = actionHandlers.Capt;
-actionHandlers.Capt = function () {
-  ahCapt.apply(actionHandlers.Capt, arguments);
+actionHandlers.Capt = (captData) => {
+  ahCapt.apply(actionHandlers.Capt, [captData]);
+  playSFX(gameSFX.actionCaptureProgress);
+
+  let isValid = captData != undefined && captData.newIncome != null;
+  if (!isValid) return;
+
   let myID = getMyID();
+  let isSpectator = isPlayerSpectator(myID);
+  let isMyCapture = isSpectator || captData?.buildingInfo.buildings_team == myID;
 
-  if (
-    (arguments[0].newIncome != undefined || arguments[0].newIncome != null) &&
-    playerKeys.includes(myID)
-  ) {
-    if (
-      arguments[0].buildingInfo.buildings_team != null &&
-      arguments[0].buildingInfo.buildings_team != myID
-    ) {
-      playSFXSound(gameSFX.actionCaptEnemySFX);
-    } else if (
-      arguments[0].buildingInfo.buildings_team != null &&
-      arguments[0].buildingInfo.buildings_team == myID
-    ) {
-      playSFXSound(gameSFX.actionCaptAllySFX);
-    }
-  } else if (
-    (arguments[0].newIncome != undefined || arguments[0].newIncome != null) &&
-    !playerKeys.includes(myID)
-  ) {
-    if (arguments[0].buildingInfo.buildings_team != null) {
-      playSFXSound(gameSFX.actionCaptAllySFX);
-    }
-  }
-};
-let ahSupply = actionHandlers.Supply;
-actionHandlers.Supply = function () {
-  ahSupply.apply(actionHandlers.Supply, arguments);
-  playSFXSound(gameSFX.actionSupplyRepair);
-};
-
-let ahRepair = actionHandlers.Repair;
-actionHandlers.Repair = function () {
-  ahRepair.apply(actionHandlers.Repair, arguments);
-  playSFXSound(gameSFX.actionSupplyRepair);
+  let sfx = isMyCapture ? gameSFX.actionCaptureAlly : gameSFX.actionCaptureEnemy;
+  playSFX(sfx);
 };
 
 let ahBuild = actionHandlers.Build;
-actionHandlers.Build = function () {
-  ahBuild.apply(actionHandlers.Build, arguments);
+actionHandlers.Build = (buildData) => {
+  ahBuild.apply(actionHandlers.Build, [buildData]);
+  playSFX(gameSFX.actionUnitSupply);
+};
 
-  playSFXSound(gameSFX.actionSupplyRepair);
+let ahLoad = actionHandlers.Load;
+actionHandlers.Load = (loadData) => {
+  ahLoad.apply(actionHandlers.Load, [loadData]);
+  playSFX(gameSFX.actionUnitLoad);
+};
+
+let ahUnload = actionHandlers.Unload;
+actionHandlers.Unload = (unloadData) => {
+  ahUnload.apply(actionHandlers.Unload, [unloadData]);
+  playSFX(gameSFX.actionUnitUnload);
+};
+
+let ahSupply = actionHandlers.Supply;
+actionHandlers.Supply = (supplyRes) => {
+  ahSupply.apply(actionHandlers.Supply, [supplyRes]);
+
+  // We could play the sfx for each supplied unit in the list
+  // but instead we decided to play the supply sound once.
+  playSFX(gameSFX.actionUnitSupply);
+};
+
+let ahRepair = actionHandlers.Repair;
+actionHandlers.Repair = (repairData) => {
+  ahRepair.apply(actionHandlers.Repair, [repairData]);
+  playSFX(gameSFX.actionUnitSupply);
+};
+
+let ahHide = actionHandlers.Hide;
+actionHandlers.Hide = (hideData) => {
+  ahHide.apply(actionHandlers.Hide, [hideData]);
+  playSFX(gameSFX.actionUnitHide);
+};
+
+let ahUnhide = actionHandlers.Unhide;
+actionHandlers.Unhide = (unhideData) => {
+  ahUnhide.apply(actionHandlers.Unhide, [unhideData]);
+  playSFX(gameSFX.actionUnitUnhide);
+};
+
+let ahJoin = actionHandlers.Join;
+actionHandlers.Join = (joinData) => {
+  ahJoin.apply(actionHandlers.Join, [joinData]);
+  stopMovementSound(joinData.joinID);
+};
+
+let ahExplodeAnim = animExplosion;
+animExplosion = (unit) => {
+  ahExplodeAnim.apply(animExplosion, [unit]);
+  playSFX(gameSFX.actionUnitExplode);
+};
+
+// let ahDelete = actionHandlers.Delete;
+// actionHandlers.Delete = (deleteData) => {
+//   ahDelete.apply(actionHandlers.Delete, [deleteData]);
+//   playSFX(gameSFX.actionUnitExplode);
+// };
+
+// let ahExplode = actionHandlers.Explode;
+// actionHandlers.Explode = (data) => {
+//   ahExplode.apply(actionHandlers.Explode, [data]);
+// };
+
+let ahLaunch = actionHandlers.Launch;
+actionHandlers.Launch = (data) => {
+  ahLaunch.apply(actionHandlers.Launch, [data]);
+  playSFX(gameSFX.actionMissleSend);
+
+  var siloDelay = gameAnimations ? 3000 : 0;
+  setTimeout(() => playSFX(gameSFX.actionMissileHit), siloDelay);
+};
+
+let ahNextTurn = actionHandlers.NextTurn;
+actionHandlers.NextTurn = (nextTurnRes) => {
+  ahNextTurn.apply(actionHandlers.NextTurn, [nextTurnRes]);
+  playMusic();
+};
+
+let ahElimination = actionHandlers.Elimination;
+actionHandlers.Elimination = (eliminationRes) => {
+  ahElimination.apply(actionHandlers.Elimination, [eliminationRes]);
+  debugger;
+};
+
+let ahPower = actionHandlers.Power;
+actionHandlers.Power = (powerRes) => {
+  ahPower.apply(actionHandlers.Power, [powerRes]);
+
+  let coName = powerRes.coName;
+  let isSuperCOPower = powerRes.coPower === "S";
+  let isBH = isBlackHoleCO(coName);
+
+  if (isSuperCOPower) {
+    let sfx = isBH ? gameSFX.actionBHActivateSCOP : gameSFX.actionAllyActivateSCOP;
+    playSFX(sfx);
+    stopMusic(2500);
+  }
+};
+
+let ahSetDraw = actionHandlers.SetDraw;
+actionHandlers.SetDraw = (drawData) => {
+  ahSetDraw.apply(actionHandlers.SetDraw, [drawData]);
+  debugger;
+};
+
+// let ahResign = actionHandlers.Resign;
+// actionHandlers.Resign = (resignRes) => {
+//   ahResign.apply(actionHandlers.Resign, [resignRes]);
+//   debugger;
+// }
+
+let ahGameOver = actionHandlers.GameOver;
+actionHandlers.GameOver = () => {
+  ahGameOver.apply(actionHandlers.GameOver, []);
+  debugger;
 };
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-addMusicPlayerMenu();
-preloadCommonAudio();
-addReplayHandlers();
+console.log("Script");
+function afterPreload() {
+  console.log("[AWBW Improved Music Player] All audio has been pre-loaded!");
 
-// Wait a bit before loading the settings for everything else to load
-// That way we can auto-play properly
-setTimeout(() => loadSettingsFromLocalStorage(), 500);
+  addMusicPlayerMenu();
+  addReplayHandlers();
+  loadSettingsFromLocalStorage();
+
+  // TODO: Temporary
+  // Better to play music after preloading audio
+  // Play the music after letting everything load a bit
+  playMusic();
+  // setTimeout(() => playMusic(), 500);
+}
+
+preloadCommonAudio(afterPreload);
 

@@ -1,4 +1,10 @@
+import { currentPlayer } from "../shared/awbw_site";
+
 export const STORAGE_KEY = "musicPlayerSettings";
+
+// Enums
+// Keys and values must match exactly for it to work properly
+// It's the easiest solution
 
 export const GAME_TYPE = Object.freeze({
   AW1: "AW1",
@@ -7,8 +13,24 @@ export const GAME_TYPE = Object.freeze({
   AW_DS: "AW_DS",
 });
 
-const onSettingsChangeListeners = [];
+export const THEME_TYPE = Object.freeze({
+  REGULAR: "REGULAR",
+  CO_POWER: "CO_POWER",
+  SUPER_CO_POWER: "SUPER_CO_POWER",
+});
 
+const coPowerStateToThemeType = new Map([
+  ["N", THEME_TYPE.REGULAR],
+  ["Y", THEME_TYPE.CO_POWER],
+  ["S", THEME_TYPE.SUPER_CO_POWER],
+]);
+
+export function getCurrentThemeType() {
+  let currentCOPowerState = currentPlayer.coPowerState;
+  return coPowerStateToThemeType.get(currentCOPowerState);
+}
+
+const onSettingsChangeListeners = [];
 export function addSettingsChangeListener(fn) {
   onSettingsChangeListeners.push(fn);
 }
@@ -19,9 +41,9 @@ export const musicPlayerSettings = {
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
   __gameType: GAME_TYPE.AW_DS,
+
   // TODO: Shuffle
   // TODO: Alternate Themes
-  // TODO: Powers
 
   set isPlaying(val) {
     this.__isPlaying = val;
@@ -90,14 +112,11 @@ export function loadSettingsFromLocalStorage() {
     if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
       // Key without __ prefix
       let regularKey = key.substring(2);
-      console.log(
-        "[AWBW Improved Music Player] Loaded setting:" + regularKey + "=" + savedSettings[key],
-      );
       musicPlayerSettings[regularKey] = savedSettings[key];
     }
   }
 
-  // From now on, any setting changes will be saved
+  // From now on, any setting changes will be saved and any listeners will be called
   addSettingsChangeListener(updateSettingsInLocalStorage);
 }
 
@@ -105,8 +124,6 @@ export function loadSettingsFromLocalStorage() {
  * Saves the current music player settings in the local storage.
  */
 function updateSettingsInLocalStorage() {
-  console.log(
-    "[AWBW Improved Music Player] Saving settings:" + JSON.stringify(musicPlayerSettings),
-  );
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(musicPlayerSettings));
+  let jsonSettings = JSON.stringify(musicPlayerSettings);
+  localStorage.setItem(STORAGE_KEY, jsonSettings);
 }

@@ -38,9 +38,12 @@ let replayBackwardActionBtn = document.querySelector(".replay-backward-action");
 let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
 /********************** AWBW Page Variables ***********************/
-/* global maxX, maxY, playersInfo, currentTurn */
+/* global maxX, maxY, gameAnims */
+/* global playersInfo, unitsInfo, currentTurn */
+/* global playerKeys */
 let mapCols = maxX;
 let mapRows = maxY;
+let gameAnimations = (/* unused pure expression or super */ null && (gameAnims));
 
 /********************** AWBW Computed Variables ***********************/
 let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
@@ -65,13 +68,55 @@ function getMyID() {
   return myID;
 }
 
-/**
- * Determine who the current CO is and return their name.
- * @returns String with the name of the current CO.
- */
-function getCurrentCOName() {
-  return playersInfo[currentTurn]["co_name"];
+function isPlayerSpectator(pid) {
+  return !playerKeys.includes(pid);
 }
+
+function canPlayerActivateCOPower(pid) {
+  let info = playersInfo[pid];
+  return info.players_co_power >= info.players_co_max_power;
+}
+
+function canPlayerActivateSuperCOPower(pid) {
+  let info = playersInfo[pid];
+  return info.players_co_power >= info.players_co_max_spower;
+}
+
+/**
+ * Useful variables related to the current turn's player.
+ */
+const currentPlayer = {
+  /**
+   * Get the internal info object containing the state of the current player.
+   */
+  get info() {
+    return playersInfo[currentTurn];
+  },
+
+  /**
+   * Whether a CO Power or Super CO Power is activated
+   */
+  get isPowerActivated() {
+    return this.coPowerState !== "N";
+  },
+
+  /**
+   * The state of the CO Power represented as a single letter.
+   * N = No Power
+   * Y = CO Power
+   * S = Super CO Power
+   */
+  get coPowerState() {
+    return this.info.players_co_power_on;
+  },
+
+  /**
+   * The name of the current CO.
+   */
+  get coName() {
+    return this.info.co_name;
+  },
+};
 
 /**
  * Determine who all the COs of the match are and return a list of their names.
@@ -83,6 +128,22 @@ function getAllCONames() {
     coNames.push(playersInfo[playerID]["co_name"]);
   });
   return coNames;
+}
+
+function getUnitInfo(unitID) {
+  return unitsInfo[unitID];
+}
+
+function getUnitName(unitID) {
+  return getUnitInfo(unitID)?.units_name;
+}
+
+function isValidUnit(unitID) {
+  return unitID !== undefined && unitsInfo[unitID] !== undefined;
+}
+
+function hasUnitMovedThisTurn(unitID) {
+  return isValidUnit(unitID) && getUnitInfo(unitID)?.units_moved == 1;
 }
 
 ;// ./shared/other_userscripts.js
