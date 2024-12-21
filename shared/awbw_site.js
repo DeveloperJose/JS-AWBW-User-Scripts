@@ -11,8 +11,13 @@ export let zoomOutBtn = document.querySelector("#zoom-out");
 export let zoomLevel = document.querySelector(".zoom-level");
 export let cursor = document.querySelector("#cursor");
 export let eventUsername = document.querySelector(".event-username");
+
+export let replayOpenBtn = document.querySelector(".replay-open");
+export let replayCloseBtn = document.querySelector(".replay-close");
 export let replayForwardBtn = document.querySelector(".replay-forward");
+export let replayForwardActionBtn = document.querySelector(".replay-forward-action");
 export let replayBackwardBtn = document.querySelector(".replay-backward");
+export let replayBackwardActionBtn = document.querySelector(".replay-backward-action");
 export let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
 /********************** AWBW Page Variables ***********************/
@@ -61,8 +66,4 @@ export function getAllCONames() {
     coNames.push(playersInfo[playerID]["co_name"]);
   });
   return coNames;
-} // preloadThemes();
-// musicPlayerSettings.currentSFX.onloadedmetadata = function () {
-//   musicPlayerSettings.currentSFX.loop = false;
-//   musicPlayerSettings.currentSFX.play();
-// };
+}

@@ -658,8 +658,13 @@ let zoomOutBtn = document.querySelector("#zoom-out");
 let zoomLevel = document.querySelector(".zoom-level");
 let cursor = document.querySelector("#cursor");
 let eventUsername = document.querySelector(".event-username");
+
+let replayOpenBtn = document.querySelector(".replay-open");
+let replayCloseBtn = document.querySelector(".replay-close");
 let replayForwardBtn = document.querySelector(".replay-forward");
+let replayForwardActionBtn = document.querySelector(".replay-forward-action");
 let replayBackwardBtn = document.querySelector(".replay-backward");
+let replayBackwardActionBtn = document.querySelector(".replay-backward-action");
 let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
 /********************** AWBW Page Variables ***********************/
@@ -708,11 +713,7 @@ function getAllCONames() {
     coNames.push(playersInfo[playerID]["co_name"]);
   });
   return coNames;
-} // preloadThemes();
-// musicPlayerSettings.currentSFX.onloadedmetadata = function () {
-//   musicPlayerSettings.currentSFX.loop = false;
-//   musicPlayerSettings.currentSFX.play();
-// };
+}
 
 ;// ./shared/utils.js
 /**
@@ -721,10 +722,22 @@ function getAllCONames() {
 var on = (() => {
   if (window.addEventListener) {
     return (target, type, listener) => {
+      if (target === null) {
+        console.log(
+          "[AWBW Improved Music Player] Could not add event listener: " + target + "/" + type,
+        );
+        return;
+      }
       target.addEventListener(type, listener, false);
     };
   } else {
     return (object, sEvent, fpNotify) => {
+      if (object === null) {
+        console.log(
+          "[AWBW Improved Music Player] Could not add event listener: " + object + "/" + sEvent,
+        );
+        return;
+      }
       object.attachEvent("on" + sEvent, fpNotify);
     };
   }
@@ -854,7 +867,7 @@ const BASE_URL = "https://devj.surge.sh/music";
 const neutralImgLink = "https://macroland.one/img/music-player-icon.png";
 const playingImgLink = "https://macroland.one/img/music-player-playing.gif";
 
-const movementSFX = {
+const resources_movementSFX = {
   moveBCopterLoop: "https://macroland.one/movement/move_bcopter.wav",
   moveBCopterOneShot: "https://macroland.one/movement/move_bcopter_rolloff.wav",
   moveInfLoop: "https://macroland.one/movement/move_inf.wav",
@@ -877,50 +890,50 @@ const movementSFX = {
 };
 
 const onMovementStartMap = new Map([
-  ["APC", movementSFX.moveTreadLightLoop],
-  ["Anti-Air", movementSFX.moveTreadLightLoop],
-  ["Artillery", movementSFX.moveTreadLightLoop],
-  ["B-Copter", movementSFX.moveBCopterLoop],
-  ["Battleship", movementSFX.moveNavalLoop],
-  ["Black Boat", movementSFX.moveNavalLoop],
-  ["Black Bomb", movementSFX.movePlaneLoop],
-  ["Bomber", movementSFX.movePlaneLoop],
-  ["Carrier", movementSFX.moveNavalLoop],
-  ["Cruiser", movementSFX.moveNavalLoop],
-  ["Fighter", movementSFX.movePlaneLoop],
-  ["Infantry", movementSFX.moveInfLoop],
-  ["Lander", movementSFX.moveNavalLoop],
-  ["Md. Tank", movementSFX.moveTreadHeavyLoop],
-  ["Mech", movementSFX.moveMechLoop],
-  ["Mega Tank", movementSFX.moveTreadHeavyLoop],
-  ["Missile", movementSFX.moveTiresHeavyLoop],
-  ["Neotank", movementSFX.moveTreadHeavyLoop],
-  ["Piperunner", movementSFX.movePiperunnerLoop],
-  ["Recon", movementSFX.moveTiresLightLoop],
-  ["Rocket", movementSFX.moveTiresHeavyLoop],
-  ["Stealth", movementSFX.movePlaneLoop],
-  ["Sub", movementSFX.moveSubLoop],
-  ["T-Copter", movementSFX.moveTCopterLoop],
-  ["Tank", movementSFX.moveTreadLightLoop],
+  ["APC", resources_movementSFX.moveTreadLightLoop],
+  ["Anti-Air", resources_movementSFX.moveTreadLightLoop],
+  ["Artillery", resources_movementSFX.moveTreadLightLoop],
+  ["B-Copter", resources_movementSFX.moveBCopterLoop],
+  ["Battleship", resources_movementSFX.moveNavalLoop],
+  ["Black Boat", resources_movementSFX.moveNavalLoop],
+  ["Black Bomb", resources_movementSFX.movePlaneLoop],
+  ["Bomber", resources_movementSFX.movePlaneLoop],
+  ["Carrier", resources_movementSFX.moveNavalLoop],
+  ["Cruiser", resources_movementSFX.moveNavalLoop],
+  ["Fighter", resources_movementSFX.movePlaneLoop],
+  ["Infantry", resources_movementSFX.moveInfLoop],
+  ["Lander", resources_movementSFX.moveNavalLoop],
+  ["Md. Tank", resources_movementSFX.moveTreadHeavyLoop],
+  ["Mech", resources_movementSFX.moveMechLoop],
+  ["Mega Tank", resources_movementSFX.moveTreadHeavyLoop],
+  ["Missile", resources_movementSFX.moveTiresHeavyLoop],
+  ["Neotank", resources_movementSFX.moveTreadHeavyLoop],
+  ["Piperunner", resources_movementSFX.movePiperunnerLoop],
+  ["Recon", resources_movementSFX.moveTiresLightLoop],
+  ["Rocket", resources_movementSFX.moveTiresHeavyLoop],
+  ["Stealth", resources_movementSFX.movePlaneLoop],
+  ["Sub", resources_movementSFX.moveSubLoop],
+  ["T-Copter", resources_movementSFX.moveTCopterLoop],
+  ["Tank", resources_movementSFX.moveTreadLightLoop],
 ]);
 
 const onMovementRollOffMap = new Map([
-  ["APC", movementSFX.moveTreadLightOneShot],
-  ["Anti-Air", movementSFX.moveTreadLightOneShot],
-  ["Artillery", movementSFX.moveTreadLightOneShot],
-  ["B-Copter", movementSFX.moveBCopterOneShot],
-  ["Black Bomb", movementSFX.movePlaneOneShot],
-  ["Bomber", movementSFX.movePlaneOneShot],
-  ["Fighter", movementSFX.movePlaneOneShot],
-  ["Md. Tank", movementSFX.moveTreadHeavyOneShot],
-  ["Mega Tank", movementSFX.moveTreadHeavyOneShot],
-  ["Missile", movementSFX.moveTiresHeavyOneShot],
-  ["Neotank", movementSFX.moveTreadHeavyOneShot],
-  ["Recon", movementSFX.moveTiresLightOneShot],
-  ["Rocket", movementSFX.moveTiresHeavyOneShot],
-  ["Stealth", movementSFX.movePlaneOneShot],
-  ["T-Copter", movementSFX.moveTCopterOneShot],
-  ["Tank", movementSFX.moveTreadLightOneShot],
+  ["APC", resources_movementSFX.moveTreadLightOneShot],
+  ["Anti-Air", resources_movementSFX.moveTreadLightOneShot],
+  ["Artillery", resources_movementSFX.moveTreadLightOneShot],
+  ["B-Copter", resources_movementSFX.moveBCopterOneShot],
+  ["Black Bomb", resources_movementSFX.movePlaneOneShot],
+  ["Bomber", resources_movementSFX.movePlaneOneShot],
+  ["Fighter", resources_movementSFX.movePlaneOneShot],
+  ["Md. Tank", resources_movementSFX.moveTreadHeavyOneShot],
+  ["Mega Tank", resources_movementSFX.moveTreadHeavyOneShot],
+  ["Missile", resources_movementSFX.moveTiresHeavyOneShot],
+  ["Neotank", resources_movementSFX.moveTreadHeavyOneShot],
+  ["Recon", resources_movementSFX.moveTiresLightOneShot],
+  ["Rocket", resources_movementSFX.moveTiresHeavyOneShot],
+  ["Stealth", resources_movementSFX.movePlaneOneShot],
+  ["T-Copter", resources_movementSFX.moveTCopterOneShot],
+  ["Tank", resources_movementSFX.moveTreadLightOneShot],
 ]);
 
 const gameSFX = {
@@ -1384,7 +1397,6 @@ on(musicPlayerDivBackground, "click", onMusicBtnClick);
 const currentTheme = new Audio();
 const currentSFX = new Audio();
 const currentUI = new Audio();
-currentSFX.loop = true;
 
 // Always play any music that finishes loading
 currentTheme.onloadedmetadata = function () {
@@ -1421,6 +1433,7 @@ function playMovementSound(unitType) {
   }
   currentSFX.src = onMovementStartMap.get(unitType);
   currentSFX.currentTime = 0;
+  currentSFX.loop = true;
   currentSFX.volume = musicPlayerSettings.sfxVolume;
   currentSFX.play();
 }
@@ -1445,6 +1458,29 @@ function stopMovementSound(unitType = null) {
   }
 }
 
+function playSFXSound(sfxURL) {
+  if (!musicPlayerSettings.isPlaying) {
+    return;
+  }
+
+  currentSFX.src = sfxURL;
+  currentSFX.currentTime = 0;
+  currentSFX.loop = false;
+  currentSFX.volume = musicPlayerSettings.sfxVolume;
+  currentSFX.play();
+}
+
+function playUISound(soundURL) {
+  if (!musicPlayerSettings.isPlaying) {
+    return;
+  }
+  currentUI.src = soundURL;
+  currentUI.currentTime = 0;
+  currentUI.volume = musicPlayerSettings.uiVolume;
+  currentUI.loop = false;
+  currentUI.play();
+}
+
 /**
  * Preloads the current game COs' themes and common sound effect audios.
  */
@@ -1459,8 +1495,8 @@ function preloadCommonAudio() {
   }
 
   // Preload SFX
-  for (let key in movementSFX) {
-    audioList.push(movementSFX[key]);
+  for (let key in resources_movementSFX) {
+    audioList.push(resources_movementSFX[key]);
   }
   for (let key in gameSFX) {
     audioList.push(gameSFX[key]);
@@ -1599,27 +1635,18 @@ var update = injectStylesIntoStyleTag_default()(style/* default */.A, options);
 
 
 
+
 function addReplayHandlers() {
-  if (replayForwardBtn != null) {
-    on(replayForwardBtn, "click", () => setTimeout(playMusic, 500));
-  }
+  let refreshMusic = () => setTimeout(playMusic, 500);
 
-  if (replayBackwardBtn != null) {
-    on(replayBackwardBtn, "click", () => setTimeout(playMusic, 500));
-  }
-
-  if (replayDaySelectorCheckBox != null) {
-    on(replayDaySelectorCheckBox, "click", () => setTimeout(playMusic, 500));
-  }
+  on(replayForwardBtn, "click", refreshMusic);
+  on(replayForwardActionBtn, "click", refreshMusic);
+  on(replayBackwardBtn, "click", refreshMusic);
+  on(replayBackwardActionBtn, "click", refreshMusic);
+  on(replayOpenBtn, "click", refreshMusic);
+  on(replayCloseBtn, "click", refreshMusic);
+  on(replayDaySelectorCheckBox, "click", refreshMusic);
 }
-
-/******************************************************************
- * SCRIPT ENTRY (MAIN FUNCTION)
- ******************************************************************/
-addMusicPlayerMenu();
-loadSettingsFromLocalStorage();
-preloadCommonAudio();
-addReplayHandlers();
 
 // Action Handlers
 /* global unitsInfo */
@@ -1634,7 +1661,7 @@ updateCursor = function () {
   if (!musicPlayerSettings.isPlaying) return;
 
   if (Date.now() - lastCursorCall > CURSOR_THRESHOLD) {
-    // playOneShot(uiCursorMove, uiVolume);
+    playUISound(uiSFX.uiCursorMove);
   }
   lastCursorCall = Date.now();
 };
@@ -1654,7 +1681,7 @@ openMenu = function () {
       if (e.target !== this) {
         return;
       }
-      // playOneShot(uiMenuMove, uiVolume);
+      playUISound(uiSFX.uiMenuMove);
     });
 
     on(menuOptions[i], "click", function () {
@@ -1663,8 +1690,7 @@ openMenu = function () {
   }
 
   menuOpen = true;
-
-  // playOneShot(uiMenuOpen, uiVolume);
+  playUISound(uiSFX.uiMenuOpen);
 };
 
 /* global closeMenu:writeable */
@@ -1674,10 +1700,10 @@ closeMenu = function () {
   if (!musicPlayerSettings.isPlaying) return;
 
   if (menuItemClick && menuOpen) {
-    // playOneShot(uiMenuOpen, uiVolume);
+    playUISound(uiSFX.uiMenuOpen);
   }
   if (!menuItemClick && menuOpen) {
-    // playOneShot(uiMenuClose, uiVolume);
+    playUISound(uiSFX.uiMenuClose);
   }
 
   menuOpen = false;
@@ -1689,21 +1715,19 @@ let ahUnitClick = unitClickHandler;
 unitClickHandler = function () {
   ahUnitClick.apply(unitClickHandler, arguments);
   if (!musicPlayerSettings.isPlaying) return;
-  // playOneShot(uiUnitClick, uiVolume);
+  playUISound(uiSFX.uiUnitClick);
 };
 
 /* global waitUnit:writeable */
 let ahWait = waitUnit;
-waitUnit = function () {
-  ahWait.apply(waitUnit, arguments);
-  debugger;
+waitUnit = (unitID) => {
+  ahWait.apply(waitUnit, [unitID]);
 
   let isValid =
-    arguments[0] !== undefined &&
-    unitsInfo[arguments[0]] !== undefined &&
-    unitsInfo[arguments[0]].units_moved;
+    unitID !== undefined && unitsInfo[unitID] !== undefined && unitsInfo[unitID].units_moved;
   if (isValid) {
-    stopMovementSound(arguments[0]);
+    let unitType = unitsInfo[unitID].units_name;
+    stopMovementSound(unitType);
   }
 };
 
@@ -1723,11 +1747,11 @@ updateAirUnitFogOnMove = function () {
   if (!musicPlayerSettings.isPlaying) return;
 
   if (arguments[5] === "Add") {
-    // setTimeout(() => {
-    //   if (movementSFX != null) {
-    //     stopMovementSound(movingUnit);
-    //   }
-    // }, arguments[6]);
+    setTimeout(() => {
+      if (movementSFX != null) {
+        stopMovementSound(movingUnit);
+      }
+    }, arguments[6]);
   }
 };
 
@@ -1742,14 +1766,13 @@ hideUnit = function () {
 let ahExplode = animExplosion;
 animExplosion = function () {
   ahExplode.apply(animExplosion, arguments);
-  // playOneShot(actionUnitExplode, sfxVolume);
+  playSFXSound(gameSFX.actionUnitExplode);
 };
 
 /* global actionHandlers:writeable */
 let ahMove = actionHandlers.Move;
 actionHandlers.Move = function () {
   ahMove.apply(actionHandlers.Move, arguments);
-  debugger;
 
   stopMovementSound();
   var movementDist = arguments[0].path.length;
@@ -1762,61 +1785,71 @@ actionHandlers.Move = function () {
 let ahLoad = actionHandlers.Load;
 actionHandlers.Load = function () {
   ahLoad.apply(actionHandlers.Load, arguments);
-  // playOneShot(actionLoadSFX, sfxVolume);
+  playSFXSound(gameSFX.actionLoadSFX);
 };
 
 let ahUnload = actionHandlers.Unload;
 actionHandlers.Unload = function () {
   ahUnload.apply(actionHandlers.Unload, arguments);
-  // playOneShot(actionUnloadSFX, sfxVolume);
+  playSFXSound(gameSFX.actionUnloadSFX);
 };
 
 let ahCapt = actionHandlers.Capt;
 actionHandlers.Capt = function () {
   ahCapt.apply(actionHandlers.Capt, arguments);
+  let myID = getMyID();
 
-  // if (
-  //   (arguments[0].newIncome != undefined || arguments[0].newIncome != null) &&
-  //   playerKeys.includes(myID)
-  // ) {
-  //   if (
-  //     arguments[0].buildingInfo.buildings_team != null &&
-  //     arguments[0].buildingInfo.buildings_team != myID
-  //   ) {
-  //     playOneShot(actionCaptEnemySFX, sfxVolume);
-  //   } else if (
-  //     arguments[0].buildingInfo.buildings_team != null &&
-  //     arguments[0].buildingInfo.buildings_team == myID
-  //   ) {
-  //     playOneShot(actionCaptAllySFX, sfxVolume);
-  //   }
-  // } else if (
-  //   (arguments[0].newIncome != undefined || arguments[0].newIncome != null) &&
-  //   !playerKeys.includes(myID)
-  // ) {
-  //   if (arguments[0].buildingInfo.buildings_team != null) {
-  //     playOneShot(actionCaptAllySFX, sfxVolume);
-  //   }
-  // }
+  if (
+    (arguments[0].newIncome != undefined || arguments[0].newIncome != null) &&
+    playerKeys.includes(myID)
+  ) {
+    if (
+      arguments[0].buildingInfo.buildings_team != null &&
+      arguments[0].buildingInfo.buildings_team != myID
+    ) {
+      playSFXSound(gameSFX.actionCaptEnemySFX);
+    } else if (
+      arguments[0].buildingInfo.buildings_team != null &&
+      arguments[0].buildingInfo.buildings_team == myID
+    ) {
+      playSFXSound(gameSFX.actionCaptAllySFX);
+    }
+  } else if (
+    (arguments[0].newIncome != undefined || arguments[0].newIncome != null) &&
+    !playerKeys.includes(myID)
+  ) {
+    if (arguments[0].buildingInfo.buildings_team != null) {
+      playSFXSound(gameSFX.actionCaptAllySFX);
+    }
+  }
 };
 let ahSupply = actionHandlers.Supply;
 actionHandlers.Supply = function () {
   ahSupply.apply(actionHandlers.Supply, arguments);
-  // playOneShot(actionSupplyRepair, sfxVolume);
+  playSFXSound(gameSFX.actionSupplyRepair);
 };
 
 let ahRepair = actionHandlers.Repair;
 actionHandlers.Repair = function () {
   ahRepair.apply(actionHandlers.Repair, arguments);
-  // playOneShot(actionSupplyRepair, sfxVolume);
+  playSFXSound(gameSFX.actionSupplyRepair);
 };
 
 let ahBuild = actionHandlers.Build;
 actionHandlers.Build = function () {
   ahBuild.apply(actionHandlers.Build, arguments);
 
-  // if (!playerKeys.includes(myID)) {
-  //   playOneShot(actionSupplyRepair, sfxVolume);
-  // }
+  playSFXSound(gameSFX.actionSupplyRepair);
 };
+
+/******************************************************************
+ * SCRIPT ENTRY (MAIN FUNCTION)
+ ******************************************************************/
+addMusicPlayerMenu();
+preloadCommonAudio();
+addReplayHandlers();
+
+// Wait a bit before loading the settings for everything else to load
+// That way we can auto-play properly
+setTimeout(() => loadSettingsFromLocalStorage(), 500);
 

@@ -14,7 +14,6 @@ import { musicPlayerSettings, addSettingsChangeListener, GAME_TYPE } from "./mus
 const currentTheme = new Audio();
 const currentSFX = new Audio();
 const currentUI = new Audio();
-currentSFX.loop = true;
 
 // Always play any music that finishes loading
 currentTheme.onloadedmetadata = function () {
@@ -51,6 +50,7 @@ export function playMovementSound(unitType) {
   }
   currentSFX.src = onMovementStartMap.get(unitType);
   currentSFX.currentTime = 0;
+  currentSFX.loop = true;
   currentSFX.volume = musicPlayerSettings.sfxVolume;
   currentSFX.play();
 }
@@ -73,6 +73,29 @@ export function stopMovementSound(unitType = null) {
     let audioURL = onMovementRollOffMap.get(unitType);
     playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
   }
+}
+
+export function playSFXSound(sfxURL) {
+  if (!musicPlayerSettings.isPlaying) {
+    return;
+  }
+
+  currentSFX.src = sfxURL;
+  currentSFX.currentTime = 0;
+  currentSFX.loop = false;
+  currentSFX.volume = musicPlayerSettings.sfxVolume;
+  currentSFX.play();
+}
+
+export function playUISound(soundURL) {
+  if (!musicPlayerSettings.isPlaying) {
+    return;
+  }
+  currentUI.src = soundURL;
+  currentUI.currentTime = 0;
+  currentUI.volume = musicPlayerSettings.uiVolume;
+  currentUI.loop = false;
+  currentUI.play();
 }
 
 /**
