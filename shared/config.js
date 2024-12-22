@@ -1,3 +1,6 @@
+/**
+ * @file Constants and other project configuration settings that could be used by any scripts.
+ */
 const devPort = "12345";
 exports.devPort = devPort;
 

@@ -1,8 +1,19 @@
-/********************** AWBW Variables ***********************/
-console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
+/**
+ * AWBW Highlight Cursor Coordinates
+ * main.js - Main script that loads everything
+ */
 
-import * as awbw_site from "../shared/awbw_site";
-import * as other_scripts from "../shared/other_userscripts";
+import {
+  cursor,
+  gamemap,
+  gamemapContainer,
+  mapCols,
+  mapRows,
+  zoomInBtn,
+  zoomLevel,
+  zoomOutBtn,
+} from "../shared/awbw_site";
+import { maximizeBtn } from "../shared/other_userscripts";
 
 /********************** Script Variables ***********************/
 const CURSOR_THRESHOLD_MS = 30;
@@ -14,7 +25,7 @@ let spotSpanTemplate = document.createElement("span");
 spotSpanTemplate.style.width = "16px";
 spotSpanTemplate.style.height = "16px";
 spotSpanTemplate.style.left = "-16px";
-spotSpanTemplate.style.top = awbw_site.mapRows * 16 + "px";
+spotSpanTemplate.style.top = mapRows * 16 + "px";
 spotSpanTemplate.style.fontFamily = "monospace";
 spotSpanTemplate.style.position = "absolute";
 spotSpanTemplate.style.fontSize = "11px";
@@ -38,13 +49,13 @@ function setHighlight(node, highlight) {
 }
 
 function onZoomChangeEvent(_pointerEvent = null, zoom = null) {
-  if (zoom == null) {
-    zoom = parseFloat(awbw_site.zoomLevel.textContent);
+  if (zoom === null) {
+    zoom = parseFloat(zoomLevel.textContent);
   }
 
   let padding = 16 * zoom;
-  awbw_site.gamemapContainer.style.paddingBottom = padding + "px";
-  awbw_site.gamemapContainer.style.paddingLeft = padding + "px";
+  gamemapContainer.style.paddingBottom = padding + "px";
+  gamemapContainer.style.paddingLeft = padding + "px";
 }
 
 /********************** Intercepted Action Handlers ***********************/
@@ -60,8 +71,8 @@ updateCursor = function () {
   }
 
   // Get cursor row and column indices then the span
-  let cursorRow = Math.abs(Math.ceil(parseInt(awbw_site.cursor.style.top) / 16));
-  let cursorCol = Math.abs(Math.ceil(parseInt(awbw_site.cursor.style.left) / 16));
+  let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
+  let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
   let highlightRow = document.getElementById("grid-spot-row-" + cursorRow);
   let highlightCol = document.getElementById("grid-spot-col-" + cursorCol);
 
@@ -82,20 +93,19 @@ updateCursor = function () {
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-
-if (awbw_site.zoomInBtn != null) {
-  awbw_site.zoomInBtn.onclick = onZoomChangeEvent;
+if (zoomInBtn != null) {
+  zoomInBtn.onclick = onZoomChangeEvent;
 }
 
-if (awbw_site.zoomOutBtn != null) {
-  awbw_site.zoomOutBtn.onclick = onZoomChangeEvent;
+if (zoomOutBtn != null) {
+  zoomOutBtn.onclick = onZoomChangeEvent;
 }
 
 // Synergize with AWBW Maximize if that script is running as well
-if (other_scripts.maximizeBtn != null) {
+if (maximizeBtn != null) {
   console.log("AWBW Highlight Cursor Coordinates script found AWBW Maximize script");
-  let old_fn = other_scripts.maximizeBtn.onclick;
-  other_scripts.maximizeBtn.onclick = (event) => {
+  let old_fn = maximizeBtn.onclick;
+  maximizeBtn.onclick = (event) => {
     old_fn(event);
     isMaximizeToggled = !isMaximizeToggled;
     onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
@@ -106,18 +116,20 @@ if (other_scripts.maximizeBtn != null) {
 onZoomChangeEvent();
 
 // Create squares
-for (let row = 0; row < awbw_site.mapRows; row++) {
+for (let row = 0; row < mapRows; row++) {
   let spotSpan = spotSpanTemplate.cloneNode(true);
   spotSpan.id = "grid-spot-row-" + row;
   spotSpan.style.top = row * 16 + "px";
   spotSpan.textContent = row;
-  awbw_site.gamemap.appendChild(spotSpan);
+  gamemap.appendChild(spotSpan);
 }
 
-for (let col = 0; col < awbw_site.mapCols; col++) {
+for (let col = 0; col < mapCols; col++) {
   let spotSpan = spotSpanTemplate.cloneNode(true);
   spotSpan.id = "grid-spot-col-" + col;
   spotSpan.style.left = col * 16 + "px";
   spotSpan.textContent = col;
-  awbw_site.gamemap.appendChild(spotSpan);
+  gamemap.appendChild(spotSpan);
 }
+
+console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");

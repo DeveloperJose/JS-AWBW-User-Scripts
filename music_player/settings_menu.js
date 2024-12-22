@@ -1,3 +1,6 @@
+/**
+ * @file This file contains all the functions and variables relevant to the creation and behavior of the music player settings UI.
+ */
 import { isMapEditor } from "../shared/awbw_site";
 
 import { versions } from "../shared/config.js";
@@ -5,15 +8,18 @@ import { on } from "../shared/utils.js";
 
 import { addSettingsChangeListener, GAME_TYPE, musicPlayerSettings } from "./music_settings.js";
 
-// Used to close the right-click settings menu when you right-click twice
-export let isSettingsMenuOpen = false;
+/**
+ * Is the settings context menu (right-click) currently open?
+ * Used to close the right-click settings menu when you right-click twice
+ */
+let isSettingsMenuOpen = false;
 
 // Listen for setting changes to update the settings UI
 addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the right-click context menu with the music player settings to the given node.
- * @param {*} musicPlayerDiv The node whose right click will open the context menu.
+ * @param {Element} musicPlayerDiv - The node whose right click will open the context menu.
  */
 export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
   // Add context menu to music player
@@ -42,11 +48,12 @@ export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
 }
 
 /**
- * Updates the music player settings menu (context menu) so it matches the internal settings when the settings change.
+ * Event handler that is triggered whenever the settings of the music player are changed.
+ * Updates the music player settings UI (context menu) so it matches the internal settings when the settings change.
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * @param {*} _key Key of the setting which has been changed.
+ * @param {string} key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
 function onSettingsChange(_key) {
   volumeSlider.value = musicPlayerSettings.volume;

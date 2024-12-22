@@ -1,18 +1,43 @@
+/**
+ * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
+ */
+import { isBlackHoleCO } from "../shared/awbw_site";
 import { GAME_TYPE, THEME_TYPE, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
-/*
- * All external resources used by this userscript like URLs.
- *
- * TODO:
- *  -DS/MapEditor, edit music
+/**
+ * @constant
+ * Base URL where all the files needed for this script are located.
  */
 const BASE_URL = "https://devj.surge.sh";
+
+/**
+ * @constant
+ * Base URL where all the music files are located.
+ */
 const BASE_URL_MUSIC = BASE_URL + "/music";
+
+/**
+ * @constant
+ * Base URL where all sound effect files are located.
+ */
 const BASE_URL_SFX = BASE_URL_MUSIC + "/sfx";
 
+/**
+ * @constant
+ * Image URL for static music player icon
+ */
 export const neutralImgLink = BASE_URL + "/img/music-player-icon.png";
+
+/**
+ * @constant
+ * Image URL for animated music player icon.
+ */
 export const playingImgLink = BASE_URL + "/img/music-player-playing.gif";
 
+/**
+ * Enumeration of all game sound effects. The values for the keys are the filenames.
+ * @enum {string}
+ */
 export const gameSFX = {
   actionSuperCOPowerAvailable: "sfx-action-super-co-power-available",
   actionCOPowerAvailable: "sfx-action-co-power-available",
@@ -22,7 +47,7 @@ export const gameSFX = {
   actionCaptureEnemy: "sfx-action-capture-enemy",
   actionCaptureProgress: "sfx-action-capture-progress",
   actionMissileHit: "sfx-action-missile-hit",
-  actionMissleSend: "sfx-action-missile-send",
+  actionMissileSend: "sfx-action-missile-send",
   actionUnitHide: "sfx-action-unit-hide",
   actionUnitUnhide: "sfx-action-unit-unhide",
   actionUnitSupply: "sfx-action-unit-supply",
@@ -37,22 +62,10 @@ export const gameSFX = {
   uiUnitSelect: "sfx-ui-unit-select",
 };
 
-const BLACK_HOLE_CO_LIST = new Set([
-  "flak",
-  "lash",
-  "adder",
-  "hawke",
-  "sturm",
-  "jugger",
-  "koal",
-  "kindle",
-  "vonbolt",
-]);
-
-export function isBlackHoleCO(coName) {
-  return BLACK_HOLE_CO_LIST.has(coName.toLowerCase());
-}
-
+/**
+ * @constant
+ * List of all the URLs for all unit movement sounds.
+ */
 const movementSFX = {
   moveBCopterLoop: BASE_URL_SFX + "/move_bcopter.ogg",
   moveBCopterOneShot: BASE_URL_SFX + "/move_bcopter_rolloff.ogg",
@@ -75,6 +88,9 @@ const movementSFX = {
   moveTreadLightOneShot: BASE_URL_SFX + "/move_tread_light_rolloff.ogg",
 };
 
+/**
+ * Map that takes unit names as keys and gives you the URL for that unit movement sound.
+ */
 const onMovementStartMap = new Map([
   ["APC", movementSFX.moveTreadLightLoop],
   ["Anti-Air", movementSFX.moveTreadLightLoop],
@@ -103,6 +119,9 @@ const onMovementStartMap = new Map([
   ["Tank", movementSFX.moveTreadLightLoop],
 ]);
 
+/**
+ * Map that takes unit names as keys and gives you the URL to play when that unit has stopped moving, if any.
+ */
 const onMovementRollOffMap = new Map([
   ["APC", movementSFX.moveTreadLightOneShot],
   ["Anti-Air", movementSFX.moveTreadLightOneShot],
@@ -122,6 +141,13 @@ const onMovementRollOffMap = new Map([
   ["Tank", movementSFX.moveTreadLightOneShot],
 ]);
 
+/**
+ * Determines the filename for the music to play given a specific CO and other settings.
+ * @param {string} coName - Name of the CO whose music to use.
+ * @param {GAME_TYPE} gameType - Which game soundtrack to use.
+ * @param {THEME_TYPE} themeType - Which type of music whether regular or power.
+ * @returns The filename of the music to play given the parameters.
+ */
 function getMusicFilename(coName, gameType, themeType) {
   let isPowerActive = themeType !== THEME_TYPE.REGULAR;
 
@@ -131,7 +157,6 @@ function getMusicFilename(coName, gameType, themeType) {
   }
 
   // For RBC, we play the new power themes
-  // TODO: RBC factory themes
   if (gameType === GAME_TYPE.AW_RBC) {
     return `t-${coName}-cop`;
   }
@@ -141,6 +166,15 @@ function getMusicFilename(coName, gameType, themeType) {
   return `t-${faction}-${themeType}`;
 }
 
+/**
+ * Determines the URL for the music to play given a specific CO, and optionally, some specific settings.
+ * The settings will be loaded from the current saved settings if they aren't specified.
+ *
+ * @param {string} coName - Name of the CO whose music to use.
+ * @param {GAME_TYPE} gameType - (Optional) Which game soundtrack to use.
+ * @param {THEME_TYPE} themeType - (Optional) Which type of music to use whether regular or power.
+ * @returns The complete URL of the music to play given the parameters.
+ */
 export function getMusicURL(coName, gameType = null, themeType = null) {
   if (gameType === null) {
     gameType = musicPlayerSettings.gameType;
@@ -156,26 +190,49 @@ export function getMusicURL(coName, gameType = null, themeType = null) {
   return url.toLowerCase().replaceAll("_", "-");
 }
 
+/**
+ * Gets the URL for the given sound effect.
+ * @param {string} sfx - String key for the sound effect to use.
+ * @returns The URL of the given sound effect key.
+ */
 export function getSoundEffectURL(sfx) {
   return `${BASE_URL_SFX}/${sfx}.ogg`;
 }
 
+/**
+ * Gets the URL to play when the given unit starts to move.
+ * @param {string} unitName - Name of the unit.
+ * @returns The URL of the given unit's movement start sound.
+ */
 export function getMovementSoundURL(unitName) {
   return onMovementStartMap.get(unitName);
 }
 
+/**
+ * Getes the URL to play when the given unit stops moving, if any.
+ * @param {string} unitName - Name of the unit.
+ * @returns The URL of the given unit's movement stop sound, if any, or null otherwise.
+ */
 export function getMovementRollOffURL(unitName) {
   return onMovementRollOffMap.get(unitName);
 }
 
+/**
+ * Checks if the given unit plays a sound when it stops moving.
+ * @param {string} unitName - Name of the unit.
+ * @returns True if the given unit has a sound to play when it stops moving.
+ */
 export function hasMovementRollOff(unitName) {
   return onMovementRollOffMap.has(unitName);
 }
 
-// TODO: Should we preload SFX?
+/**
+ * Gets a list of the URLs for all sound effects the music player might ever use.
+ * These include game effects, UI effects, and unit movement sounds.
+ * @returns List with all the URLs for all the music player sound effects.
+ */
 export function getAllSoundEffectURLS() {
   let sfx = Object.values(gameSFX).map(getSoundEffectURL);
   let moreSFX = Object.values(movementSFX);
   return sfx.concat(moreSFX);
-  // return [];
 }

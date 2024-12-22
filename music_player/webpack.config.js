@@ -11,12 +11,12 @@ module.exports = merge(common, {
   plugins: [
     new UserscriptPlugin({
       headers: {
-        name: "AWBW Music Player (DeveloperJose Edition)",
+        name: "Improved AWBW Music Player",
         namespace: "https://awbw.amarriner.com/",
         version: versions.musicPlayer,
         description:
-          "A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.",
-        author: "Original by twiggy_, modified by DeveloperJose",
+          "An improved version of the comprehensive audio player that attempts to recreate the cart experience with more sound effects, more music, and more customizability.",
+        author: "Original by twiggy_, updated by DeveloperJose",
         match: [
           "https://awbw.amarriner.com/*?games_id=*",
           "https://awbw.amarriner.com/*?replays_id=*",

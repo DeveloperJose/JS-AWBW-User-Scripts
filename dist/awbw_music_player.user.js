@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name AWBW Music Player (DeveloperJose Edition)
-// @description A comprehensive audio player that attempts to recreate the cart experience. Modified from the original script so now the music won't change if the next CO is the same as the previous CO.
+// @name Improved AWBW Music Player
+// @description An improved version of the comprehensive audio player that attempts to recreate the cart experience with more sound effects, more music, and more customizability.
 // @version 2.0.8
-// @author Original by twiggy_, modified by DeveloperJose
+// @author Original by twiggy_, updated by DeveloperJose
 // @homepage https://github.com/DeveloperJose/JS-AWBW-User-Scripts#readme
 // @supportURL https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @match https://awbw.amarriner.com/*?games_id=*
@@ -562,6 +562,9 @@ module.exports = styleTagTransform;
 /***/ ((__unused_webpack_module, exports) => {
 
 var __webpack_unused_export__;
+/**
+ * @file Constants and other project configuration settings that could be used by any scripts.
+ */
 const devPort = "12345";
 __webpack_unused_export__ = devPort;
 
@@ -645,12 +648,68 @@ exports.e4 = versions;
 var __webpack_exports__ = {};
 
 ;// ./shared/awbw_site.js
-/*
- * Constants, functions, and computed variables that come from analyzing the web pages of AWBW.
- * Another way to think of this file is that it represents the AWBW "API".
+/**
+ * @file Constants, functions, and computed variables that come from analyzing the web pages of AWBW.
+ *  Another way to think of this file is that this file represents the AWBW "API".
+ *  A lot of useful information came from game.js and the code at the bottom of each game page.
  */
-/********************** AWBW Page Elements ***********************/
-// More can be easily found here https://awbw.amarriner.com/js/lib/game.js?1733945699
+
+// ============================== JSDoc TypeDefs ==============================
+/**
+ * @typedef {Object} PlayerInfo
+ * @property {number} cities - Number of cities owned by the player.
+ * @property {number} co_max_power - Number of funds in damage needed for CO Power activation.
+ * @property {number} co_max_spower - Number of funds in damage needed for Super CO Power activation.
+ * @property {string} co_name -
+ * @property {string} countries_code -
+ * @property {string} countries_name -
+ * @property {number} labs -
+ * @property {number} numProperties -
+ * @property {*} other_buildings -
+ * @property {number} players_co_id -
+ * @property {string} players_co_image - Filename for CO image.
+ * @property {number} players_co_max_power -
+ * @property {number} players_co_max_spower -
+ * @property {number} players_co_power - Current power charge in terms of funds of damage received and given.
+ * @property {string} players_co_power_on - String representing our power state. N = No power, Y = CO Power, S = Super CO Power.
+ * @property {number} players_countries_id -
+ * @property {string} players_eliminated - String representing if the player has been eliminated from the game. "Y" or "N".
+ * @property {number} players_funds -
+ * @property {number} players_id - ID of the player.
+ * @property {number} players_income -
+ * @property {number} players_order -
+ * @property {string} players_team -
+ * @property {number} players_turn_clock -
+ * @property {number} players_turn_start -
+ * @property {number} towers -
+ * @property {string} users_username - Username of the player
+ */
+
+/**
+ * @typedef {Object} UnitInfo
+ * @property {string} units_name - Name of this unit.
+ * @property {number} units_moved - Whether this unit has moved (1) or not (0) represented as a number.
+ */
+
+// ============================== Advance Wars Stuff ==============================
+
+/**
+ * @constant
+ * List of Black Hole COs, stored in a set for more efficient lookups.
+ */
+const BLACK_HOLE_CO_LIST = new Set([
+  "flak",
+  "lash",
+  "adder",
+  "hawke",
+  "sturm",
+  "jugger",
+  "koal",
+  "kindle",
+  "vonbolt",
+]);
+
+// ============================== AWBW Page Elements ==============================
 let gamemap = document.querySelector("#gamemap");
 let gamemapContainer = document.querySelector("#gamemap-container");
 let zoomInBtn = document.querySelector("#zoom-in");
@@ -667,29 +726,72 @@ let replayBackwardBtn = document.querySelector(".replay-backward");
 let replayBackwardActionBtn = document.querySelector(".replay-backward-action");
 let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
-/********************** AWBW Page Variables ***********************/
+// ============================== AWBW Page Global Variables ==============================
 /* global maxX, maxY, gameAnims */
-/* global playersInfo, unitsInfo, currentTurn */
-/* global playerKeys */
+/* global playersInfo, playerKeys, unitsInfo, currentTurn */
+
+/**
+ * The number of columns of this map.
+ * @type {number}
+ */
 let mapCols = (/* unused pure expression or super */ null && (maxX));
+
+/**
+ * The number of rows of this map.
+ * @type {number}
+ */
 let mapRows = (/* unused pure expression or super */ null && (maxY));
+
+/**
+ * Whether game animations are enabled or not.
+ * @type {boolean}
+ */
 let gameAnimations = gameAnims;
 
-/********************** AWBW Computed Variables ***********************/
+/**
+ * The amount of time between the silo launch animation and the hit animation in milliseconds.
+ * @type {number}
+ */
+let siloDelayMS = gameAnimations ? 3000 : 0;
+
+// ============================== My Own Computed AWBW Variables and Functions ==============================
+
+/**
+ * Are we in the map editor?
+ */
 let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
+
+/**
+ * Gets the username of the person logged in to the website.
+ * @type {string}
+ */
 let myName = document
   .querySelector("#profile-menu")
   .getElementsByClassName("dropdown-menu-link")[0]
   .href.split("username=")[1];
 
+/**
+ * The HTML node for the game menu, the little bar with all the icons.
+ * @type {Element}
+ */
 let menu = isMapEditor
   ? document.querySelector("#replay-misc-controls")
   : document.querySelector("#game-map-menu").parentNode;
 
+/**
+ * The player ID for the person logged in to the website.
+ * Singleton set and returned by {@link getMyID}
+ * @type {number}
+ */
 let myID = null;
+
+/**
+ * Gets the ID of the person logged in to the website.
+ * @returns {number} The player ID of the person logged in to the website.
+ */
 function getMyID() {
   if (myID === null) {
-    Object.values(playersInfo).forEach((entry) => {
+    getAllPlayersInfo().forEach((entry) => {
       if (entry.users_username === myName) {
         myID = entry.players_id;
       }
@@ -698,50 +800,82 @@ function getMyID() {
   return myID;
 }
 
+/**
+ * Gets the player info data for the given user ID or null if the user ID is not part of the game.
+ * @param {number} pid - Player ID whose info we will get.
+ * @returns {PlayerInfo} - The info for that given player or null if such ID is not present in the game.
+ */
+function getPlayerInfo(pid) {
+  return playersInfo[pid];
+}
+
+/**
+ * Gets a list of all the player info data for all players in the current game.
+ * @returns {PlayerInfo[]} - List of player info data for all players in the current game.
+ */
+function getAllPlayersInfo() {
+  return Object.values(playersInfo);
+}
+
+/**
+ * Determines if the given player is a spectator based on their ID.
+ * @param {number} pid - Player ID who we want to check.
+ * @returns True if the player is a spectator, false if they are playing in this game.
+ */
 function isPlayerSpectator(pid) {
   return !playerKeys.includes(pid);
 }
 
+/**
+ * Checks if the given player is able to activate a regular CO Power.
+ * @param {number} pid - Player ID for whom we want to check.
+ * @returns True if the player can activate a regular CO Power.
+ */
 function canPlayerActivateCOPower(pid) {
-  let info = playersInfo[pid];
+  let info = getPlayerInfo(pid);
   return info.players_co_power >= info.players_co_max_power;
 }
 
+/**
+ * Checks if the given player is able to activate a Super CO Power.
+ * @param {number} pid - Player ID for whom we want to check.
+ * @returns True if the player can activate a Super CO Power.
+ */
 function canPlayerActivateSuperCOPower(pid) {
-  let info = playersInfo[pid];
+  let info = getPlayerInfo(pid);
   return info.players_co_power >= info.players_co_max_spower;
 }
 
 /**
- * Useful variables related to the current turn's player.
+ * Useful variables related to the player currently playing this turn.
  */
 const currentPlayer = {
   /**
    * Get the internal info object containing the state of the current player.
+   * @type {PlayerInfo}
    */
   get info() {
-    return playersInfo[currentTurn];
+    return getPlayerInfo(currentTurn);
   },
 
   /**
-   * Whether a CO Power or Super CO Power is activated
+   * Determine whether a CO Power or Super CO Power is activated for the current player.
+   * @returns True if a regular CO power or a Super CO Power is activated.
    */
   get isPowerActivated() {
     return this.coPowerState !== "N";
   },
 
   /**
-   * The state of the CO Power represented as a single letter.
-   * N = No Power
-   * Y = CO Power
-   * S = Super CO Power
+   * Gets state of the CO Power for the current player represented as a single letter.
+   * @returns {string} "N" if no power, "Y" if regular CO Power, "S" if Super CO Power.
    */
   get coPowerState() {
     return this.info.players_co_power_on;
   },
 
   /**
-   * The name of the current CO.
+   * Gets the name of the CO for the current player.
    */
   get coName() {
     return this.info.co_name;
@@ -750,69 +884,71 @@ const currentPlayer = {
 
 /**
  * Determine who all the COs of the match are and return a list of their names.
- * @returns List with the names of each CO in the match.
+ * @returns {string[]} List with the names of each CO in the match.
  */
 function getAllCONames() {
-  let coNames = [];
-  Object.keys(playersInfo).forEach((playerID) => {
-    coNames.push(playersInfo[playerID]["co_name"]);
-  });
-  return coNames;
+  return getAllPlayersInfo().map((info) => info.co_name);
 }
 
+/**
+ * Determines if the given CO is an ally or a part of Black Hole.
+ * @param {string} coName - Name of the CO to check.
+ * @returns True if the given CO is part of Black Hole.
+ */
+function isBlackHoleCO(coName) {
+  return BLACK_HOLE_CO_LIST.has(coName.toLowerCase());
+}
+
+/**
+ * Gets the internal info object for the given unit.
+ * @param {number} unitID - ID of the unit for whom we want to get the current info state.
+ * @returns {UnitInfo} - The info for that unit at its current state.
+ */
 function getUnitInfo(unitID) {
   return unitsInfo[unitID];
 }
 
+/**
+ * Gets the name of the given unit or null if the given unit is invalid.
+ * @param {number} unitID - ID of the unit for whom we want to get the name.
+ * @returns String of the unit name.
+ */
 function getUnitName(unitID) {
   return getUnitInfo(unitID)?.units_name;
 }
 
+/**
+ * Checks if the given unit is a valid unit.
+ * A unit is valid when we can find its info in the current game state.
+ * @param {number} unitID - ID of the unit we want to check.
+ * @returns True if the given unit is valid.
+ */
 function isValidUnit(unitID) {
   return unitID !== undefined && unitsInfo[unitID] !== undefined;
 }
 
+/**
+ * Checks if the given unit has moved this turn.
+ * @param {number} unitID - ID of the unit we want to check.
+ * @returns True if the unit is valid and it has moved this turn.
+ */
 function hasUnitMovedThisTurn(unitID) {
-  return isValidUnit(unitID) && getUnitInfo(unitID)?.units_moved == 1;
+  return isValidUnit(unitID) && getUnitInfo(unitID)?.units_moved === 1;
 }
 
-;// ./shared/utils.js
-/**
- *
- */
-var on = (() => {
-  if (window.addEventListener) {
-    return (target, type, listener) => {
-      if (target === null) {
-        console.log(
-          "[AWBW Improved Music Player] Could not add event listener: " + target + "/" + type,
-        );
-        return;
-      }
-      target.addEventListener(type, listener, false);
-    };
-  } else {
-    return (object, sEvent, fpNotify) => {
-      if (object === null) {
-        console.log(
-          "[AWBW Improved Music Player] Could not add event listener: " + object + "/" + sEvent,
-        );
-        return;
-      }
-      object.attachEvent("on" + sEvent, fpNotify);
-    };
-  }
-})();
-
 ;// ./music_player/music_settings.js
+/**
+ * @file This file contains the state of the music player settings and the saving/loading functionality, no UI functionality.
+ * Note: For Enums in pure JS we just have objects where the keys and values match, it's the easiest solution
+ */
 
 
-const STORAGE_KEY = "musicPlayerSettings";
 
-// Enums
-// Keys and values must match exactly for it to work properly
-// It's the easiest solution
-
+/**
+ * Enum that represents which game we want the music player to use for its music.
+ * @readonly
+ * @enum {string}
+ */
 const GAME_TYPE = Object.freeze({
   AW1: "AW1",
   AW2: "AW2",
@@ -820,37 +956,63 @@ const GAME_TYPE = Object.freeze({
   AW_DS: "AW_DS",
 });
 
+/**
+ * Enum that represents music theme types like regular or power.
+ * @readonly
+ * @enum {string}
+ */
 const THEME_TYPE = Object.freeze({
   REGULAR: "REGULAR",
   CO_POWER: "CO_POWER",
   SUPER_CO_POWER: "SUPER_CO_POWER",
 });
 
+/**
+ * Map that takes a given coPowerState from a player and returns the appropriate theme type enum.
+ */
 const coPowerStateToThemeType = new Map([
   ["N", THEME_TYPE.REGULAR],
   ["Y", THEME_TYPE.CO_POWER],
   ["S", THEME_TYPE.SUPER_CO_POWER],
 ]);
 
+/**
+ * Gets the theme type enum corresponding to the CO Power state for the current CO.
+ * @returns {THEME_TYPE} The THEME_TYPE enum for the current CO Power state.
+ */
 function getCurrentThemeType() {
   let currentCOPowerState = currentPlayer.coPowerState;
   return coPowerStateToThemeType.get(currentCOPowerState);
 }
 
+/**
+ * String used as the key for storing settings in LocalStorage
+ */
+const STORAGE_KEY = "musicPlayerSettings";
+
+/**
+ * List of listener functions that will be called anytime settings are changed.
+ */
 const onSettingsChangeListeners = [];
+
+/**
+ * Adds a new listener function that will be called whenever a setting changes.
+ * @param {*} fn Function to call when a setting changes.
+ */
 function addSettingsChangeListener(fn) {
   onSettingsChangeListeners.push(fn);
 }
 
+/**
+ * The music player settings' current internal state.
+ * DO NOT EDIT __ prefix variables, use the properties!
+ */
 const musicPlayerSettings = {
   __isPlaying: false,
   __volume: 0.5,
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
   __gameType: GAME_TYPE.AW_DS,
-
-  // TODO: Shuffle
-  // TODO: Alternate Themes
 
   set isPlaying(val) {
     this.__isPlaying = val;
@@ -888,10 +1050,13 @@ const musicPlayerSettings = {
   },
 
   set gameType(val) {
-    // TODO: Validate
+    /** @todo: Validate */
     this.__gameType = val;
     this.onSettingChangeEvent("gameType");
   },
+  /**
+   * @type {GAME_TYPE}
+   */
   get gameType() {
     return this.__gameType;
   },
@@ -936,21 +1101,46 @@ function updateSettingsInLocalStorage() {
 }
 
 ;// ./music_player/resources.js
+/**
+ * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
+ */
 
 
-/*
- * All external resources used by this userscript like URLs.
- *
- * TODO:
- *  -DS/MapEditor, edit music
+
+/**
+ * @constant
+ * Base URL where all the files needed for this script are located.
  */
 const BASE_URL = "https://devj.surge.sh";
+
+/**
+ * @constant
+ * Base URL where all the music files are located.
+ */
 const BASE_URL_MUSIC = BASE_URL + "/music";
+
+/**
+ * @constant
+ * Base URL where all sound effect files are located.
+ */
 const BASE_URL_SFX = BASE_URL_MUSIC + "/sfx";
 
+/**
+ * @constant
+ * Image URL for static music player icon
+ */
 const neutralImgLink = BASE_URL + "/img/music-player-icon.png";
+
+/**
+ * @constant
+ * Image URL for animated music player icon.
+ */
 const playingImgLink = BASE_URL + "/img/music-player-playing.gif";
 
+/**
+ * Enumeration of all game sound effects. The values for the keys are the filenames.
+ * @enum {string}
+ */
 const gameSFX = {
   actionSuperCOPowerAvailable: "sfx-action-super-co-power-available",
   actionCOPowerAvailable: "sfx-action-co-power-available",
@@ -960,7 +1150,7 @@ const gameSFX = {
   actionCaptureEnemy: "sfx-action-capture-enemy",
   actionCaptureProgress: "sfx-action-capture-progress",
   actionMissileHit: "sfx-action-missile-hit",
-  actionMissleSend: "sfx-action-missile-send",
+  actionMissileSend: "sfx-action-missile-send",
   actionUnitHide: "sfx-action-unit-hide",
   actionUnitUnhide: "sfx-action-unit-unhide",
   actionUnitSupply: "sfx-action-unit-supply",
@@ -975,22 +1165,10 @@ const gameSFX = {
   uiUnitSelect: "sfx-ui-unit-select",
 };
 
-const BLACK_HOLE_CO_LIST = new Set([
-  "flak",
-  "lash",
-  "adder",
-  "hawke",
-  "sturm",
-  "jugger",
-  "koal",
-  "kindle",
-  "vonbolt",
-]);
-
-function isBlackHoleCO(coName) {
-  return BLACK_HOLE_CO_LIST.has(coName.toLowerCase());
-}
-
+/**
+ * @constant
+ * List of all the URLs for all unit movement sounds.
+ */
 const movementSFX = {
   moveBCopterLoop: BASE_URL_SFX + "/move_bcopter.ogg",
   moveBCopterOneShot: BASE_URL_SFX + "/move_bcopter_rolloff.ogg",
@@ -1013,6 +1191,9 @@ const movementSFX = {
   moveTreadLightOneShot: BASE_URL_SFX + "/move_tread_light_rolloff.ogg",
 };
 
+/**
+ * Map that takes unit names as keys and gives you the URL for that unit movement sound.
+ */
 const onMovementStartMap = new Map([
   ["APC", movementSFX.moveTreadLightLoop],
   ["Anti-Air", movementSFX.moveTreadLightLoop],
@@ -1041,6 +1222,9 @@ const onMovementStartMap = new Map([
   ["Tank", movementSFX.moveTreadLightLoop],
 ]);
 
+/**
+ * Map that takes unit names as keys and gives you the URL to play when that unit has stopped moving, if any.
+ */
 const onMovementRollOffMap = new Map([
   ["APC", movementSFX.moveTreadLightOneShot],
   ["Anti-Air", movementSFX.moveTreadLightOneShot],
@@ -1060,6 +1244,13 @@ const onMovementRollOffMap = new Map([
   ["Tank", movementSFX.moveTreadLightOneShot],
 ]);
 
+/**
+ * Determines the filename for the music to play given a specific CO and other settings.
+ * @param {string} coName - Name of the CO whose music to use.
+ * @param {GAME_TYPE} gameType - Which game soundtrack to use.
+ * @param {THEME_TYPE} themeType - Which type of music whether regular or power.
+ * @returns The filename of the music to play given the parameters.
+ */
 function getMusicFilename(coName, gameType, themeType) {
   let isPowerActive = themeType !== THEME_TYPE.REGULAR;
 
@@ -1069,7 +1260,6 @@ function getMusicFilename(coName, gameType, themeType) {
   }
 
   // For RBC, we play the new power themes
-  // TODO: RBC factory themes
   if (gameType === GAME_TYPE.AW_RBC) {
     return `t-${coName}-cop`;
   }
@@ -1079,6 +1269,15 @@ function getMusicFilename(coName, gameType, themeType) {
   return `t-${faction}-${themeType}`;
 }
 
+/**
+ * Determines the URL for the music to play given a specific CO, and optionally, some specific settings.
+ * The settings will be loaded from the current saved settings if they aren't specified.
+ *
+ * @param {string} coName - Name of the CO whose music to use.
+ * @param {GAME_TYPE} gameType - (Optional) Which game soundtrack to use.
+ * @param {THEME_TYPE} themeType - (Optional) Which type of music to use whether regular or power.
+ * @returns The complete URL of the music to play given the parameters.
+ */
 function getMusicURL(coName, gameType = null, themeType = null) {
   if (gameType === null) {
     gameType = musicPlayerSettings.gameType;
@@ -1094,33 +1293,87 @@ function getMusicURL(coName, gameType = null, themeType = null) {
   return url.toLowerCase().replaceAll("_", "-");
 }
 
+/**
+ * Gets the URL for the given sound effect.
+ * @param {string} sfx - String key for the sound effect to use.
+ * @returns The URL of the given sound effect key.
+ */
 function getSoundEffectURL(sfx) {
   return `${BASE_URL_SFX}/${sfx}.ogg`;
 }
 
+/**
+ * Gets the URL to play when the given unit starts to move.
+ * @param {string} unitName - Name of the unit.
+ * @returns The URL of the given unit's movement start sound.
+ */
 function getMovementSoundURL(unitName) {
   return onMovementStartMap.get(unitName);
 }
 
+/**
+ * Getes the URL to play when the given unit stops moving, if any.
+ * @param {string} unitName - Name of the unit.
+ * @returns The URL of the given unit's movement stop sound, if any, or null otherwise.
+ */
 function getMovementRollOffURL(unitName) {
   return onMovementRollOffMap.get(unitName);
 }
 
+/**
+ * Checks if the given unit plays a sound when it stops moving.
+ * @param {string} unitName - Name of the unit.
+ * @returns True if the given unit has a sound to play when it stops moving.
+ */
 function hasMovementRollOff(unitName) {
   return onMovementRollOffMap.has(unitName);
 }
 
-// TODO: Should we preload SFX?
+/**
+ * Gets a list of the URLs for all sound effects the music player might ever use.
+ * These include game effects, UI effects, and unit movement sounds.
+ * @returns List with all the URLs for all the music player sound effects.
+ */
 function getAllSoundEffectURLS() {
   let sfx = Object.values(gameSFX).map(getSoundEffectURL);
   let moreSFX = Object.values(movementSFX);
   return sfx.concat(moreSFX);
-  // return [];
 }
 
 // EXTERNAL MODULE: ./shared/config.js
 var config = __webpack_require__(373);
+;// ./shared/utils.js
+/**
+ *
+ */
+var on = (() => {
+  if (window.addEventListener) {
+    return (target, type, listener) => {
+      if (target === null) {
+        console.log(
+          "[AWBW Improved Music Player] Could not add event listener: " + target + "/" + type,
+        );
+        return;
+      }
+      target.addEventListener(type, listener, false);
+    };
+  } else {
+    return (object, sEvent, fpNotify) => {
+      if (object === null) {
+        console.log(
+          "[AWBW Improved Music Player] Could not add event listener: " + object + "/" + sEvent,
+        );
+        return;
+      }
+      object.attachEvent("on" + sEvent, fpNotify);
+    };
+  }
+})();
+
 ;// ./music_player/settings_menu.js
+/**
+ * @file This file contains all the functions and variables relevant to the creation and behavior of the music player settings UI.
+ */
 
 
 
@@ -1128,7 +1381,10 @@ var config = __webpack_require__(373);
 
 
 
-// Used to close the right-click settings menu when you right-click twice
+/**
+ * Is the settings context menu (right-click) currently open?
+ * Used to close the right-click settings menu when you right-click twice
+ */
 let isSettingsMenuOpen = false;
 
 // Listen for setting changes to update the settings UI
@@ -1136,7 +1392,7 @@ addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the right-click context menu with the music player settings to the given node.
- * @param {*} musicPlayerDiv The node whose right click will open the context menu.
+ * @param {Element} musicPlayerDiv - The node whose right click will open the context menu.
  */
 function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
   // Add context menu to music player
@@ -1165,11 +1421,12 @@ function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
 }
 
 /**
- * Updates the music player settings menu (context menu) so it matches the internal settings when the settings change.
+ * Event handler that is triggered whenever the settings of the music player are changed.
+ * Updates the music player settings UI (context menu) so it matches the internal settings when the settings change.
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * @param {*} _key Key of the setting which has been changed.
+ * @param {string} key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
 function onSettingsChange(_key) {
   volumeSlider.value = musicPlayerSettings.volume;
@@ -1384,6 +1641,9 @@ versionDiv.appendChild(versionSpan);
 contextMenu.appendChild(versionDiv);
 
 ;// ./music_player/music_player_menu.js
+/**
+ * @file This file contains all the functions and variables relevant to the creation and behavior of the music player UI.
+ */
 
 
 
@@ -1402,8 +1662,9 @@ function addMusicPlayerMenu() {
 }
 
 /**
- * Sets the loading progress for the music player. Used when preloading audio.
- * @param {*} percentage Integer from 0 to 100 representing the progress of loading the music player.
+ * Sets the loading progress for the music player.
+ * Used when preloading audio.
+ * @param {number} percentage Integer from 0 to 100 representing the progress of loading the music player.
  */
 function setMusicPlayerLoadPercentage(percentage) {
   musicPlayerDivBackground.style.backgroundImage =
@@ -1412,14 +1673,15 @@ function setMusicPlayerLoadPercentage(percentage) {
 
 /**
  * Event handler for when the music button is clicked that turns the music ON/OFF.
+ * @param {*} _e - Click event handler, not used.
  */
 function onMusicBtnClick(_e) {
   musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
 }
 
 /**
- *
- * @param {*} key
+ * Event handler that is triggered whenever the settings of the music player are changed.
+ * @param {string} key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
 function music_player_menu_onSettingsChange(key) {
   if (key != "isPlaying") {
@@ -1497,68 +1759,42 @@ on(musicPlayerDivBackground, "click", onMusicBtnClick);
 
 
 /**
- *
- */
-let delayThemeMS = 0;
-let currentlyDelaying = false;
-
-/**
- *
+ * The URL of the current theme that is playing.
  */
 let currentThemeKey = "";
 
 /**
- *
+ * Map containing the audio players for all preloaded themes and sound effects.
+ * The keys are the preloaded audio URLs.
+ * @type {Map.<string, HTMLAudioElement>}
  */
 const urlAudioMap = new Map();
 
 /**
- *
+ * Map containing the audio players for all units.
+ * The keys are the unit IDs.
+ * @type {Map.<number, HTMLAudioElement>}
  */
 const unitIDAudioMap = new Map();
 
+/**
+ * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
+ */
+let currentlyDelaying = false;
+
+/**
+ * If delaying (see {@link currentlyDelaying}), this determines how long to wait before playing music again in milliseconds.
+ */
+let delayThemeMS = 0;
+
 // Listen for setting changes to update the internal variables accordingly
 addSettingsChangeListener(music_onSettingsChange);
-
-function playMusicURL(srcURL, loop = false) {
-  let currentTheme = urlAudioMap.get(currentThemeKey);
-
-  // We want to play the same song we already are playing
-  if (srcURL === currentThemeKey) {
-    // The song was paused, so resume it
-    if (currentTheme.paused) currentTheme.play();
-    return;
-  }
-
-  // We want to play a new song, so pause the previous one (if exists)
-  currentTheme?.pause();
-
-  // Start new theme
-  console.log("[AWBW Improved Music Player] Now Playing: " + srcURL);
-  currentThemeKey = srcURL;
-  currentTheme = urlAudioMap.get(srcURL);
-  currentTheme.volume = musicPlayerSettings.volume;
-  currentTheme.loop = loop;
-  currentTheme.play();
-}
-
-function playOneShotURL(srcURL, volume) {
-  let soundInstance = new Audio(srcURL);
-  soundInstance.currentTime = 0;
-  soundInstance.volume = volume;
-  soundInstance.play();
-}
-
-function playCOTheme(coName) {
-  let srcURL = getMusicURL(coName);
-  playMusicURL(srcURL, true);
-}
 
 /**
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
  */
-function playMusic() {
+function playThemeSong() {
   if (!musicPlayerSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -1568,7 +1804,7 @@ function playMusic() {
     // Delay until I say so
     setTimeout(() => {
       currentlyDelaying = false;
-      playMusic();
+      playThemeSong();
     }, delayThemeMS);
 
     delayThemeMS = 0;
@@ -1576,56 +1812,81 @@ function playMusic() {
     return;
   }
   let coName = isMapEditor ? "map-editor" : currentPlayer.coName;
-  playCOTheme(coName);
+  playMusicURL(getMusicURL(coName), true);
 }
 
 /**
- * Stops all music if there's any playing.
+ * Stops the current music if there's any playing.
  * Optionally, you can also delay the start of the next theme.
- * @param {*} delayMS (Optional) Time to delay before we start the next theme.
+ * @param {number} delayMS - (Optional) Time to delay before we start the next theme.
  */
-function stopMusic(delayMS = 0) {
-  delayThemeMS = delayMS;
+function stopThemeSong(delayMS = 0) {
+  if (!musicPlayerSettings.isPlaying) return;
 
+  // Delay the next theme if needed
+  if (delayMS > 0) delayThemeMS = delayMS;
+
+  // Can't stop if there's no loaded music
+  if (!urlAudioMap.has(currentThemeKey)) return;
+
+  // Can't stop if we are already paused
   let currentTheme = urlAudioMap.get(currentThemeKey);
-  currentTheme?.pause();
+  if (currentTheme.paused) return;
+
+  // The song hasn't finished loading, so stop it as soon as it does
+  if (currentTheme.readyState !== HTMLAudioElement.HAVE_ENOUGH_DATA) {
+    currentTheme.addEventListener("play", (event) => event.target.pause(), { once: true });
+    return;
+  }
+
+  // The song is loaded and playing, so pause it
+  currentTheme.pause();
 }
 
 /**
  * Plays the movement sound of the given unit.
- * @param {*} unitID The ID of the unit who is moving.
+ * @param {number} unitID - The ID of the unit who is moving.
  */
 function playMovementSound(unitID) {
   if (!musicPlayerSettings.isPlaying) return;
 
+  // The audio hasn't been preloaded for this unit
   if (!unitIDAudioMap.has(unitID)) {
     let unitName = getUnitName(unitID);
     let movementSoundURL = getMovementSoundURL(unitName);
     unitIDAudioMap.set(unitID, new Audio(movementSoundURL));
   }
 
+  // Restart the audio and then play it
   let movementAudio = unitIDAudioMap.get(unitID);
   movementAudio.currentTime = 0;
-  movementAudio.loop = true;
+  movementAudio.loop = false;
   movementAudio.volume = musicPlayerSettings.sfxVolume;
   movementAudio.play();
-  console.log("Moving: ", unitID, ",", movementAudio.src);
 }
 
 /**
  * Stops the movement sound of a given unit if it's playing.
- * @param {*} unitID The ID of the unit whose movement sound will be stopped.
+ * @param {number} unitID - The ID of the unit whose movement sound will be stopped.
  */
 function stopMovementSound(unitID) {
-  // Can't stop if there's nothing playing or nothing to be played
-  if (!musicPlayerSettings.isPlaying || !unitIDAudioMap.has(unitID)) return;
+  // Can't stop if there's nothing playing
+  if (!musicPlayerSettings.isPlaying) return;
+
+  // Can't stop if the unit doesn't have any sounds
+  if (!unitIDAudioMap.has(unitID)) return;
 
   // Can't stop if the sound is already stopped
   let movementAudio = unitIDAudioMap.get(unitID);
   if (movementAudio.paused) return;
 
-  // Stop sound
-  console.log("Pausing", unitID, ",", movementAudio.src);
+  // The audio hasn't finishing loading, so pause when it does
+  if (movementAudio.readyState != HTMLAudioElement.HAVE_ENOUGH_DATA) {
+    movementAudio.addEventListener("play", (event) => event.target.pause(), { once: true });
+    return;
+  }
+
+  // The audio is loaded and playing, so pause it
   movementAudio.pause();
   movementAudio.currentTime = 0;
 
@@ -1637,27 +1898,81 @@ function stopMovementSound(unitID) {
   }
 }
 
+/**
+ * Plays the given sound effect.
+ * @param {string} sfx - String representing a key in {@link gameSFX}.
+ */
 function playSFX(sfx) {
   if (!musicPlayerSettings.isPlaying) return;
 
-  // Figure out which volume to use
   let sfxURL = getSoundEffectURL(sfx);
+
+  // Figure out which volume to use
   let vol = musicPlayerSettings.sfxVolume;
   if (sfx.startsWith("sfx-ui")) {
     vol = musicPlayerSettings.uiVolume;
   }
-  playOneShotURL(sfxURL, vol);
+
+  // This sound effect hasn't been loaded yet
+  if (!urlAudioMap.has(sfxURL)) {
+    urlAudioMap.set(sfxURL, new Audio(sfxURL));
+  }
+
+  // The sound is loaded, so play it
+  let audio = urlAudioMap.get(sfxURL);
+  audio.volume = vol;
+  audio.currentTime = 0;
+  audio.play();
+}
+
+/**
+ * Stops all music, sound effects, and audios.
+ */
+function stopAllSounds() {
+  // Stop music
+  stopThemeSong();
+
+  // Stop unit sounds
+  for (let unitID in Object.keys(unitIDAudioMap)) {
+    stopMovementSound(unitID);
+  }
+
+  // Mute sound effects
+  for (let sfxURL in Object.keys(urlAudioMap)) {
+    sfxURL.volume = 0;
+  }
 }
 
 /**
  * Preloads the current game COs' themes and common sound effect audios.
- * @param {*} afterPreloadFunction Function to run after the audio is pre-loaded.
+ * Run this first so we can start the player almost immediately!
+ * @param {*} afterPreloadFunction - Function to run after the audio is pre-loaded.
  */
 function preloadCommonAudio(afterPreloadFunction) {
   // Preload the themes of the COs in this match
-  // We preload the themes for each game version
-  let audioList = [];
   let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
+  let audioList = coNames.map((name) => getMusicURL(name));
+
+  // Preload the most common UI sounds that might play right after the page loads
+  audioList.push(getSoundEffectURL(gameSFX.uiCursorMove));
+  audioList.push(getSoundEffectURL(gameSFX.uiUnitSelect));
+
+  preloadList(audioList, afterPreloadFunction);
+}
+
+/**
+ * Preloads the current game CO's themes for ALL game versions and ALL sound effect audios.
+ * Run this after the common audios since we have more time to get things ready for these.
+ * @param {*} afterPreloadFunction - Function to run after the audio is pre-loaded.
+ */
+function preloadExtraAudio(afterPreloadFunction) {
+  if (isMapEditor) return;
+
+  // Preload ALL sound effects
+  let audioList = getAllSoundEffectURLS();
+
+  // We preload the themes for each game version
+  let coNames = getAllCONames();
   for (let gameType in GAME_TYPE) {
     for (let themeType in THEME_TYPE) {
       let gameList = coNames.map((name) => getMusicURL(name, gameType, themeType));
@@ -1665,52 +1980,121 @@ function preloadCommonAudio(afterPreloadFunction) {
     }
   }
 
-  // Preload SFX
-  audioList = audioList.concat(getAllSoundEffectURLS());
+  preloadList(audioList, afterPreloadFunction);
+}
 
+/**
+ * Preloads the given list of songs and adds them to the {@link urlAudioMap}.
+ * @param {string[]} audioList - List of URLs of songs to preload.
+ * @param {*} afterPreloadFunction - Function to call after all songs are preloaded.
+ */
+function preloadList(audioList, afterPreloadFunction) {
   // Only unique audios, remove duplicates
   audioList = new Set(audioList);
 
+  // Event handler for when an audio is loaded
   let numLoadedAudios = 0;
-  let onLoadAudio = function () {
+  let onLoadAudio = (event) => {
+    // Update UI
     numLoadedAudios++;
     let loadPercentage = (numLoadedAudios / audioList.size) * 100;
     setMusicPlayerLoadPercentage(loadPercentage);
 
+    // If the audio loaded properly, then add it to our map
+    if (event.type !== "error") {
+      urlAudioMap.set(event.target.src, event.target);
+    }
+
+    // All the audio from the list has been loaded
     if (numLoadedAudios >= audioList.size) {
       if (afterPreloadFunction) afterPreloadFunction();
     }
   };
 
+  // Event handler when an audio isn't able to be loaded
   let onLoadAudioError = (event) => {
-    onLoadAudio();
-    console.log("[AWBW Improved Music Player] Could not pre-load: " + event.target.src);
+    // console.log("[AWBW Improved Music Player] Could not pre-load: ", event.target.src);
+    onLoadAudio(event);
   };
 
+  // Pre-load all audios in the list
   audioList.forEach((url) => {
+    // This audio has already been loaded before, so skip it
+    if (urlAudioMap.has(url)) {
+      numLoadedAudios++;
+      return;
+    }
     let audio = new Audio(url);
-    urlAudioMap.set(url, audio);
     audio.addEventListener("loadedmetadata", onLoadAudio, false);
     audio.addEventListener("error", onLoadAudioError, false);
   });
 }
 
 /**
+ * Changes the current song to the given new song, stopping the old song if necessary.
+ * @param {string} srcURL - URL of song to play.
+ * @param {boolean} loop - (Optional) Whether to loop the music or not, defaults to true.
+ */
+function playMusicURL(srcURL, loop = true) {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  // We want to play the same song we already are playing
+  let currentTheme = urlAudioMap.get(currentThemeKey);
+  if (srcURL === currentThemeKey) {
+    // The song was paused, so resume it
+    if (currentTheme.paused) currentTheme.play();
+    return;
+  }
+
+  // We want to play a new song, so pause the previous one
+  stopThemeSong();
+
+  // This is now the current song
+  currentThemeKey = srcURL;
+  console.log("[AWBW Improved Music Player] Now Playing: " + srcURL);
+
+  // The song isn't preloaded
+  if (!urlAudioMap.has(srcURL)) {
+    urlAudioMap.set(srcURL, new Audio(srcURL));
+  }
+
+  // Play the song
+  currentTheme = urlAudioMap.get(srcURL);
+  currentTheme.volume = musicPlayerSettings.volume;
+  currentTheme.loop = loop;
+  currentTheme.play();
+}
+
+/**
+ * Plays the given sound by creating a new instance of it.
+ * @param {string} srcURL - URL of the sound to play.
+ * @param {number} volume - Volume at which to play this sound.
+ */
+function playOneShotURL(srcURL, volume) {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  let soundInstance = new Audio(srcURL);
+  soundInstance.currentTime = 0;
+  soundInstance.volume = volume;
+  soundInstance.play();
+}
+
+/**
  * Updates the internal audio components to match the current music player settings when the settings change.
  *
- * @param {*} _key Key of the setting which has been changed.
+ * @param {*} _key - Key of the setting which has been changed.
  */
 function music_onSettingsChange(key) {
   switch (key) {
     case "isPlaying":
       if (musicPlayerSettings.isPlaying) {
-        playMusic();
+        playThemeSong();
       } else {
-        stopMusic();
+        stopAllSounds();
       }
       break;
     case "gameType":
-      playMusic();
+      playThemeSong();
       break;
     case "volume": {
       // Adjust the volume of the current theme
@@ -1720,14 +2104,376 @@ function music_onSettingsChange(key) {
       }
       break;
     }
-    case "sfxVolume":
-      // Very rare for these sound effects to be playing when messing with the settings
-      // but just in case adjust the volume as well
-      unitIDAudioMap.forEach((unitAudio) => {
-        unitAudio.volume = musicPlayerSettings.sfxVolume;
-      });
-      break;
   }
+}
+
+;// ./music_player/awbw_handlers.js
+/**
+ * @file This file contains all the AWBW website handlers that will intercept clicks and any relevant functions of the website.
+ */
+
+
+
+
+
+
+
+/**
+ * How long to wait in milliseconds before we register a cursor movement.
+ * Used to prevent overwhelming the user with too many cursor movement sound effects.
+ * @type {number}
+ */
+const CURSOR_THRESHOLD_MS = 25;
+
+/**
+ * Date representing when we last moved the game cursor.
+ * @type {number}
+ */
+let lastCursorCall = Date.now();
+
+/**
+ * Add all handlers that will intercept clicks and functions on the website
+ */
+function addSiteHandlers() {
+  // Replay Handlers
+  let refreshMusic = () => setTimeout(playThemeSong, 500);
+  on(replayForwardBtn, "click", refreshMusic);
+  on(replayForwardActionBtn, "click", refreshMusic);
+  on(replayBackwardBtn, "click", refreshMusic);
+  on(replayBackwardActionBtn, "click", refreshMusic);
+  on(replayOpenBtn, "click", refreshMusic);
+  on(replayCloseBtn, "click", refreshMusic);
+  on(replayDaySelectorCheckBox, "click", refreshMusic);
+
+  // Action Handlers
+  /* global updateCursor:writeable */
+  let ahCursorMove = updateCursor;
+  updateCursor = (cursorX, cursorY) => {
+    ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    if (Date.now() - lastCursorCall > CURSOR_THRESHOLD_MS) {
+      playSFX(gameSFX.uiCursorMove);
+    }
+    lastCursorCall = Date.now();
+  };
+
+  /* global openMenu:writeable */
+  let ahOpenMenu = openMenu;
+  let menuItemClick = false;
+  let menuOpen = false;
+  openMenu = (menu, x, y) => {
+    ahOpenMenu.apply(openMenu, [menu, x, y]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    console.log("menu open: " + menu + "," + x + "," + y);
+    let menuOptions = document.getElementsByClassName("menu-option");
+
+    for (var i = 0; i < menuOptions.length; i++) {
+      menuOptions[i].addEventListener("mouseover", function (e) {
+        if (e.target !== this) {
+          return;
+        }
+        playSFX(gameSFX.uiMenuMove);
+      });
+
+      on(menuOptions[i], "click", function () {
+        menuItemClick = true;
+      });
+    }
+
+    menuOpen = true;
+    playSFX(gameSFX.uiMenuOpen);
+  };
+
+  /* global closeMenu:writeable */
+  let ahCloseMenu = closeMenu;
+  closeMenu = () => {
+    ahCloseMenu.apply(closeMenu, []);
+    if (!musicPlayerSettings.isPlaying) return;
+    console.log("menu closed");
+
+    if (menuItemClick && menuOpen) {
+      playSFX(gameSFX.uiMenuOpen);
+    }
+    if (!menuItemClick && menuOpen) {
+      playSFX(gameSFX.uiMenuClose);
+    }
+
+    menuOpen = false;
+    menuItemClick = false;
+  };
+
+  /* global unitClickHandler:writeable */
+  let ahUnitClick = unitClickHandler;
+  unitClickHandler = (clicked) => {
+    ahUnitClick.apply(unitClickHandler, [clicked]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.uiUnitSelect);
+  };
+
+  /* global waitUnit:writeable */
+  let movementResponseMap = new Map();
+  let ahWait = waitUnit;
+  waitUnit = (unitID) => {
+    ahWait.apply(waitUnit, [unitID]);
+    stopMovementSound(unitID);
+
+    if (movementResponseMap.has(unitID)) {
+      let response = movementResponseMap.get(unitID);
+      if (response.trapped) {
+        playSFX(gameSFX.actionUnitTrap);
+      }
+      movementResponseMap.delete(unitID);
+    }
+  };
+
+  /* global animExplosion:writeable */
+  // Catches both actionHandlers.Delete and actionHandlers.Explode
+  let ahExplodeAnim = animExplosion;
+  animExplosion = (unit) => {
+    ahExplodeAnim.apply(animExplosion, [unit]);
+    playSFX(gameSFX.actionUnitExplode);
+
+    /** @todo Black bombs */
+  };
+
+  /* global updateAirUnitFogOnMove:writeable */
+  let ahFog = updateAirUnitFogOnMove;
+  updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change) => {
+    ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    debugger;
+
+    var delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
+    if (change === "Add") {
+      // setTimeout(() => stopMovementSound(), delay);
+    }
+  };
+
+  /* global actionHandlers:writeable */
+  let ahFire = actionHandlers.Fire;
+  actionHandlers.Fire = (fireResponse) => {
+    if (!musicPlayerSettings.isPlaying) {
+      ahFire.apply(actionHandlers.Fire, [fireResponse]);
+      return;
+    }
+
+    let attackerID = fireResponse.copValues.attacker.playerId;
+    let defenderID = fireResponse.copValues.defender.playerId;
+
+    // Calculate charge before attack
+    let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
+    let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
+    let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
+    let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
+
+    // Let the attack proceed normally
+    ahFire.apply(actionHandlers.Fire, [fireResponse]);
+
+    // Check if the attack gave enough charge for a power to either side
+    // Give it a little bit of time for the animation if needed
+    var delay = gameAnimations ? 750 : 0;
+    setTimeout(() => {
+      let canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
+      let canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
+
+      let canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
+      let canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
+
+      let madeSCOPAvailable =
+        (!couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter) ||
+        (!couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter);
+
+      let madeCOPAvailable =
+        (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
+        (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
+
+      if (madeSCOPAvailable) {
+        playSFX(gameSFX.actionSuperCOPowerAvailable);
+      } else if (madeCOPAvailable) {
+        playSFX(gameSFX.actionCOPowerAvailable);
+      }
+    }, delay);
+  };
+
+  let ahAttackSeam = actionHandlers.AttackSeam;
+  actionHandlers.AttackSeam = (seamResponse) => {
+    ahAttackSeam.apply(actionHandlers.AttackSeam, [seamResponse]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    // TODO:
+    // playSFX(gameSFX.actionUnitExplode);
+  };
+
+  let ahMove = actionHandlers.Move;
+  actionHandlers.Move = (moveResponse, loadFlag) => {
+    ahMove.apply(actionHandlers.Move, [moveResponse, loadFlag]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    let unitID = moveResponse.unit.units_id;
+    movementResponseMap.set(unitID, moveResponse);
+
+    var movementDist = moveResponse.path.length;
+    if (movementDist > 1) {
+      playMovementSound(unitID);
+    }
+  };
+
+  let ahCapt = actionHandlers.Capt;
+  actionHandlers.Capt = (captData) => {
+    ahCapt.apply(actionHandlers.Capt, [captData]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    let isValid = captData != undefined;
+    if (!isValid) return;
+
+    // They didn't finish the capture
+    let finishedCapture = captData.newIncome != null;
+    if (!finishedCapture) {
+      playSFX(gameSFX.actionCaptureProgress);
+      return;
+    }
+
+    // The unit is done capping this property
+    let myID = getMyID();
+    let isSpectator = isPlayerSpectator(myID);
+    let isMyCapture = isSpectator || captData?.buildingInfo.buildings_team === myID;
+    let sfx = isMyCapture ? gameSFX.actionCaptureAlly : gameSFX.actionCaptureEnemy;
+    playSFX(sfx);
+  };
+
+  let ahBuild = actionHandlers.Build;
+  actionHandlers.Build = (buildData) => {
+    ahBuild.apply(actionHandlers.Build, [buildData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.actionUnitSupply);
+  };
+
+  let ahLoad = actionHandlers.Load;
+  actionHandlers.Load = (loadData) => {
+    ahLoad.apply(actionHandlers.Load, [loadData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.actionUnitLoad);
+  };
+
+  let ahUnload = actionHandlers.Unload;
+  actionHandlers.Unload = (unloadData) => {
+    ahUnload.apply(actionHandlers.Unload, [unloadData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.actionUnitUnload);
+  };
+
+  let ahSupply = actionHandlers.Supply;
+  actionHandlers.Supply = (supplyRes) => {
+    ahSupply.apply(actionHandlers.Supply, [supplyRes]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    // We could play the sfx for each supplied unit in the list
+    // but instead we decided to play the supply sound once.
+    playSFX(gameSFX.actionUnitSupply);
+  };
+
+  let ahRepair = actionHandlers.Repair;
+  actionHandlers.Repair = (repairData) => {
+    ahRepair.apply(actionHandlers.Repair, [repairData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.actionUnitSupply);
+  };
+
+  let ahHide = actionHandlers.Hide;
+  actionHandlers.Hide = (hideData) => {
+    ahHide.apply(actionHandlers.Hide, [hideData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.actionUnitHide);
+  };
+
+  let ahUnhide = actionHandlers.Unhide;
+  actionHandlers.Unhide = (unhideData) => {
+    ahUnhide.apply(actionHandlers.Unhide, [unhideData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playSFX(gameSFX.actionUnitUnhide);
+  };
+
+  let ahJoin = actionHandlers.Join;
+  actionHandlers.Join = (joinData) => {
+    ahJoin.apply(actionHandlers.Join, [joinData]);
+    if (!musicPlayerSettings.isPlaying) return;
+    stopMovementSound(joinData.joinID);
+  };
+
+  // let ahDelete = actionHandlers.Delete;
+  // actionHandlers.Delete = (deleteData) => {
+  //   ahDelete.apply(actionHandlers.Delete, [deleteData]);
+  //   playSFX(gameSFX.actionUnitExplode);
+  // };
+
+  // let ahExplode = actionHandlers.Explode;
+  // actionHandlers.Explode = (data) => {
+  //   ahExplode.apply(actionHandlers.Explode, [data]);
+  // };
+
+  let ahLaunch = actionHandlers.Launch;
+  actionHandlers.Launch = (data) => {
+    ahLaunch.apply(actionHandlers.Launch, [data]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    playSFX(gameSFX.actionMissileSend);
+    setTimeout(() => playSFX(gameSFX.actionMissileHit), siloDelayMS);
+  };
+
+  let ahNextTurn = actionHandlers.NextTurn;
+  actionHandlers.NextTurn = (nextTurnRes) => {
+    ahNextTurn.apply(actionHandlers.NextTurn, [nextTurnRes]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    playThemeSong();
+  };
+
+  let ahElimination = actionHandlers.Elimination;
+  actionHandlers.Elimination = (eliminationRes) => {
+    ahElimination.apply(actionHandlers.Elimination, [eliminationRes]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    debugger;
+  };
+
+  let ahPower = actionHandlers.Power;
+  actionHandlers.Power = (powerRes) => {
+    ahPower.apply(actionHandlers.Power, [powerRes]);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    let coName = powerRes.coName;
+    let isSuperCOPower = powerRes.coPower === "S";
+    let isBH = isBlackHoleCO(coName);
+
+    if (isSuperCOPower) {
+      let sfx = isBH ? gameSFX.actionBHActivateSCOP : gameSFX.actionAllyActivateSCOP;
+      playSFX(sfx);
+      stopThemeSong(2500);
+    }
+  };
+
+  // let ahSetDraw = actionHandlers.SetDraw;
+  // actionHandlers.SetDraw = (drawData) => {
+  //   ahSetDraw.apply(actionHandlers.SetDraw, [drawData]);
+  //   debugger;
+  // };
+
+  // let ahResign = actionHandlers.Resign;
+  // actionHandlers.Resign = (resignRes) => {
+  //   ahResign.apply(actionHandlers.Resign, [resignRes]);
+  //   debugger;
+  // }
+
+  let ahGameOver = actionHandlers.GameOver;
+  actionHandlers.GameOver = () => {
+    ahGameOver.apply(actionHandlers.GameOver, []);
+    if (!musicPlayerSettings.isPlaying) return;
+
+    debugger;
+  };
 }
 
 // EXTERNAL MODULE: ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js
@@ -1778,7 +2524,18 @@ var update = injectStylesIntoStyleTag_default()(style/* default */.A, options);
        /* harmony default export */ const music_player_style = (style/* default */.A && style/* default */.A.locals ? style/* default */.A.locals : undefined);
 
 ;// ./music_player/main.js
-
+/**
+ * @file AWBW Improved Music Player's main script that loads everything.
+ *
+ * @todo Edit DS/MapTheme with Audacity
+ * @todo DS character themes for AW1/AW2/AW_RBC
+ * @todo Add shuffle
+ * @todo Alternate themes
+ * @todo Factory themes for RBC
+ * @todo CSS from code to .css file
+ * @todo More settings
+ * @todo Finish documentation
+ */
 
 
 
@@ -1789,332 +2546,18 @@ var update = injectStylesIntoStyleTag_default()(style/* default */.A, options);
 // Add our CSS to the page using webpack
 
 
-function addReplayHandlers() {
-  let refreshMusic = () => setTimeout(playMusic, 500);
-
-  on(replayForwardBtn, "click", refreshMusic);
-  on(replayForwardActionBtn, "click", refreshMusic);
-  on(replayBackwardBtn, "click", refreshMusic);
-  on(replayBackwardActionBtn, "click", refreshMusic);
-  on(replayOpenBtn, "click", refreshMusic);
-  on(replayCloseBtn, "click", refreshMusic);
-  on(replayDaySelectorCheckBox, "click", refreshMusic);
-}
-
-// Action Handlers
-
-/* global updateCursor:writeable */
-let ahCursorMove = updateCursor;
-let lastCursorCall = Date.now();
-const CURSOR_THRESHOLD = 25;
-
-updateCursor = (cursorX, cursorY) => {
-  ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
-  if (!musicPlayerSettings.isPlaying) return;
-
-  if (Date.now() - lastCursorCall > CURSOR_THRESHOLD) {
-    playSFX(gameSFX.uiCursorMove);
-  }
-  lastCursorCall = Date.now();
-};
-
-/* global openMenu:writeable */
-let ahOpenMenu = openMenu;
-let menuItemClick = false;
-let menuOpen = false;
-openMenu = (menu, x, y) => {
-  ahOpenMenu.apply(openMenu, [menu, x, y]);
-  if (!musicPlayerSettings.isPlaying) return;
-
-  console.log("menu open: " + menu + "," + x + "," + y);
-  let menuOptions = document.getElementsByClassName("menu-option");
-
-  for (var i = 0; i < menuOptions.length; i++) {
-    menuOptions[i].addEventListener("mouseover", function (e) {
-      if (e.target !== this) {
-        return;
-      }
-      playSFX(gameSFX.uiMenuMove);
-    });
-
-    on(menuOptions[i], "click", function () {
-      menuItemClick = true;
-    });
-  }
-
-  menuOpen = true;
-  playSFX(gameSFX.uiMenuOpen);
-};
-
-/* global closeMenu:writeable */
-let ahCloseMenu = closeMenu;
-closeMenu = () => {
-  ahCloseMenu.apply(closeMenu, []);
-  if (!musicPlayerSettings.isPlaying) return;
-  console.log("menu closed");
-
-  if (menuItemClick && menuOpen) {
-    playSFX(gameSFX.uiMenuOpen);
-  }
-  if (!menuItemClick && menuOpen) {
-    playSFX(gameSFX.uiMenuClose);
-  }
-
-  menuOpen = false;
-  menuItemClick = false;
-};
-
-/* global unitClickHandler:writeable */
-let ahUnitClick = unitClickHandler;
-unitClickHandler = (clicked) => {
-  ahUnitClick.apply(unitClickHandler, [clicked]);
-  if (!musicPlayerSettings.isPlaying) return;
-  playSFX(gameSFX.uiUnitSelect);
-};
-
-/* global waitUnit:writeable */
-let movementResponseMap = new Map();
-let ahWait = waitUnit;
-waitUnit = (unitID) => {
-  ahWait.apply(waitUnit, [unitID]);
-  stopMovementSound(unitID);
-
-  if (movementResponseMap.has(unitID)) {
-    let response = movementResponseMap.get(unitID);
-    if (response.trapped) {
-      playSFX(gameSFX.actionUnitTrap);
-    }
-    movementResponseMap.delete(unitID);
-  }
-};
-
-/* global updateAirUnitFogOnMove:writeable */
-let ahFog = updateAirUnitFogOnMove;
-updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change) => {
-  ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change]);
-
-  if (!musicPlayerSettings.isPlaying) return;
-  debugger;
-
-  var delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
-  if (change === "Add") {
-    // setTimeout(() => stopMovementSound(), delay);
-  }
-};
-
-/* global actionHandlers:writeable */
-let ahFire = actionHandlers.Fire;
-actionHandlers.Fire = (fireResponse) => {
-  let attackerID = fireResponse.copValues.attacker.playerId;
-  let defenderID = fireResponse.copValues.defender.playerId;
-
-  // Calculate charge before attack
-  let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
-  let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
-  let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
-  let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
-
-  // Let the attack proceed normally
-  ahFire.apply(actionHandlers.Fire, [fireResponse]);
-
-  // Check if the attack gave enough charge for a power to either side
-  // Give it a little bit of time for the animation if needed
-  var delay = gameAnimations ? 750 : 0;
-  setTimeout(() => {
-    let canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
-    let canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
-
-    let canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
-    let canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
-
-    let madeSCOPAvailable =
-      (!couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter) ||
-      (!couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter);
-
-    let madeCOPAvailable =
-      (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
-      (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
-
-    if (madeSCOPAvailable) {
-      playSFX(gameSFX.actionSuperCOPowerAvailable);
-    } else if (madeCOPAvailable) {
-      playSFX(gameSFX.actionCOPowerAvailable);
-    }
-  }, delay);
-};
-
-let ahAttackSeam = actionHandlers.AttackSeam;
-actionHandlers.AttackSeam = (seamResponse) => {
-  ahAttackSeam.apply(actionHandlers.AttackSeam, [seamResponse]);
-};
-
-let ahMove = actionHandlers.Move;
-actionHandlers.Move = (moveResponse, loadFlag) => {
-  ahMove.apply(actionHandlers.Move, [moveResponse, loadFlag]);
-  let unitID = moveResponse.unit.units_id;
-  movementResponseMap.set(unitID, moveResponse);
-
-  var movementDist = moveResponse.path.length;
-  if (movementDist > 1) {
-    playMovementSound(unitID);
-  }
-};
-
-let ahCapt = actionHandlers.Capt;
-actionHandlers.Capt = (captData) => {
-  ahCapt.apply(actionHandlers.Capt, [captData]);
-  playSFX(gameSFX.actionCaptureProgress);
-
-  let isValid = captData != undefined && captData.newIncome != null;
-  if (!isValid) return;
-
-  let myID = getMyID();
-  let isSpectator = isPlayerSpectator(myID);
-  let isMyCapture = isSpectator || captData?.buildingInfo.buildings_team == myID;
-
-  let sfx = isMyCapture ? gameSFX.actionCaptureAlly : gameSFX.actionCaptureEnemy;
-  playSFX(sfx);
-};
-
-let ahBuild = actionHandlers.Build;
-actionHandlers.Build = (buildData) => {
-  ahBuild.apply(actionHandlers.Build, [buildData]);
-  playSFX(gameSFX.actionUnitSupply);
-};
-
-let ahLoad = actionHandlers.Load;
-actionHandlers.Load = (loadData) => {
-  ahLoad.apply(actionHandlers.Load, [loadData]);
-  playSFX(gameSFX.actionUnitLoad);
-};
-
-let ahUnload = actionHandlers.Unload;
-actionHandlers.Unload = (unloadData) => {
-  ahUnload.apply(actionHandlers.Unload, [unloadData]);
-  playSFX(gameSFX.actionUnitUnload);
-};
-
-let ahSupply = actionHandlers.Supply;
-actionHandlers.Supply = (supplyRes) => {
-  ahSupply.apply(actionHandlers.Supply, [supplyRes]);
-
-  // We could play the sfx for each supplied unit in the list
-  // but instead we decided to play the supply sound once.
-  playSFX(gameSFX.actionUnitSupply);
-};
-
-let ahRepair = actionHandlers.Repair;
-actionHandlers.Repair = (repairData) => {
-  ahRepair.apply(actionHandlers.Repair, [repairData]);
-  playSFX(gameSFX.actionUnitSupply);
-};
-
-let ahHide = actionHandlers.Hide;
-actionHandlers.Hide = (hideData) => {
-  ahHide.apply(actionHandlers.Hide, [hideData]);
-  playSFX(gameSFX.actionUnitHide);
-};
-
-let ahUnhide = actionHandlers.Unhide;
-actionHandlers.Unhide = (unhideData) => {
-  ahUnhide.apply(actionHandlers.Unhide, [unhideData]);
-  playSFX(gameSFX.actionUnitUnhide);
-};
-
-let ahJoin = actionHandlers.Join;
-actionHandlers.Join = (joinData) => {
-  ahJoin.apply(actionHandlers.Join, [joinData]);
-  stopMovementSound(joinData.joinID);
-};
-
-let ahExplodeAnim = animExplosion;
-animExplosion = (unit) => {
-  ahExplodeAnim.apply(animExplosion, [unit]);
-  playSFX(gameSFX.actionUnitExplode);
-};
-
-// let ahDelete = actionHandlers.Delete;
-// actionHandlers.Delete = (deleteData) => {
-//   ahDelete.apply(actionHandlers.Delete, [deleteData]);
-//   playSFX(gameSFX.actionUnitExplode);
-// };
-
-// let ahExplode = actionHandlers.Explode;
-// actionHandlers.Explode = (data) => {
-//   ahExplode.apply(actionHandlers.Explode, [data]);
-// };
-
-let ahLaunch = actionHandlers.Launch;
-actionHandlers.Launch = (data) => {
-  ahLaunch.apply(actionHandlers.Launch, [data]);
-  playSFX(gameSFX.actionMissleSend);
-
-  var siloDelay = gameAnimations ? 3000 : 0;
-  setTimeout(() => playSFX(gameSFX.actionMissileHit), siloDelay);
-};
-
-let ahNextTurn = actionHandlers.NextTurn;
-actionHandlers.NextTurn = (nextTurnRes) => {
-  ahNextTurn.apply(actionHandlers.NextTurn, [nextTurnRes]);
-  playMusic();
-};
-
-let ahElimination = actionHandlers.Elimination;
-actionHandlers.Elimination = (eliminationRes) => {
-  ahElimination.apply(actionHandlers.Elimination, [eliminationRes]);
-  debugger;
-};
-
-let ahPower = actionHandlers.Power;
-actionHandlers.Power = (powerRes) => {
-  ahPower.apply(actionHandlers.Power, [powerRes]);
-
-  let coName = powerRes.coName;
-  let isSuperCOPower = powerRes.coPower === "S";
-  let isBH = isBlackHoleCO(coName);
-
-  if (isSuperCOPower) {
-    let sfx = isBH ? gameSFX.actionBHActivateSCOP : gameSFX.actionAllyActivateSCOP;
-    playSFX(sfx);
-    stopMusic(2500);
-  }
-};
-
-let ahSetDraw = actionHandlers.SetDraw;
-actionHandlers.SetDraw = (drawData) => {
-  ahSetDraw.apply(actionHandlers.SetDraw, [drawData]);
-  debugger;
-};
-
-// let ahResign = actionHandlers.Resign;
-// actionHandlers.Resign = (resignRes) => {
-//   ahResign.apply(actionHandlers.Resign, [resignRes]);
-//   debugger;
-// }
-
-let ahGameOver = actionHandlers.GameOver;
-actionHandlers.GameOver = () => {
-  ahGameOver.apply(actionHandlers.GameOver, []);
-  debugger;
-};
-
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-console.log("Script");
-function afterPreload() {
-  console.log("[AWBW Improved Music Player] All audio has been pre-loaded!");
+addMusicPlayerMenu();
+addSiteHandlers();
+preloadCommonAudio(() => {
+  console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 
-  addMusicPlayerMenu();
-  addReplayHandlers();
   loadSettingsFromLocalStorage();
 
-  // TODO: Temporary
-  // Better to play music after preloading audio
-  // Play the music after letting everything load a bit
-  playMusic();
-  // setTimeout(() => playMusic(), 500);
-}
-
-preloadCommonAudio(afterPreload);
+  preloadExtraAudio(() => {
+    console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+  });
+});
 

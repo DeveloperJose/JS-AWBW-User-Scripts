@@ -1,11 +1,15 @@
+/**
+ * @file This file contains the state of the music player settings and the saving/loading functionality, no UI functionality.
+ * Note: For Enums in pure JS we just have objects where the keys and values match, it's the easiest solution
+ */
+
 import { currentPlayer } from "../shared/awbw_site";
 
-export const STORAGE_KEY = "musicPlayerSettings";
-
-// Enums
-// Keys and values must match exactly for it to work properly
-// It's the easiest solution
-
+/**
+ * Enum that represents which game we want the music player to use for its music.
+ * @readonly
+ * @enum {string}
+ */
 export const GAME_TYPE = Object.freeze({
   AW1: "AW1",
   AW2: "AW2",
@@ -13,37 +17,63 @@ export const GAME_TYPE = Object.freeze({
   AW_DS: "AW_DS",
 });
 
+/**
+ * Enum that represents music theme types like regular or power.
+ * @readonly
+ * @enum {string}
+ */
 export const THEME_TYPE = Object.freeze({
   REGULAR: "REGULAR",
   CO_POWER: "CO_POWER",
   SUPER_CO_POWER: "SUPER_CO_POWER",
 });
 
+/**
+ * Map that takes a given coPowerState from a player and returns the appropriate theme type enum.
+ */
 const coPowerStateToThemeType = new Map([
   ["N", THEME_TYPE.REGULAR],
   ["Y", THEME_TYPE.CO_POWER],
   ["S", THEME_TYPE.SUPER_CO_POWER],
 ]);
 
+/**
+ * Gets the theme type enum corresponding to the CO Power state for the current CO.
+ * @returns {THEME_TYPE} The THEME_TYPE enum for the current CO Power state.
+ */
 export function getCurrentThemeType() {
   let currentCOPowerState = currentPlayer.coPowerState;
   return coPowerStateToThemeType.get(currentCOPowerState);
 }
 
+/**
+ * String used as the key for storing settings in LocalStorage
+ */
+const STORAGE_KEY = "musicPlayerSettings";
+
+/**
+ * List of listener functions that will be called anytime settings are changed.
+ */
 const onSettingsChangeListeners = [];
+
+/**
+ * Adds a new listener function that will be called whenever a setting changes.
+ * @param {*} fn Function to call when a setting changes.
+ */
 export function addSettingsChangeListener(fn) {
   onSettingsChangeListeners.push(fn);
 }
 
+/**
+ * The music player settings' current internal state.
+ * DO NOT EDIT __ prefix variables, use the properties!
+ */
 export const musicPlayerSettings = {
   __isPlaying: false,
   __volume: 0.5,
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
   __gameType: GAME_TYPE.AW_DS,
-
-  // TODO: Shuffle
-  // TODO: Alternate Themes
 
   set isPlaying(val) {
     this.__isPlaying = val;
@@ -81,10 +111,13 @@ export const musicPlayerSettings = {
   },
 
   set gameType(val) {
-    // TODO: Validate
+    /** @todo: Validate */
     this.__gameType = val;
     this.onSettingChangeEvent("gameType");
   },
+  /**
+   * @type {GAME_TYPE}
+   */
   get gameType() {
     return this.__gameType;
   },
