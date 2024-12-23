@@ -16,7 +16,6 @@ import {
   isPlayerSpectator,
   siloDelayMS,
 } from "../shared/awbw_site";
-import { on } from "../shared/utils";
 import {
   playThemeSong,
   playSFX,
@@ -27,6 +26,12 @@ import {
 import { musicPlayerSettings } from "./music_settings";
 import { gameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_site";
+
+/**
+ * @callback ahCursorMove
+ * @param {number} cursorX -
+ * @param {number} cursorY -
+ */
 
 /**
  * How long to wait in milliseconds before we register a cursor movement.
@@ -47,17 +52,59 @@ let lastCursorCall = Date.now();
 export function addSiteHandlers() {
   // Replay Handlers
   let refreshMusic = () => setTimeout(playThemeSong, 500);
-  on(replayForwardBtn, "click", refreshMusic);
-  on(replayForwardActionBtn, "click", refreshMusic);
-  on(replayBackwardBtn, "click", refreshMusic);
-  on(replayBackwardActionBtn, "click", refreshMusic);
-  on(replayOpenBtn, "click", refreshMusic);
-  on(replayCloseBtn, "click", refreshMusic);
-  on(replayDaySelectorCheckBox, "click", refreshMusic);
+  replayForwardBtn.addEventListener("click", refreshMusic);
+  replayForwardActionBtn.addEventListener("click", refreshMusic);
+  replayBackwardBtn.addEventListener("click", refreshMusic);
+  replayBackwardActionBtn.addEventListener("click", refreshMusic);
+  replayOpenBtn.addEventListener("click", refreshMusic);
+  replayCloseBtn.addEventListener("click", refreshMusic);
+  replayDaySelectorCheckBox.addEventListener("click", refreshMusic);
 
   // Action Handlers
   /* global updateCursor:writeable */
+  /* global openMenu:writeable */
+  /* global closeMenu:writeable */
+  /* global unitClickHandler:writeable */
+  /* global waitUnit:writeable */
+  /* global animExplosion:writeable */
+  /* global updateAirUnitFogOnMove:writeable */
+  /* global actionHandlers:writeable */
+
+  let ahOpenMenu = openMenu;
   let ahCursorMove = updateCursor;
+  let ahCloseMenu = closeMenu;
+  let ahUnitClick = unitClickHandler;
+  let ahWait = waitUnit;
+  // Catches both actionHandlers.Delete and actionHandlers.Explode
+  let ahExplodeAnim = animExplosion;
+  let ahFog = updateAirUnitFogOnMove;
+  let ahFire = actionHandlers.Fire;
+  let ahAttackSeam = actionHandlers.AttackSeam;
+  let ahMove = actionHandlers.Move;
+  let ahCapt = actionHandlers.Capt;
+  let ahBuild = actionHandlers.Build;
+  let ahLoad = actionHandlers.Load;
+  let ahUnload = actionHandlers.Unload;
+  let ahSupply = actionHandlers.Supply;
+  let ahRepair = actionHandlers.Repair;
+  let ahHide = actionHandlers.Hide;
+  let ahUnhide = actionHandlers.Unhide;
+  let ahJoin = actionHandlers.Join;
+  // let ahDelete = actionHandlers.Delete;
+  // let ahExplode = actionHandlers.Explode;
+  let ahLaunch = actionHandlers.Launch;
+  let ahNextTurn = actionHandlers.NextTurn;
+  let ahElimination = actionHandlers.Elimination;
+  let ahPower = actionHandlers.Power;
+  // let ahSetDraw = actionHandlers.SetDraw;
+  // let ahResign = actionHandlers.Resign;
+  let ahGameOver = actionHandlers.GameOver;
+
+  /**
+   * Function called when the cursor is moved in the game.
+   * @param {number} cursorX - The x coordinate of the cursor inside the game grid.
+   * @param {number} cursorY - The y coordinate of the cursor inside the game grid.
+   */
   updateCursor = (cursorX, cursorY) => {
     ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -68,10 +115,15 @@ export function addSiteHandlers() {
     lastCursorCall = Date.now();
   };
 
-  /* global openMenu:writeable */
-  let ahOpenMenu = openMenu;
   let menuItemClick = false;
   let menuOpen = false;
+
+  /**
+   * Function called when the action menu is opened after you move a unit.
+   * @param {HTMLDivElement} menu -
+   * @param {number} x -
+   * @param {number} y -
+   */
   openMenu = (menu, x, y) => {
     ahOpenMenu.apply(openMenu, [menu, x, y]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -80,24 +132,21 @@ export function addSiteHandlers() {
     let menuOptions = document.getElementsByClassName("menu-option");
 
     for (var i = 0; i < menuOptions.length; i++) {
-      menuOptions[i].addEventListener("mouseover", function (e) {
-        if (e.target !== this) {
-          return;
-        }
+      menuOptions[i].addEventListener("mouseover", (event) => {
+        if (event.target !== this) return;
         playSFX(gameSFX.uiMenuMove);
       });
 
-      on(menuOptions[i], "click", function () {
-        menuItemClick = true;
-      });
+      menuOptions[i].addEventListener("click", (_event) => (menuItemClick = true));
     }
 
     menuOpen = true;
     playSFX(gameSFX.uiMenuOpen);
   };
 
-  /* global closeMenu:writeable */
-  let ahCloseMenu = closeMenu;
+  /**
+   * Function called when the action menu is closed after you select an action or cancel.
+   */
   closeMenu = () => {
     ahCloseMenu.apply(closeMenu, []);
     if (!musicPlayerSettings.isPlaying) return;
@@ -114,17 +163,13 @@ export function addSiteHandlers() {
     menuItemClick = false;
   };
 
-  /* global unitClickHandler:writeable */
-  let ahUnitClick = unitClickHandler;
   unitClickHandler = (clicked) => {
     ahUnitClick.apply(unitClickHandler, [clicked]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.uiUnitSelect);
   };
 
-  /* global waitUnit:writeable */
   let movementResponseMap = new Map();
-  let ahWait = waitUnit;
   waitUnit = (unitID) => {
     ahWait.apply(waitUnit, [unitID]);
     stopMovementSound(unitID);
@@ -138,18 +183,17 @@ export function addSiteHandlers() {
     }
   };
 
-  /* global animExplosion:writeable */
-  // Catches both actionHandlers.Delete and actionHandlers.Explode
-  let ahExplodeAnim = animExplosion;
+  /**
+   * @param {import("../shared/awbw_site").UnitInfo} unit - Unit info for the unit that will explode.
+   */
   animExplosion = (unit) => {
     ahExplodeAnim.apply(animExplosion, [unit]);
-    playSFX(gameSFX.actionUnitExplode);
-
-    /** @todo Black bombs */
+    let sfx =
+      unit?.units_name === "Black Bomb" ? gameSFX.actionMissileHit : gameSFX.actionUnitExplode;
+    console.log("Exploded", unit);
+    playSFX(sfx);
   };
 
-  /* global updateAirUnitFogOnMove:writeable */
-  let ahFog = updateAirUnitFogOnMove;
   updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change) => {
     ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -162,8 +206,6 @@ export function addSiteHandlers() {
     }
   };
 
-  /* global actionHandlers:writeable */
-  let ahFire = actionHandlers.Fire;
   actionHandlers.Fire = (fireResponse) => {
     if (!musicPlayerSettings.isPlaying) {
       ahFire.apply(actionHandlers.Fire, [fireResponse]);
@@ -208,16 +250,13 @@ export function addSiteHandlers() {
     }, delay);
   };
 
-  let ahAttackSeam = actionHandlers.AttackSeam;
   actionHandlers.AttackSeam = (seamResponse) => {
     ahAttackSeam.apply(actionHandlers.AttackSeam, [seamResponse]);
     if (!musicPlayerSettings.isPlaying) return;
-
-    // TODO:
-    // playSFX(gameSFX.actionUnitExplode);
+    console.log("Pipe seam", seamResponse);
+    playSFX(gameSFX.actionUnitAttackPipeSeam);
   };
 
-  let ahMove = actionHandlers.Move;
   actionHandlers.Move = (moveResponse, loadFlag) => {
     ahMove.apply(actionHandlers.Move, [moveResponse, loadFlag]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -231,7 +270,6 @@ export function addSiteHandlers() {
     }
   };
 
-  let ahCapt = actionHandlers.Capt;
   actionHandlers.Capt = (captData) => {
     ahCapt.apply(actionHandlers.Capt, [captData]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -254,28 +292,24 @@ export function addSiteHandlers() {
     playSFX(sfx);
   };
 
-  let ahBuild = actionHandlers.Build;
   actionHandlers.Build = (buildData) => {
     ahBuild.apply(actionHandlers.Build, [buildData]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.actionUnitSupply);
   };
 
-  let ahLoad = actionHandlers.Load;
   actionHandlers.Load = (loadData) => {
     ahLoad.apply(actionHandlers.Load, [loadData]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.actionUnitLoad);
   };
 
-  let ahUnload = actionHandlers.Unload;
   actionHandlers.Unload = (unloadData) => {
     ahUnload.apply(actionHandlers.Unload, [unloadData]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.actionUnitUnload);
   };
 
-  let ahSupply = actionHandlers.Supply;
   actionHandlers.Supply = (supplyRes) => {
     ahSupply.apply(actionHandlers.Supply, [supplyRes]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -285,46 +319,39 @@ export function addSiteHandlers() {
     playSFX(gameSFX.actionUnitSupply);
   };
 
-  let ahRepair = actionHandlers.Repair;
   actionHandlers.Repair = (repairData) => {
     ahRepair.apply(actionHandlers.Repair, [repairData]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.actionUnitSupply);
   };
 
-  let ahHide = actionHandlers.Hide;
   actionHandlers.Hide = (hideData) => {
     ahHide.apply(actionHandlers.Hide, [hideData]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.actionUnitHide);
   };
 
-  let ahUnhide = actionHandlers.Unhide;
   actionHandlers.Unhide = (unhideData) => {
     ahUnhide.apply(actionHandlers.Unhide, [unhideData]);
     if (!musicPlayerSettings.isPlaying) return;
     playSFX(gameSFX.actionUnitUnhide);
   };
 
-  let ahJoin = actionHandlers.Join;
   actionHandlers.Join = (joinData) => {
     ahJoin.apply(actionHandlers.Join, [joinData]);
     if (!musicPlayerSettings.isPlaying) return;
     stopMovementSound(joinData.joinID);
+    stopMovementSound(joinData.joinedUnit.units_id);
   };
 
-  // let ahDelete = actionHandlers.Delete;
   // actionHandlers.Delete = (deleteData) => {
   //   ahDelete.apply(actionHandlers.Delete, [deleteData]);
-  //   playSFX(gameSFX.actionUnitExplode);
   // };
 
-  // let ahExplode = actionHandlers.Explode;
   // actionHandlers.Explode = (data) => {
   //   ahExplode.apply(actionHandlers.Explode, [data]);
   // };
 
-  let ahLaunch = actionHandlers.Launch;
   actionHandlers.Launch = (data) => {
     ahLaunch.apply(actionHandlers.Launch, [data]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -333,7 +360,6 @@ export function addSiteHandlers() {
     setTimeout(() => playSFX(gameSFX.actionMissileHit), siloDelayMS);
   };
 
-  let ahNextTurn = actionHandlers.NextTurn;
   actionHandlers.NextTurn = (nextTurnRes) => {
     ahNextTurn.apply(actionHandlers.NextTurn, [nextTurnRes]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -341,7 +367,6 @@ export function addSiteHandlers() {
     playThemeSong();
   };
 
-  let ahElimination = actionHandlers.Elimination;
   actionHandlers.Elimination = (eliminationRes) => {
     ahElimination.apply(actionHandlers.Elimination, [eliminationRes]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -349,7 +374,6 @@ export function addSiteHandlers() {
     debugger;
   };
 
-  let ahPower = actionHandlers.Power;
   actionHandlers.Power = (powerRes) => {
     ahPower.apply(actionHandlers.Power, [powerRes]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -365,19 +389,16 @@ export function addSiteHandlers() {
     }
   };
 
-  // let ahSetDraw = actionHandlers.SetDraw;
   // actionHandlers.SetDraw = (drawData) => {
   //   ahSetDraw.apply(actionHandlers.SetDraw, [drawData]);
   //   debugger;
   // };
 
-  // let ahResign = actionHandlers.Resign;
   // actionHandlers.Resign = (resignRes) => {
   //   ahResign.apply(actionHandlers.Resign, [resignRes]);
   //   debugger;
   // }
 
-  let ahGameOver = actionHandlers.GameOver;
   actionHandlers.GameOver = () => {
     ahGameOver.apply(actionHandlers.GameOver, []);
     if (!musicPlayerSettings.isPlaying) return;

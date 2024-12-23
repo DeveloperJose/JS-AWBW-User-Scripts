@@ -26,6 +26,7 @@ module.exports = merge(common, {
         license: "MIT",
       },
       proxyScript: proxyScript,
+      metajs: true,
     }),
   ],
 });

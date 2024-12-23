@@ -4,17 +4,17 @@
   "description": "My custom user scripts for Advance Wars by Web written in JS",
   "private": true,
   "scripts": {
-    "lint": "eslint */main.js",
-    "clean": "rm dist/*.js",
     "serve:music_player": "webpack serve --config ./music_player/webpack.config.js",
     "serve:highlight_coordinates": "webpack serve --config ./highlight_coordinates/webpack.config.js",
     "build:music_player": "webpack --config ./music_player/webpack.config.js",
     "build:highlight_coordinates": "webpack --config ./highlight_coordinates/webpack.config.js",
-    "build": "npm run build:music_player -- -- ; npm run build:highlight_coordinates -- -- ",
-    "build:dev": "npm run build -- -- --mode development",
-    "build:prod": "npm run build -- -- --mode production",
-    "surge": "surge ../JS-Website",
-    "prettier": "prettier --write \"**/*.js\""
+    "build": "npm run build:music_player && npm run build:highlight_coordinates",
+    "netlify": "cd ../JS-Website && netlify deploy --prod --dir=./public",
+    "prettier": "prettier --write \"**/*.js\"",
+    "clean": "rm dist/*.js",
+    "lint": "eslint */main.js",
+    "package": "npm run prettier && npm run build && npm run lint",
+    "dev": "npx webpack --config ./music_player/webpack.config.js --mode development"
   },
   "awbw_music_player": "dist/awbw_music_player.user.js",
   "awbw_highlight_coordinates": "dist/awbw_highlight_cursor_coordinates.user.js",
@@ -38,7 +38,6 @@
   "bugs": {
     "url": "https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues"
   },
-  "homepage": "https://github.com/DeveloperJose/JS-AWBW-User-Scripts#readme",
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "css-loader": "^7.1.2",
@@ -52,5 +51,9 @@
     "webpack-dev-server": "^5.2.0",
     "webpack-merge": "^6.0.1",
     "webpack-userscript": "^3.2.2"
+  },
+  "dependencies": {
+    "path": "^0.12.7",
+    "stream": "^0.0.3"
   }
 }

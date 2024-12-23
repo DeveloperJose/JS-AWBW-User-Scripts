@@ -8,7 +8,7 @@ import { GAME_TYPE, THEME_TYPE, getCurrentThemeType, musicPlayerSettings } from 
  * @constant
  * Base URL where all the files needed for this script are located.
  */
-const BASE_URL = "https://devj.surge.sh";
+const BASE_URL = "https://developerjose.netlify.app";
 
 /**
  * @constant
@@ -43,11 +43,13 @@ export const gameSFX = {
   actionCOPowerAvailable: "sfx-action-co-power-available",
   actionAllyActivateSCOP: "sfx-action-ally-activate-scop",
   actionBHActivateSCOP: "sfx-action-bh-activate-scop",
+
   actionCaptureAlly: "sfx-action-capture-ally",
   actionCaptureEnemy: "sfx-action-capture-enemy",
   actionCaptureProgress: "sfx-action-capture-progress",
   actionMissileHit: "sfx-action-missile-hit",
   actionMissileSend: "sfx-action-missile-send",
+  actionUnitAttackPipeSeam: "sfx-action-unit-attack-pipe-seam",
   actionUnitHide: "sfx-action-unit-hide",
   actionUnitUnhide: "sfx-action-unit-unhide",
   actionUnitSupply: "sfx-action-unit-supply",
@@ -55,6 +57,7 @@ export const gameSFX = {
   actionUnitLoad: "sfx-action-unit-load",
   actionUnitUnload: "sfx-action-unit-unload",
   actionUnitExplode: "sfx-action-unit-explode",
+
   uiCursorMove: "sfx-ui-cursor-move",
   uiMenuOpen: "sfx-ui-menu-open",
   uiMenuClose: "sfx-ui-menu-close",

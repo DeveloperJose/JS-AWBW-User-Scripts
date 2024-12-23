@@ -4,7 +4,6 @@
 import { isMapEditor } from "../shared/awbw_site";
 
 import { versions } from "../shared/config.js";
-import { on } from "../shared/utils.js";
 
 import { addSettingsChangeListener, GAME_TYPE, musicPlayerSettings } from "./music_settings.js";
 
@@ -41,8 +40,8 @@ export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
   };
 
   // Close settings menu whenever the user clicks anywhere outside the player
-  on(document, "click", function (e) {
-    if (e.target.id.startsWith("music-player-")) return;
+  document.addEventListener("click", (event) => {
+    if (event.target.id.startsWith("music-player-")) return;
     closeSettingsMenu();
   });
 }
@@ -97,7 +96,7 @@ volumeSlider.min = "0";
 volumeSlider.step = "0.01";
 volumeSlider.value = musicPlayerSettings.volume;
 
-on(volumeSlider, "input", (val) => {
+volumeSlider.addEventListener("input", (val) => {
   musicPlayerSettings.volume = val.target.value;
 });
 
@@ -133,7 +132,7 @@ sfxVolumeSlider.max = "1";
 sfxVolumeSlider.min = "0";
 sfxVolumeSlider.step = "0.01";
 sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
-on(sfxVolumeSlider, "input", (val) => {
+sfxVolumeSlider.addEventListener("input", (val) => {
   musicPlayerSettings.sfxVolume = val.target.value;
 });
 
@@ -170,7 +169,7 @@ uiVolumeSlider.min = "0";
 uiVolumeSlider.step = "0.01";
 uiVolumeSlider.value = musicPlayerSettings.uiVolume;
 
-on(uiVolumeSlider, "input", (val) => {
+uiVolumeSlider.addEventListener("input", (val) => {
   musicPlayerSettings.uiVolume = val.target.value;
 });
 
@@ -233,7 +232,7 @@ contextMenu.appendChild(themeSliderFlexContainer);
 let gameTypeSelectorSpan = document.createElement("select");
 gameTypeSelectorSpan.id = "music-player-game-type-selector";
 gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
-on(gameTypeSelectorSpan, "change", () => {
+gameTypeSelectorSpan.addEventListener("change", () => {
   let newGameType = gameTypeSelectorSpan.value;
   musicPlayerSettings.gameType = newGameType;
 });

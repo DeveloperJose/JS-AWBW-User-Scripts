@@ -5,10 +5,6 @@ import { isMapEditor, menu } from "../shared/awbw_site";
 import { neutralImgLink, playingImgLink } from "./resources";
 import { addSettingsMenuToMusicPlayer } from "./settings_menu";
 import { addSettingsChangeListener, musicPlayerSettings } from "./music_settings";
-import { on } from "../shared/utils";
-
-// Listen for setting changes to update the menu UI
-addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the music player to the game menu.
@@ -106,5 +102,8 @@ musicPlayerDivBackground.appendChild(musicPlayerDivBackgroundSpan);
 musicPlayerDivBackgroundSpan.appendChild(musicPlayerDivBackgroundLink);
 musicPlayerDivBackgroundLink.appendChild(musicPlayerDivBackgroundImg);
 
+// Listen for setting changes to update the menu UI
+addSettingsChangeListener(onSettingsChange);
+
 // Determine who will catch when the user clicks the play/stop button
-on(musicPlayerDivBackground, "click", onMusicBtnClick);
+musicPlayerDivBackground.addEventListener("click", onMusicBtnClick);

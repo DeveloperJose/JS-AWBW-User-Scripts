@@ -1,5 +1,3 @@
-const { devPort } = require("./shared/config");
-
 module.exports = {
   mode: "production",
   output: {
@@ -15,9 +13,6 @@ module.exports = {
   },
   experiments: {
     outputModule: true,
-  },
-  devServer: {
-    port: devPort,
   },
   module: {
     rules: [
