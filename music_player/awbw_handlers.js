@@ -15,6 +15,13 @@ import {
   getMyID,
   isPlayerSpectator,
   siloDelayMS,
+  attackDelayMS,
+  playAnimationIcon,
+  targetIcon,
+  isValidBuilding,
+  getBuildingInfo,
+  getBuildingDiv,
+  moveDivToOffset,
 } from "../shared/awbw_site";
 import {
   playThemeSong,
@@ -132,8 +139,9 @@ export function addSiteHandlers() {
     let menuOptions = document.getElementsByClassName("menu-option");
 
     for (var i = 0; i < menuOptions.length; i++) {
-      menuOptions[i].addEventListener("mouseover", (event) => {
-        if (event.target !== this) return;
+      console.log("Menu option", menuOptions[i]);
+      menuOptions[i].addEventListener("mouseenter", (_event) => {
+        console.log(_event.target);
         playSFX(gameSFX.uiMenuMove);
       });
 
@@ -250,11 +258,54 @@ export function addSiteHandlers() {
     }, delay);
   };
 
+  /**
+   * @param {import("../shared/awbw_site").SeamResponse} seamResponse
+   */
   actionHandlers.AttackSeam = (seamResponse) => {
     ahAttackSeam.apply(actionHandlers.AttackSeam, [seamResponse]);
     if (!musicPlayerSettings.isPlaying) return;
     console.log("Pipe seam", seamResponse);
-    playSFX(gameSFX.actionUnitAttackPipeSeam);
+
+    // Pipe wiggle animation
+    if (gameAnimations) {
+      let x = seamResponse.seamX;
+      let y = seamResponse.seamY;
+      if (!isValidBuilding(x, y)) return;
+
+      let pipeSeamInfo = getBuildingInfo(x, y);
+      let pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
+
+      let stepsX = 12;
+      let stepsY = 4;
+      let deltaX = 0.2;
+      let deltaY = 0.05;
+      let wiggleAnimation = () => {
+        moveDivToOffset(
+          pipeSeamDiv,
+          deltaX,
+          0,
+          stepsX,
+          { then: [0, -deltaY, stepsY] },
+          { then: [-deltaX * 2, 0, stepsX] },
+          { then: [deltaX * 2, 0, stepsX] },
+          { then: [0, -deltaY, stepsY] },
+          { then: [-deltaX * 2, 0, stepsX] },
+          { then: [deltaX * 2, 0, stepsX] },
+          { then: [0, deltaY, stepsY] },
+          { then: [-deltaX * 2, 0, stepsX] },
+          { then: [deltaX, 0, stepsX] },
+          { then: [0, deltaY, stepsY] },
+        );
+      };
+      setTimeout(wiggleAnimation, attackDelayMS);
+    }
+
+    if (seamResponse.seamHp <= 0) {
+      playSFX(gameSFX.actionUnitAttackPipeSeam);
+      playSFX(gameSFX.actionUnitExplode);
+      return;
+    }
+    setTimeout(() => playSFX(gameSFX.actionUnitAttackPipeSeam), attackDelayMS);
   };
 
   actionHandlers.Move = (moveResponse, loadFlag) => {

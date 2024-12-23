@@ -31,7 +31,7 @@ var __webpack_exports__ = {};
  * @property {string} countries_name -
  * @property {number} labs -
  * @property {number} numProperties -
- * @property {*} other_buildings -
+ * @property {Object} other_buildings -
  * @property {number} players_co_id -
  * @property {string} players_co_image - Filename for CO image.
  * @property {number} players_co_max_power -
@@ -55,6 +55,23 @@ var __webpack_exports__ = {};
  * @typedef {Object} UnitInfo
  * @property {string} units_name - Name of this unit.
  * @property {number} units_moved - Whether this unit has moved (1) or not (0) represented as a number.
+ */
+
+/**
+ * @typedef {Object} BuildingInfo
+ * @property {string} terrain_name
+ * @property {number} buildings_id
+ */
+
+/**
+ * @typedef SeamResponse
+ * @property {string} action
+ * @property {UnitInfo} attacker
+ * @property {Object} newMoveCosts
+ * @property {number} seamHp
+ * @property {number} seamTerrainId
+ * @property {number} seamX
+ * @property {number} seamY
  */
 
 // ============================== Advance Wars Stuff ==============================
@@ -84,6 +101,11 @@ let zoomLevel = document.querySelector(".zoom-level");
 let cursor = document.querySelector("#cursor");
 let eventUsername = document.querySelector(".event-username");
 
+let supplyIcon = document.querySelector(".supply-icon");
+let trappedIcon = document.querySelector(".trapped-icon");
+let targetIcon = document.querySelector(".target-icon");
+let explosionIcon = document.querySelector(".destroy-icon");
+
 let replayOpenBtn = document.querySelector(".replay-open");
 let replayCloseBtn = document.querySelector(".replay-close");
 let replayForwardBtn = document.querySelector(".replay-forward");
@@ -93,34 +115,41 @@ let replayBackwardActionBtn = document.querySelector(".replay-backward-action");
 let replayDaySelectorCheckBox = document.querySelector(".replay-day-selector");
 
 // ============================== AWBW Page Global Variables ==============================
-/* global maxX, maxY, gameAnims */
-/* global playersInfo, playerKeys, unitsInfo, currentTurn */
+/* global maxX, maxY */
+/* global playersInfo, playerKeys, currentTurn */
+/* global unitsInfo */
+/* global buildingsInfo */
+/* global gameAnims, animIcon */
 
 /**
  * The number of columns of this map.
  * @type {number}
  */
-let mapCols = maxX;
+let mapCols = typeof maxX !== "undefined" ? maxX : -1;
 
 /**
  * The number of rows of this map.
  * @type {number}
  */
-let mapRows = maxY;
+let mapRows = typeof maxY !== "undefined" ? maxY : -1;
 
 /**
  * Whether game animations are enabled or not.
  * @type {boolean}
  */
-let gameAnimations = (/* unused pure expression or super */ null && (gameAnims));
+let gameAnimations = typeof gameAnims !== "undefined" ? gameAnims : false;
 
+// ============================== My Own Computed AWBW Variables and Functions ==============================
 /**
  * The amount of time between the silo launch animation and the hit animation in milliseconds.
  * @type {number}
  */
 let siloDelayMS = (/* unused pure expression or super */ null && (gameAnimations ? 3000 : 0));
 
-// ============================== My Own Computed AWBW Variables and Functions ==============================
+/**
+ * The amount of time between an attack animation starting and the attack finishing in milliseconds.
+ */
+let attackDelayMS = (/* unused pure expression or super */ null && (gameAnimations ? 1000 : 0));
 
 /**
  * Are we in the map editor?
@@ -142,7 +171,7 @@ let myName = document
  */
 let menu = isMapEditor
   ? document.querySelector("#replay-misc-controls")
-  : document.querySelector("#game-map-menu").parentNode;
+  : document.querySelector("#game-map-menu")?.parentNode;
 
 /**
  * The player ID for the person logged in to the website.
@@ -210,6 +239,81 @@ function canPlayerActivateCOPower(pid) {
 function canPlayerActivateSuperCOPower(pid) {
   let info = getPlayerInfo(pid);
   return info.players_co_power >= info.players_co_max_spower;
+}
+
+/**
+ *
+ * @param {*} x
+ * @param {*} y
+ * @returns
+ */
+function isValidBuilding(x, y) {
+  return buildingsInfo[x] && buildingsInfo[x][y];
+}
+
+/**
+ *
+ * @param {*} x
+ * @param {*} y
+ * @returns {BuildingInfo}
+ */
+function getBuildingInfo(x, y) {
+  return buildingsInfo[x][y];
+}
+
+/**
+ *
+ * @param {*} buildingID
+ * @returns {HTMLDivElement}
+ */
+function getBuildingDiv(buildingID) {
+  return document.querySelector(`.game-building[data-building-id='${buildingID}']`);
+}
+
+/**
+ * How much time in milliseconds to let pass between animation steps for {@link moveDivToOffset}.
+ * The lower, the faster the "animation" will play.
+ */
+let moveAnimationDelayMS = 5;
+
+/**
+ *
+ * @param {*} div
+ * @param {*} dx Number of pixels to move left/right (column) at each step
+ * @param {*} dy Number of pixels to move up/down (row) at each step
+ * @param {*} steps Number of steps to take
+ */
+function moveDivToOffset(div, dx, dy, steps, ...options) {
+  if (steps <= 1) {
+    if (options.length > 0) {
+      let nextSet = options.shift().then;
+      moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...options);
+    }
+    return;
+  }
+
+  setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...options), moveAnimationDelayMS);
+  let left = parseFloat(div.style.left);
+  let top = parseFloat(div.style.top);
+  left += dx;
+  top += dy;
+  div.style.left = left + "px";
+  div.style.top = top + "px";
+}
+
+/**
+ *
+ * @param {*} icon
+ * @param {*} delay
+ * @param {*} animation
+ * @param {*} x
+ * @param {*} y
+ * @param {*} offsetX
+ * @param {*} offsetY
+ * @returns
+ */
+function playAnimationIcon(icon, delay, animation, x, y, offsetX, offsetY) {
+  return animIcon(icon, delay, animation, x, y, offsetX, offsetY);
 }
 
 /**

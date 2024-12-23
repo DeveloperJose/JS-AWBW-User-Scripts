@@ -18,7 +18,7 @@ module.exports = merge(common, {
           "An improved version of the comprehensive audio player that attempts to recreate the cart experience with more sound effects, more music, and more customizability.",
         author: "Original by twiggy_, updated by DeveloperJose",
         match: [
-          "https://awbw.amarriner.com/*?games_id=*",
+          "https://awbw.amarriner.com/game.php?games_id=*",
           "https://awbw.amarriner.com/*?replays_id=*",
           "https://awbw.amarriner.com/*editmap*",
         ],
