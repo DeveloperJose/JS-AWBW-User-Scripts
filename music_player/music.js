@@ -103,20 +103,20 @@ export function stopThemeSong(delayMS = 0) {
 
 /**
  * Plays the movement sound of the given unit.
- * @param {number} unitID - The ID of the unit who is moving.
+ * @param {number} unitId - The ID of the unit who is moving.
  */
-export function playMovementSound(unitID) {
+export function playMovementSound(unitId) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // The audio hasn't been preloaded for this unit
-  if (!unitIDAudioMap.has(unitID)) {
-    let unitName = getUnitName(unitID);
+  if (!unitIDAudioMap.has(unitId)) {
+    let unitName = getUnitName(unitId);
     let movementSoundURL = getMovementSoundURL(unitName);
-    unitIDAudioMap.set(unitID, new Audio(movementSoundURL));
+    unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
   }
 
   // Restart the audio and then play it
-  let movementAudio = unitIDAudioMap.get(unitID);
+  let movementAudio = unitIDAudioMap.get(unitId);
   movementAudio.currentTime = 0;
   movementAudio.loop = false;
   movementAudio.volume = musicPlayerSettings.sfxVolume;
@@ -125,17 +125,17 @@ export function playMovementSound(unitID) {
 
 /**
  * Stops the movement sound of a given unit if it's playing.
- * @param {number} unitID - The ID of the unit whose movement sound will be stopped.
+ * @param {number} unitId - The ID of the unit whose movement sound will be stopped.
  */
-export function stopMovementSound(unitID) {
+export function stopMovementSound(unitId, rolloff = true) {
   // Can't stop if there's nothing playing
   if (!musicPlayerSettings.isPlaying) return;
 
   // Can't stop if the unit doesn't have any sounds
-  if (!unitIDAudioMap.has(unitID)) return;
+  if (!unitIDAudioMap.has(unitId)) return;
 
   // Can't stop if the sound is already stopped
-  let movementAudio = unitIDAudioMap.get(unitID);
+  let movementAudio = unitIDAudioMap.get(unitId);
   if (movementAudio.paused) return;
 
   // The audio hasn't finished loading, so pause when it does
@@ -149,7 +149,8 @@ export function stopMovementSound(unitID) {
   movementAudio.currentTime = 0;
 
   // If unit has rolloff, play it
-  let unitName = getUnitName(unitID);
+  if (!rolloff) return;
+  let unitName = getUnitName(unitId);
   if (hasMovementRollOff(unitName)) {
     let audioURL = getMovementRollOffURL(unitName);
     playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
@@ -191,8 +192,8 @@ export function stopAllSounds() {
   stopThemeSong();
 
   // Stop unit sounds
-  for (let unitID in Object.keys(unitIDAudioMap)) {
-    stopMovementSound(unitID);
+  for (let unitId in Object.keys(unitIDAudioMap)) {
+    stopMovementSound(unitId, false);
   }
 
   // Mute sound effects

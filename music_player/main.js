@@ -14,7 +14,6 @@
 import { addMusicPlayerMenu } from "./music_player_menu";
 import { preloadCommonAudio, preloadExtraAudio } from "./music";
 import { loadSettingsFromLocalStorage } from "./music_settings";
-
 import { addSiteHandlers } from "./awbw_handlers";
 
 // Add our CSS to the page using webpack

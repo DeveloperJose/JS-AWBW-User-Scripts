@@ -371,39 +371,51 @@ function isBlackHoleCO(coName) {
 
 /**
  * Gets the internal info object for the given unit.
- * @param {number} unitID - ID of the unit for whom we want to get the current info state.
+ * @param {number} unitId - ID of the unit for whom we want to get the current info state.
  * @returns {UnitInfo} - The info for that unit at its current state.
  */
-function getUnitInfo(unitID) {
-  return unitsInfo[unitID];
+function getUnitInfo(unitId) {
+  return unitsInfo[unitId];
 }
 
 /**
  * Gets the name of the given unit or null if the given unit is invalid.
- * @param {number} unitID - ID of the unit for whom we want to get the name.
+ * @param {number} unitId - ID of the unit for whom we want to get the name.
  * @returns String of the unit name.
  */
-function getUnitName(unitID) {
-  return getUnitInfo(unitID)?.units_name;
+function getUnitName(unitId) {
+  return getUnitInfo(unitId)?.units_name;
+}
+
+/**
+ *
+ * @param {*} x
+ * @param {*} y
+ * @returns {UnitInfo}
+ */
+function getUnitInfoFromCoords(x, y) {
+  return Object.values(unitsInfo)
+    .filter((info) => info.units_x == x && info.units_y == y)
+    .pop();
 }
 
 /**
  * Checks if the given unit is a valid unit.
  * A unit is valid when we can find its info in the current game state.
- * @param {number} unitID - ID of the unit we want to check.
+ * @param {number} unitId - ID of the unit we want to check.
  * @returns True if the given unit is valid.
  */
-function isValidUnit(unitID) {
-  return unitID !== undefined && unitsInfo[unitID] !== undefined;
+function isValidUnit(unitId) {
+  return unitId !== undefined && unitsInfo[unitId] !== undefined;
 }
 
 /**
  * Checks if the given unit has moved this turn.
- * @param {number} unitID - ID of the unit we want to check.
+ * @param {number} unitId - ID of the unit we want to check.
  * @returns True if the unit is valid and it has moved this turn.
  */
-function hasUnitMovedThisTurn(unitID) {
-  return isValidUnit(unitID) && getUnitInfo(unitID)?.units_moved === 1;
+function hasUnitMovedThisTurn(unitId) {
+  return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
 }
 
 ;// ./shared/other_userscripts.js
