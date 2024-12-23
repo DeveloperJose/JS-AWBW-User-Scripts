@@ -1,9 +1,7 @@
 /**
  * @file Constants and other project configuration settings that could be used by any scripts.
  */
-const path = require("path");
-let distPath = path.join(__dirname, "..", "dist", "dist");
-
+let distPath = __dirname + "/../dist/dist";
 const proxyScript = {
   baseURL: "file://" + distPath,
   filename: "[basename].proxy.user.js",
