@@ -46,7 +46,7 @@ module.exports = {
       // },
     ],
   },
-  resolve: {
-    extensions: ["*", ".js"],
-  },
+  // resolve: {
+  //   extensions: ["*", ".js"],
+  // },
 };

@@ -15,7 +15,7 @@
     "clean": "rm dist/*.js",
     "lint": "eslint */main.js",
     "package": "npm run build && npm run prettier && npm run lint",
-    "dev": "npx webpack --config ./music_player/webpack.config.js --mode development"
+    "dev": "npx webpack --config ./highlight_coordinates/webpack.config.js --mode development && npm run prettier"
   },
   "awbw_music_player": "dist/awbw_music_player.user.js",
   "awbw_highlight_coordinates": "dist/awbw_highlight_cursor_coordinates.user.js",
