@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "My custom user scripts for Advance Wars by Web written in JS",
   "private": true,
+  "sideEffects": ["*.css"],
   "scripts": {
     "serve:music_player": "webpack serve --config ./music_player/webpack.config.js",
     "serve:highlight_coordinates": "webpack serve --config ./highlight_coordinates/webpack.config.js",
@@ -13,7 +14,7 @@
     "prettier": "prettier --write \"**/*.js\"",
     "clean": "rm dist/*.js",
     "lint": "eslint */main.js",
-    "package": "npm run prettier && npm run build && npm run lint",
+    "package": "npm run build && npm run prettier && npm run lint",
     "dev": "npx webpack --config ./music_player/webpack.config.js --mode development"
   },
   "awbw_music_player": "dist/awbw_music_player.user.js",
@@ -39,7 +40,10 @@
     "url": "https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@eslint/js": "^9.17.0",
+    "babel-loader": "^9.2.1",
     "css-loader": "^7.1.2",
     "eslint": "^9.17.0",
     "globals": "^15.13.0",

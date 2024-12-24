@@ -18,11 +18,15 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          output: { beautify: true, semicolons: true },
+          output: {
+            //beautify: true,
+            semicolons: true,
+          },
           mangle: false,
           compress: {
             module: true,
-            toplevel: false,
+            unused: true,
+            dead_code: true,
             // drop_console: true,
           },
         },
@@ -35,6 +39,14 @@ module.exports = {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],
       },
+      // {
+      //   test: /\.(js)$/,
+      //   exclude: /node_modules/,
+      //   use: ["babel-loader"],
+      // },
     ],
+  },
+  resolve: {
+    extensions: ["*", ".js"],
   },
 };
