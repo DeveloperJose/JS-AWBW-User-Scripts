@@ -1,5 +1,6 @@
 import postcss from "rollup-plugin-postcss";
 import metablock from "rollup-plugin-userscript-metablock";
+import typescript from "@rollup/plugin-typescript";
 import path from "path";
 import { versions } from "./shared/config.js";
 
@@ -11,13 +12,14 @@ import { versions } from "./shared/config.js";
  */
 function createUserscriptRollUpConfig(inputDir, outputDir = "./dist") {
   return {
-    input: path.join(inputDir, "main.js"),
+    input: path.join(inputDir, "main.ts"),
     output: {
       file: path.join(outputDir, `awbw_${inputDir}.user.js`),
       format: "iife",
     },
     plugins: [
       postcss(),
+      typescript(),
       metablock({
         file: path.join(inputDir, "metadata.json"),
         override: {

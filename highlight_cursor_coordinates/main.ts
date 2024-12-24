@@ -1,21 +1,20 @@
 /**
  * @file Main script that loads everything for the AWBW Highlight Cursor Coordinates userscript.
  */
+import { mapRows, mapCols } from "../shared/awbw_globals";
 import {
-  cursor,
   gamemap,
   gamemapContainer,
-  mapCols,
-  mapRows,
   zoomInBtn,
-  zoomLevel,
   zoomOutBtn,
-} from "../shared/awbw_site";
+  zoomLevel,
+  cursor,
+} from "../shared/awbw_page";
 import { maximizeBtn } from "../shared/other_userscripts";
 
 /********************** Script Variables ***********************/
 const CURSOR_THRESHOLD_MS = 30;
-let previousHighlight = null;
+let previousHighlight: HTMLElement[] = [];
 let isMaximizeToggled = false;
 let lastCursorCall = Date.now();
 
@@ -31,7 +30,7 @@ spotSpanTemplate.style.zIndex = "100";
 // spotSpanTemplate.style.visibility = "hidden";
 
 /********************** Script Functions **********************/
-function setHighlight(node, highlight) {
+function setHighlight(node: HTMLElement, highlight: boolean) {
   let fontWeight = "";
   let color = "";
   let backgroundColor = "";
@@ -46,8 +45,8 @@ function setHighlight(node, highlight) {
   node.style.backgroundColor = backgroundColor;
 }
 
-function onZoomChangeEvent(_pointerEvent = null, zoom = null) {
-  if (zoom === null) {
+function onZoomChangeEvent(_event: MouseEvent, zoom: number = -1) {
+  if (zoom < 0) {
     zoom = parseFloat(zoomLevel.textContent);
   }
 
@@ -57,11 +56,10 @@ function onZoomChangeEvent(_pointerEvent = null, zoom = null) {
 }
 
 /********************** Intercepted Action Handlers ***********************/
-/* global updateCursor:writeable */
 let oldUpdateCursor = updateCursor;
 
 updateCursor = function () {
-  oldUpdateCursor.apply(window.updateCursor, arguments);
+  oldUpdateCursor.apply(updateCursor, arguments);
 
   if (Date.now() - lastCursorCall <= CURSOR_THRESHOLD_MS) {
     lastCursorCall = Date.now();
@@ -92,41 +90,45 @@ updateCursor = function () {
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
 if (zoomInBtn != null) {
-  zoomInBtn.onclick = onZoomChangeEvent;
+  zoomInBtn.addEventListener("click", onZoomChangeEvent);
 }
 
 if (zoomOutBtn != null) {
-  zoomOutBtn.onclick = onZoomChangeEvent;
+  zoomOutBtn.addEventListener("click", onZoomChangeEvent);
 }
 
 // Synergize with AWBW Maximize if that script is running as well
 if (maximizeBtn != null) {
   console.log("AWBW Highlight Cursor Coordinates script found AWBW Maximize script");
-  let old_fn = maximizeBtn.onclick;
-  maximizeBtn.onclick = (event) => {
-    old_fn(event);
+  maximizeBtn.addEventListener("click", (event) => {
     isMaximizeToggled = !isMaximizeToggled;
-    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
-  };
+    onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : -1);
+  });
+  // let old_fn = maximizeBtn.onclick;
+  // maximizeBtn.onclick = (h, event) => {
+  //   old_fn(h, event);
+  //   isMaximizeToggled = !isMaximizeToggled;
+  //   onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
+  // };
 }
 
 // Scale to current zoom level
-onZoomChangeEvent();
+onZoomChangeEvent(null);
 
 // Create squares
 for (let row = 0; row < mapRows; row++) {
-  let spotSpan = spotSpanTemplate.cloneNode(true);
+  let spotSpan = spotSpanTemplate.cloneNode(true) as HTMLSpanElement;
   spotSpan.id = "grid-spot-row-" + row;
   spotSpan.style.top = row * 16 + "px";
-  spotSpan.textContent = row;
+  spotSpan.textContent = row.toString();
   gamemap.appendChild(spotSpan);
 }
 
 for (let col = 0; col < mapCols; col++) {
-  let spotSpan = spotSpanTemplate.cloneNode(true);
+  let spotSpan = spotSpanTemplate.cloneNode(true) as HTMLSpanElement;
   spotSpan.id = "grid-spot-col-" + col;
   spotSpan.style.left = col * 16 + "px";
-  spotSpan.textContent = col;
+  spotSpan.textContent = col.toString();
   gamemap.appendChild(spotSpan);
 }
 

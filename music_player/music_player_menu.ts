@@ -1,7 +1,8 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of the music player UI.
  */
-import { isMapEditor, menu } from "../shared/awbw_site";
+import { isMapEditor } from "../shared/awbw_page";
+import { menu } from "../shared/awbw_page";
 import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsMenuToMusicPlayer } from "./settings_menu";
 import { addSettingsChangeListener, musicPlayerSettings } from "./music_settings";
@@ -17,26 +18,26 @@ export function addMusicPlayerMenu() {
 /**
  * Sets the loading progress for the music player.
  * Used when preloading audio.
- * @param {number} percentage Integer from 0 to 100 representing the progress of loading the music player.
+ * @param percentage - Number from 0 to 100 representing the progress of loading the music player.
  */
-export function setMusicPlayerLoadPercentage(percentage) {
+export function setMusicPlayerLoadPercentage(percentage: number) {
   musicPlayerDivBackground.style.backgroundImage =
     "linear-gradient(to right, #ffffff " + String(percentage) + "% , #888888 0%)";
 }
 
 /**
  * Event handler for when the music button is clicked that turns the music ON/OFF.
- * @param {*} _e - Click event handler, not used.
+ * @param _event - Click event handler, not used.
  */
-function onMusicBtnClick(_e) {
+function onMusicBtnClick(_event: MouseEvent) {
   musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
 }
 
 /**
  * Event handler that is triggered whenever the settings of the music player are changed.
- * @param {string} key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
+ * @param key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
-function onSettingsChange(key) {
+function onSettingsChange(key: string) {
   if (key != "isPlaying") return;
 
   // Update UI

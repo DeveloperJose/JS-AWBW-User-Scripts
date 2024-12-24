@@ -6,4 +6,4 @@
 /**
  * The button that is used to enter maximization mode or exit it for the AWBW Maximize Extension
  */
-export let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0];
+export let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0] as HTMLDivElement;

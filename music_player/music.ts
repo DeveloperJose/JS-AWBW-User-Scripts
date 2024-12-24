@@ -1,4 +1,5 @@
-import { getAllCONames, isMapEditor, getUnitName, currentPlayer } from "../shared/awbw_site";
+import { getAllCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
+import { isMapEditor } from "../shared/awbw_page";
 import { setMusicPlayerLoadPercentage } from "./music_player_menu";
 import {
   getMusicURL,
@@ -24,16 +25,14 @@ let currentThemeKey = "";
 /**
  * Map containing the audio players for all preloaded themes and sound effects.
  * The keys are the preloaded audio URLs.
- * @type {Map.<string, HTMLAudioElement>}
  */
-const urlAudioMap = new Map();
+const urlAudioMap: Map<string, HTMLAudioElement> = new Map();
 
 /**
  * Map containing the audio players for all units.
  * The keys are the unit IDs.
- * @type {Map.<number, HTMLAudioElement>}
  */
-const unitIDAudioMap = new Map();
+const unitIDAudioMap: Map<number, HTMLAudioElement> = new Map();
 
 /**
  * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
@@ -76,11 +75,9 @@ export function playThemeSong() {
 /**
  * Stops the current music if there's any playing.
  * Optionally, you can also delay the start of the next theme.
- * @param {number} delayMS - (Optional) Time to delay before we start the next theme.
+ * @param delayMS - Time to delay before we start the next theme.
  */
-export function stopThemeSong(delayMS = 0) {
-  if (!musicPlayerSettings.isPlaying) return;
-
+export function stopThemeSong(delayMS: number = 0) {
   // Delay the next theme if needed
   if (delayMS > 0) delayThemeMS = delayMS;
 
@@ -92,8 +89,10 @@ export function stopThemeSong(delayMS = 0) {
   if (currentTheme.paused) return;
 
   // The song hasn't finished loading, so stop it as soon as it does
-  if (currentTheme.readyState !== HTMLAudioElement.HAVE_ENOUGH_DATA) {
-    currentTheme.addEventListener("play", (event) => event.target.pause(), { once: true });
+  if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
+    currentTheme.addEventListener("play", (event) => (event.target as HTMLAudioElement).pause(), {
+      once: true,
+    });
     return;
   }
 
@@ -103,9 +102,9 @@ export function stopThemeSong(delayMS = 0) {
 
 /**
  * Plays the movement sound of the given unit.
- * @param {number} unitId - The ID of the unit who is moving.
+ * @param unitId - The ID of the unit who is moving.
  */
-export function playMovementSound(unitId) {
+export function playMovementSound(unitId: number) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // The audio hasn't been preloaded for this unit
@@ -125,9 +124,10 @@ export function playMovementSound(unitId) {
 
 /**
  * Stops the movement sound of a given unit if it's playing.
- * @param {number} unitId - The ID of the unit whose movement sound will be stopped.
+ * @param unitId - The ID of the unit whose movement sound will be stopped.
+ * @param rolloff - (Optional) Whether to play the rolloff sound or not, defaults to true.
  */
-export function stopMovementSound(unitId, rolloff = true) {
+export function stopMovementSound(unitId: number, rolloff = true) {
   // Can't stop if there's nothing playing
   if (!musicPlayerSettings.isPlaying) return;
 
@@ -139,8 +139,10 @@ export function stopMovementSound(unitId, rolloff = true) {
   if (movementAudio.paused) return;
 
   // The audio hasn't finished loading, so pause when it does
-  if (movementAudio.readyState != HTMLAudioElement.HAVE_ENOUGH_DATA) {
-    movementAudio.addEventListener("play", (event) => event.target.pause(), { once: true });
+  if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
+    movementAudio.addEventListener("play", (event) => (event.target as HTMLAudioElement).pause(), {
+      once: true,
+    });
     return;
   }
 
@@ -159,9 +161,9 @@ export function stopMovementSound(unitId, rolloff = true) {
 
 /**
  * Plays the given sound effect.
- * @param {string} sfx - String representing a key in {@link GameSFX}.
+ * @param sfx - Specific {@link GameSFX} to play.
  */
-export function playSFX(sfx) {
+export function playSFX(sfx: GameSFX) {
   if (!musicPlayerSettings.isPlaying) return;
 
   let sfxURL = getSoundEffectURL(sfx);
@@ -192,22 +194,22 @@ export function stopAllSounds() {
   stopThemeSong();
 
   // Stop unit sounds
-  for (let unitId in Object.keys(unitIDAudioMap)) {
+  for (let unitId of unitIDAudioMap.keys()) {
     stopMovementSound(unitId, false);
   }
 
   // Mute sound effects
-  for (let sfxURL in Object.keys(urlAudioMap)) {
-    sfxURL.volume = 0;
+  for (let audio of urlAudioMap.values()) {
+    audio.volume = 0;
   }
 }
 
 /**
  * Preloads the current game COs' themes and common sound effect audios.
  * Run this first so we can start the player almost immediately!
- * @param {*} afterPreloadFunction - Function to run after the audio is pre-loaded.
+ * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
  */
-export function preloadCommonAudio(afterPreloadFunction) {
+export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
   // Preload the themes of the COs in this match
   let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
   let audioList = coNames.map((name) => getMusicURL(name));
@@ -216,15 +218,15 @@ export function preloadCommonAudio(afterPreloadFunction) {
   audioList.push(getSoundEffectURL(GameSFX.uiCursorMove));
   audioList.push(getSoundEffectURL(GameSFX.uiUnitSelect));
 
-  preloadList(audioList, afterPreloadFunction);
+  preloadAudios(audioList, afterPreloadFunction);
 }
 
 /**
  * Preloads the current game CO's themes for ALL game versions and ALL sound effect audios.
  * Run this after the common audios since we have more time to get things ready for these.
- * @param {*} afterPreloadFunction - Function to run after the audio is pre-loaded.
+ * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
  */
-export function preloadExtraAudio(afterPreloadFunction) {
+export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
   if (isMapEditor) return;
 
   // Preload ALL sound effects
@@ -234,50 +236,53 @@ export function preloadExtraAudio(afterPreloadFunction) {
   let coNames = getAllCONames();
   for (let gameType in SettingsGameType) {
     for (let themeType in SettingsThemeType) {
-      let gameList = coNames.map((name) => getMusicURL(name, gameType, themeType));
+      let gameList = coNames.map((name) =>
+        getMusicURL(name, gameType as SettingsGameType, themeType as SettingsThemeType),
+      );
       audioList = audioList.concat(gameList);
     }
   }
 
-  preloadList(audioList, afterPreloadFunction);
+  preloadAudios(audioList, afterPreloadFunction);
 }
 
 /**
  * Preloads the given list of songs and adds them to the {@link urlAudioMap}.
- * @param {string[]} audioList - List of URLs of songs to preload.
- * @param {*} afterPreloadFunction - Function to call after all songs are preloaded.
+ * @param audioURLs - List of URLs of songs to preload.
+ * @param afterPreloadFunction - Function to call after all songs are preloaded.
  */
-function preloadList(audioList, afterPreloadFunction) {
+function preloadAudios(audioURLs: string[], afterPreloadFunction: () => void) {
   // Only unique audios, remove duplicates
-  audioList = new Set(audioList);
+  let uniqueURLs = new Set(audioURLs);
 
   // Event handler for when an audio is loaded
   let numLoadedAudios = 0;
-  let onLoadAudio = (event) => {
+  let onLoadAudio = (event: Event) => {
     // Update UI
     numLoadedAudios++;
-    let loadPercentage = (numLoadedAudios / audioList.size) * 100;
+    let loadPercentage = (numLoadedAudios / uniqueURLs.size) * 100;
     setMusicPlayerLoadPercentage(loadPercentage);
 
     // If the audio loaded properly, then add it to our map
     if (event.type !== "error") {
-      urlAudioMap.set(event.target.src, event.target);
+      let audio = event.target as HTMLAudioElement;
+      urlAudioMap.set(audio.src, audio);
     }
 
     // All the audio from the list has been loaded
-    if (numLoadedAudios >= audioList.size) {
+    if (numLoadedAudios >= uniqueURLs.size) {
       if (afterPreloadFunction) afterPreloadFunction();
     }
   };
 
   // Event handler when an audio isn't able to be loaded
-  let onLoadAudioError = (event) => {
+  let onLoadAudioError = (event: Event) => {
     // console.log("[AWBW Improved Music Player] Could not pre-load: ", event.target.src);
     onLoadAudio(event);
   };
 
   // Pre-load all audios in the list
-  audioList.forEach((url) => {
+  audioURLs.forEach((url) => {
     // This audio has already been loaded before, so skip it
     if (urlAudioMap.has(url)) {
       numLoadedAudios++;
@@ -291,10 +296,10 @@ function preloadList(audioList, afterPreloadFunction) {
 
 /**
  * Changes the current song to the given new song, stopping the old song if necessary.
- * @param {string} srcURL - URL of song to play.
- * @param {boolean} loop - (Optional) Whether to loop the music or not, defaults to true.
+ * @param srcURL - URL of song to play.
+ * @param loop - (Optional) Whether to loop the music or not, defaults to true.
  */
-function playMusicURL(srcURL, loop = true) {
+function playMusicURL(srcURL: string, loop: boolean = true) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // We want to play the same song we already are playing
@@ -326,10 +331,10 @@ function playMusicURL(srcURL, loop = true) {
 
 /**
  * Plays the given sound by creating a new instance of it.
- * @param {string} srcURL - URL of the sound to play.
- * @param {number} volume - Volume at which to play this sound.
+ * @param srcURL - URL of the sound to play.
+ * @param volume - Volume at which to play this sound.
  */
-function playOneShotURL(srcURL, volume) {
+function playOneShotURL(srcURL: string, volume: number) {
   if (!musicPlayerSettings.isPlaying) return;
 
   let soundInstance = new Audio(srcURL);
@@ -340,10 +345,9 @@ function playOneShotURL(srcURL, volume) {
 
 /**
  * Updates the internal audio components to match the current music player settings when the settings change.
- *
- * @param {*} _key - Key of the setting which has been changed.
+ * @param _key - Key of the setting which has been changed.
  */
-function onSettingsChange(key) {
+function onSettingsChange(key: string) {
   switch (key) {
     case "isPlaying":
       if (musicPlayerSettings.isPlaying) {

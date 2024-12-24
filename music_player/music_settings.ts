@@ -3,32 +3,32 @@
  * Note: For Enums in pure JS we just have objects where the keys and values match, it's the easiest solution
  */
 
-import { currentPlayer } from "../shared/awbw_site";
+import { currentPlayer } from "../shared/awbw_game";
 
 /**
  * Enum that represents which game we want the music player to use for its music.
  * @enum {string}
  */
-export const SettingsGameType = Object.freeze({
-  AW1: "AW1",
-  AW2: "AW2",
-  AW_RBC: "AW_RBC",
-  AW_DS: "AW_DS",
-});
+export enum SettingsGameType {
+  AW1 = "AW1",
+  AW2 = "AW2",
+  AW_RBC = "AW_RBC",
+  AW_DS = "AW_DS",
+}
 
 /**
  * Enum that represents music theme types like regular or power.
  * @enum {string}
  */
-export const SettingsThemeType = Object.freeze({
-  REGULAR: "REGULAR",
-  CO_POWER: "CO_POWER",
-  SUPER_CO_POWER: "SUPER_CO_POWER",
-});
+export enum SettingsThemeType {
+  REGULAR = "REGULAR",
+  CO_POWER = "CO_POWER",
+  SUPER_CO_POWER = "SUPER_CO_POWER",
+}
 
 /**
  * Gets the theme type enum corresponding to the CO Power state for the current CO.
- * @returns {SettingsThemeType} The THEME_TYPE enum for the current CO Power state.
+ * @returns {SettingsThemeType} The SettingsThemeType enum for the current CO Power state.
  */
 export function getCurrentThemeType() {
   let currentPowerState = currentPlayer.coPowerState;
@@ -39,21 +39,21 @@ export function getCurrentThemeType() {
 }
 
 /**
- * @constant
  * String used as the key for storing settings in LocalStorage
+ * @constant
  */
 const STORAGE_KEY = "musicPlayerSettings";
 
 /**
  * List of listener functions that will be called anytime settings are changed.
  */
-const onSettingsChangeListeners = [];
+const onSettingsChangeListeners: ((key: string) => void)[] = [];
 
 /**
  * Adds a new listener function that will be called whenever a setting changes.
- * @param {*} fn Function to call when a setting changes.
+ * @param {(string) => void} fn - The function to call when a setting changes.
  */
-export function addSettingsChangeListener(fn) {
+export function addSettingsChangeListener(fn: (key: string) => void) {
   onSettingsChangeListeners.push(fn);
 }
 
@@ -61,64 +61,67 @@ export function addSettingsChangeListener(fn) {
  * The music player settings' current internal state.
  * DO NOT EDIT __ prefix variables, use the properties!
  */
-export const musicPlayerSettings = {
-  __isPlaying: false,
-  __volume: 0.5,
-  __sfxVolume: 0.35,
-  __uiVolume: 0.425,
-  __gameType: SettingsGameType.AW_DS,
+export abstract class musicPlayerSettings {
+  private static __isPlaying = false;
+  private static __volume = 0.5;
+  private static __sfxVolume = 0.35;
+  private static __uiVolume = 0.425;
+  private static __gameType = SettingsGameType.AW_DS;
 
-  set isPlaying(val) {
+  static set(key: any, value: any) {
+    if (key in this) {
+      (this as any)[key] = value;
+    }
+  }
+
+  static set isPlaying(val: boolean) {
     this.__isPlaying = val;
     this.onSettingChangeEvent("isPlaying");
-  },
+  }
 
-  get isPlaying() {
+  static get isPlaying() {
     return this.__isPlaying;
-  },
+  }
 
-  set volume(val) {
+  static set volume(val: number) {
     this.__volume = val;
     this.onSettingChangeEvent("volume");
-  },
+  }
 
-  get volume() {
+  static get volume() {
     return this.__volume;
-  },
+  }
 
-  set sfxVolume(val) {
+  static set sfxVolume(val: number) {
     this.__sfxVolume = val;
     this.onSettingChangeEvent("sfxVolume");
-  },
+  }
 
-  get sfxVolume() {
+  static get sfxVolume() {
     return this.__sfxVolume;
-  },
+  }
 
-  set uiVolume(val) {
+  static set uiVolume(val: number) {
     this.__uiVolume = val;
     this.onSettingChangeEvent("uiVolume");
-  },
-  get uiVolume() {
-    return this.__uiVolume;
-  },
+  }
 
-  set gameType(val) {
-    /** @todo: Validate */
+  static get uiVolume() {
+    return this.__uiVolume;
+  }
+
+  static set gameType(val: SettingsGameType) {
     this.__gameType = val;
     this.onSettingChangeEvent("gameType");
-  },
-  /**
-   * @type {SettingsGameType}
-   */
-  get gameType() {
+  }
+  static get gameType() {
     return this.__gameType;
-  },
+  }
 
-  onSettingChangeEvent(key) {
+  static onSettingChangeEvent(key: string) {
     onSettingsChangeListeners.forEach((fn) => fn(key));
-  },
-};
+  }
+}
 
 /**
  * Loads the music player settings stored in the local storage.
@@ -138,7 +141,7 @@ export function loadSettingsFromLocalStorage() {
     if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
       // Key without __ prefix
       let regularKey = key.substring(2);
-      musicPlayerSettings[regularKey] = savedSettings[key];
+      musicPlayerSettings.set(regularKey, savedSettings[key]);
     }
   }
 

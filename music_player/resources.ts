@@ -1,7 +1,7 @@
 /**
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
-import { isBlackHoleCO } from "../shared/awbw_site";
+import { isBlackHoleCO } from "../shared/awbw_globals";
 import {
   SettingsGameType,
   SettingsThemeType,
@@ -23,21 +23,18 @@ const BASE_MUSIC_URL = BASE_URL + "/music";
 
 /**
  * Base URL where all sound effect files are located.
- * @reaodnly
  * @constant {string}
  */
 const BASE_SFX_URL = BASE_MUSIC_URL + "/sfx";
 
 /**
  * Image URL for static music player icon
- * @reaodnly
  * @constant {string}
  */
 export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
 
 /**
  * Image URL for animated music player icon.
- * @reaodnly
  * @constant {string}
  */
 export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
@@ -46,58 +43,58 @@ export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
  * Enumeration of all game sound effects. The values for the keys are the filenames.
  * @enum {string}
  */
-export const GameSFX = {
-  actionSuperCOPowerAvailable: "sfx-action-super-co-power-available",
-  actionCOPowerAvailable: "sfx-action-co-power-available",
-  actionAllyActivateSCOP: "sfx-action-ally-activate-scop",
-  actionBHActivateSCOP: "sfx-action-bh-activate-scop",
+export enum GameSFX {
+  actionSuperCOPowerAvailable = "sfx-action-super-co-power-available",
+  actionCOPowerAvailable = "sfx-action-co-power-available",
+  actionAllyActivateSCOP = "sfx-action-ally-activate-scop",
+  actionBHActivateSCOP = "sfx-action-bh-activate-scop",
 
-  actionCaptureAlly: "sfx-action-capture-ally",
-  actionCaptureEnemy: "sfx-action-capture-enemy",
-  actionCaptureProgress: "sfx-action-capture-progress",
-  actionMissileHit: "sfx-action-missile-hit",
-  actionMissileSend: "sfx-action-missile-send",
-  actionUnitAttackPipeSeam: "sfx-action-unit-attack-pipe-seam",
-  actionUnitHide: "sfx-action-unit-hide",
-  actionUnitUnhide: "sfx-action-unit-unhide",
-  actionUnitSupply: "sfx-action-unit-supply",
-  actionUnitTrap: "sfx-action-unit-trap",
-  actionUnitLoad: "sfx-action-unit-load",
-  actionUnitUnload: "sfx-action-unit-unload",
-  actionUnitExplode: "sfx-action-unit-explode",
+  actionCaptureAlly = "sfx-action-capture-ally",
+  actionCaptureEnemy = "sfx-action-capture-enemy",
+  actionCaptureProgress = "sfx-action-capture-progress",
+  actionMissileHit = "sfx-action-missile-hit",
+  actionMissileSend = "sfx-action-missile-send",
+  actionUnitAttackPipeSeam = "sfx-action-unit-attack-pipe-seam",
+  actionUnitHide = "sfx-action-unit-hide",
+  actionUnitUnhide = "sfx-action-unit-unhide",
+  actionUnitSupply = "sfx-action-unit-supply",
+  actionUnitTrap = "sfx-action-unit-trap",
+  actionUnitLoad = "sfx-action-unit-load",
+  actionUnitUnload = "sfx-action-unit-unload",
+  actionUnitExplode = "sfx-action-unit-explode",
 
-  uiCursorMove: "sfx-ui-cursor-move",
-  uiMenuOpen: "sfx-ui-menu-open",
-  uiMenuClose: "sfx-ui-menu-close",
-  uiMenuMove: "sfx-ui-menu-move",
-  uiUnitSelect: "sfx-ui-unit-select",
-};
+  uiCursorMove = "sfx-ui-cursor-move",
+  uiMenuOpen = "sfx-ui-menu-open",
+  uiMenuClose = "sfx-ui-menu-close",
+  uiMenuMove = "sfx-ui-menu-move",
+  uiUnitSelect = "sfx-ui-unit-select",
+}
 
 /**
  * Enumeration of all the unit movement sounds. The values are the URLs for the sounds.
  * @enum {string}
  */
-const MovementSFX = {
-  moveBCopterLoop: BASE_SFX_URL + "/move_bcopter.ogg",
-  moveBCopterOneShot: BASE_SFX_URL + "/move_bcopter_rolloff.ogg",
-  moveInfLoop: BASE_SFX_URL + "/move_inf.ogg",
-  moveMechLoop: BASE_SFX_URL + "/move_mech.ogg",
-  moveNavalLoop: BASE_SFX_URL + "/move_naval.ogg",
-  movePiperunnerLoop: BASE_SFX_URL + "/move_piperunner.ogg",
-  movePlaneLoop: BASE_SFX_URL + "/move_plane.ogg",
-  movePlaneOneShot: BASE_SFX_URL + "/move_plane_rolloff.ogg",
-  moveSubLoop: BASE_SFX_URL + "/move_sub.ogg",
-  moveTCopterLoop: BASE_SFX_URL + "/move_tcopter.ogg",
-  moveTCopterOneShot: BASE_SFX_URL + "/move_tcopter_rolloff.ogg",
-  moveTiresHeavyLoop: BASE_SFX_URL + "/move_tires_heavy.ogg",
-  moveTiresHeavyOneShot: BASE_SFX_URL + "/move_tires_heavy_rolloff.ogg",
-  moveTiresLightLoop: BASE_SFX_URL + "/move_tires_light.ogg",
-  moveTiresLightOneShot: BASE_SFX_URL + "/move_tires_light_rolloff.ogg",
-  moveTreadHeavyLoop: BASE_SFX_URL + "/move_tread_heavy.ogg",
-  moveTreadHeavyOneShot: BASE_SFX_URL + "/move_tread_heavy_rolloff.ogg",
-  moveTreadLightLoop: BASE_SFX_URL + "/move_tread_light.ogg",
-  moveTreadLightOneShot: BASE_SFX_URL + "/move_tread_light_rolloff.ogg",
-};
+export enum MovementSFX {
+  moveBCopterLoop = BASE_SFX_URL + "/move_bcopter.ogg",
+  moveBCopterOneShot = BASE_SFX_URL + "/move_bcopter_rolloff.ogg",
+  moveInfLoop = BASE_SFX_URL + "/move_inf.ogg",
+  moveMechLoop = BASE_SFX_URL + "/move_mech.ogg",
+  moveNavalLoop = BASE_SFX_URL + "/move_naval.ogg",
+  movePiperunnerLoop = BASE_SFX_URL + "/move_piperunner.ogg",
+  movePlaneLoop = BASE_SFX_URL + "/move_plane.ogg",
+  movePlaneOneShot = BASE_SFX_URL + "/move_plane_rolloff.ogg",
+  moveSubLoop = BASE_SFX_URL + "/move_sub.ogg",
+  moveTCopterLoop = BASE_SFX_URL + "/move_tcopter.ogg",
+  moveTCopterOneShot = BASE_SFX_URL + "/move_tcopter_rolloff.ogg",
+  moveTiresHeavyLoop = BASE_SFX_URL + "/move_tires_heavy.ogg",
+  moveTiresHeavyOneShot = BASE_SFX_URL + "/move_tires_heavy_rolloff.ogg",
+  moveTiresLightLoop = BASE_SFX_URL + "/move_tires_light.ogg",
+  moveTiresLightOneShot = BASE_SFX_URL + "/move_tires_light_rolloff.ogg",
+  moveTreadHeavyLoop = BASE_SFX_URL + "/move_tread_heavy.ogg",
+  moveTreadHeavyOneShot = BASE_SFX_URL + "/move_tread_heavy_rolloff.ogg",
+  moveTreadLightLoop = BASE_SFX_URL + "/move_tread_light.ogg",
+  moveTreadLightOneShot = BASE_SFX_URL + "/move_tread_light_rolloff.ogg",
+}
 
 /**
  * Map that takes unit names as keys and gives you the URL for that unit movement sound.
@@ -154,12 +151,16 @@ const onMovmentRolloffMap = new Map([
 
 /**
  * Determines the filename for the music to play given a specific CO and other settings.
- * @param {string} coName - Name of the CO whose music to use.
- * @param {SettingsGameType} gameType - Which game soundtrack to use.
- * @param {SettingsThemeType} themeType - Which type of music whether regular or power.
- * @returns The filename of the music to play given the parameters.
+ * @param coName - Name of the CO whose music to use.
+ * @param gameType - Which game soundtrack to use.
+ * @param themeType - Which type of music whether regular or power.
+ * @returns - The filename of the music to play given the parameters.
  */
-function getMusicFilename(coName, gameType, themeType) {
+function getMusicFilename(
+  coName: string,
+  gameType: SettingsGameType,
+  themeType: SettingsThemeType,
+) {
   let isPowerActive = themeType !== SettingsThemeType.REGULAR;
 
   // Regular theme
@@ -181,12 +182,16 @@ function getMusicFilename(coName, gameType, themeType) {
  * Determines the URL for the music to play given a specific CO, and optionally, some specific settings.
  * The settings will be loaded from the current saved settings if they aren't specified.
  *
- * @param {string} coName - Name of the CO whose music to use.
- * @param {SettingsGameType} gameType - (Optional) Which game soundtrack to use.
- * @param {SettingsThemeType} themeType - (Optional) Which type of music to use whether regular or power.
- * @returns The complete URL of the music to play given the parameters.
+ * @param coName - Name of the CO whose music to use.
+ * @param gameType - (Optional) Which game soundtrack to use.
+ * @param themeType - (Optional) Which type of music to use whether regular or power.
+ * @returns - The complete URL of the music to play given the parameters.
  */
-export function getMusicURL(coName, gameType = null, themeType = null) {
+export function getMusicURL(
+  coName: string,
+  gameType: SettingsGameType = null,
+  themeType: SettingsThemeType = null,
+) {
   if (gameType === null) {
     gameType = musicPlayerSettings.gameType;
   }
@@ -203,44 +208,44 @@ export function getMusicURL(coName, gameType = null, themeType = null) {
 
 /**
  * Gets the URL for the given sound effect.
- * @param {string} sfx - String key for the sound effect to use.
- * @returns The URL of the given sound effect key.
+ * @param sfx - Sound effect enum to use.
+ * @returns - The URL of the given sound effect.
  */
-export function getSoundEffectURL(sfx) {
+export function getSoundEffectURL(sfx: GameSFX) {
   return `${BASE_SFX_URL}/${sfx}.ogg`;
 }
 
 /**
  * Gets the URL to play when the given unit starts to move.
- * @param {string} unitName - Name of the unit.
- * @returns The URL of the given unit's movement start sound.
+ * @param unitName - Name of the unit.
+ * @returns - The URL of the given unit's movement start sound.
  */
-export function getMovementSoundURL(unitName) {
+export function getMovementSoundURL(unitName: string) {
   return onMovementStartMap.get(unitName);
 }
 
 /**
  * Getes the URL to play when the given unit stops moving, if any.
- * @param {string} unitName - Name of the unit.
- * @returns The URL of the given unit's movement stop sound, if any, or null otherwise.
+ * @param unitName - Name of the unit.
+ * @returns - The URL of the given unit's movement stop sound, if any, or null otherwise.
  */
-export function getMovementRollOffURL(unitName) {
+export function getMovementRollOffURL(unitName: string) {
   return onMovmentRolloffMap.get(unitName);
 }
 
 /**
  * Checks if the given unit plays a sound when it stops moving.
- * @param {string} unitName - Name of the unit.
- * @returns True if the given unit has a sound to play when it stops moving.
+ * @param unitName - Name of the unit.
+ * @returns - True if the given unit has a sound to play when it stops moving.
  */
-export function hasMovementRollOff(unitName) {
+export function hasMovementRollOff(unitName: string) {
   return onMovmentRolloffMap.has(unitName);
 }
 
 /**
  * Gets a list of the URLs for all sound effects the music player might ever use.
  * These include game effects, UI effects, and unit movement sounds.
- * @returns List with all the URLs for all the music player sound effects.
+ * @returns - List with all the URLs for all the music player sound effects.
  */
 export function getAllSoundEffectURLS() {
   let sfx = Object.values(GameSFX).map(getSoundEffectURL);

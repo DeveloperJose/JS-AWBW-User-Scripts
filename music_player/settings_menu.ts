@@ -1,7 +1,7 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of the music player settings UI.
  */
-import { isMapEditor } from "../shared/awbw_site";
+import { isMapEditor } from "../shared/awbw_page";
 
 import { versions } from "../shared/config.js";
 
@@ -22,15 +22,15 @@ addSettingsChangeListener(onSettingsChange);
 
 /**
  * Adds the right-click context menu with the music player settings to the given node.
- * @param {Element} musicPlayerDiv - The node whose right click will open the context menu.
+ * @param musicPlayerDiv - The node whose right click will open the context menu.
  */
-export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
+export function addSettingsMenuToMusicPlayer(musicPlayerDiv: HTMLElement) {
   // Add context menu to music player
   musicPlayerDiv.appendChild(contextMenu);
 
   // Enable right-click to open and close settings menu
-  musicPlayerDiv.oncontextmenu = function (e) {
-    let elmnt = e.target;
+  musicPlayerDiv.addEventListener("contextmenu", (e: Event) => {
+    let elmnt = e.target as HTMLElement;
     if (elmnt.id.startsWith("music-player")) {
       e.preventDefault();
       isSettingsMenuOpen = !isSettingsMenuOpen;
@@ -41,11 +41,12 @@ export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
         closeSettingsMenu();
       }
     }
-  };
+  });
 
   // Close settings menu whenever the user clicks anywhere outside the player
   document.addEventListener("click", (event) => {
-    if (event.target.id.startsWith("music-player-")) return;
+    let elmnt = event.target as HTMLElement;
+    if (elmnt.id.startsWith("music-player-")) return;
     closeSettingsMenu();
   });
 }
@@ -56,12 +57,12 @@ export function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * @param {string} key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
+ * @param key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
-function onSettingsChange(_key) {
-  volumeSlider.value = musicPlayerSettings.volume;
-  sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
-  uiVolumeSlider.value = musicPlayerSettings.uiVolume;
+function onSettingsChange(_key: string) {
+  volumeSlider.value = musicPlayerSettings.volume.toString();
+  sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
+  uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
   gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
 }
 
@@ -98,10 +99,10 @@ volumeSlider.type = "range";
 volumeSlider.max = "1";
 volumeSlider.min = "0";
 volumeSlider.step = "0.01";
-volumeSlider.value = musicPlayerSettings.volume;
+volumeSlider.value = musicPlayerSettings.volume.toString();
 
 volumeSlider.addEventListener("input", (val) => {
-  musicPlayerSettings.volume = val.target.value;
+  musicPlayerSettings.volume = parseFloat((val.target as HTMLInputElement).value);
 });
 
 let volumeSliderFlexContainer = document.createElement("div");
@@ -135,9 +136,9 @@ sfxVolumeSlider.type = "range";
 sfxVolumeSlider.max = "1";
 sfxVolumeSlider.min = "0";
 sfxVolumeSlider.step = "0.01";
-sfxVolumeSlider.value = musicPlayerSettings.sfxVolume;
+sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
 sfxVolumeSlider.addEventListener("input", (val) => {
-  musicPlayerSettings.sfxVolume = val.target.value;
+  musicPlayerSettings.sfxVolume = parseFloat((val.target as HTMLInputElement).value);
 });
 
 let sfxVolumeSliderFlexContainer = document.createElement("div");
@@ -171,10 +172,10 @@ uiVolumeSlider.type = "range";
 uiVolumeSlider.max = "1";
 uiVolumeSlider.min = "0";
 uiVolumeSlider.step = "0.01";
-uiVolumeSlider.value = musicPlayerSettings.uiVolume;
+uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
 
 uiVolumeSlider.addEventListener("input", (val) => {
-  musicPlayerSettings.uiVolume = val.target.value;
+  musicPlayerSettings.uiVolume = parseFloat((val.target as HTMLInputElement).value);
 });
 
 let uiVolumeSliderFlexContainer = document.createElement("div");
@@ -238,7 +239,7 @@ gameTypeSelectorSpan.id = "music-player-game-type-selector";
 gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
 gameTypeSelectorSpan.addEventListener("change", () => {
   let newGameType = gameTypeSelectorSpan.value;
-  musicPlayerSettings.gameType = newGameType;
+  musicPlayerSettings.gameType = newGameType as SettingsGameType;
 });
 
 for (let key in SettingsGameType) {
@@ -246,7 +247,7 @@ for (let key in SettingsGameType) {
   gameTypeOption.id = "music-player-game-type-option-" + key;
 
   let gameTypeOptionText = document.createTextNode(key);
-  gameTypeOptionText.id = "music-player-game-type-option-name-" + key;
+  // gameTypeOptionText.id = "music-player-game-type-option-name-" + key;
 
   gameTypeOption.appendChild(gameTypeOptionText);
   gameTypeSelectorSpan.appendChild(gameTypeOption);
@@ -263,7 +264,7 @@ versionDiv.style.backgroundColor = "#F0F0F0";
 
 let versionSpan = document.createElement("span");
 versionSpan.id = "music-player-version-number";
-versionSpan.textContent = "VERSION: " + versions.musicPlayer;
+versionSpan.textContent = "VERSION: " + versions.music_player;
 versionSpan.style.fontSize = "9px";
 versionSpan.style.color = "#888888";
 

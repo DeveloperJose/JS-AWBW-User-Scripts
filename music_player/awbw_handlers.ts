@@ -2,6 +2,50 @@
  * @file This file contains all the AWBW website handlers that will intercept clicks and any relevant functions of the website.
  */
 import {
+  canPlayerActivateSuperCOPower,
+  canPlayerActivateCOPower,
+  getMyID,
+  isPlayerSpectator,
+  siloDelayMS,
+  attackDelayMS,
+  isValidBuilding,
+  getBuildingInfo,
+  isValidUnit,
+  getUnitName,
+  getUnitInfoFromCoords,
+  getCurrentClickData,
+} from "../shared/awbw_game";
+import { moveDivToOffset } from "../shared/awbw_page";
+import { getBuildingDiv } from "../shared/awbw_page";
+import {
+  ahAnimUnit,
+  ahAttackSeam,
+  ahBuild,
+  ahCapt,
+  ahCloseMenu,
+  ahCursorMove,
+  ahElimination,
+  ahExplodeAnim,
+  ahFire,
+  ahFog,
+  ahGameOver,
+  ahHide,
+  ahJoin,
+  ahLaunch,
+  ahLoad,
+  ahMove,
+  ahNextTurn,
+  ahOpenMenu,
+  ahPower,
+  ahRepair,
+  ahSupply,
+  ahUnhide,
+  ahUnitClick,
+  ahUnload,
+  ahWait,
+} from "../shared/awbw_handlers";
+import { gameAnimations } from "../shared/awbw_globals";
+import {
   replayForwardBtn,
   replayForwardActionBtn,
   replayBackwardBtn,
@@ -9,21 +53,7 @@ import {
   replayOpenBtn,
   replayCloseBtn,
   replayDaySelectorCheckBox,
-  canPlayerActivateSuperCOPower,
-  canPlayerActivateCOPower,
-  gameAnimations,
-  getMyID,
-  isPlayerSpectator,
-  siloDelayMS,
-  attackDelayMS,
-  isValidBuilding,
-  getBuildingInfo,
-  getBuildingDiv,
-  moveDivToOffset,
-  isValidUnit,
-  getUnitName,
-  getUnitInfoFromCoords,
-} from "../shared/awbw_site";
+} from "../shared/awbw_page";
 import {
   playThemeSong,
   playSFX,
@@ -33,38 +63,37 @@ import {
 } from "./music";
 import { musicPlayerSettings } from "./music_settings";
 import { GameSFX } from "./resources";
-import { isBlackHoleCO } from "../shared/awbw_site";
-
-/**
- * @callback ahCursorMove
- * @param {number} cursorX -
- * @param {number} cursorY -
- */
+import { isBlackHoleCO } from "../shared/awbw_globals";
 
 /**
  * How long to wait in milliseconds before we register a cursor movement.
  * Used to prevent overwhelming the user with too many cursor movement sound effects.
  * @constant
- * @type {number}
  */
 const CURSOR_THRESHOLD_MS = 25;
 
 /**
  * Date representing when we last moved the game cursor.
- * @type {number}
  */
 let lastCursorCall = Date.now();
 
-const MenuClickType = {
-  None: "None",
-  Unit: "Unit",
-  MenuItem: "MenuItem",
-};
+enum MenuClickType {
+  None,
+  Unit,
+  MenuItem,
+}
 
 let menuItemClick = MenuClickType.None;
 let menuOpen = false;
 
+/**
+ * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.
+ */
 let visibilityMap = new Map();
+
+/**
+ * Map of unit IDs to their movement responses. Used to check if a unit got trapped.
+ */
 let movementResponseMap = new Map();
 
 /**
@@ -84,54 +113,6 @@ export function addSiteHandlers() {
   replayCloseBtn.addEventListener("click", refreshMusic);
   replayDaySelectorCheckBox.addEventListener("click", refreshMusic);
 
-  // Action Handlers
-  /* global updateCursor:writeable */
-  /* global openMenu:writeable */
-  /* global closeMenu:writeable */
-  /* global unitClickHandler:writeable */
-  /* global waitUnit:writeable */
-  /* global animUnit:writeable */
-  /* global animExplosion:writeable */
-  /* global updateAirUnitFogOnMove:writeable */
-
-  let ahOpenMenu = openMenu;
-  let ahCursorMove = updateCursor;
-  let ahCloseMenu = closeMenu;
-  let ahUnitClick = unitClickHandler;
-  let ahWait = waitUnit;
-  let ahAnimUnit = animUnit;
-  let ahExplodeAnim = animExplosion;
-  let ahFog = updateAirUnitFogOnMove;
-
-  // Catches both actionHandlers.Delete and actionHandlers.Explode
-  /* global actionHandlers:writeable */
-  let ahFire = actionHandlers.Fire;
-  let ahAttackSeam = actionHandlers.AttackSeam;
-  let ahMove = actionHandlers.Move;
-  let ahCapt = actionHandlers.Capt;
-  let ahBuild = actionHandlers.Build;
-  let ahLoad = actionHandlers.Load;
-  let ahUnload = actionHandlers.Unload;
-  let ahSupply = actionHandlers.Supply;
-  let ahRepair = actionHandlers.Repair;
-  let ahHide = actionHandlers.Hide;
-  let ahUnhide = actionHandlers.Unhide;
-  let ahJoin = actionHandlers.Join;
-  // let ahDelete = actionHandlers.Delete;
-  // let ahExplode = actionHandlers.Explode;
-  let ahLaunch = actionHandlers.Launch;
-  let ahNextTurn = actionHandlers.NextTurn;
-  let ahElimination = actionHandlers.Elimination;
-  let ahPower = actionHandlers.Power;
-  // let ahSetDraw = actionHandlers.SetDraw;
-  // let ahResign = actionHandlers.Resign;
-  let ahGameOver = actionHandlers.GameOver;
-
-  /**
-   * Function called when the cursor is moved in the game.
-   * @param {number} cursorX - The x coordinate of the cursor inside the game grid.
-   * @param {number} cursorY - The y coordinate of the cursor inside the game grid.
-   */
   updateCursor = (cursorX, cursorY) => {
     ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -142,21 +123,14 @@ export function addSiteHandlers() {
     lastCursorCall = Date.now();
   };
 
-  /**
-   * Function called when the action menu is opened after you move a unit.
-   * @param {HTMLDivElement} menu -
-   * @param {number} x -
-   * @param {number} y -
-   */
   openMenu = (menu, x, y) => {
     ahOpenMenu.apply(openMenu, [menu, x, y]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Open Menu", menu, x, y);
 
     let menuOptions = document.getElementsByClassName("menu-option");
-    console.log("Open menu", menuOptions[0]);
     for (var i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_event) => {
-        console.log("Listener", _event);
         playSFX(GameSFX.uiMenuMove);
       });
 
@@ -170,31 +144,41 @@ export function addSiteHandlers() {
     playSFX(GameSFX.uiMenuOpen);
   };
 
-  /**
-   * Function called when the action menu is closed after you select an action or cancel.
-   */
   closeMenu = () => {
     ahCloseMenu.apply(closeMenu, []);
     console.log("CloseMenu", menuOpen, menuItemClick);
     if (!musicPlayerSettings.isPlaying) return;
 
-    if (menuOpen && !menuItemClick) {
-      playSFX(GameSFX.uiMenuClose);
-    } else if (menuOpen && menuItemClick) {
+    let confirmedAction = menuOpen && menuItemClick === MenuClickType.MenuItem;
+    let canceledAction = menuOpen && menuItemClick === MenuClickType.None;
+    let canceledUnitAction =
+      !menuOpen && getCurrentClickData()?.type === "unit" && menuItemClick !== MenuClickType.None;
+
+    console.log(
+      "Actions",
+      confirmedAction,
+      canceledAction,
+      canceledUnitAction,
+      getCurrentClickData()?.type,
+    );
+
+    if (confirmedAction) {
       playSFX(GameSFX.uiMenuOpen);
-    } else if (menuItemClick) {
+      menuItemClick = MenuClickType.None;
+    } else if (canceledAction || canceledUnitAction) {
       playSFX(GameSFX.uiMenuClose);
+      menuItemClick = MenuClickType.None;
     }
 
     menuOpen = false;
-    menuItemClick = MenuClickType.None;
   };
 
   unitClickHandler = (clicked) => {
     ahUnitClick.apply(unitClickHandler, [clicked]);
     if (!musicPlayerSettings.isPlaying) return;
-    menuItemClick = MenuClickType.Unit;
+    console.log("Unit Click", clicked);
 
+    menuItemClick = MenuClickType.Unit;
     playSFX(GameSFX.uiUnitSelect);
   };
 
@@ -216,6 +200,7 @@ export function addSiteHandlers() {
 
   animUnit = (path, unitId, unitSpan, unitTeam, viewerTeam, i) => {
     ahAnimUnit.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
+    console.log("AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
 
     if (!musicPlayerSettings.isPlaying) return;
     // Only check if valid
@@ -234,14 +219,11 @@ export function addSiteHandlers() {
     }
   };
 
-  /**
-   * @param {import("../shared/awbw_site").UnitInfo} unit - Unit info for the unit that will explode.
-   */
   animExplosion = (unit) => {
     ahExplodeAnim.apply(animExplosion, [unit]);
     if (!musicPlayerSettings.isPlaying) return;
-
     // console.log("Exploded", unit);
+
     let unitId = unit.units_id;
     let unitFuel = unit.units_fuel;
     let sfx = GameSFX.actionUnitExplode;
@@ -255,6 +237,7 @@ export function addSiteHandlers() {
   updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change, delay) => {
     ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Fog", x, y, mType, neighbours, unitVisible, change, delay);
 
     let unitInfo = getUnitInfoFromCoords(x, y);
     if (change === "Add") {
@@ -262,14 +245,15 @@ export function addSiteHandlers() {
     }
   };
 
-  actionHandlers.Fire = (fireResponse) => {
+  actionHandlers.Fire = (response) => {
     if (!musicPlayerSettings.isPlaying) {
-      ahFire.apply(actionHandlers.Fire, [fireResponse]);
+      ahFire.apply(actionHandlers.Fire, [response]);
       return;
     }
+    console.log("Fire", response);
 
-    let attackerID = fireResponse.copValues.attacker.playerId;
-    let defenderID = fireResponse.copValues.defender.playerId;
+    let attackerID = response.copValues.attacker.playerId;
+    let defenderID = response.copValues.defender.playerId;
 
     // Let the user hear a confirmation sound
     // if (currentPlayer.info.players_id == attackerID) {
@@ -283,7 +267,7 @@ export function addSiteHandlers() {
     let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
 
     // Let the attack proceed normally
-    ahFire.apply(actionHandlers.Fire, [fireResponse]);
+    ahFire.apply(actionHandlers.Fire, [response]);
 
     // Check if the attack gave enough charge for a power to either side
     // Give it a little bit of time for the animation if needed
@@ -311,18 +295,15 @@ export function addSiteHandlers() {
     }, delay);
   };
 
-  /**
-   * @param {import("../shared/awbw_site").SeamResponse} seamResponse
-   */
-  actionHandlers.AttackSeam = (seamResponse) => {
-    ahAttackSeam.apply(actionHandlers.AttackSeam, [seamResponse]);
+  actionHandlers.AttackSeam = (response) => {
+    ahAttackSeam.apply(actionHandlers.AttackSeam, [response]);
     if (!musicPlayerSettings.isPlaying) return;
-    // console.log("Pipe seam", seamResponse);
+    console.log("AttackSeam", response);
 
     // Pipe wiggle animation
     if (gameAnimations) {
-      let x = seamResponse.seamX;
-      let y = seamResponse.seamY;
+      let x = response.seamX;
+      let y = response.seamY;
       if (!isValidBuilding(x, y)) return;
 
       let pipeSeamInfo = getBuildingInfo(x, y);
@@ -353,7 +334,7 @@ export function addSiteHandlers() {
       setTimeout(wiggleAnimation, attackDelayMS);
     }
 
-    if (seamResponse.seamHp <= 0) {
+    if (response.seamHp <= 0) {
       playSFX(GameSFX.actionUnitAttackPipeSeam);
       playSFX(GameSFX.actionUnitExplode);
       return;
@@ -361,15 +342,15 @@ export function addSiteHandlers() {
     setTimeout(() => playSFX(GameSFX.actionUnitAttackPipeSeam), attackDelayMS);
   };
 
-  actionHandlers.Move = (moveResponse, loadFlag) => {
-    ahMove.apply(actionHandlers.Move, [moveResponse, loadFlag]);
+  actionHandlers.Move = (response, loadFlag) => {
+    ahMove.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Move", response);
 
-    let unitId = moveResponse.unit.units_id;
-    movementResponseMap.set(unitId, moveResponse);
-    // console.log("Move", moveResponse);
+    let unitId = response.unit.units_id;
+    movementResponseMap.set(unitId, response);
 
-    var movementDist = moveResponse.path.length;
+    var movementDist = response.path.length;
     if (movementDist > 1) {
       playMovementSound(unitId);
     }
@@ -378,6 +359,7 @@ export function addSiteHandlers() {
   actionHandlers.Capt = (captData) => {
     ahCapt.apply(actionHandlers.Capt, [captData]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Capt", captData);
 
     let isValid = captData != undefined;
     if (!isValid) return;
@@ -399,98 +381,104 @@ export function addSiteHandlers() {
     playSFX(sfx);
   };
 
-  actionHandlers.Build = (buildData) => {
-    ahBuild.apply(actionHandlers.Build, [buildData]);
+  actionHandlers.Build = (data) => {
+    ahBuild.apply(actionHandlers.Build, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(GameSFX.actionUnitSupply);
+    console.log("Build", data);
+
+    let myID = getMyID();
+    let isMyBuild = data.newUnit.units_players_id == myID;
+    if (!isMyBuild) playSFX(GameSFX.actionUnitSupply);
   };
 
-  actionHandlers.Load = (loadData) => {
-    ahLoad.apply(actionHandlers.Load, [loadData]);
+  actionHandlers.Load = (data) => {
+    ahLoad.apply(actionHandlers.Load, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Load", data);
     playSFX(GameSFX.actionUnitLoad);
   };
 
   actionHandlers.Unload = (unloadData) => {
     ahUnload.apply(actionHandlers.Unload, [unloadData]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Unload", unloadData);
     playSFX(GameSFX.actionUnitUnload);
   };
 
-  actionHandlers.Supply = (supplyRes) => {
-    ahSupply.apply(actionHandlers.Supply, [supplyRes]);
+  actionHandlers.Supply = (data) => {
+    ahSupply.apply(actionHandlers.Supply, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Supply", data);
 
     // We could play the sfx for each supplied unit in the list
     // but instead we decided to play the supply sound once.
     playSFX(GameSFX.actionUnitSupply);
   };
 
-  actionHandlers.Repair = (repairData) => {
-    ahRepair.apply(actionHandlers.Repair, [repairData]);
+  actionHandlers.Repair = (data) => {
+    ahRepair.apply(actionHandlers.Repair, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Repair", data);
     playSFX(GameSFX.actionUnitSupply);
   };
 
-  actionHandlers.Hide = (hideData) => {
-    ahHide.apply(actionHandlers.Hide, [hideData]);
+  actionHandlers.Hide = (data) => {
+    ahHide.apply(actionHandlers.Hide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Hide", data);
     playSFX(GameSFX.actionUnitHide);
-    // console.log("Hide", hideData, hideData.unitId, hideData.unitID);
-    stopMovementSound(hideData.unitId);
+    stopMovementSound(data.unitId);
   };
 
-  actionHandlers.Unhide = (unhideData) => {
-    ahUnhide.apply(actionHandlers.Unhide, [unhideData]);
+  actionHandlers.Unhide = (data) => {
+    ahUnhide.apply(actionHandlers.Unhide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Unhide", data);
     playSFX(GameSFX.actionUnitUnhide);
-    stopMovementSound(unhideData.unitId);
+    stopMovementSound(data.unitId);
   };
 
-  actionHandlers.Join = (joinData) => {
-    ahJoin.apply(actionHandlers.Join, [joinData]);
+  actionHandlers.Join = (data) => {
+    ahJoin.apply(actionHandlers.Join, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    stopMovementSound(joinData.joinID);
-    stopMovementSound(joinData.joinedUnit.units_id);
+    console.log("Join", data);
+    stopMovementSound(data.joinID);
+    stopMovementSound(data.joinedUnit.units_id);
   };
-
-  // actionHandlers.Delete = (deleteData) => {
-  //   ahDelete.apply(actionHandlers.Delete, [deleteData]);
-  // };
-
-  // actionHandlers.Explode = (data) => {
-  //   ahExplode.apply(actionHandlers.Explode, [data]);
-  // };
 
   actionHandlers.Launch = (data) => {
     ahLaunch.apply(actionHandlers.Launch, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Launch", data);
 
     playSFX(GameSFX.actionMissileSend);
     setTimeout(() => playSFX(GameSFX.actionMissileHit), siloDelayMS);
   };
 
-  actionHandlers.NextTurn = (nextTurnRes) => {
-    ahNextTurn.apply(actionHandlers.NextTurn, [nextTurnRes]);
+  actionHandlers.NextTurn = (data) => {
+    ahNextTurn.apply(actionHandlers.NextTurn, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("NextTurn", data);
 
     visibilityMap.clear();
     playThemeSong();
   };
 
-  actionHandlers.Elimination = (eliminationRes) => {
-    ahElimination.apply(actionHandlers.Elimination, [eliminationRes]);
+  actionHandlers.Elimination = (data) => {
+    ahElimination.apply(actionHandlers.Elimination, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Elimination", data);
 
     debugger;
   };
 
-  actionHandlers.Power = (powerRes) => {
-    ahPower.apply(actionHandlers.Power, [powerRes]);
+  actionHandlers.Power = (data) => {
+    ahPower.apply(actionHandlers.Power, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.log("Power", data);
 
-    let coName = powerRes.coName;
-    let isSuperCOPower = powerRes.coPower === "S";
+    let coName = data.coName;
+    let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     let isBH = isBlackHoleCO(coName);
 
     if (isSuperCOPower) {
@@ -499,16 +487,6 @@ export function addSiteHandlers() {
       stopThemeSong(2500);
     }
   };
-
-  // actionHandlers.SetDraw = (drawData) => {
-  //   ahSetDraw.apply(actionHandlers.SetDraw, [drawData]);
-  //   debugger;
-  // };
-
-  // actionHandlers.Resign = (resignRes) => {
-  //   ahResign.apply(actionHandlers.Resign, [resignRes]);
-  //   debugger;
-  // }
 
   actionHandlers.GameOver = () => {
     ahGameOver.apply(actionHandlers.GameOver, []);

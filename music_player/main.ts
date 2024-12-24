@@ -12,11 +12,11 @@
  */
 
 import { addMusicPlayerMenu } from "./music_player_menu";
-import { preloadCommonAudio, preloadExtraAudio } from "./music";
+import { preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { loadSettingsFromLocalStorage } from "./music_settings";
 import { addSiteHandlers } from "./awbw_handlers";
 
-// Add our CSS to the page using webpack
+// Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";
 
 /******************************************************************
@@ -24,12 +24,12 @@ import "./style.css";
  ******************************************************************/
 addMusicPlayerMenu();
 addSiteHandlers();
-preloadCommonAudio(() => {
+preloadAllCommonAudio(() => {
   console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 
   loadSettingsFromLocalStorage();
 
-  preloadExtraAudio(() => {
+  preloadAllExtraAudio(() => {
     console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
   });
 });
