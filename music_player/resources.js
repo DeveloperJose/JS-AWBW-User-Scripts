@@ -2,43 +2,51 @@
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
 import { isBlackHoleCO } from "../shared/awbw_site";
-import { GAME_TYPE, THEME_TYPE, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
+import {
+  SettingsGameType,
+  SettingsThemeType,
+  getCurrentThemeType,
+  musicPlayerSettings,
+} from "./music_settings";
 
 /**
- * @constant
  * Base URL where all the files needed for this script are located.
+ * @constant {string}
  */
 const BASE_URL = "https://developerjose.netlify.app";
 
 /**
- * @constant
  * Base URL where all the music files are located.
+ * @constant {string}
  */
-const BASE_URL_MUSIC = BASE_URL + "/music";
+const BASE_MUSIC_URL = BASE_URL + "/music";
 
 /**
- * @constant
  * Base URL where all sound effect files are located.
+ * @reaodnly
+ * @constant {string}
  */
-const BASE_URL_SFX = BASE_URL_MUSIC + "/sfx";
+const BASE_SFX_URL = BASE_MUSIC_URL + "/sfx";
 
 /**
- * @constant
  * Image URL for static music player icon
+ * @reaodnly
+ * @constant {string}
  */
-export const neutralImgLink = BASE_URL + "/img/music-player-icon.png";
+export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
 
 /**
- * @constant
  * Image URL for animated music player icon.
+ * @reaodnly
+ * @constant {string}
  */
-export const playingImgLink = BASE_URL + "/img/music-player-playing.gif";
+export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
 
 /**
  * Enumeration of all game sound effects. The values for the keys are the filenames.
  * @enum {string}
  */
-export const gameSFX = {
+export const GameSFX = {
   actionSuperCOPowerAvailable: "sfx-action-super-co-power-available",
   actionCOPowerAvailable: "sfx-action-co-power-available",
   actionAllyActivateSCOP: "sfx-action-ally-activate-scop",
@@ -66,93 +74,93 @@ export const gameSFX = {
 };
 
 /**
- * @constant
- * List of all the URLs for all unit movement sounds.
+ * Enumeration of all the unit movement sounds. The values are the URLs for the sounds.
+ * @enum {string}
  */
-const movementSFX = {
-  moveBCopterLoop: BASE_URL_SFX + "/move_bcopter.ogg",
-  moveBCopterOneShot: BASE_URL_SFX + "/move_bcopter_rolloff.ogg",
-  moveInfLoop: BASE_URL_SFX + "/move_inf.ogg",
-  moveMechLoop: BASE_URL_SFX + "/move_mech.ogg",
-  moveNavalLoop: BASE_URL_SFX + "/move_naval.ogg",
-  movePiperunnerLoop: BASE_URL_SFX + "/move_piperunner.ogg",
-  movePlaneLoop: BASE_URL_SFX + "/move_plane.ogg",
-  movePlaneOneShot: BASE_URL_SFX + "/move_plane_rolloff.ogg",
-  moveSubLoop: BASE_URL_SFX + "/move_sub.ogg",
-  moveTCopterLoop: BASE_URL_SFX + "/move_tcopter.ogg",
-  moveTCopterOneShot: BASE_URL_SFX + "/move_tcopter_rolloff.ogg",
-  moveTiresHeavyLoop: BASE_URL_SFX + "/move_tires_heavy.ogg",
-  moveTiresHeavyOneShot: BASE_URL_SFX + "/move_tires_heavy_rolloff.ogg",
-  moveTiresLightLoop: BASE_URL_SFX + "/move_tires_light.ogg",
-  moveTiresLightOneShot: BASE_URL_SFX + "/move_tires_light_rolloff.ogg",
-  moveTreadHeavyLoop: BASE_URL_SFX + "/move_tread_heavy.ogg",
-  moveTreadHeavyOneShot: BASE_URL_SFX + "/move_tread_heavy_rolloff.ogg",
-  moveTreadLightLoop: BASE_URL_SFX + "/move_tread_light.ogg",
-  moveTreadLightOneShot: BASE_URL_SFX + "/move_tread_light_rolloff.ogg",
+const MovementSFX = {
+  moveBCopterLoop: BASE_SFX_URL + "/move_bcopter.ogg",
+  moveBCopterOneShot: BASE_SFX_URL + "/move_bcopter_rolloff.ogg",
+  moveInfLoop: BASE_SFX_URL + "/move_inf.ogg",
+  moveMechLoop: BASE_SFX_URL + "/move_mech.ogg",
+  moveNavalLoop: BASE_SFX_URL + "/move_naval.ogg",
+  movePiperunnerLoop: BASE_SFX_URL + "/move_piperunner.ogg",
+  movePlaneLoop: BASE_SFX_URL + "/move_plane.ogg",
+  movePlaneOneShot: BASE_SFX_URL + "/move_plane_rolloff.ogg",
+  moveSubLoop: BASE_SFX_URL + "/move_sub.ogg",
+  moveTCopterLoop: BASE_SFX_URL + "/move_tcopter.ogg",
+  moveTCopterOneShot: BASE_SFX_URL + "/move_tcopter_rolloff.ogg",
+  moveTiresHeavyLoop: BASE_SFX_URL + "/move_tires_heavy.ogg",
+  moveTiresHeavyOneShot: BASE_SFX_URL + "/move_tires_heavy_rolloff.ogg",
+  moveTiresLightLoop: BASE_SFX_URL + "/move_tires_light.ogg",
+  moveTiresLightOneShot: BASE_SFX_URL + "/move_tires_light_rolloff.ogg",
+  moveTreadHeavyLoop: BASE_SFX_URL + "/move_tread_heavy.ogg",
+  moveTreadHeavyOneShot: BASE_SFX_URL + "/move_tread_heavy_rolloff.ogg",
+  moveTreadLightLoop: BASE_SFX_URL + "/move_tread_light.ogg",
+  moveTreadLightOneShot: BASE_SFX_URL + "/move_tread_light_rolloff.ogg",
 };
 
 /**
  * Map that takes unit names as keys and gives you the URL for that unit movement sound.
  */
 const onMovementStartMap = new Map([
-  ["APC", movementSFX.moveTreadLightLoop],
-  ["Anti-Air", movementSFX.moveTreadLightLoop],
-  ["Artillery", movementSFX.moveTreadLightLoop],
-  ["B-Copter", movementSFX.moveBCopterLoop],
-  ["Battleship", movementSFX.moveNavalLoop],
-  ["Black Boat", movementSFX.moveNavalLoop],
-  ["Black Bomb", movementSFX.movePlaneLoop],
-  ["Bomber", movementSFX.movePlaneLoop],
-  ["Carrier", movementSFX.moveNavalLoop],
-  ["Cruiser", movementSFX.moveNavalLoop],
-  ["Fighter", movementSFX.movePlaneLoop],
-  ["Infantry", movementSFX.moveInfLoop],
-  ["Lander", movementSFX.moveNavalLoop],
-  ["Md. Tank", movementSFX.moveTreadHeavyLoop],
-  ["Mech", movementSFX.moveMechLoop],
-  ["Mega Tank", movementSFX.moveTreadHeavyLoop],
-  ["Missile", movementSFX.moveTiresHeavyLoop],
-  ["Neotank", movementSFX.moveTreadHeavyLoop],
-  ["Piperunner", movementSFX.movePiperunnerLoop],
-  ["Recon", movementSFX.moveTiresLightLoop],
-  ["Rocket", movementSFX.moveTiresHeavyLoop],
-  ["Stealth", movementSFX.movePlaneLoop],
-  ["Sub", movementSFX.moveSubLoop],
-  ["T-Copter", movementSFX.moveTCopterLoop],
-  ["Tank", movementSFX.moveTreadLightLoop],
+  ["APC", MovementSFX.moveTreadLightLoop],
+  ["Anti-Air", MovementSFX.moveTreadLightLoop],
+  ["Artillery", MovementSFX.moveTreadLightLoop],
+  ["B-Copter", MovementSFX.moveBCopterLoop],
+  ["Battleship", MovementSFX.moveNavalLoop],
+  ["Black Boat", MovementSFX.moveNavalLoop],
+  ["Black Bomb", MovementSFX.movePlaneLoop],
+  ["Bomber", MovementSFX.movePlaneLoop],
+  ["Carrier", MovementSFX.moveNavalLoop],
+  ["Cruiser", MovementSFX.moveNavalLoop],
+  ["Fighter", MovementSFX.movePlaneLoop],
+  ["Infantry", MovementSFX.moveInfLoop],
+  ["Lander", MovementSFX.moveNavalLoop],
+  ["Md. Tank", MovementSFX.moveTreadHeavyLoop],
+  ["Mech", MovementSFX.moveMechLoop],
+  ["Mega Tank", MovementSFX.moveTreadHeavyLoop],
+  ["Missile", MovementSFX.moveTiresHeavyLoop],
+  ["Neotank", MovementSFX.moveTreadHeavyLoop],
+  ["Piperunner", MovementSFX.movePiperunnerLoop],
+  ["Recon", MovementSFX.moveTiresLightLoop],
+  ["Rocket", MovementSFX.moveTiresHeavyLoop],
+  ["Stealth", MovementSFX.movePlaneLoop],
+  ["Sub", MovementSFX.moveSubLoop],
+  ["T-Copter", MovementSFX.moveTCopterLoop],
+  ["Tank", MovementSFX.moveTreadLightLoop],
 ]);
 
 /**
  * Map that takes unit names as keys and gives you the URL to play when that unit has stopped moving, if any.
  */
-const onMovementRollOffMap = new Map([
-  ["APC", movementSFX.moveTreadLightOneShot],
-  ["Anti-Air", movementSFX.moveTreadLightOneShot],
-  ["Artillery", movementSFX.moveTreadLightOneShot],
-  ["B-Copter", movementSFX.moveBCopterOneShot],
-  ["Black Bomb", movementSFX.movePlaneOneShot],
-  ["Bomber", movementSFX.movePlaneOneShot],
-  ["Fighter", movementSFX.movePlaneOneShot],
-  ["Md. Tank", movementSFX.moveTreadHeavyOneShot],
-  ["Mega Tank", movementSFX.moveTreadHeavyOneShot],
-  ["Missile", movementSFX.moveTiresHeavyOneShot],
-  ["Neotank", movementSFX.moveTreadHeavyOneShot],
-  ["Recon", movementSFX.moveTiresLightOneShot],
-  ["Rocket", movementSFX.moveTiresHeavyOneShot],
-  ["Stealth", movementSFX.movePlaneOneShot],
-  ["T-Copter", movementSFX.moveTCopterOneShot],
-  ["Tank", movementSFX.moveTreadLightOneShot],
+const onMovmentRolloffMap = new Map([
+  ["APC", MovementSFX.moveTreadLightOneShot],
+  ["Anti-Air", MovementSFX.moveTreadLightOneShot],
+  ["Artillery", MovementSFX.moveTreadLightOneShot],
+  ["B-Copter", MovementSFX.moveBCopterOneShot],
+  ["Black Bomb", MovementSFX.movePlaneOneShot],
+  ["Bomber", MovementSFX.movePlaneOneShot],
+  ["Fighter", MovementSFX.movePlaneOneShot],
+  ["Md. Tank", MovementSFX.moveTreadHeavyOneShot],
+  ["Mega Tank", MovementSFX.moveTreadHeavyOneShot],
+  ["Missile", MovementSFX.moveTiresHeavyOneShot],
+  ["Neotank", MovementSFX.moveTreadHeavyOneShot],
+  ["Recon", MovementSFX.moveTiresLightOneShot],
+  ["Rocket", MovementSFX.moveTiresHeavyOneShot],
+  ["Stealth", MovementSFX.movePlaneOneShot],
+  ["T-Copter", MovementSFX.moveTCopterOneShot],
+  ["Tank", MovementSFX.moveTreadLightOneShot],
 ]);
 
 /**
  * Determines the filename for the music to play given a specific CO and other settings.
  * @param {string} coName - Name of the CO whose music to use.
- * @param {GAME_TYPE} gameType - Which game soundtrack to use.
- * @param {THEME_TYPE} themeType - Which type of music whether regular or power.
+ * @param {SettingsGameType} gameType - Which game soundtrack to use.
+ * @param {SettingsThemeType} themeType - Which type of music whether regular or power.
  * @returns The filename of the music to play given the parameters.
  */
 function getMusicFilename(coName, gameType, themeType) {
-  let isPowerActive = themeType !== THEME_TYPE.REGULAR;
+  let isPowerActive = themeType !== SettingsThemeType.REGULAR;
 
   // Regular theme
   if (!isPowerActive) {
@@ -160,7 +168,7 @@ function getMusicFilename(coName, gameType, themeType) {
   }
 
   // For RBC, we play the new power themes
-  if (gameType === GAME_TYPE.AW_RBC) {
+  if (gameType === SettingsGameType.AW_RBC) {
     return `t-${coName}-cop`;
   }
   // For all other games, play the ally or black hole themes
@@ -174,8 +182,8 @@ function getMusicFilename(coName, gameType, themeType) {
  * The settings will be loaded from the current saved settings if they aren't specified.
  *
  * @param {string} coName - Name of the CO whose music to use.
- * @param {GAME_TYPE} gameType - (Optional) Which game soundtrack to use.
- * @param {THEME_TYPE} themeType - (Optional) Which type of music to use whether regular or power.
+ * @param {SettingsGameType} gameType - (Optional) Which game soundtrack to use.
+ * @param {SettingsThemeType} themeType - (Optional) Which type of music to use whether regular or power.
  * @returns The complete URL of the music to play given the parameters.
  */
 export function getMusicURL(coName, gameType = null, themeType = null) {
@@ -189,7 +197,7 @@ export function getMusicURL(coName, gameType = null, themeType = null) {
 
   let gameDir = gameType;
   let filename = getMusicFilename(coName, gameType, themeType);
-  let url = `${BASE_URL_MUSIC}/${gameDir}/${filename}.ogg`;
+  let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-");
 }
 
@@ -199,7 +207,7 @@ export function getMusicURL(coName, gameType = null, themeType = null) {
  * @returns The URL of the given sound effect key.
  */
 export function getSoundEffectURL(sfx) {
-  return `${BASE_URL_SFX}/${sfx}.ogg`;
+  return `${BASE_SFX_URL}/${sfx}.ogg`;
 }
 
 /**
@@ -217,7 +225,7 @@ export function getMovementSoundURL(unitName) {
  * @returns The URL of the given unit's movement stop sound, if any, or null otherwise.
  */
 export function getMovementRollOffURL(unitName) {
-  return onMovementRollOffMap.get(unitName);
+  return onMovmentRolloffMap.get(unitName);
 }
 
 /**
@@ -226,7 +234,7 @@ export function getMovementRollOffURL(unitName) {
  * @returns True if the given unit has a sound to play when it stops moving.
  */
 export function hasMovementRollOff(unitName) {
-  return onMovementRollOffMap.has(unitName);
+  return onMovmentRolloffMap.has(unitName);
 }
 
 /**
@@ -235,7 +243,7 @@ export function hasMovementRollOff(unitName) {
  * @returns List with all the URLs for all the music player sound effects.
  */
 export function getAllSoundEffectURLS() {
-  let sfx = Object.values(gameSFX).map(getSoundEffectURL);
-  let moreSFX = Object.values(movementSFX);
+  let sfx = Object.values(GameSFX).map(getSoundEffectURL);
+  let moreSFX = Object.values(MovementSFX);
   return sfx.concat(moreSFX);
 }

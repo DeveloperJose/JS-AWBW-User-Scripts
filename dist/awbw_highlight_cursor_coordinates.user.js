@@ -11,7 +11,8 @@
 // @namespace https://awbw.amarriner.com/
 // ==/UserScript==
 
-new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
+new Map(),
+  new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
 let gamemap = document.querySelector("#gamemap"),
   gamemapContainer = document.querySelector("#gamemap-container"),
   zoomInBtn = document.querySelector("#zoom-in"),

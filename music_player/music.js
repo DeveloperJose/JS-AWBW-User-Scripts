@@ -7,13 +7,14 @@ import {
   hasMovementRollOff,
   getSoundEffectURL,
   getAllSoundEffectURLS,
-  gameSFX,
+  GameSFX,
 } from "./resources";
 import {
   musicPlayerSettings,
   addSettingsChangeListener,
-  GAME_TYPE,
+  SettingsGameType,
   THEME_TYPE,
+  SettingsThemeType,
 } from "./music_settings";
 
 /**
@@ -159,7 +160,7 @@ export function stopMovementSound(unitId, rolloff = true) {
 
 /**
  * Plays the given sound effect.
- * @param {string} sfx - String representing a key in {@link gameSFX}.
+ * @param {string} sfx - String representing a key in {@link GameSFX}.
  */
 export function playSFX(sfx) {
   if (!musicPlayerSettings.isPlaying) return;
@@ -213,8 +214,8 @@ export function preloadCommonAudio(afterPreloadFunction) {
   let audioList = coNames.map((name) => getMusicURL(name));
 
   // Preload the most common UI sounds that might play right after the page loads
-  audioList.push(getSoundEffectURL(gameSFX.uiCursorMove));
-  audioList.push(getSoundEffectURL(gameSFX.uiUnitSelect));
+  audioList.push(getSoundEffectURL(GameSFX.uiCursorMove));
+  audioList.push(getSoundEffectURL(GameSFX.uiUnitSelect));
 
   preloadList(audioList, afterPreloadFunction);
 }
@@ -232,8 +233,8 @@ export function preloadExtraAudio(afterPreloadFunction) {
 
   // We preload the themes for each game version
   let coNames = getAllCONames();
-  for (let gameType in GAME_TYPE) {
-    for (let themeType in THEME_TYPE) {
+  for (let gameType in SettingsGameType) {
+    for (let themeType in SettingsThemeType) {
       let gameList = coNames.map((name) => getMusicURL(name, gameType, themeType));
       audioList = audioList.concat(gameList);
     }

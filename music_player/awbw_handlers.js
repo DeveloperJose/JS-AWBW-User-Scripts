@@ -36,7 +36,7 @@ import {
   stopThemeSong,
 } from "./music";
 import { musicPlayerSettings } from "./music_settings";
-import { gameSFX } from "./resources";
+import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_site";
 
 /**
@@ -48,6 +48,7 @@ import { isBlackHoleCO } from "../shared/awbw_site";
 /**
  * How long to wait in milliseconds before we register a cursor movement.
  * Used to prevent overwhelming the user with too many cursor movement sound effects.
+ * @constant
  * @type {number}
  */
 const CURSOR_THRESHOLD_MS = 25;
@@ -58,7 +59,13 @@ const CURSOR_THRESHOLD_MS = 25;
  */
 let lastCursorCall = Date.now();
 
-let menuItemClick = false;
+const MenuClickType = {
+  None: "None",
+  Unit: "Unit",
+  MenuItem: "MenuItem",
+};
+
+let menuItemClick = MenuClickType.None;
 let menuOpen = false;
 
 let visibilityMap = new Map();
@@ -134,7 +141,7 @@ export function addSiteHandlers() {
     if (!musicPlayerSettings.isPlaying) return;
 
     if (Date.now() - lastCursorCall > CURSOR_THRESHOLD_MS) {
-      playSFX(gameSFX.uiCursorMove);
+      playSFX(GameSFX.uiCursorMove);
     }
     lastCursorCall = Date.now();
   };
@@ -150,16 +157,21 @@ export function addSiteHandlers() {
     if (!musicPlayerSettings.isPlaying) return;
 
     let menuOptions = document.getElementsByClassName("menu-option");
+    console.log("Open menu", menuOptions[0]);
     for (var i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_event) => {
-        playSFX(gameSFX.uiMenuMove);
+        console.log("Listener", _event);
+        playSFX(GameSFX.uiMenuMove);
       });
 
-      menuOptions[i].addEventListener("click", (_event) => (menuItemClick = true));
+      menuOptions[i].addEventListener(
+        "click",
+        (_event) => (menuItemClick = MenuClickType.MenuItem),
+      );
     }
 
     menuOpen = true;
-    playSFX(gameSFX.uiMenuOpen);
+    playSFX(GameSFX.uiMenuOpen);
   };
 
   /**
@@ -167,26 +179,27 @@ export function addSiteHandlers() {
    */
   closeMenu = () => {
     ahCloseMenu.apply(closeMenu, []);
+    console.log("CloseMenu", menuOpen, menuItemClick);
     if (!musicPlayerSettings.isPlaying) return;
 
-    // console.log("CloseMenu", menuOpen, menuItemClick);
     if (menuOpen && !menuItemClick) {
-      playSFX(gameSFX.uiMenuClose);
+      playSFX(GameSFX.uiMenuClose);
     } else if (menuOpen && menuItemClick) {
-      playSFX(gameSFX.uiMenuOpen);
+      playSFX(GameSFX.uiMenuOpen);
     } else if (menuItemClick) {
-      playSFX(gameSFX.uiMenuClose);
+      playSFX(GameSFX.uiMenuClose);
     }
 
     menuOpen = false;
-    menuItemClick = false;
+    menuItemClick = MenuClickType.None;
   };
 
   unitClickHandler = (clicked) => {
     ahUnitClick.apply(unitClickHandler, [clicked]);
     if (!musicPlayerSettings.isPlaying) return;
-    menuItemClick = true;
-    playSFX(gameSFX.uiUnitSelect);
+    menuItemClick = MenuClickType.Unit;
+
+    playSFX(GameSFX.uiUnitSelect);
   };
 
   waitUnit = (unitId) => {
@@ -199,7 +212,7 @@ export function addSiteHandlers() {
     if (movementResponseMap.has(unitId)) {
       let response = movementResponseMap.get(unitId);
       if (response.trapped) {
-        playSFX(gameSFX.actionUnitTrap);
+        playSFX(GameSFX.actionUnitTrap);
       }
       movementResponseMap.delete(unitId);
     }
@@ -235,9 +248,9 @@ export function addSiteHandlers() {
     // console.log("Exploded", unit);
     let unitId = unit.units_id;
     let unitFuel = unit.units_fuel;
-    let sfx = gameSFX.actionUnitExplode;
+    let sfx = GameSFX.actionUnitExplode;
     if (getUnitName(unitId) === "Black Bomb" && unitFuel > 0) {
-      sfx = gameSFX.actionMissileHit;
+      sfx = GameSFX.actionMissileHit;
     }
     playSFX(sfx);
     stopMovementSound(unitId, false);
@@ -295,9 +308,9 @@ export function addSiteHandlers() {
         (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
 
       if (madeSCOPAvailable) {
-        playSFX(gameSFX.actionSuperCOPowerAvailable);
+        playSFX(GameSFX.actionSuperCOPowerAvailable);
       } else if (madeCOPAvailable) {
-        playSFX(gameSFX.actionCOPowerAvailable);
+        playSFX(GameSFX.actionCOPowerAvailable);
       }
     }, delay);
   };
@@ -345,11 +358,11 @@ export function addSiteHandlers() {
     }
 
     if (seamResponse.seamHp <= 0) {
-      playSFX(gameSFX.actionUnitAttackPipeSeam);
-      playSFX(gameSFX.actionUnitExplode);
+      playSFX(GameSFX.actionUnitAttackPipeSeam);
+      playSFX(GameSFX.actionUnitExplode);
       return;
     }
-    setTimeout(() => playSFX(gameSFX.actionUnitAttackPipeSeam), attackDelayMS);
+    setTimeout(() => playSFX(GameSFX.actionUnitAttackPipeSeam), attackDelayMS);
   };
 
   actionHandlers.Move = (moveResponse, loadFlag) => {
@@ -376,34 +389,36 @@ export function addSiteHandlers() {
     // They didn't finish the capture
     let finishedCapture = captData.newIncome != null;
     if (!finishedCapture) {
-      playSFX(gameSFX.actionCaptureProgress);
+      playSFX(GameSFX.actionCaptureProgress);
       return;
     }
 
     // The unit is done capping this property
     let myID = getMyID();
     let isSpectator = isPlayerSpectator(myID);
-    let isMyCapture = isSpectator || captData?.buildingInfo.buildings_team === myID;
-    let sfx = isMyCapture ? gameSFX.actionCaptureAlly : gameSFX.actionCaptureEnemy;
+    console.log(isSpectator, captData.buildingInfo.buildings_team, myID);
+    // buildings_team (string) == id (number)
+    let isMyCapture = isSpectator || captData.buildingInfo.buildings_team == myID;
+    let sfx = isMyCapture ? GameSFX.actionCaptureAlly : GameSFX.actionCaptureEnemy;
     playSFX(sfx);
   };
 
   actionHandlers.Build = (buildData) => {
     ahBuild.apply(actionHandlers.Build, [buildData]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(gameSFX.actionUnitSupply);
+    playSFX(GameSFX.actionUnitSupply);
   };
 
   actionHandlers.Load = (loadData) => {
     ahLoad.apply(actionHandlers.Load, [loadData]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(gameSFX.actionUnitLoad);
+    playSFX(GameSFX.actionUnitLoad);
   };
 
   actionHandlers.Unload = (unloadData) => {
     ahUnload.apply(actionHandlers.Unload, [unloadData]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(gameSFX.actionUnitUnload);
+    playSFX(GameSFX.actionUnitUnload);
   };
 
   actionHandlers.Supply = (supplyRes) => {
@@ -412,19 +427,19 @@ export function addSiteHandlers() {
 
     // We could play the sfx for each supplied unit in the list
     // but instead we decided to play the supply sound once.
-    playSFX(gameSFX.actionUnitSupply);
+    playSFX(GameSFX.actionUnitSupply);
   };
 
   actionHandlers.Repair = (repairData) => {
     ahRepair.apply(actionHandlers.Repair, [repairData]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(gameSFX.actionUnitSupply);
+    playSFX(GameSFX.actionUnitSupply);
   };
 
   actionHandlers.Hide = (hideData) => {
     ahHide.apply(actionHandlers.Hide, [hideData]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(gameSFX.actionUnitHide);
+    playSFX(GameSFX.actionUnitHide);
     // console.log("Hide", hideData, hideData.unitId, hideData.unitID);
     stopMovementSound(hideData.unitId);
   };
@@ -432,7 +447,7 @@ export function addSiteHandlers() {
   actionHandlers.Unhide = (unhideData) => {
     ahUnhide.apply(actionHandlers.Unhide, [unhideData]);
     if (!musicPlayerSettings.isPlaying) return;
-    playSFX(gameSFX.actionUnitUnhide);
+    playSFX(GameSFX.actionUnitUnhide);
     stopMovementSound(unhideData.unitId);
   };
 
@@ -455,8 +470,8 @@ export function addSiteHandlers() {
     ahLaunch.apply(actionHandlers.Launch, [data]);
     if (!musicPlayerSettings.isPlaying) return;
 
-    playSFX(gameSFX.actionMissileSend);
-    setTimeout(() => playSFX(gameSFX.actionMissileHit), siloDelayMS);
+    playSFX(GameSFX.actionMissileSend);
+    setTimeout(() => playSFX(GameSFX.actionMissileHit), siloDelayMS);
   };
 
   actionHandlers.NextTurn = (nextTurnRes) => {
@@ -483,7 +498,7 @@ export function addSiteHandlers() {
     let isBH = isBlackHoleCO(coName);
 
     if (isSuperCOPower) {
-      let sfx = isBH ? gameSFX.actionBHActivateSCOP : gameSFX.actionAllyActivateSCOP;
+      let sfx = isBH ? GameSFX.actionBHActivateSCOP : GameSFX.actionAllyActivateSCOP;
       playSFX(sfx);
       stopThemeSong(2500);
     }

@@ -60,11 +60,13 @@
 
 // ============================== Advance Wars Stuff ==============================
 
+const exampleUnusedMap = new Map();
+
 /**
- * @constant
  * List of Black Hole COs, stored in a set for more efficient lookups.
+ * @constant
  */
-const BLACK_HOLE_CO_LIST = new Set([
+const BLACK_HOLE_COs = new Set([
   "flak",
   "lash",
   "adder",
@@ -350,7 +352,7 @@ export function getAllCONames() {
  * @returns True if the given CO is part of Black Hole.
  */
 export function isBlackHoleCO(coName) {
-  return BLACK_HOLE_CO_LIST.has(coName.toLowerCase());
+  return BLACK_HOLE_COs.has(coName.toLowerCase());
 }
 
 /**

@@ -5,7 +5,11 @@ import { isMapEditor } from "../shared/awbw_site";
 
 import { versions } from "../shared/config.js";
 
-import { addSettingsChangeListener, GAME_TYPE, musicPlayerSettings } from "./music_settings.js";
+import {
+  addSettingsChangeListener,
+  SettingsGameType,
+  musicPlayerSettings,
+} from "./music_settings.js";
 
 /**
  * Is the settings context menu (right-click) currently open?
@@ -237,7 +241,7 @@ gameTypeSelectorSpan.addEventListener("change", () => {
   musicPlayerSettings.gameType = newGameType;
 });
 
-for (let key in GAME_TYPE) {
+for (let key in SettingsGameType) {
   let gameTypeOption = document.createElement("option");
   gameTypeOption.id = "music-player-game-type-option-" + key;
 

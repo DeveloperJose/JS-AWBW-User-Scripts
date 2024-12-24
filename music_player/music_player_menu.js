@@ -2,7 +2,7 @@
  * @file This file contains all the functions and variables relevant to the creation and behavior of the music player UI.
  */
 import { isMapEditor, menu } from "../shared/awbw_site";
-import { neutralImgLink, playingImgLink } from "./resources";
+import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsMenuToMusicPlayer } from "./settings_menu";
 import { addSettingsChangeListener, musicPlayerSettings } from "./music_settings";
 
@@ -37,17 +37,15 @@ function onMusicBtnClick(_e) {
  * @param {string} key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
 function onSettingsChange(key) {
-  if (key != "isPlaying") {
-    return;
-  }
+  if (key != "isPlaying") return;
 
   // Update UI
   if (musicPlayerSettings.isPlaying) {
-    musicPlayerDivBackgroundImg.src = playingImgLink;
+    musicPlayerDivBackgroundImg.src = PLAYING_IMG_URL;
     musicPlayerDivHoverSpan.innerText = "Stop Tunes";
     musicPlayerDivBackground.style.backgroundColor = "#e1e1e1";
   } else {
-    musicPlayerDivBackgroundImg.src = neutralImgLink;
+    musicPlayerDivBackgroundImg.src = NEUTRAL_IMG_URL;
     musicPlayerDivHoverSpan.innerText = "Play Tunes";
     musicPlayerDivBackground.style.backgroundColor = "#ffffff";
   }
@@ -91,7 +89,7 @@ musicPlayerDivBackgroundLink.classList.add("cls-context-menu-root");
 const musicPlayerDivBackgroundImg = document.createElement("img");
 musicPlayerDivBackgroundImg.id = "music-player-background-link";
 musicPlayerDivBackgroundImg.classList.add("cls-context-menu-root");
-musicPlayerDivBackgroundImg.src = neutralImgLink;
+musicPlayerDivBackgroundImg.src = NEUTRAL_IMG_URL;
 musicPlayerDivBackgroundImg.style.verticalAlign = "middle";
 musicPlayerDivBackgroundImg.style.width = "17px";
 musicPlayerDivBackgroundImg.style.height = "17px";

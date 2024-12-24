@@ -7,10 +7,9 @@ import { currentPlayer } from "../shared/awbw_site";
 
 /**
  * Enum that represents which game we want the music player to use for its music.
- * @readonly
  * @enum {string}
  */
-export const GAME_TYPE = Object.freeze({
+export const SettingsGameType = Object.freeze({
   AW1: "AW1",
   AW2: "AW2",
   AW_RBC: "AW_RBC",
@@ -19,34 +18,28 @@ export const GAME_TYPE = Object.freeze({
 
 /**
  * Enum that represents music theme types like regular or power.
- * @readonly
  * @enum {string}
  */
-export const THEME_TYPE = Object.freeze({
+export const SettingsThemeType = Object.freeze({
   REGULAR: "REGULAR",
   CO_POWER: "CO_POWER",
   SUPER_CO_POWER: "SUPER_CO_POWER",
 });
 
 /**
- * Map that takes a given coPowerState from a player and returns the appropriate theme type enum.
- */
-const coPowerStateToThemeType = new Map([
-  ["N", THEME_TYPE.REGULAR],
-  ["Y", THEME_TYPE.CO_POWER],
-  ["S", THEME_TYPE.SUPER_CO_POWER],
-]);
-
-/**
  * Gets the theme type enum corresponding to the CO Power state for the current CO.
- * @returns {THEME_TYPE} The THEME_TYPE enum for the current CO Power state.
+ * @returns {SettingsThemeType} The THEME_TYPE enum for the current CO Power state.
  */
 export function getCurrentThemeType() {
-  let currentCOPowerState = currentPlayer.coPowerState;
-  return coPowerStateToThemeType.get(currentCOPowerState);
+  let currentPowerState = currentPlayer.coPowerState;
+  if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
+  if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
+
+  return SettingsThemeType.REGULAR;
 }
 
 /**
+ * @constant
  * String used as the key for storing settings in LocalStorage
  */
 const STORAGE_KEY = "musicPlayerSettings";
@@ -73,7 +66,7 @@ export const musicPlayerSettings = {
   __volume: 0.5,
   __sfxVolume: 0.35,
   __uiVolume: 0.425,
-  __gameType: GAME_TYPE.AW_DS,
+  __gameType: SettingsGameType.AW_DS,
 
   set isPlaying(val) {
     this.__isPlaying = val;
@@ -116,7 +109,7 @@ export const musicPlayerSettings = {
     this.onSettingChangeEvent("gameType");
   },
   /**
-   * @type {GAME_TYPE}
+   * @type {SettingsGameType}
    */
   get gameType() {
     return this.__gameType;

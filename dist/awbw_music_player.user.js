@@ -277,6 +277,7 @@ function __webpack_require__(moduleId) {
   }),
   (__webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)),
   (__webpack_require__.nc = void 0);
+new Map();
 const BLACK_HOLE_COs = new Set([
   "flak",
   "lash",
