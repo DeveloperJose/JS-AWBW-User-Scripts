@@ -1,0 +1,8 @@
+{
+  "name": "AWBW Highlight Cursor Coordinates",
+  "description": "Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.",
+  "author": "DeveloperJose",
+  "match": ["https://awbw.amarriner.com/*?games_id=*", "https://awbw.amarriner.com/*?replays_id=*"],
+  "icon": "https://awbw.amarriner.com/terrain/unit_select.gif",
+  "namespace": "https://awbw.amarriner.com/"
+}

@@ -5,7 +5,7 @@ The code in this repo is in active development, the latest stable versions can b
 
 This project is managed with [npm](https://www.npmjs.com/), all code is formatted using [prettier](https://prettier.io), checked with [ESLint](https://eslint.org/), and documented with [JSDoc](https://jsdoc.app/) conventions and formatting.
 
-I am using [webpack](https://webpack.js.org/) so I can have code across many files and then bundle them into a single userscript, making everything easier to organize and read when writing code instead of having a huge single file for each project.
+I am using [rollup.js](https://rollupjs.org/) so I can modularize code across many files and then bundle them into a single userscript, making everything easier to organize and read when writing code instead of having a huge single file for each project.
 
 # File Structure
 * **dist/** - Contains all the final bundled userscripts with filenames ending in **.user.js**
@@ -14,7 +14,7 @@ I am using [webpack](https://webpack.js.org/) so I can have code across many fil
 * **.prettierrc** - Configuration for [prettier](https://prettier.io).
 * **eslint.config.mjs** - Configuration for [ESLint](https://eslint.org/).
 * **package.json** - NPM package configuration for this project.
-* **webpack.common.js** - Webpack configuration shared by all userscripts which is then merged with each specific script's configuration with [webpack-merge](https://www.npmjs.com/package/webpack-merge).
+* **rollup.config.js** - Configuration used to build all scripts with [rollup.js](https://rollupjs.org/)
 
 # Script List
 ## 1) Improved AWBW Music Player
@@ -31,8 +31,8 @@ This is a major code refactoring and update to twiggy_'s original AWBW Music Pla
 
 ![Picture of the music player settings](./AWBW_Music_Player_2.png)
 
-## 2) AWBW Highlight User Coordinates
-Directory: **highlight_coordinates/**
+## 2) AWBW Highlight Cursor Coordinates
+Directory: **highlight_cursor_coordinates/**
 
 Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
 

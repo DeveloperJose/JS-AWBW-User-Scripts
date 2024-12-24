@@ -13,7 +13,6 @@ import {
   musicPlayerSettings,
   addSettingsChangeListener,
   SettingsGameType,
-  THEME_TYPE,
   SettingsThemeType,
 } from "./music_settings";
 

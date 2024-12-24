@@ -1,8 +1,6 @@
 /**
- * AWBW Highlight Cursor Coordinates
- * main.js - Main script that loads everything
+ * @file Main script that loads everything for the AWBW Highlight Cursor Coordinates userscript.
  */
-
 import {
   cursor,
   gamemap,

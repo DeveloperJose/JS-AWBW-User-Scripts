@@ -16,17 +16,13 @@ import {
   isPlayerSpectator,
   siloDelayMS,
   attackDelayMS,
-  playAnimationIcon,
-  targetIcon,
   isValidBuilding,
   getBuildingInfo,
   getBuildingDiv,
   moveDivToOffset,
   isValidUnit,
   getUnitName,
-  hasUnitMovedThisTurn,
   getUnitInfoFromCoords,
-  currentPlayer,
 } from "../shared/awbw_site";
 import {
   playThemeSong,

@@ -1,0 +1,8 @@
+{
+  "name": "Improved AWBW Music Player",
+  "description": "An improved version of the comprehensive audio player that attempts to recreate the cart experience with more sound effects, more music, and more customizability.",
+  "author": "DeveloperJose, _twiggy",
+  "match": ["https://awbw.amarriner.com/*?games_id=*", "https://awbw.amarriner.com/*editmap*"],
+  "icon": "https://developerjose.netlify.app/img/music-player-icon.png",
+  "namespace": "https://awbw.amarriner.com/"
+}

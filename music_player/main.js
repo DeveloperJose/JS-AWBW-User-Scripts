@@ -1,5 +1,5 @@
 /**
- * @file AWBW Improved Music Player's main script that loads everything.
+ * @file Main script that loads everything for the AWBW Improved Music Player userscript.
  *
  * @todo Edit DS/MapTheme with Audacity
  * @todo DS character themes for AW1/AW2/AW_RBC
