@@ -46,6 +46,7 @@
     "prettier": "^3.4.2",
     "style-loader": "^4.0.0",
     "surge": "^0.24.6",
+    "terser-webpack-plugin": "^5.3.11",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.2.0",

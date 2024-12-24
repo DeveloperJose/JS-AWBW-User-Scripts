@@ -1,3 +1,5 @@
+const TerserPlugin = require("terser-webpack-plugin");
+
 module.exports = {
   mode: "production",
   output: {
@@ -6,13 +8,26 @@ module.exports = {
       type: "module",
     },
   },
-  optimization: {
-    minimize: false,
-    usedExports: true,
-    concatenateModules: true,
-  },
   experiments: {
     outputModule: true,
+  },
+  optimization: {
+    minimize: true,
+    usedExports: true,
+    concatenateModules: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          output: { beautify: true, semicolons: true },
+          mangle: false,
+          compress: {
+            module: true,
+            toplevel: false,
+            // drop_console: true,
+          },
+        },
+      }),
+    ],
   },
   module: {
     rules: [
