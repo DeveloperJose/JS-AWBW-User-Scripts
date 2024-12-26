@@ -47,6 +47,35 @@
     '/* Context Menu */\r\n.cls-context-menu-link {\r\n  display: block;\r\n  padding: 20px;\r\n  background: #ececec;\r\n}\r\n\r\n.cls-context-menu {\r\n  position: absolute;\r\n  display: none;\r\n  width: 175px;\r\n  height: 347px;\r\n  padding-top: 4px;\r\n}\r\n\r\n.cls-context-menu ul,\r\n#context-menu li {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n  background: white;\r\n}\r\n\r\n.cls-context-menu {\r\n  border: 1px solid #888888 !important;\r\n}\r\n.cls-context-menu li {\r\n  border: 1px solid #888888;\r\n}\r\n.cls-context-menu li:last-child {\r\n  border: none;\r\n}\r\n.cls-context-menu li a {\r\n  display: block;\r\n  padding: 5px 10px;\r\n  text-decoration: none;\r\n  color: blue;\r\n}\r\n.cls-context-menu li a:hover {\r\n  background: blue;\r\n  color: #fff;\r\n}\r\n\r\n/* Input Range */\r\n:root {\r\n  --shadow-len: -60px;\r\n}\r\ninput[type="range"] {\r\n  margin: auto;\r\n  -webkit-appearance: none;\r\n  position: relative;\r\n  overflow: hidden;\r\n  height: 25px;\r\n  cursor: pointer;\r\n  border-radius: 0; /* iOS */\r\n}\r\n\r\n::-webkit-slider-runnable-track {\r\n  background: #ddd;\r\n}\r\n\r\n/*\r\n     * 1. Set to 0 width and remove border for a slider without a thumb\r\n     * 2. Shadow is negative the full width of the input and has a spread\r\n     *    of the width of the input.\r\n     */\r\n::-webkit-slider-thumb {\r\n  -webkit-appearance: none;\r\n  width: 20px; /* 1 */\r\n  height: 25px;\r\n  background: #fff;\r\n  box-shadow: -200px 0 0 200px #0066cc; /* 2 */\r\n  border: 2px solid #888888; /* 1 */\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-moz-range-track {\r\n  height: 25px;\r\n  background: #888888;\r\n}\r\n\r\n::-moz-range-thumb {\r\n  background: #fff;\r\n  height: 25px;\r\n  width: 20px;\r\n  border: 3px solid #888888;\r\n  border-radius: 0 !important;\r\n  box-shadow: -200px 0 0 200px #0066cc;\r\n  box-sizing: border-box;\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-ms-fill-lower {\r\n  background: #0066cc;\r\n}\r\n\r\n::-ms-thumb {\r\n  background: #fff;\r\n  border: 3px solid #999;\r\n  height: 25px;\r\n  width: 20px;\r\n  box-sizing: border-box;\r\n}\r\n\r\n::-ms-ticks-after {\r\n  display: none;\r\n}\r\n\r\n::-ms-ticks-before {\r\n  display: none;\r\n}\r\n\r\n::-ms-track {\r\n  background: #888888;\r\n  color: transparent;\r\n  height: 25px;\r\n  border: none;\r\n}\r\n\r\n::-ms-tooltip {\r\n  display: none;\r\n}\r\n\r\n.theme-radio-btn {\r\n  height: 14px;\r\n  width: 14px;\r\n}\r\n\r\n.theme-radio-btn:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n#shuffle-button {\r\n  font-family: "Nova Square", cursive;\r\n  line-height: 25px;\r\n}\r\n\r\n.shuffle-button-enabled {\r\n  color: white;\r\n  background: #0066cc;\r\n  border: 2px solid #0066cc;\r\n}\r\n\r\n.shuffle-button-enabled:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n.shuffle-button-enabled:active {\r\n  color: black;\r\n  background: white;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.shuffle-button-disabled {\r\n  color: white;\r\n  background: #888888;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.blob {\r\n  animation: shine 1.5s ease-in-out infinite;\r\n  animation-fill-mode: forwards;\r\n  animation-direction: alternate;\r\n}\r\n\r\n#version-link {\r\n  color: #0066cc;\r\n  font-weight: bold;\r\n  text-decoration: underline;\r\n}\r\n';
   styleInject(css_248z);
 
+  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
+  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
+  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
+  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
+  const BLACK_HOLE_COs = new Set([
+    "flak",
+    "lash",
+    "adder",
+    "hawke",
+    "sturm",
+    "jugger",
+    "koal",
+    "kindle",
+    "vonbolt",
+  ]);
+  new Set([
+    ...ORANGE_STAR_COs,
+    ...BLUE_MOON_COs,
+    ...GREEN_EARTH_COs,
+    ...YELLOW_COMET_COs,
+    ...BLACK_HOLE_COs,
+  ]);
+  typeof maxX !== "undefined" ? maxX : -1;
+  typeof maxY !== "undefined" ? maxY : -1;
+  let gameAnimations = typeof gameAnims !== "undefined" ? gameAnims : false;
+  function isBlackHoleCO(coName) {
+    return BLACK_HOLE_COs.has(coName.toLowerCase());
+  }
+
   document.querySelector("#gamemap");
   document.querySelector("#gamemap-container");
   document.querySelector("#zoom-in");
@@ -91,35 +120,6 @@
     top += dy;
     div.style.left = left + "px";
     div.style.top = top + "px";
-  }
-
-  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
-  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
-  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
-  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
-  const BLACK_HOLE_COs = new Set([
-    "flak",
-    "lash",
-    "adder",
-    "hawke",
-    "sturm",
-    "jugger",
-    "koal",
-    "kindle",
-    "vonbolt",
-  ]);
-  new Set([
-    ...ORANGE_STAR_COs,
-    ...BLUE_MOON_COs,
-    ...GREEN_EARTH_COs,
-    ...YELLOW_COMET_COs,
-    ...BLACK_HOLE_COs,
-  ]);
-  typeof maxX !== "undefined" ? maxX : -1;
-  typeof maxY !== "undefined" ? maxY : -1;
-  let gameAnimations = typeof gameAnims !== "undefined" ? gameAnims : false;
-  function isBlackHoleCO(coName) {
-    return BLACK_HOLE_COs.has(coName.toLowerCase());
   }
 
   var COPowerEnum;
@@ -512,273 +512,76 @@
     return allSoundURLs;
   }
 
-  /**
-   * @file Constants and other project configuration settings that could be used by any scripts.
-   */
+  class CustomMenuSettingsUI {
+    _parent;
+    _children = new Map();
+    constructor(prefix, buttonImageURL, hoverText = "") {
+      this._parent = document.createElement("div");
+      this._parent.id = prefix + "-parent";
+      this._parent.classList.add("game-tools-btn");
+      this._parent.style.width = "34px";
+      this._parent.style.height = "30px";
+      this._parent.style.borderLeft = "none";
+      let hoverSpan = document.createElement("span");
+      hoverSpan.id = prefix + "-hover-span";
+      hoverSpan.classList.add("game-tools-btn-text", "small_text");
+      hoverSpan.innerText = hoverText;
+      this._parent.appendChild(hoverSpan);
+      this._children.set("hover", hoverSpan);
+      let bgDiv = document.createElement("div");
+      bgDiv.id = prefix + "-background";
+      bgDiv.classList.add("game-tools-bg");
+      bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
+      this._parent.appendChild(bgDiv);
+      this._children.set("bg", bgDiv);
+      let btnLink = document.createElement("a");
+      btnLink.id = prefix + "-link";
+      btnLink.classList.add("norm2");
+      bgDiv.appendChild(btnLink);
+      let btnImg = document.createElement("img");
+      btnImg.id = prefix + "-link-img";
+      btnImg.style.verticalAlign = "middle";
+      btnImg.src = buttonImageURL;
+      btnLink.appendChild(btnImg);
+      this._children.set("img", btnImg);
+    }
+    addToAWBWPage() {
+      menu.appendChild(this._parent);
+    }
+    setHoverText(text) {
+      let hoverSpan = this._children.get("hover");
+      hoverSpan.innerText = text;
+    }
+    setProgress(progress) {
+      let bgDiv = this._children.get("bg");
+      bgDiv.style.backgroundImage =
+        "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
+    }
+    setImage(imageURL) {
+      let btnImg = this._children.get("img");
+      btnImg.src = imageURL;
+    }
+    addClickHandler(handler) {
+      this._parent.addEventListener("click", handler);
+    }
+  }
 
-  /**
-   * The version numbers of the userscripts.
-   * @constant {Object.<string, string>}
-   */
-  const versions = {
-    music_player: "3.0.0",
-    highlight_cursor_coordinates: "1.0.2",
-  };
-
-  let isSettingsMenuOpen = false;
-  addSettingsChangeListener(onSettingsChange$2);
-  function addSettingsMenuToMusicPlayer(musicPlayerDiv) {
-    musicPlayerDiv.appendChild(contextMenu);
-    musicPlayerDiv.addEventListener("contextmenu", (e) => {
-      let elmnt = e.target;
-      if (elmnt.id.startsWith("music-player")) {
-        e.preventDefault();
-        isSettingsMenuOpen = !isSettingsMenuOpen;
-        if (isSettingsMenuOpen) {
-          openSettingsMenu();
-        } else {
-          closeSettingsMenu();
-        }
-      }
-    });
-    document.addEventListener("click", (event) => {
-      let elmnt = event.target;
-      if (elmnt.id.startsWith("music-player-")) return;
-      closeSettingsMenu();
-    });
-  }
-  function onSettingsChange$2(_key) {
-    volumeSlider.value = musicPlayerSettings.volume.toString();
-    sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
-    uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
-    gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
-  }
-  function openSettingsMenu() {
-    contextMenu.style.display = "block";
-  }
-  function closeSettingsMenu() {
-    contextMenu.style.display = "none";
-  }
-  let contextMenu = document.createElement("div");
-  contextMenu.id = "music-player-context-menu";
-  contextMenu.classList.add("cls-context-menu");
-  contextMenu.style.position = "absolute";
-  contextMenu.style.height = "76px";
-  contextMenu.style.paddingTop = "0px";
-  contextMenu.style.paddingBottom = isMapEditor ? "0px" : "4px";
-  contextMenu.style.height = "347px";
-  contextMenu.style.width = "175px";
-  contextMenu.style.top = "37px";
-  const volumeSlider = document.createElement("input");
-  volumeSlider.id = "music-player-vol-slider";
-  volumeSlider.type = "range";
-  volumeSlider.max = "1";
-  volumeSlider.min = "0";
-  volumeSlider.step = "0.01";
-  volumeSlider.value = musicPlayerSettings.volume.toString();
-  volumeSlider.addEventListener("input", (val) => {
-    musicPlayerSettings.volume = parseFloat(val.target.value);
-  });
-  let volumeSliderFlexContainer = document.createElement("div");
-  volumeSliderFlexContainer.id = "music-player-vol-slider-flex-container";
-  volumeSliderFlexContainer.style.display = "flex";
-  volumeSliderFlexContainer.style.flexDirection = "row";
-  volumeSliderFlexContainer.style.marginBottom = "3.5px";
-  volumeSliderFlexContainer.style.alignItems = "center";
-  volumeSliderFlexContainer.style.backgroundColor = "#F0F0F0";
-  let volumeSliderSpanDiv = document.createElement("div");
-  volumeSliderSpanDiv.id = "music-player-vol-slider-div";
-  volumeSliderSpanDiv.style.display = "inline-block";
-  volumeSliderSpanDiv.style.width = "100%";
-  volumeSliderSpanDiv.style.textAlign = "center";
-  let volumeSliderSpan = document.createElement("span");
-  volumeSliderSpan.id = "music-player-vol-slider-desc";
-  volumeSliderSpan.textContent = "Music Volume";
-  volumeSliderSpan.style.fontSize = "13px";
-  volumeSliderFlexContainer.appendChild(volumeSliderSpanDiv);
-  volumeSliderSpanDiv.appendChild(volumeSliderSpan);
-  contextMenu.appendChild(volumeSliderFlexContainer);
-  contextMenu.appendChild(volumeSlider);
-  const sfxVolumeSlider = document.createElement("input");
-  sfxVolumeSlider.id = "music-player-vol-sfx-slider";
-  sfxVolumeSlider.type = "range";
-  sfxVolumeSlider.max = "1";
-  sfxVolumeSlider.min = "0";
-  sfxVolumeSlider.step = "0.01";
-  sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
-  sfxVolumeSlider.addEventListener("input", (val) => {
-    musicPlayerSettings.sfxVolume = parseFloat(val.target.value);
-  });
-  let sfxVolumeSliderFlexContainer = document.createElement("div");
-  sfxVolumeSliderFlexContainer.id = "music-player-vol-sfx-slider-flex-container";
-  sfxVolumeSliderFlexContainer.style.display = "flex";
-  sfxVolumeSliderFlexContainer.style.flexDirection = "row";
-  sfxVolumeSliderFlexContainer.style.marginBottom = "3.5px";
-  sfxVolumeSliderFlexContainer.style.marginTop = "3.5px";
-  sfxVolumeSliderFlexContainer.style.alignItems = "center";
-  let sfxVolumeSliderSpanDiv = document.createElement("div");
-  sfxVolumeSliderSpanDiv.id = "music-player-vol-sfx-slider-div";
-  sfxVolumeSliderSpanDiv.style.display = "inline-block";
-  sfxVolumeSliderSpanDiv.style.width = "100%";
-  sfxVolumeSliderSpanDiv.style.textAlign = "center";
-  let sfxVolumeSliderSpan = document.createElement("span");
-  sfxVolumeSliderSpan.id = "music-player-vol-sfx-slider-desc";
-  sfxVolumeSliderSpan.textContent = "SFX Volume";
-  sfxVolumeSliderSpan.style.fontSize = "13px";
-  sfxVolumeSliderFlexContainer.appendChild(sfxVolumeSliderSpanDiv);
-  sfxVolumeSliderSpanDiv.appendChild(sfxVolumeSliderSpan);
-  contextMenu.appendChild(sfxVolumeSliderFlexContainer);
-  contextMenu.appendChild(sfxVolumeSlider);
-  const uiVolumeSlider = document.createElement("input");
-  uiVolumeSlider.id = "music-player-vol-ui-slider";
-  uiVolumeSlider.type = "range";
-  uiVolumeSlider.max = "1";
-  uiVolumeSlider.min = "0";
-  uiVolumeSlider.step = "0.01";
-  uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
-  uiVolumeSlider.addEventListener("input", (val) => {
-    musicPlayerSettings.uiVolume = parseFloat(val.target.value);
-  });
-  let uiVolumeSliderFlexContainer = document.createElement("div");
-  uiVolumeSliderFlexContainer.id = "music-player-vol-ui-slider-flex-container";
-  uiVolumeSliderFlexContainer.style.display = "flex";
-  uiVolumeSliderFlexContainer.style.flexDirection = "row";
-  uiVolumeSliderFlexContainer.style.marginBottom = "3.5px";
-  uiVolumeSliderFlexContainer.style.marginTop = "3.5px";
-  uiVolumeSliderFlexContainer.style.alignItems = "center";
-  let uiVolumeSliderSpanDiv = document.createElement("div");
-  uiVolumeSliderSpanDiv.id = "music-player-vol-ui-slider-div";
-  uiVolumeSliderSpanDiv.style.display = "inline-block";
-  uiVolumeSliderSpanDiv.style.width = "100%";
-  uiVolumeSliderSpanDiv.style.textAlign = "center";
-  let uiVolumeSliderSpan = document.createElement("span");
-  uiVolumeSliderSpan.id = "music-player-vol-ui-slider-desc";
-  uiVolumeSliderSpan.textContent = "Interface Volume";
-  uiVolumeSliderSpan.style.fontSize = "13px";
-  uiVolumeSliderFlexContainer.appendChild(uiVolumeSliderSpanDiv);
-  uiVolumeSliderSpanDiv.appendChild(uiVolumeSliderSpan);
-  contextMenu.appendChild(uiVolumeSliderFlexContainer);
-  contextMenu.appendChild(uiVolumeSlider);
-  let themeFlexContainer = document.createElement("div");
-  themeFlexContainer.id = "music-player-theme-slider-flex-container";
-  themeFlexContainer.style.display = "flex";
-  themeFlexContainer.style.flexDirection = "row";
-  themeFlexContainer.style.marginTop = "5.5px";
-  themeFlexContainer.style.alignItems = "center";
-  themeFlexContainer.style.backgroundColor = "#F0F0F0";
-  contextMenu.appendChild(themeFlexContainer);
-  let themeSpanDiv = document.createElement("div");
-  themeSpanDiv.id = "music-player-theme-slider-div";
-  themeSpanDiv.style.display = "inline-block";
-  themeSpanDiv.style.width = "100%";
-  themeSpanDiv.style.textAlign = "center";
-  themeFlexContainer.appendChild(themeSpanDiv);
-  let themeSpan = document.createElement("span");
-  themeSpan.id = "music-player-theme-slider-desc";
-  themeSpan.textContent = "Game Soundtrack";
-  themeSpan.style.fontSize = "13px";
-  themeSpanDiv.appendChild(themeSpan);
-  let themeSliderFlexContainer = document.createElement("div");
-  themeSliderFlexContainer.id = "music-player-classic-slider-flex-container";
-  themeSliderFlexContainer.style.display = "flex";
-  themeSliderFlexContainer.style.flexDirection = "row";
-  themeSliderFlexContainer.style.marginTop = "5.5px";
-  themeSliderFlexContainer.style.alignItems = "center";
-  themeSliderFlexContainer.style.justifyContent = "space-around";
-  contextMenu.appendChild(themeSliderFlexContainer);
-  let gameTypeSelectorSpan = document.createElement("select");
-  gameTypeSelectorSpan.id = "music-player-game-type-selector";
-  gameTypeSelectorSpan.value = musicPlayerSettings.gameType;
-  gameTypeSelectorSpan.addEventListener("change", () => {
-    let newGameType = gameTypeSelectorSpan.value;
-    musicPlayerSettings.gameType = newGameType;
-  });
-  for (let key in SettingsGameType) {
-    let gameTypeOption = document.createElement("option");
-    gameTypeOption.id = "music-player-game-type-option-" + key;
-    let gameTypeOptionText = document.createTextNode(key);
-    gameTypeOption.appendChild(gameTypeOptionText);
-    gameTypeSelectorSpan.appendChild(gameTypeOption);
-  }
-  themeSliderFlexContainer.appendChild(gameTypeSelectorSpan);
-  let versionDiv = document.createElement("div");
-  versionDiv.id = "music-player-version-number-div";
-  versionDiv.style.width = "100%";
-  versionDiv.style.marginTop = "5px";
-  versionDiv.style.backgroundColor = "#F0F0F0";
-  let versionSpan = document.createElement("span");
-  versionSpan.id = "music-player-version-number";
-  versionSpan.textContent = "VERSION: " + versions.music_player;
-  versionSpan.style.fontSize = "9px";
-  versionSpan.style.color = "#888888";
-  versionDiv.appendChild(versionSpan);
-  contextMenu.appendChild(versionDiv);
-
-  function addMusicPlayerMenu() {
-    addSettingsMenuToMusicPlayer(musicPlayerDiv);
-    menu.appendChild(musicPlayerDiv);
-  }
-  function setMusicPlayerLoadPercentage(percentage) {
-    musicPlayerDivBackground.style.backgroundImage =
-      "linear-gradient(to right, #ffffff " + String(percentage) + "% , #888888 0%)";
-  }
+  const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
+  musicPlayerUI.addClickHandler(onMusicBtnClick);
+  addSettingsChangeListener(onSettingsChange$1);
   function onMusicBtnClick(_event) {
     musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
   }
   function onSettingsChange$1(key) {
     if (key != "isPlaying") return;
     if (musicPlayerSettings.isPlaying) {
-      musicPlayerDivBackgroundImg.src = PLAYING_IMG_URL;
-      musicPlayerDivHoverSpan.innerText = "Stop Tunes";
-      musicPlayerDivBackground.style.backgroundColor = "#e1e1e1";
+      musicPlayerUI.setHoverText("Stop Tunes");
+      musicPlayerUI.setImage(PLAYING_IMG_URL);
     } else {
-      musicPlayerDivBackgroundImg.src = NEUTRAL_IMG_URL;
-      musicPlayerDivHoverSpan.innerText = "Play Tunes";
-      musicPlayerDivBackground.style.backgroundColor = "#ffffff";
+      musicPlayerUI.setHoverText("Play Tunes");
+      musicPlayerUI.setImage(NEUTRAL_IMG_URL);
     }
   }
-  const musicPlayerDiv = document.createElement("div");
-  musicPlayerDiv.id = "music-player-parent";
-  musicPlayerDiv.classList.add("game-tools-btn");
-  musicPlayerDiv.classList.add("cls-context-menu-root");
-  musicPlayerDiv.style.width = "34px";
-  musicPlayerDiv.style.height = "30px";
-  musicPlayerDiv.style.border = isMapEditor ? "none" : "1px solid #888888";
-  musicPlayerDiv.style.borderLeft = isMapEditor ? "1px solid #888888" : "0px";
-  const musicPlayerDivHoverSpan = document.createElement("span");
-  musicPlayerDivHoverSpan.id = "adji-hover-span";
-  musicPlayerDivHoverSpan.classList.add("game-tools-btn-text");
-  musicPlayerDivHoverSpan.classList.add("small_text");
-  musicPlayerDivHoverSpan.classList.add("cls-context-menu-root");
-  musicPlayerDivHoverSpan.innerText = "Play Tunes";
-  const musicPlayerDivBackground = document.createElement("div");
-  musicPlayerDivBackground.id = "music-player-background";
-  musicPlayerDivBackground.classList.add("game-tools-bg");
-  musicPlayerDivBackground.classList.add("cls-context-menu-root");
-  musicPlayerDivBackground.style.backgroundImage =
-    "linear-gradient(to right, #ffffff 0% , #888888 0%)";
-  const musicPlayerDivBackgroundSpan = document.createElement("span");
-  musicPlayerDivBackgroundSpan.id = "music-player-background-span";
-  musicPlayerDivBackgroundSpan.classList.add("norm2");
-  musicPlayerDivBackgroundSpan.classList.add("cls-context-menu-root");
-  const musicPlayerDivBackgroundLink = document.createElement("a");
-  musicPlayerDivBackgroundLink.id = "music-player-background-link";
-  musicPlayerDivBackgroundLink.classList.add("norm2");
-  musicPlayerDivBackgroundLink.classList.add("cls-context-menu-root");
-  const musicPlayerDivBackgroundImg = document.createElement("img");
-  musicPlayerDivBackgroundImg.id = "music-player-background-link";
-  musicPlayerDivBackgroundImg.classList.add("cls-context-menu-root");
-  musicPlayerDivBackgroundImg.src = NEUTRAL_IMG_URL;
-  musicPlayerDivBackgroundImg.style.verticalAlign = "middle";
-  musicPlayerDivBackgroundImg.style.width = "17px";
-  musicPlayerDivBackgroundImg.style.height = "17px";
-  musicPlayerDiv.appendChild(musicPlayerDivBackground);
-  musicPlayerDiv.appendChild(musicPlayerDivHoverSpan);
-  musicPlayerDivBackground.appendChild(musicPlayerDivBackgroundSpan);
-  musicPlayerDivBackgroundSpan.appendChild(musicPlayerDivBackgroundLink);
-  musicPlayerDivBackgroundLink.appendChild(musicPlayerDivBackgroundImg);
-  addSettingsChangeListener(onSettingsChange$1);
-  musicPlayerDivBackground.addEventListener("click", onMusicBtnClick);
 
   let currentThemeKey = "";
   const urlAudioMap = new Map();
@@ -899,7 +702,7 @@
       let audio = event.target;
       numLoadedAudios++;
       let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
-      setMusicPlayerLoadPercentage(loadPercentage);
+      musicPlayerUI.setProgress(loadPercentage);
       if (event.type !== "error") {
         urlAudioMap.set(audio.src, audio);
       } else {
@@ -1347,6 +1150,7 @@
       playSFX(sfx);
       stopThemeSong(500);
       if (coName === "colin") {
+        console.log("Colin's Gold Rush");
         setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
       }
     };
@@ -1358,7 +1162,7 @@
   }
 
   console.log("Running main script for AWBW Improved Music Player!", musicPlayerSettings);
-  addMusicPlayerMenu();
+  musicPlayerUI.addToAWBWPage();
   addGameHandlers();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");

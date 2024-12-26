@@ -10,7 +10,7 @@
 // Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";
 
-import { addMusicPlayerMenu } from "./music_player_menu";
+import { musicPlayerUI } from "./music_player_menu";
 import { preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import {
   getCurrentThemeType,
@@ -24,7 +24,7 @@ import { isMapEditor } from "../shared/awbw_page";
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
 console.log("Running main script for AWBW Improved Music Player!", musicPlayerSettings);
-addMusicPlayerMenu();
+musicPlayerUI.addToAWBWPage();
 addGameHandlers();
 
 preloadAllCommonAudio(() => {

@@ -1,6 +1,6 @@
 import { getAllPlayingCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
 import { isMapEditor } from "../shared/awbw_page";
-import { setMusicPlayerLoadPercentage } from "./music_player_menu";
+import { musicPlayerUI } from "./music_player_menu";
 import {
   getMusicURL,
   getMovementSoundURL,
@@ -268,7 +268,7 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction: () => void)
     // Update UI
     numLoadedAudios++;
     let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
-    setMusicPlayerLoadPercentage(loadPercentage);
+    musicPlayerUI.setProgress(loadPercentage);
 
     // If the audio loaded properly, then add it to our map
     if (event.type !== "error") {
