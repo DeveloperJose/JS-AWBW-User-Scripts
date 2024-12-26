@@ -1,4 +1,4 @@
-import { getAllCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
+import { getAllPlayingCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
 import { isMapEditor } from "../shared/awbw_page";
 import { setMusicPlayerLoadPercentage } from "./music_player_menu";
 import {
@@ -15,6 +15,7 @@ import {
   addSettingsChangeListener,
   SettingsGameType,
   SettingsThemeType,
+  getCurrentThemeType,
 } from "./music_settings";
 
 /**
@@ -50,8 +51,9 @@ addSettingsChangeListener(onSettingsChange);
 /**
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
+ * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
  */
-export function playThemeSong() {
+export function playThemeSong(startFromBeginning = false) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -69,7 +71,7 @@ export function playThemeSong() {
     return;
   }
   let coName = isMapEditor ? "map-editor" : currentPlayer.coName;
-  playMusicURL(getMusicURL(coName), true);
+  playMusicURL(getMusicURL(coName), startFromBeginning);
 }
 
 /**
@@ -90,7 +92,7 @@ export function stopThemeSong(delayMS: number = 0) {
 
   // The song hasn't finished loading, so stop it as soon as it does
   if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-    currentTheme.addEventListener("play", (event) => (event.target as HTMLAudioElement).pause(), {
+    currentTheme.addEventListener("canplaythrough", (e) => (e.target as HTMLAudioElement).pause(), {
       once: true,
     });
     return;
@@ -211,13 +213,15 @@ export function stopAllSounds() {
  */
 export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
   // Preload the themes of the COs in this match
-  let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
-  let audioList = coNames.map((name) => getMusicURL(name));
+  let coNames = getAllPlayingCONames();
+  let audioList = new Set<string>();
+  coNames.forEach((name) => audioList.add(getMusicURL(name)));
 
   // Preload the most common UI sounds that might play right after the page loads
-  audioList.push(getSoundEffectURL(GameSFX.uiCursorMove));
-  audioList.push(getSoundEffectURL(GameSFX.uiUnitSelect));
+  audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
+  audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
 
+  // console.log("Preloading common");
   preloadAudios(audioList, afterPreloadFunction);
 }
 
@@ -233,100 +237,99 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
   let audioList = getAllSoundEffectURLS();
 
   // We preload the themes for each game version
-  let coNames = getAllCONames();
-  for (let gameType in SettingsGameType) {
-    for (let themeType in SettingsThemeType) {
-      let gameList = coNames.map((name) =>
-        getMusicURL(name, gameType as SettingsGameType, themeType as SettingsThemeType),
-      );
-      audioList = audioList.concat(gameList);
+  let coNames = getAllPlayingCONames();
+  for (const gameType in SettingsGameType) {
+    for (const themeType in SettingsThemeType) {
+      const gameTypeEnum = gameType as SettingsGameType;
+      const themeTypeEnum = themeType as SettingsThemeType;
+      coNames.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
     }
   }
 
+  // console.log("Preloading extra");
   preloadAudios(audioList, afterPreloadFunction);
 }
 
 /**
  * Preloads the given list of songs and adds them to the {@link urlAudioMap}.
- * @param audioURLs - List of URLs of songs to preload.
+ * @param audioURLs - Set of URLs of songs to preload.
  * @param afterPreloadFunction - Function to call after all songs are preloaded.
  */
-function preloadAudios(audioURLs: string[], afterPreloadFunction: () => void) {
-  // Only unique audios, remove duplicates
-  let uniqueURLs = new Set(audioURLs);
+function preloadAudios(audioURLs: Set<string>, afterPreloadFunction: () => void) {
+  // console.log("preloadAudios", audioURLs);
 
   // Event handler for when an audio is loaded
   let numLoadedAudios = 0;
   let onLoadAudio = (event: Event) => {
+    let audio = event.target as HTMLAudioElement;
+    // console.log("onLoadAudio", event);
+
     // Update UI
     numLoadedAudios++;
-    let loadPercentage = (numLoadedAudios / uniqueURLs.size) * 100;
+    let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
     setMusicPlayerLoadPercentage(loadPercentage);
 
     // If the audio loaded properly, then add it to our map
     if (event.type !== "error") {
-      let audio = event.target as HTMLAudioElement;
       urlAudioMap.set(audio.src, audio);
+    } else {
+      console.log("Could not pre-load: ", audio.src);
     }
 
     // All the audio from the list has been loaded
-    if (numLoadedAudios >= uniqueURLs.size) {
+    if (numLoadedAudios >= audioURLs.size) {
+      numLoadedAudios = 0;
       if (afterPreloadFunction) afterPreloadFunction();
     }
-  };
-
-  // Event handler when an audio isn't able to be loaded
-  let onLoadAudioError = (event: Event) => {
-    // console.log("[AWBW Improved Music Player] Could not pre-load: ", event.target.src);
-    onLoadAudio(event);
   };
 
   // Pre-load all audios in the list
   audioURLs.forEach((url) => {
     // This audio has already been loaded before, so skip it
     if (urlAudioMap.has(url)) {
+      // console.log("Skipping", url);
       numLoadedAudios++;
       return;
     }
     let audio = new Audio(url);
-    audio.addEventListener("loadedmetadata", onLoadAudio, false);
-    audio.addEventListener("error", onLoadAudioError, false);
+    audio.addEventListener("canplaythrough", onLoadAudio, { once: true });
+    audio.addEventListener("error", onLoadAudio, { once: true });
   });
 }
 
 /**
  * Changes the current song to the given new song, stopping the old song if necessary.
  * @param srcURL - URL of song to play.
- * @param loop - (Optional) Whether to loop the music or not, defaults to true.
+ * @param startFromBeginning - Whether to start from the beginning.
  */
-function playMusicURL(srcURL: string, loop: boolean = true) {
+function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // We want to play the same song we already are playing
   let currentTheme = urlAudioMap.get(currentThemeKey);
-  if (srcURL === currentThemeKey) {
-    // The song was paused, so resume it
-    if (currentTheme.paused) currentTheme.play();
-    return;
+  let nextTheme = currentTheme;
+  if (srcURL !== currentThemeKey) {
+    // We want to play a new song, so pause the previous one
+    stopThemeSong();
+
+    // This is now the current song
+    currentThemeKey = srcURL;
+
+    // The song isn't preloaded
+    if (!urlAudioMap.has(srcURL)) {
+      urlAudioMap.set(srcURL, new Audio(srcURL));
+    }
+    nextTheme = urlAudioMap.get(srcURL);
   }
 
-  // We want to play a new song, so pause the previous one
-  stopThemeSong();
-
-  // This is now the current song
-  currentThemeKey = srcURL;
-  console.log("[AWBW Improved Music Player] Now Playing: " + srcURL);
-
-  // The song isn't preloaded
-  if (!urlAudioMap.has(srcURL)) {
-    urlAudioMap.set(srcURL, new Audio(srcURL));
-  }
+  // Restart the song if requested
+  if (startFromBeginning) nextTheme.currentTime = 0;
 
   // Play the song
-  currentTheme = urlAudioMap.get(srcURL);
-  currentTheme.volume = musicPlayerSettings.volume;
-  currentTheme.loop = loop;
-  currentTheme.play();
+  console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
+  nextTheme.volume = musicPlayerSettings.volume;
+  nextTheme.loop = true;
+  nextTheme.play();
 }
 
 /**
@@ -359,12 +362,14 @@ function onSettingsChange(key: string) {
     case "gameType":
       playThemeSong();
       break;
+    case "themeType":
+      let restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
+      playThemeSong(restartMusic);
+      break;
     case "volume": {
       // Adjust the volume of the current theme
       let currentTheme = urlAudioMap.get(currentThemeKey);
-      if (currentTheme) {
-        currentTheme.volume = musicPlayerSettings.volume;
-      }
+      if (currentTheme) currentTheme.volume = musicPlayerSettings.volume;
       break;
     }
   }

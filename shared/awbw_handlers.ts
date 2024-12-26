@@ -2,38 +2,70 @@
  * @file Functions used by Advance Wars By Web to handle game actions.
  */
 
-/**
- * Function called when the cursor moves.
- */
-export let ahCursorMove = updateCursor;
-export let ahOpenMenu = openMenu;
-export let ahCloseMenu = closeMenu;
-// export let ahResetCreatedTiles = resetCreatedTiles;
-// export let ahResetAttack = resetAttack;
-export let ahUnitClick = unitClickHandler;
-export let ahWait = waitUnit;
-export let ahAnimUnit = animUnit;
-export let ahExplodeAnim = animExplosion;
-export let ahFog = updateAirUnitFogOnMove;
+export {
+  ahCursorMove,
+  ahOpenMenu,
+  ahCloseMenu,
+  ahResetAttack,
+  ahUnitClick,
+  ahWait,
+  ahAnimUnit,
+  ahAnimExplosion,
+  ahFog,
+  ahFire,
+  ahAttackSeam,
+  ahMove,
+  ahCapt,
+  ahBuild,
+  ahLoad,
+  ahUnload,
+  ahSupply,
+  ahRepair,
+  ahHide,
+  ahUnhide,
+  ahJoin,
+  ahLaunch,
+  ahNextTurn,
+  ahElimination,
+  ahPower,
+  ahGameOver,
+};
 
-export let ahFire = actionHandlers.Fire;
-export let ahAttackSeam = actionHandlers.AttackSeam;
-export let ahMove = actionHandlers.Move;
-export let ahCapt = actionHandlers.Capt;
-export let ahBuild = actionHandlers.Build;
-export let ahLoad = actionHandlers.Load;
-export let ahUnload = actionHandlers.Unload;
-export let ahSupply = actionHandlers.Supply;
-export let ahRepair = actionHandlers.Repair;
-export let ahHide = actionHandlers.Hide;
-export let ahUnhide = actionHandlers.Unhide;
-export let ahJoin = actionHandlers.Join;
-// let ahDelete = actionHandlers.Delete;
-// let ahExplode = actionHandlers.Explode;
-export let ahLaunch = actionHandlers.Launch;
-export let ahNextTurn = actionHandlers.NextTurn;
-export let ahElimination = actionHandlers.Elimination;
-export let ahPower = actionHandlers.Power;
-// let ahSetDraw = actionHandlers.SetDraw;
-// let ahResign = actionHandlers.Resign;
-export let ahGameOver = actionHandlers.GameOver;
+let ahCursorMove =
+  typeof updateCursor !== "undefined"
+    ? updateCursor
+    : typeof designMapEditor !== "undefined"
+      ? designMapEditor.updateCursor
+      : null;
+
+let ahOpenMenu = typeof openMenu !== "undefined" ? openMenu : null;
+let ahCloseMenu = typeof closeMenu !== "undefined" ? closeMenu : null;
+//  let ahResetCreatedTiles = typeof resetCreatedTiles !== "undefined" ? resetCreatedTiles : null;
+let ahResetAttack = typeof resetAttack !== "undefined" ? resetAttack : null;
+let ahUnitClick = typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
+let ahWait = typeof waitUnit !== "undefined" ? waitUnit : null;
+let ahAnimUnit = typeof animUnit !== "undefined" ? animUnit : null;
+let ahAnimExplosion = typeof animExplosion !== "undefined" ? animExplosion : null;
+let ahFog = typeof updateAirUnitFogOnMove !== "undefined" ? updateAirUnitFogOnMove : null;
+
+let ahFire = typeof actionHandlers !== "undefined" ? actionHandlers.Fire : null;
+let ahAttackSeam = typeof actionHandlers !== "undefined" ? actionHandlers.AttackSeam : null;
+let ahMove = typeof actionHandlers !== "undefined" ? actionHandlers.Move : null;
+let ahCapt = typeof actionHandlers !== "undefined" ? actionHandlers.Capt : null;
+let ahBuild = typeof actionHandlers !== "undefined" ? actionHandlers.Build : null;
+let ahLoad = typeof actionHandlers !== "undefined" ? actionHandlers.Load : null;
+let ahUnload = typeof actionHandlers !== "undefined" ? actionHandlers.Unload : null;
+let ahSupply = typeof actionHandlers !== "undefined" ? actionHandlers.Supply : null;
+let ahRepair = typeof actionHandlers !== "undefined" ? actionHandlers.Repair : null;
+let ahHide = typeof actionHandlers !== "undefined" ? actionHandlers.Hide : null;
+let ahUnhide = typeof actionHandlers !== "undefined" ? actionHandlers.Unhide : null;
+let ahJoin = typeof actionHandlers !== "undefined" ? actionHandlers.Join : null;
+// let ahDelete = actionHandlers.Delete ?? null;
+// let ahExplode = actionHandlers.Explode ?? null;
+let ahLaunch = typeof actionHandlers !== "undefined" ? actionHandlers.Launch : null;
+let ahNextTurn = typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
+let ahElimination = typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
+let ahPower = typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
+// let ahSetDraw = actionHandlers.SetDraw ?? null;
+// let ahResign = actionHandlers.Resign ?? null;
+let ahGameOver = typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;

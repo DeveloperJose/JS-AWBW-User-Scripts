@@ -4,6 +4,17 @@
  */
 
 import { gameAnimations } from "./awbw_globals";
+import { isMapEditor } from "./awbw_page";
+
+/**
+ * Enum for the different states a CO Power can be in.
+ * @enum {string}
+ */
+export enum COPowerEnum {
+  NoPower = "N",
+  COPower = "Y",
+  SuperCOPower = "S",
+}
 
 /**
  * The amount of time between the silo launch animation and the hit animation in milliseconds.
@@ -130,6 +141,7 @@ export abstract class currentPlayer {
    * Get the internal info object containing the state of the current player.
    */
   static get info(): PlayerInfo {
+    if (typeof currentTurn === "undefined") return null;
     return getPlayerInfo(currentTurn);
   }
 
@@ -138,7 +150,7 @@ export abstract class currentPlayer {
    * @returns - True if a regular CO power or a Super CO Power is activated.
    */
   static get isPowerActivated() {
-    return this.coPowerState !== COPowerEnum.NoPower;
+    return this?.coPowerState !== COPowerEnum.NoPower;
   }
 
   /**
@@ -146,14 +158,14 @@ export abstract class currentPlayer {
    * @returns - The state of the CO Power for the current player.
    */
   static get coPowerState() {
-    return this.info.players_co_power_on;
+    return this.info?.players_co_power_on;
   }
 
   /**
    * Gets the name of the CO for the current player.
    */
   static get coName() {
-    return this.info.co_name;
+    return this.info?.co_name;
   }
 }
 
@@ -161,8 +173,9 @@ export abstract class currentPlayer {
  * Determine who all the COs of the game are and return a list of their names.
  * @returns - List with the names of each CO in the game.
  */
-export function getAllCONames() {
-  return getAllPlayersInfo().map((info) => info.co_name);
+export function getAllPlayingCONames() {
+  if (isMapEditor) return new Set(["map-editor"]);
+  return new Set(getAllPlayersInfo().map((info) => info.co_name));
 }
 
 /**

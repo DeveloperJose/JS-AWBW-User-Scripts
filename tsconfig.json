@@ -1,4 +1,5 @@
 {
+  // "extends": "@vue/tsconfig/tsconfig.json",
   "compilerOptions": {
     "target": "ES2024",
     "lib": ["ES2024", "DOM"],
@@ -10,6 +11,9 @@
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist",
+    // "types": [
+    //   "vite/client"
+    // ],
   },
   "include": ["**/*.ts"]
 }

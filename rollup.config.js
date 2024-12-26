@@ -8,7 +8,7 @@ import { versions } from "./shared/config.js";
  * Creates the rollup configuration for a given userscript.
  * @param {string} inputDir - The directory containing the userscript's main.js and metadata.json.
  * @param {string} outputDir - The directory to output the userscript. Defaults to "./dist".
- * @returns Configuration object for rollup.
+ * @returns - Configuration object for rollup.
  */
 function createUserscriptRollUpConfig(inputDir, outputDir = "./dist") {
   return {

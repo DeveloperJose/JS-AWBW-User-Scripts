@@ -1,5 +1,6 @@
 **/node_modules/
 **/.parcel-cache/
+**/.vscode/
 
 dist/*.proxy.user.js
 dist/*.meta.js

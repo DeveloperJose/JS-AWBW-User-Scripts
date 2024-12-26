@@ -14,6 +14,39 @@
 (function () {
   "use strict";
 
+  function styleInject(css, ref) {
+    if (ref === void 0) ref = {};
+    var insertAt = ref.insertAt;
+
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    var head = document.head || document.getElementsByTagName("head")[0];
+    var style = document.createElement("style");
+    style.type = "text/css";
+
+    if (insertAt === "top") {
+      if (head.firstChild) {
+        head.insertBefore(style, head.firstChild);
+      } else {
+        head.appendChild(style);
+      }
+    } else {
+      head.appendChild(style);
+    }
+
+    if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }
+  }
+
+  var css_248z =
+    '/* Context Menu */\r\n.cls-context-menu-link {\r\n  display: block;\r\n  padding: 20px;\r\n  background: #ececec;\r\n}\r\n\r\n.cls-context-menu {\r\n  position: absolute;\r\n  display: none;\r\n  width: 175px;\r\n  height: 347px;\r\n  padding-top: 4px;\r\n}\r\n\r\n.cls-context-menu ul,\r\n#context-menu li {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n  background: white;\r\n}\r\n\r\n.cls-context-menu {\r\n  border: 1px solid #888888 !important;\r\n}\r\n.cls-context-menu li {\r\n  border: 1px solid #888888;\r\n}\r\n.cls-context-menu li:last-child {\r\n  border: none;\r\n}\r\n.cls-context-menu li a {\r\n  display: block;\r\n  padding: 5px 10px;\r\n  text-decoration: none;\r\n  color: blue;\r\n}\r\n.cls-context-menu li a:hover {\r\n  background: blue;\r\n  color: #fff;\r\n}\r\n\r\n/* Input Range */\r\n:root {\r\n  --shadow-len: -60px;\r\n}\r\ninput[type="range"] {\r\n  margin: auto;\r\n  -webkit-appearance: none;\r\n  position: relative;\r\n  overflow: hidden;\r\n  height: 25px;\r\n  cursor: pointer;\r\n  border-radius: 0; /* iOS */\r\n}\r\n\r\n::-webkit-slider-runnable-track {\r\n  background: #ddd;\r\n}\r\n\r\n/*\r\n     * 1. Set to 0 width and remove border for a slider without a thumb\r\n     * 2. Shadow is negative the full width of the input and has a spread\r\n     *    of the width of the input.\r\n     */\r\n::-webkit-slider-thumb {\r\n  -webkit-appearance: none;\r\n  width: 20px; /* 1 */\r\n  height: 25px;\r\n  background: #fff;\r\n  box-shadow: -200px 0 0 200px #0066cc; /* 2 */\r\n  border: 2px solid #888888; /* 1 */\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-moz-range-track {\r\n  height: 25px;\r\n  background: #888888;\r\n}\r\n\r\n::-moz-range-thumb {\r\n  background: #fff;\r\n  height: 25px;\r\n  width: 20px;\r\n  border: 3px solid #888888;\r\n  border-radius: 0 !important;\r\n  box-shadow: -200px 0 0 200px #0066cc;\r\n  box-sizing: border-box;\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-ms-fill-lower {\r\n  background: #0066cc;\r\n}\r\n\r\n::-ms-thumb {\r\n  background: #fff;\r\n  border: 3px solid #999;\r\n  height: 25px;\r\n  width: 20px;\r\n  box-sizing: border-box;\r\n}\r\n\r\n::-ms-ticks-after {\r\n  display: none;\r\n}\r\n\r\n::-ms-ticks-before {\r\n  display: none;\r\n}\r\n\r\n::-ms-track {\r\n  background: #888888;\r\n  color: transparent;\r\n  height: 25px;\r\n  border: none;\r\n}\r\n\r\n::-ms-tooltip {\r\n  display: none;\r\n}\r\n\r\n.theme-radio-btn {\r\n  height: 14px;\r\n  width: 14px;\r\n}\r\n\r\n.theme-radio-btn:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n#shuffle-button {\r\n  font-family: "Nova Square", cursive;\r\n  line-height: 25px;\r\n}\r\n\r\n.shuffle-button-enabled {\r\n  color: white;\r\n  background: #0066cc;\r\n  border: 2px solid #0066cc;\r\n}\r\n\r\n.shuffle-button-enabled:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n.shuffle-button-enabled:active {\r\n  color: black;\r\n  background: white;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.shuffle-button-disabled {\r\n  color: white;\r\n  background: #888888;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.blob {\r\n  animation: shine 1.5s ease-in-out infinite;\r\n  animation-fill-mode: forwards;\r\n  animation-direction: alternate;\r\n}\r\n\r\n#version-link {\r\n  color: #0066cc;\r\n  font-weight: bold;\r\n  text-decoration: underline;\r\n}\r\n';
+  styleInject(css_248z);
+
   document.querySelector("#gamemap");
   document.querySelector("#gamemap-container");
   document.querySelector("#zoom-in");
@@ -78,6 +111,12 @@
     return BLACK_HOLE_COs.has(coName.toLowerCase());
   }
 
+  var COPowerEnum;
+  (function (COPowerEnum) {
+    COPowerEnum["NoPower"] = "N";
+    COPowerEnum["COPower"] = "Y";
+    COPowerEnum["SuperCOPower"] = "S";
+  })(COPowerEnum || (COPowerEnum = {}));
   let siloDelayMS = gameAnimations ? 3000 : 0;
   let attackDelayMS = gameAnimations ? 1000 : 0;
   let myName = document
@@ -124,20 +163,22 @@
   }
   class currentPlayer {
     static get info() {
+      if (typeof currentTurn === "undefined") return null;
       return getPlayerInfo(currentTurn);
     }
     static get isPowerActivated() {
-      return this.coPowerState !== COPowerEnum.NoPower;
+      return this?.coPowerState !== COPowerEnum.NoPower;
     }
     static get coPowerState() {
-      return this.info.players_co_power_on;
+      return this.info?.players_co_power_on;
     }
     static get coName() {
-      return this.info.co_name;
+      return this.info?.co_name;
     }
   }
-  function getAllCONames() {
-    return getAllPlayersInfo().map((info) => info.co_name);
+  function getAllPlayingCONames() {
+    if (isMapEditor) return new Set(["map-editor"]);
+    return new Set(getAllPlayersInfo().map((info) => info.co_name));
   }
   function getUnitInfo(unitId) {
     return unitsInfo[unitId];
@@ -168,7 +209,7 @@
     SettingsThemeType["SUPER_CO_POWER"] = "SUPER_CO_POWER";
   })(SettingsThemeType || (SettingsThemeType = {}));
   function getCurrentThemeType() {
-    let currentPowerState = currentPlayer.coPowerState;
+    let currentPowerState = currentPlayer?.coPowerState;
     if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
     if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
     return SettingsThemeType.REGULAR;
@@ -184,9 +225,23 @@
     static __sfxVolume = 0.35;
     static __uiVolume = 0.425;
     static __gameType = SettingsGameType.AW_DS;
-    static set(key, value) {
-      if (key in this) {
-        this[key] = value;
+    static __themeType = SettingsThemeType.REGULAR;
+    static toJSON() {
+      return JSON.stringify({
+        isPlaying: this.__isPlaying,
+        volume: this.__volume,
+        sfxVolume: this.__sfxVolume,
+        uiVolume: this.__uiVolume,
+        gameType: this.__gameType,
+      });
+    }
+    static fromJSON(json) {
+      let savedSettings = JSON.parse(json);
+      for (let key in this) {
+        key = key.substring(2);
+        if (Object.hasOwn(savedSettings, key)) {
+          this[key] = savedSettings[key];
+        }
       }
     }
     static set isPlaying(val) {
@@ -197,6 +252,7 @@
       return this.__isPlaying;
     }
     static set volume(val) {
+      if (val === this.__volume) return;
       this.__volume = val;
       this.onSettingChangeEvent("volume");
     }
@@ -204,6 +260,7 @@
       return this.__volume;
     }
     static set sfxVolume(val) {
+      if (val === this.__sfxVolume) return;
       this.__sfxVolume = val;
       this.onSettingChangeEvent("sfxVolume");
     }
@@ -211,6 +268,7 @@
       return this.__sfxVolume;
     }
     static set uiVolume(val) {
+      if (val === this.__uiVolume) return;
       this.__uiVolume = val;
       this.onSettingChangeEvent("uiVolume");
     }
@@ -218,11 +276,20 @@
       return this.__uiVolume;
     }
     static set gameType(val) {
+      if (val === this.__gameType) return;
       this.__gameType = val;
       this.onSettingChangeEvent("gameType");
     }
     static get gameType() {
       return this.__gameType;
+    }
+    static set themeType(val) {
+      if (val === this.__themeType) return;
+      this.__themeType = val;
+      this.onSettingChangeEvent("themeType");
+    }
+    static get themeType() {
+      return this.__themeType;
     }
     static onSettingChangeEvent(key) {
       onSettingsChangeListeners.forEach((fn) => fn(key));
@@ -230,21 +297,19 @@
   }
   function loadSettingsFromLocalStorage() {
     let storageData = localStorage.getItem(STORAGE_KEY);
-    if (storageData === null) {
-      updateSettingsInLocalStorage();
+    if (!storageData || storageData === "undefined") {
+      console.log("No settings found, storing defaults");
+      storageData = updateSettingsInLocalStorage();
     }
-    let savedSettings = JSON.parse(storageData);
-    for (let key in musicPlayerSettings) {
-      if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
-        let regularKey = key.substring(2);
-        musicPlayerSettings.set(regularKey, savedSettings[key]);
-      }
-    }
+    console.log("Loading settings", storageData);
+    musicPlayerSettings.fromJSON(storageData);
     addSettingsChangeListener(updateSettingsInLocalStorage);
   }
   function updateSettingsInLocalStorage() {
-    let jsonSettings = JSON.stringify(musicPlayerSettings);
+    let jsonSettings = musicPlayerSettings.toJSON();
+    console.log("Saving settings...", jsonSettings);
     localStorage.setItem(STORAGE_KEY, jsonSettings);
+    return jsonSettings;
   }
 
   const BASE_URL = "https://developerjose.netlify.app";
@@ -254,62 +319,53 @@
   const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
   var GameSFX;
   (function (GameSFX) {
-    GameSFX["actionSuperCOPowerAvailable"] = "sfx-action-super-co-power-available";
-    GameSFX["actionCOPowerAvailable"] = "sfx-action-co-power-available";
-    GameSFX["actionAllyActivateSCOP"] = "sfx-action-ally-activate-scop";
-    GameSFX["actionBHActivateSCOP"] = "sfx-action-bh-activate-scop";
-    GameSFX["actionCaptureAlly"] = "sfx-action-capture-ally";
-    GameSFX["actionCaptureEnemy"] = "sfx-action-capture-enemy";
-    GameSFX["actionCaptureProgress"] = "sfx-action-capture-progress";
-    GameSFX["actionMissileHit"] = "sfx-action-missile-hit";
-    GameSFX["actionMissileSend"] = "sfx-action-missile-send";
-    GameSFX["actionUnitAttackPipeSeam"] = "sfx-action-unit-attack-pipe-seam";
-    GameSFX["actionUnitHide"] = "sfx-action-unit-hide";
-    GameSFX["actionUnitUnhide"] = "sfx-action-unit-unhide";
-    GameSFX["actionUnitSupply"] = "sfx-action-unit-supply";
-    GameSFX["actionUnitTrap"] = "sfx-action-unit-trap";
-    GameSFX["actionUnitLoad"] = "sfx-action-unit-load";
-    GameSFX["actionUnitUnload"] = "sfx-action-unit-unload";
-    GameSFX["actionUnitExplode"] = "sfx-action-unit-explode";
-    GameSFX["uiCursorMove"] = "sfx-ui-cursor-move";
-    GameSFX["uiMenuOpen"] = "sfx-ui-menu-open";
-    GameSFX["uiMenuClose"] = "sfx-ui-menu-close";
-    GameSFX["uiMenuMove"] = "sfx-ui-menu-move";
-    GameSFX["uiUnitSelect"] = "sfx-ui-unit-select";
+    GameSFX["powerActivateAllyCOP"] = "power-activate-ally-cop";
+    GameSFX["powerActivateAllySCOP"] = "power-activate-ally-scop";
+    GameSFX["powerActivateBHCOP"] = "power-activate-bh-cop";
+    GameSFX["powerActivateBHSCOP"] = "power-activate-bh-scop";
+    GameSFX["powerActivateAW1COP"] = "power-activate-aw1-cop";
+    GameSFX["powerSCOPAvailable"] = "power-scop-available";
+    GameSFX["powerCOPAvailable"] = "power-cop-available";
+    GameSFX["unitAttackPipeSeam"] = "unit-attack-pipe-seam";
+    GameSFX["unitCaptureAlly"] = "unit-capture-ally";
+    GameSFX["unitCaptureEnemy"] = "unit-capture-enemy";
+    GameSFX["unitCaptureProgress"] = "unit-capture-progress";
+    GameSFX["unitMissileHit"] = "unit-missile-hit";
+    GameSFX["unitMissileSend"] = "unit-missile-send";
+    GameSFX["unitHide"] = "unit-hide";
+    GameSFX["unitUnhide"] = "unit-unhide";
+    GameSFX["unitSupply"] = "unit-supply";
+    GameSFX["unitTrap"] = "unit-trap";
+    GameSFX["unitLoad"] = "unit-load";
+    GameSFX["unitUnload"] = "unit-unload";
+    GameSFX["unitExplode"] = "unit-explode";
+    GameSFX["uiCursorMove"] = "ui-cursor-move";
+    GameSFX["uiMenuOpen"] = "ui-menu-open";
+    GameSFX["uiMenuClose"] = "ui-menu-close";
+    GameSFX["uiMenuMove"] = "ui-menu-move";
+    GameSFX["uiUnitSelect"] = "ui-unit-select";
   })(GameSFX || (GameSFX = {}));
   var MovementSFX;
   (function (MovementSFX) {
-    MovementSFX["moveBCopterLoop"] = "https://developerjose.netlify.app/music/sfx/move_bcopter.ogg";
-    MovementSFX["moveBCopterOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_bcopter_rolloff.ogg";
-    MovementSFX["moveInfLoop"] = "https://developerjose.netlify.app/music/sfx/move_inf.ogg";
-    MovementSFX["moveMechLoop"] = "https://developerjose.netlify.app/music/sfx/move_mech.ogg";
-    MovementSFX["moveNavalLoop"] = "https://developerjose.netlify.app/music/sfx/move_naval.ogg";
-    MovementSFX["movePiperunnerLoop"] =
-      "https://developerjose.netlify.app/music/sfx/move_piperunner.ogg";
-    MovementSFX["movePlaneLoop"] = "https://developerjose.netlify.app/music/sfx/move_plane.ogg";
-    MovementSFX["movePlaneOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_plane_rolloff.ogg";
-    MovementSFX["moveSubLoop"] = "https://developerjose.netlify.app/music/sfx/move_sub.ogg";
-    MovementSFX["moveTCopterLoop"] = "https://developerjose.netlify.app/music/sfx/move_tcopter.ogg";
-    MovementSFX["moveTCopterOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_tcopter_rolloff.ogg";
-    MovementSFX["moveTiresHeavyLoop"] =
-      "https://developerjose.netlify.app/music/sfx/move_tires_heavy.ogg";
-    MovementSFX["moveTiresHeavyOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_tires_heavy_rolloff.ogg";
-    MovementSFX["moveTiresLightLoop"] =
-      "https://developerjose.netlify.app/music/sfx/move_tires_light.ogg";
-    MovementSFX["moveTiresLightOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_tires_light_rolloff.ogg";
-    MovementSFX["moveTreadHeavyLoop"] =
-      "https://developerjose.netlify.app/music/sfx/move_tread_heavy.ogg";
-    MovementSFX["moveTreadHeavyOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_tread_heavy_rolloff.ogg";
-    MovementSFX["moveTreadLightLoop"] =
-      "https://developerjose.netlify.app/music/sfx/move_tread_light.ogg";
-    MovementSFX["moveTreadLightOneShot"] =
-      "https://developerjose.netlify.app/music/sfx/move_tread_light_rolloff.ogg";
+    MovementSFX["moveBCopterLoop"] = "move-bcopter";
+    MovementSFX["moveBCopterOneShot"] = "move-bcopter-rolloff";
+    MovementSFX["moveInfLoop"] = "move-inf";
+    MovementSFX["moveMechLoop"] = "move-mech";
+    MovementSFX["moveNavalLoop"] = "move-naval";
+    MovementSFX["movePiperunnerLoop"] = "move-piperunner";
+    MovementSFX["movePlaneLoop"] = "move-plane";
+    MovementSFX["movePlaneOneShot"] = "move-plane-rolloff";
+    MovementSFX["moveSubLoop"] = "move-sub";
+    MovementSFX["moveTCopterLoop"] = "move-tcopter";
+    MovementSFX["moveTCopterOneShot"] = "move-tcopter-rolloff";
+    MovementSFX["moveTiresHeavyLoop"] = "move-tires-heavy";
+    MovementSFX["moveTiresHeavyOneShot"] = "move-tires-heavy-rolloff";
+    MovementSFX["moveTiresLightLoop"] = "move-tires-light";
+    MovementSFX["moveTiresLightOneShot"] = "move-tires-light-rolloff";
+    MovementSFX["moveTreadHeavyLoop"] = "move-tread-heavy";
+    MovementSFX["moveTreadHeavyOneShot"] = "move-tread-heavy-rolloff";
+    MovementSFX["moveTreadLightLoop"] = "move-tread-light";
+    MovementSFX["moveTreadLightOneShot"] = "move-tread-light-rolloff";
   })(MovementSFX || (MovementSFX = {}));
   const onMovementStartMap = new Map([
     ["APC", MovementSFX.moveTreadLightLoop],
@@ -338,7 +394,7 @@
     ["T-Copter", MovementSFX.moveTCopterLoop],
     ["Tank", MovementSFX.moveTreadLightLoop],
   ]);
-  const onMovmentRolloffMap = new Map([
+  const onMovementRolloffMap = new Map([
     ["APC", MovementSFX.moveTreadLightOneShot],
     ["Anti-Air", MovementSFX.moveTreadLightOneShot],
     ["Artillery", MovementSFX.moveTreadLightOneShot],
@@ -357,8 +413,12 @@
     ["Tank", MovementSFX.moveTreadLightOneShot],
   ]);
   function getMusicFilename(coName, gameType, themeType) {
+    if (coName === "map-editor") return "t-map-editor";
     let isPowerActive = themeType !== SettingsThemeType.REGULAR;
     if (!isPowerActive) {
+      return `t-${coName}`;
+    }
+    if (gameType === SettingsGameType.AW1) {
       return `t-${coName}`;
     }
     if (gameType === SettingsGameType.AW_RBC) {
@@ -368,12 +428,8 @@
     return `t-${faction}-${themeType}`;
   }
   function getMusicURL(coName, gameType = null, themeType = null) {
-    if (gameType === null) {
-      gameType = musicPlayerSettings.gameType;
-    }
-    if (themeType === null) {
-      themeType = getCurrentThemeType();
-    }
+    if (gameType === null) gameType = musicPlayerSettings.gameType;
+    if (themeType === null) themeType = musicPlayerSettings.themeType;
     let gameDir = gameType;
     let filename = getMusicFilename(coName, gameType, themeType);
     let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
@@ -383,18 +439,26 @@
     return `${BASE_SFX_URL}/${sfx}.ogg`;
   }
   function getMovementSoundURL(unitName) {
-    return onMovementStartMap.get(unitName);
+    return `${BASE_SFX_URL}/${onMovementStartMap.get(unitName)}.ogg`;
   }
   function getMovementRollOffURL(unitName) {
-    return onMovmentRolloffMap.get(unitName);
+    return `${BASE_SFX_URL}/${onMovementRolloffMap.get(unitName)}.ogg`;
   }
   function hasMovementRollOff(unitName) {
-    return onMovmentRolloffMap.has(unitName);
+    return onMovementRolloffMap.has(unitName);
   }
   function getAllSoundEffectURLS() {
-    let sfx = Object.values(GameSFX).map(getSoundEffectURL);
-    let moreSFX = Object.values(MovementSFX);
-    return sfx.concat(moreSFX);
+    let allSoundURLs = new Set();
+    for (let sfx of Object.values(GameSFX)) {
+      allSoundURLs.add(getSoundEffectURL(sfx));
+    }
+    for (let unitName of onMovementStartMap.keys()) {
+      allSoundURLs.add(getMovementSoundURL(unitName));
+    }
+    for (let unitName of onMovementRolloffMap.keys()) {
+      allSoundURLs.add(getMovementRollOffURL(unitName));
+    }
+    return allSoundURLs;
   }
 
   /**
@@ -671,7 +735,7 @@
   let currentlyDelaying = false;
   let delayThemeMS = 0;
   addSettingsChangeListener(onSettingsChange);
-  function playThemeSong() {
+  function playThemeSong(startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
     if (currentlyDelaying) return;
     if (delayThemeMS > 0) {
@@ -684,7 +748,7 @@
       return;
     }
     let coName = isMapEditor ? "map-editor" : currentPlayer.coName;
-    playMusicURL(getMusicURL(coName), true);
+    playMusicURL(getMusicURL(coName), startFromBeginning);
   }
   function stopThemeSong(delayMS = 0) {
     if (delayMS > 0) delayThemeMS = delayMS;
@@ -692,7 +756,7 @@
     let currentTheme = urlAudioMap.get(currentThemeKey);
     if (currentTheme.paused) return;
     if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-      currentTheme.addEventListener("play", (event) => event.target.pause(), {
+      currentTheme.addEventListener("canplaythrough", (e) => e.target.pause(), {
         once: true,
       });
       return;
@@ -757,41 +821,42 @@
     }
   }
   function preloadAllCommonAudio(afterPreloadFunction) {
-    let coNames = isMapEditor ? ["map-editor"] : getAllCONames();
-    let audioList = coNames.map((name) => getMusicURL(name));
-    audioList.push(getSoundEffectURL(GameSFX.uiCursorMove));
-    audioList.push(getSoundEffectURL(GameSFX.uiUnitSelect));
+    let coNames = getAllPlayingCONames();
+    let audioList = new Set();
+    coNames.forEach((name) => audioList.add(getMusicURL(name)));
+    audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
+    audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
     preloadAudios(audioList, afterPreloadFunction);
   }
   function preloadAllExtraAudio(afterPreloadFunction) {
     if (isMapEditor) return;
     let audioList = getAllSoundEffectURLS();
-    let coNames = getAllCONames();
-    for (let gameType in SettingsGameType) {
-      for (let themeType in SettingsThemeType) {
-        let gameList = coNames.map((name) => getMusicURL(name, gameType, themeType));
-        audioList = audioList.concat(gameList);
+    let coNames = getAllPlayingCONames();
+    for (const gameType in SettingsGameType) {
+      for (const themeType in SettingsThemeType) {
+        const gameTypeEnum = gameType;
+        const themeTypeEnum = themeType;
+        coNames.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
       }
     }
     preloadAudios(audioList, afterPreloadFunction);
   }
   function preloadAudios(audioURLs, afterPreloadFunction) {
-    let uniqueURLs = new Set(audioURLs);
     let numLoadedAudios = 0;
     let onLoadAudio = (event) => {
+      let audio = event.target;
       numLoadedAudios++;
-      let loadPercentage = (numLoadedAudios / uniqueURLs.size) * 100;
+      let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
       setMusicPlayerLoadPercentage(loadPercentage);
       if (event.type !== "error") {
-        let audio = event.target;
         urlAudioMap.set(audio.src, audio);
+      } else {
+        console.log("Could not pre-load: ", audio.src);
       }
-      if (numLoadedAudios >= uniqueURLs.size) {
+      if (numLoadedAudios >= audioURLs.size) {
+        numLoadedAudios = 0;
         if (afterPreloadFunction) afterPreloadFunction();
       }
-    };
-    let onLoadAudioError = (event) => {
-      onLoadAudio(event);
     };
     audioURLs.forEach((url) => {
       if (urlAudioMap.has(url)) {
@@ -799,27 +864,27 @@
         return;
       }
       let audio = new Audio(url);
-      audio.addEventListener("loadedmetadata", onLoadAudio, false);
-      audio.addEventListener("error", onLoadAudioError, false);
+      audio.addEventListener("canplaythrough", onLoadAudio, { once: true });
+      audio.addEventListener("error", onLoadAudio, { once: true });
     });
   }
-  function playMusicURL(srcURL, loop = true) {
+  function playMusicURL(srcURL, startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
     let currentTheme = urlAudioMap.get(currentThemeKey);
-    if (srcURL === currentThemeKey) {
-      if (currentTheme.paused) currentTheme.play();
-      return;
+    let nextTheme = currentTheme;
+    if (srcURL !== currentThemeKey) {
+      stopThemeSong();
+      currentThemeKey = srcURL;
+      if (!urlAudioMap.has(srcURL)) {
+        urlAudioMap.set(srcURL, new Audio(srcURL));
+      }
+      nextTheme = urlAudioMap.get(srcURL);
     }
-    stopThemeSong();
-    currentThemeKey = srcURL;
-    console.log("[AWBW Improved Music Player] Now Playing: " + srcURL);
-    if (!urlAudioMap.has(srcURL)) {
-      urlAudioMap.set(srcURL, new Audio(srcURL));
-    }
-    currentTheme = urlAudioMap.get(srcURL);
-    currentTheme.volume = musicPlayerSettings.volume;
-    currentTheme.loop = loop;
-    currentTheme.play();
+    if (startFromBeginning) nextTheme.currentTime = 0;
+    console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
+    nextTheme.volume = musicPlayerSettings.volume;
+    nextTheme.loop = true;
+    nextTheme.play();
   }
   function playOneShotURL(srcURL, volume) {
     if (!musicPlayerSettings.isPlaying) return;
@@ -840,44 +905,54 @@
       case "gameType":
         playThemeSong();
         break;
+      case "themeType":
+        let restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
+        playThemeSong(restartMusic);
+        break;
       case "volume": {
         let currentTheme = urlAudioMap.get(currentThemeKey);
-        if (currentTheme) {
-          currentTheme.volume = musicPlayerSettings.volume;
-        }
+        if (currentTheme) currentTheme.volume = musicPlayerSettings.volume;
         break;
       }
     }
   }
 
-  let ahCursorMove = updateCursor;
-  let ahOpenMenu = openMenu;
-  let ahCloseMenu = closeMenu;
-  let ahUnitClick = unitClickHandler;
-  let ahWait = waitUnit;
-  let ahAnimUnit = animUnit;
-  let ahExplodeAnim = animExplosion;
-  let ahFog = updateAirUnitFogOnMove;
-  let ahFire = actionHandlers.Fire;
-  let ahAttackSeam = actionHandlers.AttackSeam;
-  let ahMove = actionHandlers.Move;
-  let ahCapt = actionHandlers.Capt;
-  let ahBuild = actionHandlers.Build;
-  let ahLoad = actionHandlers.Load;
-  let ahUnload = actionHandlers.Unload;
-  let ahSupply = actionHandlers.Supply;
-  let ahRepair = actionHandlers.Repair;
-  let ahHide = actionHandlers.Hide;
-  let ahUnhide = actionHandlers.Unhide;
-  let ahJoin = actionHandlers.Join;
-  let ahLaunch = actionHandlers.Launch;
-  let ahNextTurn = actionHandlers.NextTurn;
-  let ahElimination = actionHandlers.Elimination;
-  let ahPower = actionHandlers.Power;
-  let ahGameOver = actionHandlers.GameOver;
+  let ahCursorMove =
+    typeof updateCursor !== "undefined"
+      ? updateCursor
+      : typeof designMapEditor !== "undefined"
+        ? designMapEditor.updateCursor
+        : null;
+  let ahOpenMenu = typeof openMenu !== "undefined" ? openMenu : null;
+  let ahCloseMenu = typeof closeMenu !== "undefined" ? closeMenu : null;
+  typeof resetAttack !== "undefined" ? resetAttack : null;
+  let ahUnitClick = typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
+  let ahWait = typeof waitUnit !== "undefined" ? waitUnit : null;
+  let ahAnimUnit = typeof animUnit !== "undefined" ? animUnit : null;
+  let ahAnimExplosion = typeof animExplosion !== "undefined" ? animExplosion : null;
+  let ahFog = typeof updateAirUnitFogOnMove !== "undefined" ? updateAirUnitFogOnMove : null;
+  let ahFire = typeof actionHandlers !== "undefined" ? actionHandlers.Fire : null;
+  let ahAttackSeam = typeof actionHandlers !== "undefined" ? actionHandlers.AttackSeam : null;
+  let ahMove = typeof actionHandlers !== "undefined" ? actionHandlers.Move : null;
+  let ahCapt = typeof actionHandlers !== "undefined" ? actionHandlers.Capt : null;
+  let ahBuild = typeof actionHandlers !== "undefined" ? actionHandlers.Build : null;
+  let ahLoad = typeof actionHandlers !== "undefined" ? actionHandlers.Load : null;
+  let ahUnload = typeof actionHandlers !== "undefined" ? actionHandlers.Unload : null;
+  let ahSupply = typeof actionHandlers !== "undefined" ? actionHandlers.Supply : null;
+  let ahRepair = typeof actionHandlers !== "undefined" ? actionHandlers.Repair : null;
+  let ahHide = typeof actionHandlers !== "undefined" ? actionHandlers.Hide : null;
+  let ahUnhide = typeof actionHandlers !== "undefined" ? actionHandlers.Unhide : null;
+  let ahJoin = typeof actionHandlers !== "undefined" ? actionHandlers.Join : null;
+  let ahLaunch = typeof actionHandlers !== "undefined" ? actionHandlers.Launch : null;
+  let ahNextTurn = typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
+  let ahElimination = typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
+  let ahPower = typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
+  let ahGameOver = typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
 
   const CURSOR_THRESHOLD_MS = 25;
   let lastCursorCall = Date.now();
+  let lastCursorX = -1;
+  let lastCursorY = -1;
   var MenuClickType;
   (function (MenuClickType) {
     MenuClickType[(MenuClickType["None"] = 0)] = "None";
@@ -888,11 +963,34 @@
   let menuOpen = false;
   let visibilityMap = new Map();
   let movementResponseMap = new Map();
-  function addSiteHandlers() {
-    let refreshMusic = () => {
-      setTimeout(playThemeSong, 500);
-      visibilityMap.clear();
-    };
+  function onCursorMove(cursorX, cursorY) {
+    ahCursorMove.apply(ahCursorMove, [cursorX, cursorY]);
+    if (!musicPlayerSettings.isPlaying) return;
+    let dx = Math.abs(cursorX - lastCursorX);
+    let dy = Math.abs(cursorY - lastCursorY);
+    let cursorMoved = dx >= 1 || dy >= 1;
+    let timeSinceLastCursorCall = Date.now() - lastCursorCall;
+    if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
+    if (cursorMoved) {
+      playSFX(GameSFX.uiCursorMove);
+      lastCursorCall = Date.now();
+    }
+    lastCursorX = cursorX;
+    lastCursorY = cursorY;
+  }
+  function syncSettingsToMusic() {
+    visibilityMap.clear();
+    musicPlayerSettings.themeType = getCurrentThemeType();
+    playThemeSong();
+  }
+  function addGameHandlers() {
+    if (isMapEditor) {
+      designMapEditor.updateCursor = onCursorMove;
+      return;
+    } else {
+      updateCursor = onCursorMove;
+    }
+    let refreshMusic = () => setTimeout(syncSettingsToMusic, 500);
     replayForwardBtn.addEventListener("click", refreshMusic);
     replayForwardActionBtn.addEventListener("click", refreshMusic);
     replayBackwardBtn.addEventListener("click", refreshMusic);
@@ -900,16 +998,8 @@
     replayOpenBtn.addEventListener("click", refreshMusic);
     replayCloseBtn.addEventListener("click", refreshMusic);
     replayDaySelectorCheckBox.addEventListener("click", refreshMusic);
-    updateCursor = (cursorX, cursorY) => {
-      ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
-      if (!musicPlayerSettings.isPlaying) return;
-      if (Date.now() - lastCursorCall > CURSOR_THRESHOLD_MS) {
-        playSFX(GameSFX.uiCursorMove);
-      }
-      lastCursorCall = Date.now();
-    };
     openMenu = (menu, x, y) => {
-      ahOpenMenu.apply(openMenu, [menu, x, y]);
+      ahOpenMenu?.apply(openMenu, [menu, x, y]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Open Menu", menu, x, y);
       let menuOptions = document.getElementsByClassName("menu-option");
@@ -926,7 +1016,7 @@
       playSFX(GameSFX.uiMenuOpen);
     };
     closeMenu = () => {
-      ahCloseMenu.apply(closeMenu, []);
+      ahCloseMenu?.apply(closeMenu, []);
       console.log("CloseMenu", menuOpen, menuItemClick);
       if (!musicPlayerSettings.isPlaying) return;
       let confirmedAction = menuOpen && menuItemClick === MenuClickType.MenuItem;
@@ -941,35 +1031,33 @@
         getCurrentClickData()?.type,
       );
       if (confirmedAction) {
-        playSFX(GameSFX.uiMenuOpen);
         menuItemClick = MenuClickType.None;
       } else if (canceledAction || canceledUnitAction) {
-        playSFX(GameSFX.uiMenuClose);
         menuItemClick = MenuClickType.None;
       }
       menuOpen = false;
     };
     unitClickHandler = (clicked) => {
-      ahUnitClick.apply(unitClickHandler, [clicked]);
+      ahUnitClick?.apply(unitClickHandler, [clicked]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Unit Click", clicked);
       menuItemClick = MenuClickType.Unit;
       playSFX(GameSFX.uiUnitSelect);
     };
     waitUnit = (unitId) => {
-      ahWait.apply(waitUnit, [unitId]);
+      ahWait?.apply(waitUnit, [unitId]);
       if (!musicPlayerSettings.isPlaying) return;
       stopMovementSound(unitId);
       if (movementResponseMap.has(unitId)) {
         let response = movementResponseMap.get(unitId);
-        if (response.trapped) {
-          playSFX(GameSFX.actionUnitTrap);
+        if (response?.trapped) {
+          playSFX(GameSFX.unitTrap);
         }
         movementResponseMap.delete(unitId);
       }
     };
     animUnit = (path, unitId, unitSpan, unitTeam, viewerTeam, i) => {
-      ahAnimUnit.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
+      ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
       console.log("AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
       if (!musicPlayerSettings.isPlaying) return;
       if (!isValidUnit(unitId) || !path || !i) return;
@@ -982,29 +1070,30 @@
       }
     };
     animExplosion = (unit) => {
-      ahExplodeAnim.apply(animExplosion, [unit]);
+      ahAnimExplosion?.apply(animExplosion, [unit]);
       if (!musicPlayerSettings.isPlaying) return;
       let unitId = unit.units_id;
       let unitFuel = unit.units_fuel;
-      let sfx = GameSFX.actionUnitExplode;
+      let sfx = GameSFX.unitExplode;
       if (getUnitName(unitId) === "Black Bomb" && unitFuel > 0) {
-        sfx = GameSFX.actionMissileHit;
+        sfx = GameSFX.unitMissileHit;
       }
       playSFX(sfx);
       stopMovementSound(unitId, false);
     };
     updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change, delay) => {
-      ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
+      ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Fog", x, y, mType, neighbours, unitVisible, change, delay);
       let unitInfo = getUnitInfoFromCoords(x, y);
+      if (!unitInfo) return;
       if (change === "Add") {
         setTimeout(() => stopMovementSound(unitInfo.units_id, false), delay);
       }
     };
     actionHandlers.Fire = (response) => {
       if (!musicPlayerSettings.isPlaying) {
-        ahFire.apply(actionHandlers.Fire, [response]);
+        ahFire?.apply(actionHandlers.Fire, [response]);
         return;
       }
       console.log("Fire", response);
@@ -1014,7 +1103,7 @@
       let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
       let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
       let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
-      ahFire.apply(actionHandlers.Fire, [response]);
+      ahFire?.apply(actionHandlers.Fire, [response]);
       var delay = gameAnimations ? 750 : 0;
       setTimeout(() => {
         let canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
@@ -1028,14 +1117,14 @@
           (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
           (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
         if (madeSCOPAvailable) {
-          playSFX(GameSFX.actionSuperCOPowerAvailable);
+          playSFX(GameSFX.powerSCOPAvailable);
         } else if (madeCOPAvailable) {
-          playSFX(GameSFX.actionCOPowerAvailable);
+          playSFX(GameSFX.powerCOPAvailable);
         }
       }, delay);
     };
     actionHandlers.AttackSeam = (response) => {
-      ahAttackSeam.apply(actionHandlers.AttackSeam, [response]);
+      ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("AttackSeam", response);
       if (gameAnimations) {
@@ -1069,14 +1158,14 @@
         setTimeout(wiggleAnimation, attackDelayMS);
       }
       if (response.seamHp <= 0) {
-        playSFX(GameSFX.actionUnitAttackPipeSeam);
-        playSFX(GameSFX.actionUnitExplode);
+        playSFX(GameSFX.unitAttackPipeSeam);
+        playSFX(GameSFX.unitExplode);
         return;
       }
-      setTimeout(() => playSFX(GameSFX.actionUnitAttackPipeSeam), attackDelayMS);
+      setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
     };
     actionHandlers.Move = (response, loadFlag) => {
-      ahMove.apply(actionHandlers.Move, [response, loadFlag]);
+      ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Move", response);
       let unitId = response.unit.units_id;
@@ -1087,154 +1176,135 @@
       }
     };
     actionHandlers.Capt = (captData) => {
-      ahCapt.apply(actionHandlers.Capt, [captData]);
+      ahCapt?.apply(actionHandlers.Capt, [captData]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Capt", captData);
       let isValid = captData != undefined;
       if (!isValid) return;
       let finishedCapture = captData.newIncome != null;
       if (!finishedCapture) {
-        playSFX(GameSFX.actionCaptureProgress);
+        playSFX(GameSFX.unitCaptureProgress);
         return;
       }
       let myID = getMyID();
       let isSpectator = isPlayerSpectator(myID);
       console.log(isSpectator, captData.buildingInfo.buildings_team, myID);
       let isMyCapture = isSpectator || captData.buildingInfo.buildings_team == myID;
-      let sfx = isMyCapture ? GameSFX.actionCaptureAlly : GameSFX.actionCaptureEnemy;
+      let sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
       playSFX(sfx);
     };
     actionHandlers.Build = (data) => {
-      ahBuild.apply(actionHandlers.Build, [data]);
+      ahBuild?.apply(actionHandlers.Build, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Build", data);
       let myID = getMyID();
       let isMyBuild = data.newUnit.units_players_id == myID;
-      if (!isMyBuild) playSFX(GameSFX.actionUnitSupply);
+      if (!isMyBuild) playSFX(GameSFX.unitSupply);
     };
     actionHandlers.Load = (data) => {
-      ahLoad.apply(actionHandlers.Load, [data]);
+      ahLoad?.apply(actionHandlers.Load, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Load", data);
-      playSFX(GameSFX.actionUnitLoad);
+      playSFX(GameSFX.unitLoad);
     };
     actionHandlers.Unload = (unloadData) => {
-      ahUnload.apply(actionHandlers.Unload, [unloadData]);
+      ahUnload?.apply(actionHandlers.Unload, [unloadData]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Unload", unloadData);
-      playSFX(GameSFX.actionUnitUnload);
+      playSFX(GameSFX.unitUnload);
     };
     actionHandlers.Supply = (data) => {
-      ahSupply.apply(actionHandlers.Supply, [data]);
+      ahSupply?.apply(actionHandlers.Supply, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Supply", data);
-      playSFX(GameSFX.actionUnitSupply);
+      playSFX(GameSFX.unitSupply);
     };
     actionHandlers.Repair = (data) => {
-      ahRepair.apply(actionHandlers.Repair, [data]);
+      ahRepair?.apply(actionHandlers.Repair, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Repair", data);
-      playSFX(GameSFX.actionUnitSupply);
+      playSFX(GameSFX.unitSupply);
     };
     actionHandlers.Hide = (data) => {
-      ahHide.apply(actionHandlers.Hide, [data]);
+      ahHide?.apply(actionHandlers.Hide, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Hide", data);
-      playSFX(GameSFX.actionUnitHide);
+      playSFX(GameSFX.unitHide);
       stopMovementSound(data.unitId);
     };
     actionHandlers.Unhide = (data) => {
-      ahUnhide.apply(actionHandlers.Unhide, [data]);
+      ahUnhide?.apply(actionHandlers.Unhide, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Unhide", data);
-      playSFX(GameSFX.actionUnitUnhide);
+      playSFX(GameSFX.unitUnhide);
       stopMovementSound(data.unitId);
     };
     actionHandlers.Join = (data) => {
-      ahJoin.apply(actionHandlers.Join, [data]);
+      ahJoin?.apply(actionHandlers.Join, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Join", data);
       stopMovementSound(data.joinID);
       stopMovementSound(data.joinedUnit.units_id);
     };
     actionHandlers.Launch = (data) => {
-      ahLaunch.apply(actionHandlers.Launch, [data]);
+      ahLaunch?.apply(actionHandlers.Launch, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Launch", data);
-      playSFX(GameSFX.actionMissileSend);
-      setTimeout(() => playSFX(GameSFX.actionMissileHit), siloDelayMS);
+      playSFX(GameSFX.unitMissileSend);
+      setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
     };
     actionHandlers.NextTurn = (data) => {
-      ahNextTurn.apply(actionHandlers.NextTurn, [data]);
+      ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("NextTurn", data);
-      visibilityMap.clear();
-      playThemeSong();
+      syncSettingsToMusic();
     };
     actionHandlers.Elimination = (data) => {
-      ahElimination.apply(actionHandlers.Elimination, [data]);
+      ahElimination?.apply(actionHandlers.Elimination, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Elimination", data);
       debugger;
     };
     actionHandlers.Power = (data) => {
-      ahPower.apply(actionHandlers.Power, [data]);
+      ahPower?.apply(actionHandlers.Power, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("Power", data);
       let coName = data.coName;
-      let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
+      let isAW1 = musicPlayerSettings.gameType === SettingsGameType.AW1;
       let isBH = isBlackHoleCO(coName);
-      if (isSuperCOPower) {
-        let sfx = isBH ? GameSFX.actionBHActivateSCOP : GameSFX.actionAllyActivateSCOP;
-        playSFX(sfx);
-        stopThemeSong(2500);
+      let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
+      musicPlayerSettings.themeType = isSuperCOPower
+        ? SettingsThemeType.SUPER_CO_POWER
+        : SettingsThemeType.CO_POWER;
+      if (isAW1) {
+        playSFX(GameSFX.powerActivateAW1COP);
+        stopThemeSong(4500);
+        return;
       }
+      if (isSuperCOPower) {
+        let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+        playSFX(sfx);
+        stopThemeSong(850);
+        return;
+      }
+      isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+      playSFX(GameSFX.powerActivateAW1COP);
+      stopThemeSong(500);
     };
     actionHandlers.GameOver = () => {
-      ahGameOver.apply(actionHandlers.GameOver, []);
+      ahGameOver?.apply(actionHandlers.GameOver, []);
       if (!musicPlayerSettings.isPlaying) return;
       debugger;
     };
   }
 
-  function styleInject(css, ref) {
-    if (ref === void 0) ref = {};
-    var insertAt = ref.insertAt;
-
-    if (typeof document === "undefined") {
-      return;
-    }
-
-    var head = document.head || document.getElementsByTagName("head")[0];
-    var style = document.createElement("style");
-    style.type = "text/css";
-
-    if (insertAt === "top") {
-      if (head.firstChild) {
-        head.insertBefore(style, head.firstChild);
-      } else {
-        head.appendChild(style);
-      }
-    } else {
-      head.appendChild(style);
-    }
-
-    if (style.styleSheet) {
-      style.styleSheet.cssText = css;
-    } else {
-      style.appendChild(document.createTextNode(css));
-    }
-  }
-
-  var css_248z =
-    '/* Context Menu */\r\n.cls-context-menu-link {\r\n  display: block;\r\n  padding: 20px;\r\n  background: #ececec;\r\n}\r\n\r\n.cls-context-menu {\r\n  position: absolute;\r\n  display: none;\r\n  width: 175px;\r\n  height: 347px;\r\n  padding-top: 4px;\r\n}\r\n\r\n.cls-context-menu ul,\r\n#context-menu li {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n  background: white;\r\n}\r\n\r\n.cls-context-menu {\r\n  border: 1px solid #888888 !important;\r\n}\r\n.cls-context-menu li {\r\n  border: 1px solid #888888;\r\n}\r\n.cls-context-menu li:last-child {\r\n  border: none;\r\n}\r\n.cls-context-menu li a {\r\n  display: block;\r\n  padding: 5px 10px;\r\n  text-decoration: none;\r\n  color: blue;\r\n}\r\n.cls-context-menu li a:hover {\r\n  background: blue;\r\n  color: #fff;\r\n}\r\n\r\n/* Input Range */\r\n:root {\r\n  --shadow-len: -60px;\r\n}\r\ninput[type="range"] {\r\n  margin: auto;\r\n  -webkit-appearance: none;\r\n  position: relative;\r\n  overflow: hidden;\r\n  height: 25px;\r\n  cursor: pointer;\r\n  border-radius: 0; /* iOS */\r\n}\r\n\r\n::-webkit-slider-runnable-track {\r\n  background: #ddd;\r\n}\r\n\r\n/*\r\n     * 1. Set to 0 width and remove border for a slider without a thumb\r\n     * 2. Shadow is negative the full width of the input and has a spread\r\n     *    of the width of the input.\r\n     */\r\n::-webkit-slider-thumb {\r\n  -webkit-appearance: none;\r\n  width: 20px; /* 1 */\r\n  height: 25px;\r\n  background: #fff;\r\n  box-shadow: -200px 0 0 200px #0066cc; /* 2 */\r\n  border: 2px solid #888888; /* 1 */\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-moz-range-track {\r\n  height: 25px;\r\n  background: #888888;\r\n}\r\n\r\n::-moz-range-thumb {\r\n  background: #fff;\r\n  height: 25px;\r\n  width: 20px;\r\n  border: 3px solid #888888;\r\n  border-radius: 0 !important;\r\n  box-shadow: -200px 0 0 200px #0066cc;\r\n  box-sizing: border-box;\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-ms-fill-lower {\r\n  background: #0066cc;\r\n}\r\n\r\n::-ms-thumb {\r\n  background: #fff;\r\n  border: 3px solid #999;\r\n  height: 25px;\r\n  width: 20px;\r\n  box-sizing: border-box;\r\n}\r\n\r\n::-ms-ticks-after {\r\n  display: none;\r\n}\r\n\r\n::-ms-ticks-before {\r\n  display: none;\r\n}\r\n\r\n::-ms-track {\r\n  background: #888888;\r\n  color: transparent;\r\n  height: 25px;\r\n  border: none;\r\n}\r\n\r\n::-ms-tooltip {\r\n  display: none;\r\n}\r\n\r\n.theme-radio-btn {\r\n  height: 14px;\r\n  width: 14px;\r\n}\r\n\r\n.theme-radio-btn:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n#shuffle-button {\r\n  font-family: "Nova Square", cursive;\r\n  line-height: 25px;\r\n}\r\n\r\n.shuffle-button-enabled {\r\n  color: white;\r\n  background: #0066cc;\r\n  border: 2px solid #0066cc;\r\n}\r\n\r\n.shuffle-button-enabled:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n.shuffle-button-enabled:active {\r\n  color: black;\r\n  background: white;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.shuffle-button-disabled {\r\n  color: white;\r\n  background: #888888;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.blob {\r\n  animation: shine 1.5s ease-in-out infinite;\r\n  animation-fill-mode: forwards;\r\n  animation-direction: alternate;\r\n}\r\n\r\n#version-link {\r\n  color: #0066cc;\r\n  font-weight: bold;\r\n  text-decoration: underline;\r\n}\r\n';
-  styleInject(css_248z);
-
+  console.log("Running main script for AWBW Improved Music Player!", musicPlayerSettings);
   addMusicPlayerMenu();
-  addSiteHandlers();
+  addGameHandlers();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
     loadSettingsFromLocalStorage();
+    musicPlayerSettings.themeType = getCurrentThemeType();
     preloadAllExtraAudio(() => {
       console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
     });

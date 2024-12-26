@@ -31,7 +31,7 @@ export enum SettingsThemeType {
  * @returns {SettingsThemeType} The SettingsThemeType enum for the current CO Power state.
  */
 export function getCurrentThemeType() {
-  let currentPowerState = currentPlayer.coPowerState;
+  let currentPowerState = currentPlayer?.coPowerState;
   if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
   if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
 
@@ -67,10 +67,27 @@ export abstract class musicPlayerSettings {
   private static __sfxVolume = 0.35;
   private static __uiVolume = 0.425;
   private static __gameType = SettingsGameType.AW_DS;
+  private static __themeType = SettingsThemeType.REGULAR;
 
-  static set(key: any, value: any) {
-    if (key in this) {
-      (this as any)[key] = value;
+  static toJSON() {
+    return JSON.stringify({
+      isPlaying: this.__isPlaying,
+      volume: this.__volume,
+      sfxVolume: this.__sfxVolume,
+      uiVolume: this.__uiVolume,
+      gameType: this.__gameType,
+    });
+  }
+
+  static fromJSON(json: string) {
+    // Only keep and set settings that are in the current version of musicPlayerSettings
+    let savedSettings = JSON.parse(json);
+    for (let key in this) {
+      key = key.substring(2); // Remove the __ prefix
+      if (Object.hasOwn(savedSettings, key)) {
+        (this as any)[key] = savedSettings[key];
+        // console.log("Loading", key, "as", savedSettings[key]);
+      }
     }
   }
 
@@ -84,6 +101,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set volume(val: number) {
+    if (val === this.__volume) return;
     this.__volume = val;
     this.onSettingChangeEvent("volume");
   }
@@ -93,6 +111,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set sfxVolume(val: number) {
+    if (val === this.__sfxVolume) return;
     this.__sfxVolume = val;
     this.onSettingChangeEvent("sfxVolume");
   }
@@ -102,6 +121,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set uiVolume(val: number) {
+    if (val === this.__uiVolume) return;
     this.__uiVolume = val;
     this.onSettingChangeEvent("uiVolume");
   }
@@ -111,11 +131,22 @@ export abstract class musicPlayerSettings {
   }
 
   static set gameType(val: SettingsGameType) {
+    if (val === this.__gameType) return;
     this.__gameType = val;
     this.onSettingChangeEvent("gameType");
   }
   static get gameType() {
     return this.__gameType;
+  }
+
+  static set themeType(val: SettingsThemeType) {
+    if (val === this.__themeType) return;
+    this.__themeType = val;
+    this.onSettingChangeEvent("themeType");
+  }
+
+  static get themeType() {
+    return this.__themeType;
   }
 
   static onSettingChangeEvent(key: string) {
@@ -129,21 +160,14 @@ export abstract class musicPlayerSettings {
 export function loadSettingsFromLocalStorage() {
   let storageData = localStorage.getItem(STORAGE_KEY);
 
-  // Store defaults if nothing is stored
-  if (storageData === null) {
-    updateSettingsInLocalStorage();
+  // Store defaults if nothing or undefined is stored
+  if (!storageData || storageData === "undefined") {
+    console.log("No settings found, storing defaults");
+    storageData = updateSettingsInLocalStorage();
   }
 
-  // Only keep and set settings that are in the current version
-  // Only keep internal __vars
-  let savedSettings = JSON.parse(storageData);
-  for (let key in musicPlayerSettings) {
-    if (Object.hasOwn(savedSettings, key) && key.startsWith("__")) {
-      // Key without __ prefix
-      let regularKey = key.substring(2);
-      musicPlayerSettings.set(regularKey, savedSettings[key]);
-    }
-  }
+  console.log("Loading settings", storageData);
+  musicPlayerSettings.fromJSON(storageData);
 
   // From now on, any setting changes will be saved and any listeners will be called
   addSettingsChangeListener(updateSettingsInLocalStorage);
@@ -153,6 +177,8 @@ export function loadSettingsFromLocalStorage() {
  * Saves the current music player settings in the local storage.
  */
 function updateSettingsInLocalStorage() {
-  let jsonSettings = JSON.stringify(musicPlayerSettings);
+  let jsonSettings = musicPlayerSettings.toJSON();
+  console.log("Saving settings...", jsonSettings);
   localStorage.setItem(STORAGE_KEY, jsonSettings);
+  return jsonSettings;
 }

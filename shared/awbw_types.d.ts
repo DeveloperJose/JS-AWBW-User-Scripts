@@ -56,7 +56,7 @@ interface PlayerInfo {
   players_co_max_power: number;
   players_co_max_spower: number;
   players_co_power: number;
-  players_co_power_on: COPowerEnum;
+  players_co_power_on: string;
   players_countries_id: number;
   players_eliminated: string;
   players_funds: number;
@@ -91,6 +91,8 @@ interface BuildingInfo {
   buildings_id: number;
 }
 
+declare let mapClick: (e: Event, e1: Event) => void;
+
 /**
  * Function called when the cursor is moved in the game.
  * @param cursorX - The x coordinate of the cursor inside the game grid.
@@ -110,6 +112,8 @@ declare let openMenu: (menu: HTMLDivElement, x: number, y: number) => void;
  * Function called when the action menu is closed.
  */
 declare let closeMenu: () => void;
+
+declare let resetAttack: () => void;
 
 /**
  * Function called when a unit is clicked.
@@ -185,6 +189,7 @@ interface SeamResponse {
 interface MoveResponse {
   unit: UnitInfo;
   path: any[]; // TODO
+  trapped: boolean;
 }
 
 interface CaptureData {
@@ -227,15 +232,9 @@ interface NextTurnData {}
 
 interface EliminationData {}
 
-declare enum COPowerEnum {
-  NoPower = "N",
-  COPower = "Y",
-  SuperCOPower = "S",
-}
-
 interface PowerData {
   coName: string;
-  coPower: COPowerEnum;
+  coPower: string;
 }
 
 interface DrawData {}
@@ -282,3 +281,11 @@ declare let currentClick: CurrentClickData | null;
  * The ID of the player currently playing this turn.
  */
 declare let currentTurn: number;
+
+/**
+ * Vue instance for the map editor.
+ */
+interface MapEditorVue {
+  updateCursor: (x: number, y: number) => void;
+}
+declare let designMapEditor: MapEditorVue;
