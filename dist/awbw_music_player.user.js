@@ -44,7 +44,7 @@
   }
 
   var css_248z$1 =
-    '/* Context Menu */\n.cls-context-menu {\n  /* display: none; */\n  display: flex;\n  top: 40px;\n  flex-direction: column;\n  width: 275px;\n}\n\n.cls-context-menu label {\n  width: 100%;\n  font-size: 14px;\n  background-color: #dedede;\n  padding-top: 5px;\n  padding-bottom: 5px;\n}\n\n.cls-context-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n}\n\n.cls-context-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-context-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  width: 100%;\n}\n\n.cls-context-menu image {\n  vertical-align: middle;\n}\n\n.cls-context-menu label[id$="version"] {\n  width: 100%;\n  font-size: 9px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n/* :root {\n  --shadow-len: -60px;\n}\n\n::-moz-range-thumb, ::-webkit-slider-thumb {\n  width: 20px;\n  height: 25px;\n  background: #fff;\n  box-shadow: -200px 0 0 200px #0066cc;\n  border: 2px solid #888888;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n} */\n\n/*\n\n::-webkit-slider-runnable-track {\n  background: #ddd;\n}\n\n::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  width: 20px;\n  height: 25px;\n  background: #fff;\n  box-shadow: -200px 0 0 200px #0066cc;\n  border: 2px solid #888888;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n}\n\n::-moz-range-track {\n  height: 25px;\n  background: #888888;\n}\n\n::-moz-range-thumb {\n  background: #fff;\n  height: 25px;\n  width: 20px;\n  border: 3px solid #888888;\n  border-radius: 0 !important;\n  box-shadow: -200px 0 0 200px #0066cc;\n  box-sizing: border-box;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n}\n\n::-ms-fill-lower {\n  background: #0066cc;\n}\n\n::-ms-thumb {\n  background: #fff;\n  border: 3px solid #999;\n  height: 25px;\n  width: 20px;\n  box-sizing: border-box;\n}\n\n::-ms-ticks-after {\n  display: none;\n}\n\n::-ms-ticks-before {\n  display: none;\n}\n\n::-ms-track {\n  background: #888888;\n  color: transparent;\n  height: 25px;\n  border: none;\n}\n\n::-ms-tooltip {\n  display: none;\n}\n\n\n.cls-context-menu-link {\n  display: block;\n  padding: 20px;\n  background: #ececec;\n}\n\n.cls-context-menu ul,\n#context-menu li {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  background: white;\n}\n\n.cls-context-menu {\n  border: 1px solid #888888 !important;\n}\n.cls-context-menu li {\n  border: 1px solid #888888;\n}\n.cls-context-menu li:last-child {\n  border: none;\n}\n.cls-context-menu li a {\n  display: block;\n  padding: 5px 10px;\n  text-decoration: none;\n  color: blue;\n}\n.cls-context-menu li a:hover {\n  background: blue;\n  color: #fff;\n}\n\n*/\n/* Input Range */\n/* \n\n\n\n\n.theme-radio-btn {\n  height: 14px;\n  width: 14px;\n}\n\n.theme-radio-btn:hover {\n  cursor: pointer;\n}\n\n#shuffle-button {\n  font-family: "Nova Square", cursive;\n  line-height: 25px;\n}\n\n.shuffle-button-enabled {\n  color: white;\n  background: #0066cc;\n  border: 2px solid #0066cc;\n}\n\n.shuffle-button-enabled:hover {\n  cursor: pointer;\n}\n\n.shuffle-button-enabled:active {\n  color: black;\n  background: white;\n  border: 2px solid #888888;\n}\n\n.shuffle-button-disabled {\n  color: white;\n  background: #888888;\n  border: 2px solid #888888;\n}\n\n.blob {\n  animation: shine 1.5s ease-in-out infinite;\n  animation-fill-mode: forwards;\n  animation-direction: alternate;\n}\n\n#version-link {\n  color: #0066cc;\n  font-weight: bold;\n  text-decoration: underline;\n} */\n';
+    '/* Context Menu */\n.cls-context-menu {\n  /* display: none; */\n  display: flex;\n  top: 40px;\n  flex-direction: column;\n  width: 275px;\n}\n\n.cls-context-menu label {\n  width: 100%;\n  font-size: 14px;\n  background-color: #dedede;\n  padding-top: 5px;\n  padding-bottom: 5px;\n}\n\n.cls-context-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  padding-left: 10px;\n  padding-right: 10px;\n}\n\n.cls-context-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-context-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 10px;\n  padding-right: 10px;\n  width: 100%;\n}\n\n.cls-context-menu image {\n  vertical-align: middle;\n}\n\n.cls-context-menu label[id$="version"] {\n  width: 100%;\n  font-size: 9px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n/* :root {\n  --shadow-len: -60px;\n}\n\n::-moz-range-thumb, ::-webkit-slider-thumb {\n  width: 20px;\n  height: 25px;\n  background: #fff;\n  box-shadow: -200px 0 0 200px #0066cc;\n  border: 2px solid #888888;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n} */\n\n/*\n\n::-webkit-slider-runnable-track {\n  background: #ddd;\n}\n\n::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  width: 20px;\n  height: 25px;\n  background: #fff;\n  box-shadow: -200px 0 0 200px #0066cc;\n  border: 2px solid #888888;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n}\n\n::-moz-range-track {\n  height: 25px;\n  background: #888888;\n}\n\n::-moz-range-thumb {\n  background: #fff;\n  height: 25px;\n  width: 20px;\n  border: 3px solid #888888;\n  border-radius: 0 !important;\n  box-shadow: -200px 0 0 200px #0066cc;\n  box-sizing: border-box;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n}\n\n::-ms-fill-lower {\n  background: #0066cc;\n}\n\n::-ms-thumb {\n  background: #fff;\n  border: 3px solid #999;\n  height: 25px;\n  width: 20px;\n  box-sizing: border-box;\n}\n\n::-ms-ticks-after {\n  display: none;\n}\n\n::-ms-ticks-before {\n  display: none;\n}\n\n::-ms-track {\n  background: #888888;\n  color: transparent;\n  height: 25px;\n  border: none;\n}\n\n::-ms-tooltip {\n  display: none;\n}\n\n\n.cls-context-menu-link {\n  display: block;\n  padding: 20px;\n  background: #ececec;\n}\n\n.cls-context-menu ul,\n#context-menu li {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  background: white;\n}\n\n.cls-context-menu {\n  border: 1px solid #888888 !important;\n}\n.cls-context-menu li {\n  border: 1px solid #888888;\n}\n.cls-context-menu li:last-child {\n  border: none;\n}\n.cls-context-menu li a {\n  display: block;\n  padding: 5px 10px;\n  text-decoration: none;\n  color: blue;\n}\n.cls-context-menu li a:hover {\n  background: blue;\n  color: #fff;\n}\n\n*/\n/* Input Range */\n/* \n\n\n\n\n.theme-radio-btn {\n  height: 14px;\n  width: 14px;\n}\n\n.theme-radio-btn:hover {\n  cursor: pointer;\n}\n\n#shuffle-button {\n  font-family: "Nova Square", cursive;\n  line-height: 25px;\n}\n\n.shuffle-button-enabled {\n  color: white;\n  background: #0066cc;\n  border: 2px solid #0066cc;\n}\n\n.shuffle-button-enabled:hover {\n  cursor: pointer;\n}\n\n.shuffle-button-enabled:active {\n  color: black;\n  background: white;\n  border: 2px solid #888888;\n}\n\n.shuffle-button-disabled {\n  color: white;\n  background: #888888;\n  border: 2px solid #888888;\n}\n\n.blob {\n  animation: shine 1.5s ease-in-out infinite;\n  animation-fill-mode: forwards;\n  animation-direction: alternate;\n}\n\n#version-link {\n  color: #0066cc;\n  font-weight: bold;\n  text-decoration: underline;\n} */\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -54,14 +54,26 @@
   const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
   const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
   const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
-  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
+  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
   const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
-  new Set([...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs]);
+  const ALL_COs = new Set([
+    ...ORANGE_STAR_COs,
+    ...BLUE_MOON_COs,
+    ...GREEN_EARTH_COs,
+    ...YELLOW_COMET_COs,
+    ...BLACK_HOLE_COs,
+  ]);
+  const AW_DS_ONLY_COs = new Set(["jake", "rachel", "sasha", "javier", "grimm", "kindle", "jugger", "koal", "vonbolt"]);
   typeof maxX !== "undefined" ? maxX : -1;
   typeof maxY !== "undefined" ? maxY : -1;
   let gameAnimations = typeof gameAnims !== "undefined" ? gameAnims : false;
   function isBlackHoleCO(coName) {
     return BLACK_HOLE_COs.has(coName.toLowerCase());
+  }
+  function getRandomCO() {
+    const COs = Array.from(ALL_COs);
+    COs.push("map-editor", "victory", "defeat");
+    return COs[Math.floor(Math.random() * COs.length)];
   }
 
   document.querySelector("#gamemap");
@@ -157,6 +169,17 @@
     if (!currentClick) return null;
     return currentClick;
   }
+  function isReplayActive() {
+    return Object.keys(replay).length > 0;
+  }
+  function hasGameEnded() {
+    return typeof gameEndDate !== "undefined" && gameEndDate !== "";
+  }
+  function getCurrentGameDay() {
+    if (!isReplayActive()) return gameDay;
+    let replayData = Object.values(replay);
+    return replayData[replayData.length - 1].day;
+  }
   class currentPlayer {
     static get info() {
       if (typeof currentTurn === "undefined") return null;
@@ -168,13 +191,25 @@
     static get coPowerState() {
       return this.info?.players_co_power_on;
     }
+    static get isEliminated() {
+      return this.info?.players_eliminated === "Y";
+    }
     static get coName() {
-      return this.info?.co_name.toLowerCase().replaceAll(" ", "");
+      if (isMapEditor) return "map-editor";
+      if (hasGameEnded() && !isReplayActive()) {
+        let myID = getMyID();
+        if (isPlayerSpectator(myID)) return "t-vonbolt";
+        let myInfo = getPlayerInfo(myID);
+        let myWin = myInfo?.players_eliminated === "N";
+        if (myWin) return "victory";
+        else return "defeat";
+      }
+      return isMapEditor ? "map-editor" : this.info?.co_name.toLowerCase().replaceAll(" ", "");
     }
   }
   function getAllPlayingCONames() {
     if (isMapEditor) return new Set(["map-editor"]);
-    return new Set(getAllPlayersInfo().map((info) => info.co_name));
+    return new Set(getAllPlayersInfo().map((info) => info.co_name.toLowerCase().replaceAll(" ", "")));
   }
   function getUnitInfo(unitId) {
     return unitsInfo[unitId];
@@ -222,7 +257,9 @@
     static __uiVolume = 0.425;
     static __gameType = SettingsGameType.DS;
     static __alternateThemeDay = 5;
+    static __randomThemes = false;
     static __themeType = SettingsThemeType.REGULAR;
+    static __currentRandomCO = getRandomCO();
     static toJSON() {
       return JSON.stringify({
         isPlaying: this.__isPlaying,
@@ -231,6 +268,7 @@
         uiVolume: this.__uiVolume,
         gameType: this.__gameType,
         alternateThemeDay: this.__alternateThemeDay,
+        randomThemes: this.__randomThemes,
       });
     }
     static fromJSON(json) {
@@ -297,6 +335,22 @@
     static get alternateThemeDay() {
       return this.__alternateThemeDay;
     }
+    static set randomThemes(val) {
+      if (val === this.__randomThemes) return;
+      this.__randomThemes = val;
+      this.onSettingChangeEvent("randomThemes");
+    }
+    static get randomThemes() {
+      return this.__randomThemes;
+    }
+    static get currentRandomCO() {
+      return this.__currentRandomCO;
+    }
+    static set currentRandomCO(val) {
+      if (val === this.__currentRandomCO) return;
+      this.__currentRandomCO = val;
+      this.onSettingChangeEvent("currentRandomCO");
+    }
     static onSettingChangeEvent(key) {
       onSettingsChangeListeners.forEach((fn) => fn(key));
     }
@@ -320,6 +374,8 @@
   const BASE_SFX_URL = BASE_MUSIC_URL + "/sfx";
   const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
   const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
+  const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
+  const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
   var GameSFX;
   (function (GameSFX) {
     GameSFX["coGoldRush"] = "co-gold-rush";
@@ -435,8 +491,8 @@
     if (gameType === SettingsGameType.RBC && isPowerActive) {
       return `t-${faction}-${themeType}`;
     }
-    if (!alternateThemesSet.has(coName)) {
-      return `t-${coName}`;
+    if (!alternateThemesSet.has(coName) || isPowerActive) {
+      return false;
     }
     if (coName === "andy" && gameType == SettingsGameType.RBC) {
       return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
@@ -445,15 +501,17 @@
   }
   function getMusicFilename(coName, gameType, themeType) {
     if (coName === "map-editor") return "t-map-editor";
-    let useAlternateTheme = gameDay >= musicPlayerSettings.alternateThemeDay;
+    let useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
     if (useAlternateTheme) {
-      return getAlternateMusicFilename(coName, gameType, themeType);
+      let alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+      if (alternateFilename) return alternateFilename;
     }
     let isPowerActive = themeType !== SettingsThemeType.REGULAR;
     if (!isPowerActive || gameType === SettingsGameType.AW1) {
       return `t-${coName}`;
     }
-    if (gameType === SettingsGameType.RBC) {
+    let isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+    if (gameType === SettingsGameType.RBC && isCOInRBC) {
       return `t-${coName}-cop`;
     }
     let faction = isBlackHoleCO(coName) ? "bh" : "ally";
@@ -462,6 +520,8 @@
   function getMusicURL(coName, gameType = null, themeType = null) {
     if (gameType === null) gameType = musicPlayerSettings.gameType;
     if (themeType === null) themeType = musicPlayerSettings.themeType;
+    if (coName === "victory") return VICTORY_THEME_URL;
+    if (coName === "defeat") return DEFEAT_THEME_URL;
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) {
       gameDir = "AW_" + gameDir;
@@ -482,7 +542,7 @@
   function hasMovementRollOff(unitName) {
     return onMovementRolloffMap.has(unitName);
   }
-  function getAllSoundEffectURLS() {
+  function getAllSoundEffectURLs() {
     let allSoundURLs = new Set();
     for (let sfx of Object.values(GameSFX)) {
       allSoundURLs.add(getSoundEffectURL(sfx));
@@ -492,6 +552,17 @@
     }
     for (let unitName of onMovementRolloffMap.keys()) {
       allSoundURLs.add(getMovementRollOffURL(unitName));
+    }
+    return allSoundURLs;
+  }
+  function getAllThemeURLs() {
+    let allSoundURLs = new Set();
+    for (let coName of ALL_COs) {
+      for (let gameType of Object.values(SettingsGameType)) {
+        for (let themeType of Object.values(SettingsThemeType)) {
+          allSoundURLs.add(getMusicURL(coName, gameType, themeType));
+        }
+      }
     }
     return allSoundURLs;
   }
@@ -584,9 +655,10 @@
     }
     addSlider(name, min, max, step, hoverText = "") {
       let contextMenu = this.childrenMap.get("context-menu");
-      let label = document.createElement("label");
-      contextMenu.appendChild(label);
       let id = name.toLowerCase().replace(" ", "-");
+      let label = document.createElement("label");
+      label.id = this.prefix + "-" + id + "-label";
+      contextMenu.appendChild(label);
       let slider = document.createElement("input");
       slider.id = `${this.prefix}-${id}-slider`;
       slider.type = "range";
@@ -609,23 +681,29 @@
     }
     addRadioButton(name, groupName, hoverText = "") {
       const contextMenu = this.childrenMap.get("context-menu");
+      let id = name.toLowerCase().replace(" ", "-");
       if (!this.childrenMap.has(groupName)) {
         const groupLabel = document.createElement("label");
+        groupLabel.id = this.prefix + "-" + groupName + "-label";
         groupLabel.innerText = groupName;
         contextMenu.appendChild(groupLabel);
         const group = document.createElement("div");
+        group.id = this.prefix + "-" + groupName;
         group.classList.add("cls-horizontal-box");
         this.childrenMap.set(groupName, group);
         contextMenu.appendChild(group);
       }
       const radioGroupDiv = this.childrenMap.get(groupName);
       const radioBox = document.createElement("div");
+      radioBox.id = this.prefix + "-" + id;
       radioBox.classList.add("cls-vertical-box");
       const radio = document.createElement("input");
+      radio.id = this.prefix + "-" + id + "-radio";
       radio.type = "radio";
       radio.name = groupName;
       radioBox.appendChild(radio);
       const label = document.createElement("label");
+      label.id = this.prefix + "-" + id + "-label";
       label.innerText = name;
       radioBox.appendChild(label);
       radioBox.addEventListener("mouseover", () => {
@@ -676,7 +754,13 @@
     let radio = radioMap.get(musicPlayerSettings.gameType);
     radio.checked = true;
     radio.dispatchEvent(event);
-    if (key != "isPlaying") return;
+    radioNormal.checked = !musicPlayerSettings.randomThemes;
+    radioRandom.checked = musicPlayerSettings.randomThemes;
+    if (musicPlayerSettings.randomThemes) {
+      radioRandom.dispatchEvent(event);
+    } else {
+      radioNormal.dispatchEvent(event);
+    }
     if (musicPlayerSettings.isPlaying) {
       musicPlayerUI.setHoverText("Stop Tunes");
       musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -689,13 +773,19 @@
   musicPlayerUI.addEventListener("click", onMusicBtnClick);
   let volumeSlider = musicPlayerUI.addSlider("Music Volume", 0, 1, 0.005, "Adjust the volume of the CO theme music.");
   let sfxVolumeSlider = musicPlayerUI.addSlider(
-    "Unit SFX Volume",
+    "SFX Volume",
     0,
     1,
     0.005,
-    "Adjust the volume of the unit sound effects.",
+    "Adjust the volume of the unit movement and CO power sound effects.",
   );
-  let uiVolumeSlider = musicPlayerUI.addSlider("UI Volume", 0, 1, 0.005, "Adjust the volume of the UI sound effects.");
+  let uiVolumeSlider = musicPlayerUI.addSlider(
+    "UI Volume",
+    0,
+    1,
+    0.005,
+    "Adjust the volume of the UI sound effects like moving your cursor, opening menus, selecting units.",
+  );
   volumeSlider.addEventListener("input", (val) => {
     musicPlayerSettings.volume = parseFloat(val.target.value);
   });
@@ -729,6 +819,18 @@
       musicPlayerSettings.gameType = gameType;
     });
   }
+  let radioNormal = musicPlayerUI.addRadioButton(
+    "Off",
+    "Random Themes",
+    "Play the music depending on who the current CO is.",
+  );
+  let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", "Play random music every turn.");
+  radioNormal.parentElement.addEventListener("input", (_event) => {
+    musicPlayerSettings.randomThemes = false;
+  });
+  radioRandom.parentElement.addEventListener("input", (_event) => {
+    musicPlayerSettings.randomThemes = true;
+  });
   musicPlayerUI.addVersion(versions.music_player);
 
   let currentThemeKey = "";
@@ -736,6 +838,7 @@
   const unitIDAudioMap = new Map();
   let currentlyDelaying = false;
   let delayThemeMS = 0;
+  let onAudioLoadPauseIt = (event) => event.target.pause();
   addSettingsChangeListener(onSettingsChange);
   function playThemeSong(startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
@@ -749,7 +852,11 @@
       currentlyDelaying = true;
       return;
     }
-    let coName = isMapEditor ? "map-editor" : currentPlayer.coName;
+    let coName = currentPlayer.coName;
+    let isEndTheme = coName === "victory" || coName === "defeat";
+    if (musicPlayerSettings.randomThemes && !isEndTheme) {
+      coName = musicPlayerSettings.currentRandomCO;
+    }
     playMusicURL(getMusicURL(coName), startFromBeginning);
   }
   function stopThemeSong(delayMS = 0) {
@@ -758,9 +865,7 @@
     let currentTheme = urlAudioMap.get(currentThemeKey);
     if (currentTheme.paused) return;
     if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-      currentTheme.addEventListener("canplaythrough", (e) => e.target.pause(), {
-        once: true,
-      });
+      currentTheme.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
       return;
     }
     console.log("[AWBW Improved Music Player] Pausing: ", currentTheme.src);
@@ -785,9 +890,7 @@
     let movementAudio = unitIDAudioMap.get(unitId);
     if (movementAudio.paused) return;
     if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-      movementAudio.addEventListener("play", (event) => event.target.pause(), {
-        once: true,
-      });
+      movementAudio.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
       return;
     }
     movementAudio.pause();
@@ -833,7 +936,7 @@
   }
   function preloadAllExtraAudio(afterPreloadFunction) {
     if (isMapEditor) return;
-    let audioList = getAllSoundEffectURLS();
+    let audioList = getAllSoundEffectURLs();
     let coNames = getAllPlayingCONames();
     for (const gameType in SettingsGameType) {
       for (const themeType in SettingsThemeType) {
@@ -844,9 +947,9 @@
     }
     preloadAudios(audioList, afterPreloadFunction);
   }
-  function preloadAudios(audioURLs, afterPreloadFunction) {
+  function preloadAudios(audioURLs, afterPreloadFunction = () => {}) {
     let numLoadedAudios = 0;
-    let onLoadAudio = (event) => {
+    let onAudioPreload = (event) => {
       let audio = event.target;
       numLoadedAudios++;
       let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
@@ -867,8 +970,8 @@
         return;
       }
       let audio = new Audio(url);
-      audio.addEventListener("canplaythrough", onLoadAudio, { once: true });
-      audio.addEventListener("error", onLoadAudio, { once: true });
+      audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
+      audio.addEventListener("error", onAudioPreload, { once: true });
     });
   }
   function playMusicURL(srcURL, startFromBeginning = false) {
@@ -879,16 +982,19 @@
     }
     if (!urlAudioMap.has(srcURL)) {
       let audio = new Audio(srcURL);
-      audio.volume = musicPlayerSettings.volume;
-      audio.loop = true;
-      audio.addEventListener("canplaythrough", (e) => e.target.play(), {
-        once: true,
-      });
       urlAudioMap.set(srcURL, audio);
+      let onAudioLoadPlayIfStillValid = (event) => {
+        let audio = event.target;
+        audio.volume = musicPlayerSettings.volume;
+        audio.loop = true;
+        if (audio.src === currentThemeKey) audio.play();
+      };
+      audio.addEventListener("canplaythrough", onAudioLoadPlayIfStillValid, { once: true });
       return;
     }
     let nextTheme = urlAudioMap.get(srcURL);
     if (startFromBeginning) nextTheme.currentTime = 0;
+    console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
     nextTheme.volume = musicPlayerSettings.volume;
     nextTheme.loop = true;
     nextTheme.play();
@@ -911,11 +1017,20 @@
         break;
       case "gameType":
       case "alternateThemeDay":
-        playThemeSong();
+        setTimeout(() => playThemeSong(), 500);
         break;
       case "themeType":
         let restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
         playThemeSong(restartMusic);
+        break;
+      case "randomThemes":
+        if (musicPlayerSettings.randomThemes) {
+          console.log("[AWBW Improved Music Player] Pre-loading all themes since random themes are enabled");
+          let audioList = getAllThemeURLs();
+          preloadAudios(audioList, () => console.log("[AWBW Improved Music Player] All themes have been pre-loaded!"));
+        }
+        musicPlayerSettings.currentRandomCO = getRandomCO();
+        playThemeSong();
         break;
       case "volume": {
         let currentTheme = urlAudioMap.get(currentThemeKey);
@@ -931,6 +1046,7 @@
       : typeof designMapEditor !== "undefined"
         ? designMapEditor.updateCursor
         : null;
+  typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
   let ahOpenMenu = typeof openMenu !== "undefined" ? openMenu : null;
   let ahCloseMenu = typeof closeMenu !== "undefined" ? closeMenu : null;
   typeof resetAttack !== "undefined" ? resetAttack : null;
@@ -986,10 +1102,11 @@
     lastCursorX = cursorX;
     lastCursorY = cursorY;
   }
-  function syncSettingsToMusic() {
+  function onTurnChange(playDelayMS = 0) {
     visibilityMap.clear();
+    musicPlayerSettings.currentRandomCO = getRandomCO();
     musicPlayerSettings.themeType = getCurrentThemeType();
-    playThemeSong();
+    setTimeout(playThemeSong, playDelayMS);
   }
   function addGameHandlers() {
     if (isMapEditor) {
@@ -998,14 +1115,15 @@
     } else {
       updateCursor = onCursorMove;
     }
-    let refreshMusic = () => setTimeout(syncSettingsToMusic, 500);
-    replayForwardBtn.addEventListener("click", refreshMusic);
-    replayForwardActionBtn.addEventListener("click", refreshMusic);
-    replayBackwardBtn.addEventListener("click", refreshMusic);
-    replayBackwardActionBtn.addEventListener("click", refreshMusic);
-    replayOpenBtn.addEventListener("click", refreshMusic);
-    replayCloseBtn.addEventListener("click", refreshMusic);
-    replayDaySelectorCheckBox.addEventListener("click", refreshMusic);
+    let replaySyncMusic = () => setTimeout(playThemeSong, 500);
+    replayBackwardActionBtn.addEventListener("click", replaySyncMusic);
+    replayForwardActionBtn.addEventListener("click", replaySyncMusic);
+    let replayChangeTurn = () => onTurnChange(500);
+    replayForwardBtn.addEventListener("click", replayChangeTurn);
+    replayBackwardBtn.addEventListener("click", replayChangeTurn);
+    replayOpenBtn.addEventListener("click", replayChangeTurn);
+    replayCloseBtn.addEventListener("click", replayChangeTurn);
+    replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
     openMenu = (menu, x, y) => {
       ahOpenMenu?.apply(openMenu, [menu, x, y]);
       if (!musicPlayerSettings.isPlaying) return;
@@ -1238,12 +1356,12 @@
       if (data.swapCos) {
         playSFX(GameSFX.tagSwap);
       }
-      syncSettingsToMusic();
+      onTurnChange();
     };
     actionHandlers.Elimination = (data) => {
       ahElimination?.apply(actionHandlers.Elimination, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      debugger;
+      console.log("Elimination", data);
     };
     actionHandlers.Power = (data) => {
       ahPower?.apply(actionHandlers.Power, [data]);
@@ -1256,7 +1374,7 @@
         case SettingsGameType.AW1:
           playSFX(GameSFX.powerActivateAW1COP);
           stopThemeSong(4500);
-          break;
+          return;
         case SettingsGameType.AW2:
         case SettingsGameType.DS:
           if (isSuperCOPower) {
@@ -1279,12 +1397,12 @@
     actionHandlers.GameOver = () => {
       ahGameOver?.apply(actionHandlers.GameOver, []);
       if (!musicPlayerSettings.isPlaying) return;
-      debugger;
+      playThemeSong(true);
     };
   }
 
-  musicPlayerUI.addToAWBWPage();
   addGameHandlers();
+  musicPlayerUI.addToAWBWPage();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
     loadSettingsFromLocalStorage();

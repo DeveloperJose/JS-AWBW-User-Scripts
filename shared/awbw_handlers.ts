@@ -4,6 +4,7 @@
 
 export {
   ahCursorMove,
+  ahSwapCosDisplay,
   ahOpenMenu,
   ahCloseMenu,
   ahResetAttack,
@@ -38,6 +39,7 @@ let ahCursorMove =
       ? designMapEditor.updateCursor
       : null;
 
+let ahSwapCosDisplay = typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
 let ahOpenMenu = typeof openMenu !== "undefined" ? openMenu : null;
 let ahCloseMenu = typeof closeMenu !== "undefined" ? closeMenu : null;
 //  let ahResetCreatedTiles = typeof resetCreatedTiles !== "undefined" ? resetCreatedTiles : null;

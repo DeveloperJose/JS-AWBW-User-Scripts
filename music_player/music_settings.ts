@@ -4,6 +4,7 @@
  */
 
 import { currentPlayer } from "../shared/awbw_game";
+import { getRandomCO } from "../shared/awbw_globals";
 
 /**
  * Enum that represents which game we want the music player to use for its music.
@@ -69,9 +70,11 @@ export abstract class musicPlayerSettings {
   private static __uiVolume = 0.425;
   private static __gameType = SettingsGameType.DS;
   private static __alternateThemeDay = 5;
+  private static __randomThemes = false;
 
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
+  private static __currentRandomCO = getRandomCO();
 
   static toJSON() {
     return JSON.stringify({
@@ -81,6 +84,7 @@ export abstract class musicPlayerSettings {
       uiVolume: this.__uiVolume,
       gameType: this.__gameType,
       alternateThemeDay: this.__alternateThemeDay,
+      randomThemes: this.__randomThemes,
     });
   }
 
@@ -97,6 +101,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set isPlaying(val: boolean) {
+    // if (val === this.__isPlaying) return;
     this.__isPlaying = val;
     this.onSettingChangeEvent("isPlaying");
   }
@@ -162,6 +167,26 @@ export abstract class musicPlayerSettings {
 
   static get alternateThemeDay() {
     return this.__alternateThemeDay;
+  }
+
+  static set randomThemes(val: boolean) {
+    if (val === this.__randomThemes) return;
+    this.__randomThemes = val;
+    this.onSettingChangeEvent("randomThemes");
+  }
+
+  static get randomThemes() {
+    return this.__randomThemes;
+  }
+
+  static get currentRandomCO() {
+    return this.__currentRandomCO;
+  }
+
+  static set currentRandomCO(val: string) {
+    if (val === this.__currentRandomCO) return;
+    this.__currentRandomCO = val;
+    this.onSettingChangeEvent("currentRandomCO");
   }
 
   static onSettingChangeEvent(key: string) {

@@ -7,8 +7,9 @@ import {
   getMovementRollOffURL,
   hasMovementRollOff,
   getSoundEffectURL,
-  getAllSoundEffectURLS,
+  getAllSoundEffectURLs,
   GameSFX,
+  getAllThemeURLs,
 } from "./resources";
 import {
   musicPlayerSettings,
@@ -17,6 +18,7 @@ import {
   SettingsThemeType,
   getCurrentThemeType,
 } from "./music_settings";
+import { getRandomCO } from "../shared/awbw_globals";
 
 /**
  * The URL of the current theme that is playing.
@@ -45,6 +47,8 @@ let currentlyDelaying = false;
  */
 let delayThemeMS = 0;
 
+let onAudioLoadPauseIt = (event: Event) => (event.target as HTMLAudioElement).pause();
+
 // Listen for setting changes to update the internal variables accordingly
 addSettingsChangeListener(onSettingsChange);
 
@@ -70,7 +74,14 @@ export function playThemeSong(startFromBeginning = false) {
     currentlyDelaying = true;
     return;
   }
-  let coName = isMapEditor ? "map-editor" : currentPlayer.coName;
+
+  let coName = currentPlayer.coName;
+
+  // Don't randomize the victory and defeat themes
+  let isEndTheme = coName === "victory" || coName === "defeat";
+  if (musicPlayerSettings.randomThemes && !isEndTheme) {
+    coName = musicPlayerSettings.currentRandomCO;
+  }
   playMusicURL(getMusicURL(coName), startFromBeginning);
 }
 
@@ -92,9 +103,7 @@ export function stopThemeSong(delayMS: number = 0) {
 
   // The song hasn't finished loading, so stop it as soon as it does
   if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-    currentTheme.addEventListener("canplaythrough", (e) => (e.target as HTMLAudioElement).pause(), {
-      once: true,
-    });
+    currentTheme.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
     return;
   }
 
@@ -143,9 +152,7 @@ export function stopMovementSound(unitId: number, rolloff = true) {
 
   // The audio hasn't finished loading, so pause when it does
   if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-    movementAudio.addEventListener("play", (event) => (event.target as HTMLAudioElement).pause(), {
-      once: true,
-    });
+    movementAudio.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
     return;
   }
 
@@ -235,7 +242,7 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
   if (isMapEditor) return;
 
   // Preload ALL sound effects
-  let audioList = getAllSoundEffectURLS();
+  let audioList = getAllSoundEffectURLs();
 
   // We preload the themes for each game version
   let coNames = getAllPlayingCONames();
@@ -256,14 +263,14 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
  * @param audioURLs - Set of URLs of songs to preload.
  * @param afterPreloadFunction - Function to call after all songs are preloaded.
  */
-function preloadAudios(audioURLs: Set<string>, afterPreloadFunction: () => void) {
+function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) {
   // console.log("preloadAudios", audioURLs);
 
   // Event handler for when an audio is loaded
   let numLoadedAudios = 0;
-  let onLoadAudio = (event: Event) => {
+  let onAudioPreload = (event: Event) => {
     let audio = event.target as HTMLAudioElement;
-    // console.log("onLoadAudio", event);
+    // console.log("onAudioLoad", event);
 
     // Update UI
     numLoadedAudios++;
@@ -293,8 +300,8 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction: () => void)
       return;
     }
     let audio = new Audio(url);
-    audio.addEventListener("canplaythrough", onLoadAudio, { once: true });
-    audio.addEventListener("error", onLoadAudio, { once: true });
+    audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
+    audio.addEventListener("error", onAudioPreload, { once: true });
   });
 }
 
@@ -315,12 +322,15 @@ function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   // The song isn't preloaded
   if (!urlAudioMap.has(srcURL)) {
     let audio = new Audio(srcURL);
-    audio.volume = musicPlayerSettings.volume;
-    audio.loop = true;
-    audio.addEventListener("canplaythrough", (e) => (e.target as HTMLAudioElement).play(), {
-      once: true,
-    });
     urlAudioMap.set(srcURL, audio);
+
+    let onAudioLoadPlayIfStillValid = (event: Event) => {
+      let audio = event.target as HTMLAudioElement;
+      audio.volume = musicPlayerSettings.volume;
+      audio.loop = true;
+      if (audio.src === currentThemeKey) audio.play();
+    };
+    audio.addEventListener("canplaythrough", onAudioLoadPlayIfStillValid, { once: true });
     return;
   }
 
@@ -330,7 +340,7 @@ function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   if (startFromBeginning) nextTheme.currentTime = 0;
 
   // Play the song
-  // console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
+  console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
   nextTheme.volume = musicPlayerSettings.volume;
   nextTheme.loop = true;
   nextTheme.play();
@@ -365,11 +375,20 @@ function onSettingsChange(key: string) {
       break;
     case "gameType":
     case "alternateThemeDay":
-      playThemeSong();
+      setTimeout(() => playThemeSong(), 500);
       break;
     case "themeType":
       let restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
       playThemeSong(restartMusic);
+      break;
+    case "randomThemes":
+      if (musicPlayerSettings.randomThemes) {
+        console.log("[AWBW Improved Music Player] Pre-loading all themes since random themes are enabled");
+        let audioList = getAllThemeURLs();
+        preloadAudios(audioList, () => console.log("[AWBW Improved Music Player] All themes have been pre-loaded!"));
+      }
+      musicPlayerSettings.currentRandomCO = getRandomCO();
+      playThemeSong();
       break;
     case "volume": {
       // Adjust the volume of the current theme

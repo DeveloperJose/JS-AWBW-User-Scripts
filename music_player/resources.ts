@@ -1,7 +1,8 @@
 /**
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
-import { isBlackHoleCO } from "../shared/awbw_globals";
+import { getCurrentGameDay } from "../shared/awbw_game";
+import { ALL_COs, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
 import { isMapEditor } from "../shared/awbw_page";
 import { SettingsGameType, SettingsThemeType, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
@@ -34,6 +35,9 @@ export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
  * @constant {string}
  */
 export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
+
+export const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
+export const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
 
 /**
  * Enumeration of all game sound effects. The values are the filenames for the sounds.
@@ -176,9 +180,9 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
     return `t-${faction}-${themeType}`;
   }
 
-  // No alternate theme
-  if (!alternateThemesSet.has(coName)) {
-    return `t-${coName}`;
+  // No alternate theme or it's a power
+  if (!alternateThemesSet.has(coName) || isPowerActive) {
+    return false;
   }
 
   // Andy -> Clone Andy
@@ -201,21 +205,22 @@ function getMusicFilename(coName: string, gameType: SettingsGameType, themeType:
   // Check if we want to play the map editor theme
   if (coName === "map-editor") return "t-map-editor";
 
-  // Check if we need to play alternate themes now
-  let useAlternateTheme = gameDay >= musicPlayerSettings.alternateThemeDay;
+  // Check if we need to play an alternate theme
+  let useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
   if (useAlternateTheme) {
-    return getAlternateMusicFilename(coName, gameType, themeType);
+    let alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+    if (alternateFilename) return alternateFilename;
   }
 
-  // Regular theme when no power is active
-  // For AW1, we always play the regular themes
+  // Regular theme, either no power or we are in AW1 where there's no power themes.
   let isPowerActive = themeType !== SettingsThemeType.REGULAR;
   if (!isPowerActive || gameType === SettingsGameType.AW1) {
     return `t-${coName}`;
   }
 
-  // For RBC, we play the new power themes
-  if (gameType === SettingsGameType.RBC) {
+  // For RBC, we play the new power themes (if they are not in the DS games obviously)
+  let isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+  if (gameType === SettingsGameType.RBC && isCOInRBC) {
     return `t-${coName}-cop`;
   }
   // For all other games, play the ally or black hole themes during the CO and Super CO powers
@@ -235,6 +240,10 @@ function getMusicFilename(coName: string, gameType: SettingsGameType, themeType:
 export function getMusicURL(coName: string, gameType: SettingsGameType = null, themeType: SettingsThemeType = null) {
   if (gameType === null) gameType = musicPlayerSettings.gameType;
   if (themeType === null) themeType = musicPlayerSettings.themeType;
+
+  // Check if we want to play the victory or defeat theme
+  if (coName === "victory") return VICTORY_THEME_URL;
+  if (coName === "defeat") return DEFEAT_THEME_URL;
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) {
@@ -287,7 +296,7 @@ export function hasMovementRollOff(unitName: string) {
  * These include game effects, UI effects, and unit movement sounds.
  * @returns - Set with all the URLs for all the music player sound effects.
  */
-export function getAllSoundEffectURLS() {
+export function getAllSoundEffectURLs() {
   let allSoundURLs = new Set<string>();
   for (let sfx of Object.values(GameSFX)) {
     allSoundURLs.add(getSoundEffectURL(sfx));
@@ -297,6 +306,19 @@ export function getAllSoundEffectURLS() {
   }
   for (let unitName of onMovementRolloffMap.keys()) {
     allSoundURLs.add(getMovementRollOffURL(unitName));
+  }
+  return allSoundURLs;
+}
+
+export function getAllThemeURLs() {
+  let allSoundURLs = new Set<string>();
+
+  for (let coName of ALL_COs) {
+    for (let gameType of Object.values(SettingsGameType)) {
+      for (let themeType of Object.values(SettingsThemeType)) {
+        allSoundURLs.add(getMusicURL(coName, gameType, themeType));
+      }
+    }
   }
   return allSoundURLs;
 }

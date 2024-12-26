@@ -7,6 +7,7 @@ import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from "./music_settings";
 import { CustomMenuSettingsUI } from "../shared/custom_ui";
 import { versions } from "../shared/config";
+import { getRandomCO } from "../shared/awbw_globals";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -25,11 +26,6 @@ function onMusicBtnClick(_event: MouseEvent) {
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * @param key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
- */
-
-/**
- * Event handler that is triggered whenever the settings of the music player are changed.
  * @param key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
  */
 function onSettingsChange(key: string) {
@@ -51,7 +47,14 @@ function onSettingsChange(key: string) {
   radio.checked = true;
   radio.dispatchEvent(event);
 
-  if (key != "isPlaying") return;
+  // Check the radio button that matches the current random themes setting
+  radioNormal.checked = !musicPlayerSettings.randomThemes;
+  radioRandom.checked = musicPlayerSettings.randomThemes;
+  if (musicPlayerSettings.randomThemes) {
+    radioRandom.dispatchEvent(event);
+  } else {
+    radioNormal.dispatchEvent(event);
+  }
 
   // Update UI
   if (musicPlayerSettings.isPlaying) {
@@ -72,13 +75,19 @@ musicPlayerUI.addEventListener("click", onMusicBtnClick);
 // Volume sliders
 let volumeSlider = musicPlayerUI.addSlider("Music Volume", 0, 1, 0.005, "Adjust the volume of the CO theme music.");
 let sfxVolumeSlider = musicPlayerUI.addSlider(
-  "Unit SFX Volume",
+  "SFX Volume",
   0,
   1,
   0.005,
-  "Adjust the volume of the unit sound effects.",
+  "Adjust the volume of the unit movement and CO power sound effects.",
 );
-let uiVolumeSlider = musicPlayerUI.addSlider("UI Volume", 0, 1, 0.005, "Adjust the volume of the UI sound effects.");
+let uiVolumeSlider = musicPlayerUI.addSlider(
+  "UI Volume",
+  0,
+  1,
+  0.005,
+  "Adjust the volume of the UI sound effects like moving your cursor, opening menus, selecting units.",
+);
 
 volumeSlider.addEventListener("input", (val) => {
   musicPlayerSettings.volume = parseFloat((val.target as HTMLInputElement).value);
@@ -121,6 +130,20 @@ for (const gameType of Object.values(SettingsGameType)) {
     musicPlayerSettings.gameType = gameType;
   });
 }
+
+// Random
+let radioNormal = musicPlayerUI.addRadioButton(
+  "Off",
+  "Random Themes",
+  "Play the music depending on who the current CO is.",
+);
+let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", "Play random music every turn.");
+radioNormal.parentElement.addEventListener("input", (_event) => {
+  musicPlayerSettings.randomThemes = false;
+});
+radioRandom.parentElement.addEventListener("input", (_event) => {
+  musicPlayerSettings.randomThemes = true;
+});
 
 // Version
 musicPlayerUI.addVersion(versions.music_player);

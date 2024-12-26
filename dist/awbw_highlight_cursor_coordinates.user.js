@@ -17,7 +17,7 @@
   const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
   const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
   const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
-  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
+  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
   const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
   new Set([...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs]);
   let mapCols = typeof maxX !== "undefined" ? maxX : -1;
@@ -30,6 +30,7 @@
       : typeof designMapEditor !== "undefined"
         ? designMapEditor.updateCursor
         : null;
+  typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
   typeof openMenu !== "undefined" ? openMenu : null;
   typeof closeMenu !== "undefined" ? closeMenu : null;
   typeof resetAttack !== "undefined" ? resetAttack : null;

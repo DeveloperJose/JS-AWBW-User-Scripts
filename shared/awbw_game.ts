@@ -131,6 +131,20 @@ export function getCurrentClickData() {
   return currentClick;
 }
 
+export function isReplayActive() {
+  return Object.keys(replay).length > 0;
+}
+
+export function hasGameEnded() {
+  return typeof gameEndDate !== "undefined" && gameEndDate !== "";
+}
+
+export function getCurrentGameDay() {
+  if (!isReplayActive()) return gameDay;
+  let replayData = Object.values(replay);
+  return replayData[replayData.length - 1].day;
+}
+
 /**
  * Useful variables related to the player currently playing this turn.
  */
@@ -159,11 +173,30 @@ export abstract class currentPlayer {
     return this.info?.players_co_power_on;
   }
 
+  static get isEliminated() {
+    return this.info?.players_eliminated === "Y";
+  }
+
   /**
    * Gets the name of the CO for the current player.
    */
   static get coName() {
-    return this.info?.co_name.toLowerCase().replaceAll(" ", "");
+    if (isMapEditor) return "map-editor";
+
+    // Play victory/defeat themes after the game ends for everyone
+    if (hasGameEnded() && !isReplayActive()) {
+      // Check if we are spectating
+      let myID = getMyID();
+      if (isPlayerSpectator(myID)) return "t-vonbolt"; // TODO:
+
+      // Check if we won
+      let myInfo = getPlayerInfo(myID);
+      let myWin = myInfo?.players_eliminated === "N";
+      if (myWin) return "victory";
+      else return "defeat";
+    }
+
+    return isMapEditor ? "map-editor" : this.info?.co_name.toLowerCase().replaceAll(" ", "");
   }
 }
 
@@ -173,7 +206,7 @@ export abstract class currentPlayer {
  */
 export function getAllPlayingCONames() {
   if (isMapEditor) return new Set(["map-editor"]);
-  return new Set(getAllPlayersInfo().map((info) => info.co_name));
+  return new Set(getAllPlayersInfo().map((info) => info.co_name.toLowerCase().replaceAll(" ", "")));
 }
 
 /**
@@ -222,5 +255,5 @@ export function isValidUnit(unitId: number) {
  * @returns - True if the unit is valid and it has moved this turn.
  */
 export function hasUnitMovedThisTurn(unitId: any) {
-  return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === HasUnitMoved.Yes;
+  return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
 }

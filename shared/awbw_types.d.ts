@@ -43,6 +43,10 @@ declare const gameAnims: boolean;
  */
 declare const gameDay: number;
 
+declare const gameEndDate: string;
+
+declare const replay: Object;
+
 /**
  * Information about a player's current game state.
  */
@@ -63,7 +67,7 @@ interface PlayerInfo {
   players_co_power: number;
   players_co_power_on: string;
   players_countries_id: number;
-  players_eliminated: string;
+  players_eliminated: YesNoString;
   players_funds: number;
   players_id: number;
   players_income: number;
@@ -75,16 +79,11 @@ interface PlayerInfo {
   users_username: string;
 }
 
-declare enum HasUnitMoved {
-  No = 0,
-  Yes = 1,
-}
-
 interface UnitInfo {
   units_id: number;
   units_fuel: number;
   units_name: string;
-  units_moved: HasUnitMoved;
+  units_moved: number; // 0 or 1
   units_players_id: number;
   units_x: number;
   units_y: number;
@@ -97,6 +96,7 @@ interface BuildingInfo {
 }
 
 declare let mapClick: (e: Event, e1: Event) => void;
+declare let swapCosDisplay: (playerId: number) => void;
 
 /**
  * Function called when the cursor is moved in the game.
@@ -246,7 +246,9 @@ interface NextTurnData {
   swapCos: boolean;
 }
 
-interface EliminationData {}
+interface EliminationData {
+  playerId: number;
+}
 
 interface PowerData {
   coName: string;

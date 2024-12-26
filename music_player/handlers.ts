@@ -15,6 +15,7 @@ import {
   getUnitInfoFromCoords,
   getCurrentClickData,
   COPowerEnum,
+  currentPlayer,
 } from "../shared/awbw_game";
 import { gamemap, isMapEditor, moveDivToOffset } from "../shared/awbw_page";
 import { getBuildingDiv } from "../shared/awbw_page";
@@ -45,8 +46,9 @@ import {
   ahUnload,
   ahWait,
   ahResetAttack,
+  ahSwapCosDisplay,
 } from "../shared/awbw_handlers";
-import { gameAnimations } from "../shared/awbw_globals";
+import { gameAnimations, getRandomCO } from "../shared/awbw_globals";
 import {
   replayForwardBtn,
   replayForwardActionBtn,
@@ -58,7 +60,7 @@ import {
 } from "../shared/awbw_page";
 import { playThemeSong, playSFX, stopMovementSound, playMovementSound, stopThemeSong } from "./music";
 import { getCurrentThemeType, musicPlayerSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
-import { GameSFX } from "./resources";
+import { DEFEAT_THEME_URL, GameSFX, VICTORY_THEME_URL } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
 
 /**
@@ -116,13 +118,11 @@ function onCursorMove(cursorX: number, cursorY: number) {
   lastCursorY = cursorY;
 }
 
-/**
- * Syncs the current settings to the music player settings.
- */
-function syncSettingsToMusic() {
+function onTurnChange(playDelayMS = 0) {
   visibilityMap.clear();
+  musicPlayerSettings.currentRandomCO = getRandomCO();
   musicPlayerSettings.themeType = getCurrentThemeType();
-  playThemeSong();
+  setTimeout(playThemeSong, playDelayMS);
 }
 
 /**
@@ -136,15 +136,24 @@ export function addGameHandlers() {
     updateCursor = onCursorMove;
   }
 
-  // Replay Handlers
-  let refreshMusic = () => setTimeout(syncSettingsToMusic, 500);
-  replayForwardBtn.addEventListener("click", refreshMusic);
-  replayForwardActionBtn.addEventListener("click", refreshMusic);
-  replayBackwardBtn.addEventListener("click", refreshMusic);
-  replayBackwardActionBtn.addEventListener("click", refreshMusic);
-  replayOpenBtn.addEventListener("click", refreshMusic);
-  replayCloseBtn.addEventListener("click", refreshMusic);
-  replayDaySelectorCheckBox.addEventListener("click", refreshMusic);
+  // Keep the music in sync when moving one step at a time
+  let replaySyncMusic = () => setTimeout(playThemeSong, 500);
+  replayBackwardActionBtn.addEventListener("click", replaySyncMusic);
+  replayForwardActionBtn.addEventListener("click", replaySyncMusic);
+
+  // This makes sure when randomizing the COs, the music changes as well
+  let replayChangeTurn = () => onTurnChange(500);
+  replayForwardBtn.addEventListener("click", replayChangeTurn);
+  replayBackwardBtn.addEventListener("click", replayChangeTurn);
+  replayOpenBtn.addEventListener("click", replayChangeTurn);
+  replayCloseBtn.addEventListener("click", replayChangeTurn);
+  replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
+
+  // It's annoying during replays because it triggers all the time
+  // swapCosDisplay = (playerId) => {
+  //   ahSwapCosDisplay?.apply(swapCosDisplay, [playerId]);
+  //   playSFX(GameSFX.tagSwap);
+  // };
 
   openMenu = (menu, x, y) => {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
@@ -483,20 +492,19 @@ export function addGameHandlers() {
     if (!musicPlayerSettings.isPlaying) return;
     //console.log("NextTurn", data);
 
-    // COs performed a tag and swapped
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
     }
-
-    syncSettingsToMusic();
+    onTurnChange();
   };
 
   actionHandlers.Elimination = (data) => {
     ahElimination?.apply(actionHandlers.Elimination, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    //console.log("Elimination", data);
+    console.log("Elimination", data);
 
-    debugger;
+    // var eliminatedPId = data.playerId;
+    // debugger;
   };
 
   actionHandlers.Power = (data) => {
@@ -517,7 +525,7 @@ export function addGameHandlers() {
         // Advance Wars 1 will use the same sound for both CO and Super CO power activations
         playSFX(GameSFX.powerActivateAW1COP);
         stopThemeSong(4500);
-        break;
+        return;
       case SettingsGameType.AW2:
       case SettingsGameType.DS:
         // Super CO Power
@@ -536,9 +544,8 @@ export function addGameHandlers() {
         break;
     }
 
-    // Colin's gold rush SFX
+    // Colin's gold rush SFX for AW2, DS, and RBC
     if (coName === "colin") {
-      //console.log("Colin's Gold Rush");
       setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
     }
   };
@@ -547,6 +554,13 @@ export function addGameHandlers() {
     ahGameOver?.apply(actionHandlers.GameOver, []);
     if (!musicPlayerSettings.isPlaying) return;
 
-    debugger;
+    // let myID = getMyID();
+    // let myInfo = currentPlayer.info;
+    // let isSpectator = isPlayerSpectator(myID);
+    // let isWinner = isSpectator || myInfo.players_eliminated === YesNoString.No;
+    // let theme = isWinner ? VICTORY_THEME_URL : DEFEAT_THEME_URL;
+
+    playThemeSong(true);
+    // debugger;
   };
 }

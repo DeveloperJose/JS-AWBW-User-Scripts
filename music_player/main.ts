@@ -1,10 +1,9 @@
 /**
  * @file Main script that loads everything for the AWBW Improved Music Player userscript.
  *
- * @todo Add shuffle
- * @todo CSS from code to .css file
- * @todo More settings
- * @todo Finish documentation
+ * @todo Normalize sound levels
+ * @todo Custom settings for each CO if wanted
+ * @todo Shuffle button?
  */
 
 // Add our CSS to the page using rollup-plugin-postcss
@@ -20,8 +19,8 @@ import { isMapEditor } from "../shared/awbw_page";
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-musicPlayerUI.addToAWBWPage();
 addGameHandlers();
+musicPlayerUI.addToAWBWPage();
 
 preloadAllCommonAudio(() => {
   console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");

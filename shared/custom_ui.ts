@@ -121,13 +121,14 @@ export class CustomMenuSettingsUI {
 
   addSlider(name: string, min: number, max: number, step: number, hoverText = "") {
     let contextMenu = this.childrenMap.get("context-menu");
+    let id = name.toLowerCase().replace(" ", "-");
 
     // Slider label
     let label = document.createElement("label");
+    label.id = this.prefix + "-" + id + "-label";
     contextMenu.appendChild(label);
 
     // Then slider
-    let id = name.toLowerCase().replace(" ", "-");
     let slider = document.createElement("input");
     slider.id = `${this.prefix}-${id}-slider`;
     slider.type = "range";
@@ -156,29 +157,35 @@ export class CustomMenuSettingsUI {
 
   addRadioButton(name: string, groupName: string, hoverText = "") {
     const contextMenu = this.childrenMap.get("context-menu");
+    let id = name.toLowerCase().replace(" ", "-");
     // Check if the group already exists
     if (!this.childrenMap.has(groupName)) {
       const groupLabel = document.createElement("label");
+      groupLabel.id = this.prefix + "-" + groupName + "-label";
       groupLabel.innerText = groupName;
       contextMenu.appendChild(groupLabel);
 
       const group = document.createElement("div");
+      group.id = this.prefix + "-" + groupName;
       group.classList.add("cls-horizontal-box");
       this.childrenMap.set(groupName, group);
       contextMenu.appendChild(group);
     }
     const radioGroupDiv = this.childrenMap.get(groupName);
     const radioBox = document.createElement("div");
+    radioBox.id = this.prefix + "-" + id;
     radioBox.classList.add("cls-vertical-box");
 
     // Radio button
     const radio = document.createElement("input");
+    radio.id = this.prefix + "-" + id + "-radio";
     radio.type = "radio";
     radio.name = groupName;
     radioBox.appendChild(radio);
 
     // Radio button label
     const label = document.createElement("label");
+    label.id = this.prefix + "-" + id + "-label";
     label.innerText = name;
     radioBox.appendChild(label);
 
@@ -199,7 +206,6 @@ export class CustomMenuSettingsUI {
 
     let versionDiv = document.createElement("label");
     versionDiv.id = this.prefix + "-version";
-    // versionDiv.classList.add("cls-context-menu-version");
     versionDiv.innerText = `VERSION: ${version}`;
     contextMenu.appendChild(versionDiv);
   }
