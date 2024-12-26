@@ -99,6 +99,7 @@ export function stopThemeSong(delayMS: number = 0) {
   }
 
   // The song is loaded and playing, so pause it
+  console.log("[AWBW Improved Music Player] Pausing: ", currentTheme.src);
   currentTheme.pause();
 }
 
@@ -360,6 +361,7 @@ function onSettingsChange(key: string) {
       }
       break;
     case "gameType":
+    case "alternateThemeDay":
       playThemeSong();
       break;
     case "themeType":

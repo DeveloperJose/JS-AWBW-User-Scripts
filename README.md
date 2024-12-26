@@ -27,10 +27,10 @@ This is a major code refactoring and update to twiggy_'s original AWBW Music Pla
 
 Below are the changes from the original script:
 * Added sound effects: subs and stealths hiding and unhiding, CO and Super CO Power becoming available, units getting trapped, loaded missile silos being launched, units making progress capturing a property, pipe seams getting attacked (prepare to be surprised)
-* Added the option to switch between AW1, AW2, AW:Dual Strike, and AW:Reboot Camp soundtracks.
-* When a turn change happens, if the next CO is the same as the previous CO the music won't restart.
-* Each song will continue where it left off the last time it played instead of always starting at the beginning.
-* If you change the turn with the turn selector checkbox during a replay (the one with the numbers) the music will change accordingly as well. 
+* Added the option to switch between AW1, AW2, AW:Dual Strike, and AW:Reboot Camp soundtracks. Note that in AW1 there are no special power themes.
+* Each song will continue where it left off the last time it played instead of always starting at the beginning. This means when a turn change happens, if the next CO is the same as the previous CO the music won't restart.
+* Fixed issues where some replay controls weren't updating the music properly.
+* Added cursor moving sound effects to design map page. 
 
 ![Picture of the music player icon on the browser](./AWBW_Music_Player_1.png)
 

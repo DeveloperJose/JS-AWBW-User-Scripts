@@ -14,6 +14,28 @@
 (function () {
   "use strict";
 
+  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
+  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
+  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
+  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
+  const BLACK_HOLE_COs = new Set([
+    "flak",
+    "lash",
+    "adder",
+    "hawke",
+    "sturm",
+    "jugger",
+    "koal",
+    "kindle",
+    "vonbolt",
+  ]);
+  new Set([
+    ...ORANGE_STAR_COs,
+    ...BLUE_MOON_COs,
+    ...GREEN_EARTH_COs,
+    ...YELLOW_COMET_COs,
+    ...BLACK_HOLE_COs,
+  ]);
   let mapCols = typeof maxX !== "undefined" ? maxX : -1;
   let mapRows = typeof maxY !== "undefined" ? maxY : -1;
   typeof gameAnims !== "undefined" ? gameAnims : false;

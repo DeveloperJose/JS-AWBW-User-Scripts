@@ -1,11 +1,7 @@
 /**
  * @file Main script that loads everything for the AWBW Improved Music Player userscript.
  *
- * @todo Edit DS/MapTheme with Audacity
- * @todo DS character themes for AW1/AW2/AW_RBC
  * @todo Add shuffle
- * @todo Alternate themes
- * @todo Factory themes for RBC
  * @todo CSS from code to .css file
  * @todo More settings
  * @todo Finish documentation

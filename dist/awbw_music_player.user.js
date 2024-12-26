@@ -93,6 +93,10 @@
     div.style.top = top + "px";
   }
 
+  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
+  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
+  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
+  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
   const BLACK_HOLE_COs = new Set([
     "flak",
     "lash",
@@ -103,6 +107,13 @@
     "koal",
     "kindle",
     "vonbolt",
+  ]);
+  new Set([
+    ...ORANGE_STAR_COs,
+    ...BLUE_MOON_COs,
+    ...GREEN_EARTH_COs,
+    ...YELLOW_COMET_COs,
+    ...BLACK_HOLE_COs,
   ]);
   typeof maxX !== "undefined" ? maxX : -1;
   typeof maxY !== "undefined" ? maxY : -1;
@@ -225,6 +236,7 @@
     static __sfxVolume = 0.35;
     static __uiVolume = 0.425;
     static __gameType = SettingsGameType.AW_DS;
+    static __alternateThemeDay = 5;
     static __themeType = SettingsThemeType.REGULAR;
     static toJSON() {
       return JSON.stringify({
@@ -233,6 +245,7 @@
         sfxVolume: this.__sfxVolume,
         uiVolume: this.__uiVolume,
         gameType: this.__gameType,
+        alternateThemeDay: this.__alternateThemeDay,
       });
     }
     static fromJSON(json) {
@@ -291,6 +304,14 @@
     static get themeType() {
       return this.__themeType;
     }
+    static set alternateThemeDay(val) {
+      if (val === this.__alternateThemeDay) return;
+      this.__alternateThemeDay = val;
+      this.onSettingChangeEvent("alternateThemeDay");
+    }
+    static get alternateThemeDay() {
+      return this.__alternateThemeDay;
+    }
     static onSettingChangeEvent(key) {
       onSettingsChangeListeners.forEach((fn) => fn(key));
     }
@@ -319,6 +340,7 @@
   const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
   var GameSFX;
   (function (GameSFX) {
+    GameSFX["coGoldRush"] = "co-gold-rush";
     GameSFX["powerActivateAllyCOP"] = "power-activate-ally-cop";
     GameSFX["powerActivateAllySCOP"] = "power-activate-ally-scop";
     GameSFX["powerActivateBHCOP"] = "power-activate-bh-cop";
@@ -326,6 +348,9 @@
     GameSFX["powerActivateAW1COP"] = "power-activate-aw1-cop";
     GameSFX["powerSCOPAvailable"] = "power-scop-available";
     GameSFX["powerCOPAvailable"] = "power-cop-available";
+    GameSFX["tagBreakAlly"] = "tag-break-ally";
+    GameSFX["tagBreakBH"] = "tag-break-bh";
+    GameSFX["tagSwap"] = "tag-swap";
     GameSFX["unitAttackPipeSeam"] = "unit-attack-pipe-seam";
     GameSFX["unitCaptureAlly"] = "unit-capture-ally";
     GameSFX["unitCaptureEnemy"] = "unit-capture-enemy";
@@ -412,13 +437,39 @@
     ["T-Copter", MovementSFX.moveTCopterOneShot],
     ["Tank", MovementSFX.moveTreadLightOneShot],
   ]);
-  function getMusicFilename(coName, gameType, themeType) {
-    if (coName === "map-editor") return "t-map-editor";
+  const alternateThemes = new Map([
+    [SettingsGameType.AW1, new Set(["sturm", "vonbolt"])],
+    [SettingsGameType.AW2, new Set(["sturm", "vonbolt"])],
+    [
+      SettingsGameType.AW_RBC,
+      new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"]),
+    ],
+    [SettingsGameType.AW_DS, new Set(["sturm", "vonbolt"])],
+  ]);
+  function getAlternateMusicFilename(coName, gameType, themeType) {
+    coName = coName.toLowerCase();
+    let alternateThemesSet = alternateThemes.get(gameType);
+    let faction = isBlackHoleCO(coName) ? "bh" : "ally";
     let isPowerActive = themeType !== SettingsThemeType.REGULAR;
-    if (!isPowerActive) {
+    if (gameType === SettingsGameType.AW_RBC && isPowerActive) {
+      return `t-${faction}-${themeType}`;
+    }
+    if (!alternateThemesSet.has(coName)) {
       return `t-${coName}`;
     }
-    if (gameType === SettingsGameType.AW1) {
+    if (coName === "andy" && gameType == SettingsGameType.AW_RBC) {
+      return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
+    }
+    return `t-${coName}-2`;
+  }
+  function getMusicFilename(coName, gameType, themeType) {
+    if (coName === "map-editor") return "t-map-editor";
+    let useAlternateTheme = gameDay >= musicPlayerSettings.alternateThemeDay;
+    if (useAlternateTheme) {
+      return getAlternateMusicFilename(coName, gameType, themeType);
+    }
+    let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+    if (!isPowerActive || gameType === SettingsGameType.AW1) {
       return `t-${coName}`;
     }
     if (gameType === SettingsGameType.AW_RBC) {
@@ -433,7 +484,7 @@
     let gameDir = gameType;
     let filename = getMusicFilename(coName, gameType, themeType);
     let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
-    return url.toLowerCase().replaceAll("_", "-");
+    return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
   }
   function getSoundEffectURL(sfx) {
     return `${BASE_SFX_URL}/${sfx}.ogg`;
@@ -761,6 +812,7 @@
       });
       return;
     }
+    console.log("[AWBW Improved Music Player] Pausing: ", currentTheme.src);
     currentTheme.pause();
   }
   function playMovementSound(unitId) {
@@ -903,6 +955,7 @@
         }
         break;
       case "gameType":
+      case "alternateThemeDay":
         playThemeSong();
         break;
       case "themeType":
@@ -1257,6 +1310,9 @@
       ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
       if (!musicPlayerSettings.isPlaying) return;
       console.log("NextTurn", data);
+      if (data.swapCos) {
+        playSFX(GameSFX.tagSwap);
+      }
       syncSettingsToMusic();
     };
     actionHandlers.Elimination = (data) => {
@@ -1287,9 +1343,12 @@
         stopThemeSong(850);
         return;
       }
-      isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-      playSFX(GameSFX.powerActivateAW1COP);
+      let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+      playSFX(sfx);
       stopThemeSong(500);
+      if (coName === "colin") {
+        setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
+      }
     };
     actionHandlers.GameOver = () => {
       ahGameOver?.apply(actionHandlers.GameOver, []);

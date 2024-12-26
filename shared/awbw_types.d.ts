@@ -39,6 +39,11 @@ declare const maxY: number;
 declare const gameAnims: boolean;
 
 /**
+ * The current game day.
+ */
+declare const gameDay: number;
+
+/**
  * Information about a player's current game state.
  */
 interface PlayerInfo {
@@ -228,7 +233,18 @@ interface ExplodeData {}
 
 interface LaunchData {}
 
-interface NextTurnData {}
+interface NextTurnData {
+  action: string;
+  day: number;
+  nextFunds: number;
+  nextPId: number;
+  nextTimer: number;
+  nextTurnStart: string;
+  nextWeather: string;
+  repaired: { units_id: number; units_hit_points: number }[];
+  supplied: string[];
+  swapCos: boolean;
+}
 
 interface EliminationData {}
 

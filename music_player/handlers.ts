@@ -496,6 +496,12 @@ export function addGameHandlers() {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
     if (!musicPlayerSettings.isPlaying) return;
     console.log("NextTurn", data);
+
+    // COs performed a tag and swapped
+    if (data.swapCos) {
+      playSFX(GameSFX.tagSwap);
+    }
+
     syncSettingsToMusic();
   };
 
@@ -522,12 +528,14 @@ export function addGameHandlers() {
       ? SettingsThemeType.SUPER_CO_POWER
       : SettingsThemeType.CO_POWER;
 
+    // Advance Wars 1 will use the same sound for both CO and Super CO power activations
     if (isAW1) {
       playSFX(GameSFX.powerActivateAW1COP);
       stopThemeSong(4500);
       return;
     }
 
+    // Super CO Power
     if (isSuperCOPower) {
       let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
       playSFX(sfx);
@@ -537,8 +545,14 @@ export function addGameHandlers() {
 
     // Regular CO Power
     let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-    playSFX(GameSFX.powerActivateAW1COP);
+    playSFX(sfx);
     stopThemeSong(500);
+
+    // Colin's gold rush SFX
+    if (coName === "colin") {
+      console.log("Colin's Gold Rush");
+      setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
+    }
   };
 
   actionHandlers.GameOver = () => {

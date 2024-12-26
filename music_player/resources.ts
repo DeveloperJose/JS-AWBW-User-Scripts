@@ -45,6 +45,8 @@ export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
  * @enum {string}
  */
 export enum GameSFX {
+  coGoldRush = "co-gold-rush",
+
   powerActivateAllyCOP = "power-activate-ally-cop",
   powerActivateAllySCOP = "power-activate-ally-scop",
   powerActivateBHCOP = "power-activate-bh-cop",
@@ -53,6 +55,10 @@ export enum GameSFX {
 
   powerSCOPAvailable = "power-scop-available",
   powerCOPAvailable = "power-cop-available",
+
+  tagBreakAlly = "tag-break-ally",
+  tagBreakBH = "tag-break-bh",
+  tagSwap = "tag-swap",
 
   unitAttackPipeSeam = "unit-attack-pipe-seam",
   unitCaptureAlly = "unit-capture-ally",
@@ -154,6 +160,46 @@ const onMovementRolloffMap = new Map([
   ["Tank", MovementSFX.moveTreadLightOneShot],
 ]);
 
+const alternateThemes = new Map([
+  [SettingsGameType.AW1, new Set(["sturm", "vonbolt"])],
+  [SettingsGameType.AW2, new Set(["sturm", "vonbolt"])],
+  [
+    SettingsGameType.AW_RBC,
+    new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"]),
+  ],
+  [SettingsGameType.AW_DS, new Set(["sturm", "vonbolt"])],
+]);
+
+function getAlternateMusicFilename(
+  coName: string,
+  gameType: SettingsGameType,
+  themeType: SettingsThemeType,
+) {
+  // Check if this CO has an alternate theme
+  coName = coName.toLowerCase();
+  let alternateThemesSet = alternateThemes.get(gameType);
+  let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+
+  // RBC individual CO power themes -> RBC shared factory themes
+  let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+  if (gameType === SettingsGameType.AW_RBC && isPowerActive) {
+    return `t-${faction}-${themeType}`;
+  }
+
+  // No alternate theme
+  if (!alternateThemesSet.has(coName)) {
+    return `t-${coName}`;
+  }
+
+  // Andy -> Clone Andy
+  if (coName === "andy" && gameType == SettingsGameType.AW_RBC) {
+    return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
+  }
+
+  // All other alternate themes
+  return `t-${coName}-2`;
+}
+
 /**
  * Determines the filename for the music to play given a specific CO and other settings.
  * @param coName - Name of the CO whose music to use.
@@ -169,14 +215,16 @@ function getMusicFilename(
   // Check if we want to play the map editor theme
   if (coName === "map-editor") return "t-map-editor";
 
-  // Regular theme
-  let isPowerActive = themeType !== SettingsThemeType.REGULAR;
-  if (!isPowerActive) {
-    return `t-${coName}`;
+  // Check if we need to play alternate themes now
+  let useAlternateTheme = gameDay >= musicPlayerSettings.alternateThemeDay;
+  if (useAlternateTheme) {
+    return getAlternateMusicFilename(coName, gameType, themeType);
   }
 
-  // For AW1, we play the regular themes
-  if (gameType === SettingsGameType.AW1) {
+  // Regular theme when no power is active
+  // For AW1, we always play the regular themes
+  let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+  if (!isPowerActive || gameType === SettingsGameType.AW1) {
     return `t-${coName}`;
   }
 
@@ -209,7 +257,7 @@ export function getMusicURL(
   let gameDir = gameType;
   let filename = getMusicFilename(coName, gameType, themeType);
   let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
-  return url.toLowerCase().replaceAll("_", "-");
+  return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
 }
 
 /**

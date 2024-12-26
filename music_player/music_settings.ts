@@ -62,11 +62,15 @@ export function addSettingsChangeListener(fn: (key: string) => void) {
  * DO NOT EDIT __ prefix variables, use the properties!
  */
 export abstract class musicPlayerSettings {
+  // User configurable settings
   private static __isPlaying = false;
   private static __volume = 0.5;
   private static __sfxVolume = 0.35;
   private static __uiVolume = 0.425;
   private static __gameType = SettingsGameType.AW_DS;
+  private static __alternateThemeDay = 5;
+
+  // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
 
   static toJSON() {
@@ -76,6 +80,7 @@ export abstract class musicPlayerSettings {
       sfxVolume: this.__sfxVolume,
       uiVolume: this.__uiVolume,
       gameType: this.__gameType,
+      alternateThemeDay: this.__alternateThemeDay,
     });
   }
 
@@ -147,6 +152,16 @@ export abstract class musicPlayerSettings {
 
   static get themeType() {
     return this.__themeType;
+  }
+
+  static set alternateThemeDay(val: number) {
+    if (val === this.__alternateThemeDay) return;
+    this.__alternateThemeDay = val;
+    this.onSettingChangeEvent("alternateThemeDay");
+  }
+
+  static get alternateThemeDay() {
+    return this.__alternateThemeDay;
   }
 
   static onSettingChangeEvent(key: string) {
