@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rollup -c && npm run prettier",
     "netlify": "cd ../JS-Website && netlify deploy --prod --dir=./public",
-    "prettier": "prettier --write \"**/*.{js,ts}\"",
+    "prettier": "prettier --write \"**/*.{js,ts,css}\"",
     "clean": "rm dist/*.js",
     "lint": "eslint */main.js",
     "depcheck": "depcheck"

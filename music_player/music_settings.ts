@@ -12,8 +12,8 @@ import { currentPlayer } from "../shared/awbw_game";
 export enum SettingsGameType {
   AW1 = "AW1",
   AW2 = "AW2",
-  AW_RBC = "AW_RBC",
-  AW_DS = "AW_DS",
+  RBC = "RBC",
+  DS = "DS",
 }
 
 /**
@@ -67,7 +67,7 @@ export abstract class musicPlayerSettings {
   private static __volume = 0.5;
   private static __sfxVolume = 0.35;
   private static __uiVolume = 0.425;
-  private static __gameType = SettingsGameType.AW_DS;
+  private static __gameType = SettingsGameType.DS;
   private static __alternateThemeDay = 5;
 
   // Non-user configurable settings
@@ -177,11 +177,11 @@ export function loadSettingsFromLocalStorage() {
 
   // Store defaults if nothing or undefined is stored
   if (!storageData || storageData === "undefined") {
-    console.log("No settings found, storing defaults");
+    // console.log("No settings found, storing defaults");
     storageData = updateSettingsInLocalStorage();
   }
 
-  console.log("Loading settings", storageData);
+  // console.log("Loading settings", storageData);
   musicPlayerSettings.fromJSON(storageData);
 
   // From now on, any setting changes will be saved and any listeners will be called
@@ -193,7 +193,7 @@ export function loadSettingsFromLocalStorage() {
  */
 function updateSettingsInLocalStorage() {
   let jsonSettings = musicPlayerSettings.toJSON();
-  console.log("Saving settings...", jsonSettings);
   localStorage.setItem(STORAGE_KEY, jsonSettings);
+  // console.log("Saving settings...", jsonSettings);
   return jsonSettings;
 }

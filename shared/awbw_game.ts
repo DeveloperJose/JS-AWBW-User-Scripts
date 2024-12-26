@@ -32,9 +32,7 @@ export let attackDelayMS = gameAnimations ? 1000 : 0;
  * Gets the username of the person logged in to the website.
  */
 export let myName = (
-  document
-    .querySelector("#profile-menu")
-    .getElementsByClassName("dropdown-menu-link")[0] as HTMLAnchorElement
+  document.querySelector("#profile-menu").getElementsByClassName("dropdown-menu-link")[0] as HTMLAnchorElement
 ).href.split("username=")[1];
 
 /**
@@ -165,7 +163,7 @@ export abstract class currentPlayer {
    * Gets the name of the CO for the current player.
    */
   static get coName() {
-    return this.info?.co_name;
+    return this.info?.co_name.toLowerCase().replaceAll(" ", "");
   }
 }
 

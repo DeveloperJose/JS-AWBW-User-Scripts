@@ -18,7 +18,7 @@
     if (ref === void 0) ref = {};
     var insertAt = ref.insertAt;
 
-    if (typeof document === "undefined") {
+    if (!css || typeof document === "undefined") {
       return;
     }
 
@@ -43,32 +43,20 @@
     }
   }
 
+  var css_248z$1 =
+    '/* Context Menu */\n.cls-context-menu {\n  /* display: none; */\n  display: flex;\n  top: 40px;\n  flex-direction: column;\n  width: 275px;\n}\n\n.cls-context-menu label {\n  width: 100%;\n  font-size: 14px;\n  background-color: #dedede;\n  padding-top: 5px;\n  padding-bottom: 5px;\n}\n\n.cls-context-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n}\n\n.cls-context-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-context-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  width: 100%;\n}\n\n.cls-context-menu image {\n  vertical-align: middle;\n}\n\n.cls-context-menu label[id$="version"] {\n  width: 100%;\n  font-size: 9px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n/* :root {\n  --shadow-len: -60px;\n}\n\n::-moz-range-thumb, ::-webkit-slider-thumb {\n  width: 20px;\n  height: 25px;\n  background: #fff;\n  box-shadow: -200px 0 0 200px #0066cc;\n  border: 2px solid #888888;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n} */\n\n/*\n\n::-webkit-slider-runnable-track {\n  background: #ddd;\n}\n\n::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  width: 20px;\n  height: 25px;\n  background: #fff;\n  box-shadow: -200px 0 0 200px #0066cc;\n  border: 2px solid #888888;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n}\n\n::-moz-range-track {\n  height: 25px;\n  background: #888888;\n}\n\n::-moz-range-thumb {\n  background: #fff;\n  height: 25px;\n  width: 20px;\n  border: 3px solid #888888;\n  border-radius: 0 !important;\n  box-shadow: -200px 0 0 200px #0066cc;\n  box-sizing: border-box;\n  clip-path: inset(0px 0px 0px let(--shadow-len));\n}\n\n::-ms-fill-lower {\n  background: #0066cc;\n}\n\n::-ms-thumb {\n  background: #fff;\n  border: 3px solid #999;\n  height: 25px;\n  width: 20px;\n  box-sizing: border-box;\n}\n\n::-ms-ticks-after {\n  display: none;\n}\n\n::-ms-ticks-before {\n  display: none;\n}\n\n::-ms-track {\n  background: #888888;\n  color: transparent;\n  height: 25px;\n  border: none;\n}\n\n::-ms-tooltip {\n  display: none;\n}\n\n\n.cls-context-menu-link {\n  display: block;\n  padding: 20px;\n  background: #ececec;\n}\n\n.cls-context-menu ul,\n#context-menu li {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  background: white;\n}\n\n.cls-context-menu {\n  border: 1px solid #888888 !important;\n}\n.cls-context-menu li {\n  border: 1px solid #888888;\n}\n.cls-context-menu li:last-child {\n  border: none;\n}\n.cls-context-menu li a {\n  display: block;\n  padding: 5px 10px;\n  text-decoration: none;\n  color: blue;\n}\n.cls-context-menu li a:hover {\n  background: blue;\n  color: #fff;\n}\n\n*/\n/* Input Range */\n/* \n\n\n\n\n.theme-radio-btn {\n  height: 14px;\n  width: 14px;\n}\n\n.theme-radio-btn:hover {\n  cursor: pointer;\n}\n\n#shuffle-button {\n  font-family: "Nova Square", cursive;\n  line-height: 25px;\n}\n\n.shuffle-button-enabled {\n  color: white;\n  background: #0066cc;\n  border: 2px solid #0066cc;\n}\n\n.shuffle-button-enabled:hover {\n  cursor: pointer;\n}\n\n.shuffle-button-enabled:active {\n  color: black;\n  background: white;\n  border: 2px solid #888888;\n}\n\n.shuffle-button-disabled {\n  color: white;\n  background: #888888;\n  border: 2px solid #888888;\n}\n\n.blob {\n  animation: shine 1.5s ease-in-out infinite;\n  animation-fill-mode: forwards;\n  animation-direction: alternate;\n}\n\n#version-link {\n  color: #0066cc;\n  font-weight: bold;\n  text-decoration: underline;\n} */\n';
+  styleInject(css_248z$1);
+
   var css_248z =
-    '/* Context Menu */\r\n.cls-context-menu-link {\r\n  display: block;\r\n  padding: 20px;\r\n  background: #ececec;\r\n}\r\n\r\n.cls-context-menu {\r\n  position: absolute;\r\n  display: none;\r\n  width: 175px;\r\n  height: 347px;\r\n  padding-top: 4px;\r\n}\r\n\r\n.cls-context-menu ul,\r\n#context-menu li {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n  background: white;\r\n}\r\n\r\n.cls-context-menu {\r\n  border: 1px solid #888888 !important;\r\n}\r\n.cls-context-menu li {\r\n  border: 1px solid #888888;\r\n}\r\n.cls-context-menu li:last-child {\r\n  border: none;\r\n}\r\n.cls-context-menu li a {\r\n  display: block;\r\n  padding: 5px 10px;\r\n  text-decoration: none;\r\n  color: blue;\r\n}\r\n.cls-context-menu li a:hover {\r\n  background: blue;\r\n  color: #fff;\r\n}\r\n\r\n/* Input Range */\r\n:root {\r\n  --shadow-len: -60px;\r\n}\r\ninput[type="range"] {\r\n  margin: auto;\r\n  -webkit-appearance: none;\r\n  position: relative;\r\n  overflow: hidden;\r\n  height: 25px;\r\n  cursor: pointer;\r\n  border-radius: 0; /* iOS */\r\n}\r\n\r\n::-webkit-slider-runnable-track {\r\n  background: #ddd;\r\n}\r\n\r\n/*\r\n     * 1. Set to 0 width and remove border for a slider without a thumb\r\n     * 2. Shadow is negative the full width of the input and has a spread\r\n     *    of the width of the input.\r\n     */\r\n::-webkit-slider-thumb {\r\n  -webkit-appearance: none;\r\n  width: 20px; /* 1 */\r\n  height: 25px;\r\n  background: #fff;\r\n  box-shadow: -200px 0 0 200px #0066cc; /* 2 */\r\n  border: 2px solid #888888; /* 1 */\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-moz-range-track {\r\n  height: 25px;\r\n  background: #888888;\r\n}\r\n\r\n::-moz-range-thumb {\r\n  background: #fff;\r\n  height: 25px;\r\n  width: 20px;\r\n  border: 3px solid #888888;\r\n  border-radius: 0 !important;\r\n  box-shadow: -200px 0 0 200px #0066cc;\r\n  box-sizing: border-box;\r\n  clip-path: inset(0px 0px 0px let(--shadow-len));\r\n}\r\n\r\n::-ms-fill-lower {\r\n  background: #0066cc;\r\n}\r\n\r\n::-ms-thumb {\r\n  background: #fff;\r\n  border: 3px solid #999;\r\n  height: 25px;\r\n  width: 20px;\r\n  box-sizing: border-box;\r\n}\r\n\r\n::-ms-ticks-after {\r\n  display: none;\r\n}\r\n\r\n::-ms-ticks-before {\r\n  display: none;\r\n}\r\n\r\n::-ms-track {\r\n  background: #888888;\r\n  color: transparent;\r\n  height: 25px;\r\n  border: none;\r\n}\r\n\r\n::-ms-tooltip {\r\n  display: none;\r\n}\r\n\r\n.theme-radio-btn {\r\n  height: 14px;\r\n  width: 14px;\r\n}\r\n\r\n.theme-radio-btn:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n#shuffle-button {\r\n  font-family: "Nova Square", cursive;\r\n  line-height: 25px;\r\n}\r\n\r\n.shuffle-button-enabled {\r\n  color: white;\r\n  background: #0066cc;\r\n  border: 2px solid #0066cc;\r\n}\r\n\r\n.shuffle-button-enabled:hover {\r\n  cursor: pointer;\r\n}\r\n\r\n.shuffle-button-enabled:active {\r\n  color: black;\r\n  background: white;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.shuffle-button-disabled {\r\n  color: white;\r\n  background: #888888;\r\n  border: 2px solid #888888;\r\n}\r\n\r\n.blob {\r\n  animation: shine 1.5s ease-in-out infinite;\r\n  animation-fill-mode: forwards;\r\n  animation-direction: alternate;\r\n}\r\n\r\n#version-link {\r\n  color: #0066cc;\r\n  font-weight: bold;\r\n  text-decoration: underline;\r\n}\r\n';
+    '/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-context-menu input[type="range"] {\n  --c: rgb(73, 140, 208); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 20px; /* thumb width */\n\n  width: 90%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-context-menu input:focus-visible,\n.cls-context-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-context-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-context-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-context-menu input {\n    --_c: var(--c);\n  }\n}\n';
   styleInject(css_248z);
 
   const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
   const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
   const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
   const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grim"]);
-  const BLACK_HOLE_COs = new Set([
-    "flak",
-    "lash",
-    "adder",
-    "hawke",
-    "sturm",
-    "jugger",
-    "koal",
-    "kindle",
-    "vonbolt",
-  ]);
-  new Set([
-    ...ORANGE_STAR_COs,
-    ...BLUE_MOON_COs,
-    ...GREEN_EARTH_COs,
-    ...YELLOW_COMET_COs,
-    ...BLACK_HOLE_COs,
-  ]);
+  const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
+  new Set([...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs]);
   typeof maxX !== "undefined" ? maxX : -1;
   typeof maxY !== "undefined" ? maxY : -1;
   let gameAnimations = typeof gameAnims !== "undefined" ? gameAnims : false;
@@ -110,10 +98,7 @@
       }
       return;
     }
-    setTimeout(
-      () => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations),
-      moveAnimationDelayMS,
-    );
+    setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations), moveAnimationDelayMS);
     let left = parseFloat(div.style.left);
     let top = parseFloat(div.style.top);
     left += dx;
@@ -184,7 +169,7 @@
       return this.info?.players_co_power_on;
     }
     static get coName() {
-      return this.info?.co_name;
+      return this.info?.co_name.toLowerCase().replaceAll(" ", "");
     }
   }
   function getAllPlayingCONames() {
@@ -210,8 +195,8 @@
   (function (SettingsGameType) {
     SettingsGameType["AW1"] = "AW1";
     SettingsGameType["AW2"] = "AW2";
-    SettingsGameType["AW_RBC"] = "AW_RBC";
-    SettingsGameType["AW_DS"] = "AW_DS";
+    SettingsGameType["RBC"] = "RBC";
+    SettingsGameType["DS"] = "DS";
   })(SettingsGameType || (SettingsGameType = {}));
   var SettingsThemeType;
   (function (SettingsThemeType) {
@@ -235,7 +220,7 @@
     static __volume = 0.5;
     static __sfxVolume = 0.35;
     static __uiVolume = 0.425;
-    static __gameType = SettingsGameType.AW_DS;
+    static __gameType = SettingsGameType.DS;
     static __alternateThemeDay = 5;
     static __themeType = SettingsThemeType.REGULAR;
     static toJSON() {
@@ -319,16 +304,13 @@
   function loadSettingsFromLocalStorage() {
     let storageData = localStorage.getItem(STORAGE_KEY);
     if (!storageData || storageData === "undefined") {
-      console.log("No settings found, storing defaults");
       storageData = updateSettingsInLocalStorage();
     }
-    console.log("Loading settings", storageData);
     musicPlayerSettings.fromJSON(storageData);
     addSettingsChangeListener(updateSettingsInLocalStorage);
   }
   function updateSettingsInLocalStorage() {
     let jsonSettings = musicPlayerSettings.toJSON();
-    console.log("Saving settings...", jsonSettings);
     localStorage.setItem(STORAGE_KEY, jsonSettings);
     return jsonSettings;
   }
@@ -440,24 +422,23 @@
   const alternateThemes = new Map([
     [SettingsGameType.AW1, new Set(["sturm", "vonbolt"])],
     [SettingsGameType.AW2, new Set(["sturm", "vonbolt"])],
-    [
-      SettingsGameType.AW_RBC,
-      new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"]),
-    ],
-    [SettingsGameType.AW_DS, new Set(["sturm", "vonbolt"])],
+    [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"])],
+    [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
   ]);
   function getAlternateMusicFilename(coName, gameType, themeType) {
-    coName = coName.toLowerCase();
+    if (!alternateThemes.has(gameType)) {
+      console.log("ERROR: getAlternate()", gameType, "not found in alternateThemes");
+    }
     let alternateThemesSet = alternateThemes.get(gameType);
     let faction = isBlackHoleCO(coName) ? "bh" : "ally";
     let isPowerActive = themeType !== SettingsThemeType.REGULAR;
-    if (gameType === SettingsGameType.AW_RBC && isPowerActive) {
+    if (gameType === SettingsGameType.RBC && isPowerActive) {
       return `t-${faction}-${themeType}`;
     }
     if (!alternateThemesSet.has(coName)) {
       return `t-${coName}`;
     }
-    if (coName === "andy" && gameType == SettingsGameType.AW_RBC) {
+    if (coName === "andy" && gameType == SettingsGameType.RBC) {
       return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
     }
     return `t-${coName}-2`;
@@ -472,7 +453,7 @@
     if (!isPowerActive || gameType === SettingsGameType.AW1) {
       return `t-${coName}`;
     }
-    if (gameType === SettingsGameType.AW_RBC) {
+    if (gameType === SettingsGameType.RBC) {
       return `t-${coName}-cop`;
     }
     let faction = isBlackHoleCO(coName) ? "bh" : "ally";
@@ -482,6 +463,9 @@
     if (gameType === null) gameType = musicPlayerSettings.gameType;
     if (themeType === null) themeType = musicPlayerSettings.themeType;
     let gameDir = gameType;
+    if (!gameDir.startsWith("AW")) {
+      gameDir = "AW_" + gameDir;
+    }
     let filename = getMusicFilename(coName, gameType, themeType);
     let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
@@ -513,66 +497,185 @@
   }
 
   class CustomMenuSettingsUI {
-    _parent;
-    _children = new Map();
+    root;
+    childrenMap = new Map();
+    isSettingsMenuOpen = false;
+    prefix = "";
     constructor(prefix, buttonImageURL, hoverText = "") {
-      this._parent = document.createElement("div");
-      this._parent.id = prefix + "-parent";
-      this._parent.classList.add("game-tools-btn");
-      this._parent.style.width = "34px";
-      this._parent.style.height = "30px";
-      this._parent.style.borderLeft = "none";
+      this.prefix = prefix;
+      this.root = document.createElement("div");
+      this.root.id = prefix + "-parent";
+      this.root.classList.add("game-tools-btn");
+      this.root.style.width = "34px";
+      this.root.style.height = "30px";
+      this.root.style.borderLeft = "none";
       let hoverSpan = document.createElement("span");
       hoverSpan.id = prefix + "-hover-span";
       hoverSpan.classList.add("game-tools-btn-text", "small_text");
       hoverSpan.innerText = hoverText;
-      this._parent.appendChild(hoverSpan);
-      this._children.set("hover", hoverSpan);
+      this.root.appendChild(hoverSpan);
+      this.childrenMap.set("hover", hoverSpan);
       let bgDiv = document.createElement("div");
       bgDiv.id = prefix + "-background";
       bgDiv.classList.add("game-tools-bg");
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
-      this._parent.appendChild(bgDiv);
-      this._children.set("bg", bgDiv);
+      this.root.appendChild(bgDiv);
+      this.childrenMap.set("bg", bgDiv);
       let btnLink = document.createElement("a");
       btnLink.id = prefix + "-link";
       btnLink.classList.add("norm2");
       bgDiv.appendChild(btnLink);
       let btnImg = document.createElement("img");
       btnImg.id = prefix + "-link-img";
-      btnImg.style.verticalAlign = "middle";
       btnImg.src = buttonImageURL;
       btnLink.appendChild(btnImg);
-      this._children.set("img", btnImg);
+      this.childrenMap.set("img", btnImg);
+      let contextMenu = document.createElement("div");
+      contextMenu.id = prefix + "-context-menu";
+      contextMenu.classList.add("cls-context-menu");
+      this.root.appendChild(contextMenu);
+      this.childrenMap.set("context-menu", contextMenu);
+      this.root.addEventListener("contextmenu", (event) => {
+        let element = event.target;
+        if (element.id.startsWith(prefix)) {
+          event.preventDefault();
+          this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
+          if (this.isSettingsMenuOpen) {
+            this.openContextMenu();
+          } else {
+            this.closeContextMenu();
+          }
+        }
+      });
+      document.addEventListener("click", (event) => {
+        let elmnt = event.target;
+        if (elmnt.id.startsWith(prefix)) return;
+        this.closeContextMenu();
+      });
     }
     addToAWBWPage() {
-      menu.appendChild(this._parent);
+      menu.appendChild(this.root);
     }
     setHoverText(text) {
-      let hoverSpan = this._children.get("hover");
+      let hoverSpan = this.childrenMap.get("hover");
       hoverSpan.innerText = text;
     }
     setProgress(progress) {
-      let bgDiv = this._children.get("bg");
-      bgDiv.style.backgroundImage =
-        "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
+      let bgDiv = this.childrenMap.get("bg");
+      bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
     }
     setImage(imageURL) {
-      let btnImg = this._children.get("img");
+      let btnImg = this.childrenMap.get("img");
       btnImg.src = imageURL;
     }
-    addClickHandler(handler) {
-      this._parent.addEventListener("click", handler);
+    addEventListener(type, listener) {
+      let div = this.childrenMap.get("bg");
+      div.addEventListener(type, listener);
+    }
+    openContextMenu() {
+      let contextMenu = this.childrenMap.get("context-menu");
+      contextMenu.style.display = "flex";
+      this.isSettingsMenuOpen = true;
+    }
+    closeContextMenu() {
+      let contextMenu = this.childrenMap.get("context-menu");
+      contextMenu.style.display = "none";
+      this.isSettingsMenuOpen = false;
+    }
+    addSlider(name, min, max, step, hoverText = "") {
+      let contextMenu = this.childrenMap.get("context-menu");
+      let label = document.createElement("label");
+      contextMenu.appendChild(label);
+      let id = name.toLowerCase().replace(" ", "-");
+      let slider = document.createElement("input");
+      slider.id = `${this.prefix}-${id}-slider`;
+      slider.type = "range";
+      slider.min = String(min);
+      slider.max = String(max);
+      slider.step = String(step);
+      slider.addEventListener("input", (e) => {
+        let displayValue = slider.value;
+        if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
+        label.innerText = `${name}: ${displayValue}`;
+      });
+      contextMenu.appendChild(slider);
+      slider.addEventListener("mouseover", () => {
+        this.setHoverText(hoverText);
+      });
+      slider.addEventListener("mouseout", () => {
+        this.setHoverText("");
+      });
+      return slider;
+    }
+    addRadioButton(name, groupName, hoverText = "") {
+      const contextMenu = this.childrenMap.get("context-menu");
+      if (!this.childrenMap.has(groupName)) {
+        const groupLabel = document.createElement("label");
+        groupLabel.innerText = groupName;
+        contextMenu.appendChild(groupLabel);
+        const group = document.createElement("div");
+        group.classList.add("cls-horizontal-box");
+        this.childrenMap.set(groupName, group);
+        contextMenu.appendChild(group);
+      }
+      const radioGroupDiv = this.childrenMap.get(groupName);
+      const radioBox = document.createElement("div");
+      radioBox.classList.add("cls-vertical-box");
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = groupName;
+      radioBox.appendChild(radio);
+      const label = document.createElement("label");
+      label.innerText = name;
+      radioBox.appendChild(label);
+      radioBox.addEventListener("mouseover", () => {
+        this.setHoverText(hoverText);
+      });
+      radioBox.addEventListener("mouseout", () => {
+        this.setHoverText("");
+      });
+      radioGroupDiv.appendChild(radioBox);
+      return radio;
+    }
+    addVersion(version) {
+      let contextMenu = this.childrenMap.get("context-menu");
+      let versionDiv = document.createElement("label");
+      versionDiv.id = this.prefix + "-version";
+      versionDiv.innerText = `VERSION: ${version}`;
+      contextMenu.appendChild(versionDiv);
     }
   }
 
-  const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
-  musicPlayerUI.addClickHandler(onMusicBtnClick);
+  /**
+   * @file Constants and other project configuration settings that could be used by any scripts.
+   */
+
+  /**
+   * The version numbers of the userscripts.
+   * @constant {Object.<string, string>}
+   */
+  const versions = {
+    music_player: "3.0.0",
+    highlight_cursor_coordinates: "1.0.2",
+  };
+
   addSettingsChangeListener(onSettingsChange$1);
   function onMusicBtnClick(_event) {
     musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
   }
   function onSettingsChange$1(key) {
+    volumeSlider.value = musicPlayerSettings.volume.toString();
+    sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
+    uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
+    daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
+    const event = new Event("input");
+    volumeSlider.dispatchEvent(event);
+    sfxVolumeSlider.dispatchEvent(event);
+    uiVolumeSlider.dispatchEvent(event);
+    daySlider.dispatchEvent(event);
+    let radio = radioMap.get(musicPlayerSettings.gameType);
+    radio.checked = true;
+    radio.dispatchEvent(event);
     if (key != "isPlaying") return;
     if (musicPlayerSettings.isPlaying) {
       musicPlayerUI.setHoverText("Stop Tunes");
@@ -582,6 +685,51 @@
       musicPlayerUI.setImage(NEUTRAL_IMG_URL);
     }
   }
+  const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
+  musicPlayerUI.addEventListener("click", onMusicBtnClick);
+  let volumeSlider = musicPlayerUI.addSlider("Music Volume", 0, 1, 0.005, "Adjust the volume of the CO theme music.");
+  let sfxVolumeSlider = musicPlayerUI.addSlider(
+    "Unit SFX Volume",
+    0,
+    1,
+    0.005,
+    "Adjust the volume of the unit sound effects.",
+  );
+  let uiVolumeSlider = musicPlayerUI.addSlider("UI Volume", 0, 1, 0.005, "Adjust the volume of the UI sound effects.");
+  volumeSlider.addEventListener("input", (val) => {
+    musicPlayerSettings.volume = parseFloat(val.target.value);
+  });
+  sfxVolumeSlider.addEventListener("input", (val) => {
+    musicPlayerSettings.sfxVolume = parseFloat(val.target.value);
+  });
+  uiVolumeSlider.addEventListener("input", (val) => {
+    musicPlayerSettings.uiVolume = parseFloat(val.target.value);
+  });
+  let daySlider = musicPlayerUI.addSlider(
+    "Alternate Themes Start On Day",
+    0,
+    30,
+    1,
+    "After what day should alternate themes start playing? Can you find all the hidden themes?",
+  );
+  daySlider.addEventListener("input", (val) => {
+    musicPlayerSettings.alternateThemeDay = parseInt(val.target.value);
+  });
+  const radioMap = new Map();
+  const hoverDescriptions = new Map([
+    [SettingsGameType.AW1, "Play the GBA Advance Wars 1 soundtrack"],
+    [SettingsGameType.AW2, "Play the GBA Advance Wars 2 soundtrack"],
+    [SettingsGameType.DS, "Play the Nintendo DS Advance Wars: Dual Strike soundtrack"],
+    [SettingsGameType.RBC, "Play the Nintendo Switch Advance Wars: Re-Boot Camp soundtrack"],
+  ]);
+  for (const gameType of Object.values(SettingsGameType)) {
+    let radio = musicPlayerUI.addRadioButton(gameType, "Soundtrack", hoverDescriptions.get(gameType));
+    radioMap.set(gameType, radio);
+    radio.parentElement.addEventListener("input", (_event) => {
+      musicPlayerSettings.gameType = gameType;
+    });
+  }
+  musicPlayerUI.addVersion(versions.music_player);
 
   let currentThemeKey = "";
   const urlAudioMap = new Map();
@@ -706,7 +854,7 @@
       if (event.type !== "error") {
         urlAudioMap.set(audio.src, audio);
       } else {
-        console.log("Could not pre-load: ", audio.src);
+        console.log("[AWBW Improved Music Player] Could not pre-load: ", audio.src);
       }
       if (numLoadedAudios >= audioURLs.size) {
         numLoadedAudios = 0;
@@ -725,18 +873,22 @@
   }
   function playMusicURL(srcURL, startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
-    let currentTheme = urlAudioMap.get(currentThemeKey);
-    let nextTheme = currentTheme;
     if (srcURL !== currentThemeKey) {
       stopThemeSong();
       currentThemeKey = srcURL;
-      if (!urlAudioMap.has(srcURL)) {
-        urlAudioMap.set(srcURL, new Audio(srcURL));
-      }
-      nextTheme = urlAudioMap.get(srcURL);
     }
+    if (!urlAudioMap.has(srcURL)) {
+      let audio = new Audio(srcURL);
+      audio.volume = musicPlayerSettings.volume;
+      audio.loop = true;
+      audio.addEventListener("canplaythrough", (e) => e.target.play(), {
+        once: true,
+      });
+      urlAudioMap.set(srcURL, audio);
+      return;
+    }
+    let nextTheme = urlAudioMap.get(srcURL);
     if (startFromBeginning) nextTheme.currentTime = 0;
-    console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
     nextTheme.volume = musicPlayerSettings.volume;
     nextTheme.loop = true;
     nextTheme.play();
@@ -857,35 +1009,23 @@
     openMenu = (menu, x, y) => {
       ahOpenMenu?.apply(openMenu, [menu, x, y]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Open Menu", menu, x, y);
       let menuOptions = document.getElementsByClassName("menu-option");
       for (var i = 0; i < menuOptions.length; i++) {
         menuOptions[i].addEventListener("mouseenter", (_event) => {
           playSFX(GameSFX.uiMenuMove);
         });
-        menuOptions[i].addEventListener(
-          "click",
-          (_event) => (menuItemClick = MenuClickType.MenuItem),
-        );
+        menuOptions[i].addEventListener("click", (_event) => (menuItemClick = MenuClickType.MenuItem));
       }
       menuOpen = true;
       playSFX(GameSFX.uiMenuOpen);
     };
     closeMenu = () => {
       ahCloseMenu?.apply(closeMenu, []);
-      console.log("CloseMenu", menuOpen, menuItemClick);
       if (!musicPlayerSettings.isPlaying) return;
       let confirmedAction = menuOpen && menuItemClick === MenuClickType.MenuItem;
       let canceledAction = menuOpen && menuItemClick === MenuClickType.None;
       let canceledUnitAction =
         !menuOpen && getCurrentClickData()?.type === "unit" && menuItemClick !== MenuClickType.None;
-      console.log(
-        "Actions",
-        confirmedAction,
-        canceledAction,
-        canceledUnitAction,
-        getCurrentClickData()?.type,
-      );
       if (confirmedAction) {
         menuItemClick = MenuClickType.None;
       } else if (canceledAction || canceledUnitAction) {
@@ -896,7 +1036,6 @@
     unitClickHandler = (clicked) => {
       ahUnitClick?.apply(unitClickHandler, [clicked]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Unit Click", clicked);
       menuItemClick = MenuClickType.Unit;
       playSFX(GameSFX.uiUnitSelect);
     };
@@ -914,7 +1053,6 @@
     };
     animUnit = (path, unitId, unitSpan, unitTeam, viewerTeam, i) => {
       ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
-      console.log("AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
       if (!musicPlayerSettings.isPlaying) return;
       if (!isValidUnit(unitId) || !path || !i) return;
       if (i >= path.length) return;
@@ -940,7 +1078,6 @@
     updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change, delay) => {
       ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Fog", x, y, mType, neighbours, unitVisible, change, delay);
       let unitInfo = getUnitInfoFromCoords(x, y);
       if (!unitInfo) return;
       if (change === "Add") {
@@ -952,7 +1089,6 @@
         ahFire?.apply(actionHandlers.Fire, [response]);
         return;
       }
-      console.log("Fire", response);
       let attackerID = response.copValues.attacker.playerId;
       let defenderID = response.copValues.defender.playerId;
       let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
@@ -982,7 +1118,6 @@
     actionHandlers.AttackSeam = (response) => {
       ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("AttackSeam", response);
       if (gameAnimations) {
         let x = response.seamX;
         let y = response.seamY;
@@ -1023,7 +1158,6 @@
     actionHandlers.Move = (response, loadFlag) => {
       ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Move", response);
       let unitId = response.unit.units_id;
       movementResponseMap.set(unitId, response);
       var movementDist = response.path.length;
@@ -1034,7 +1168,6 @@
     actionHandlers.Capt = (captData) => {
       ahCapt?.apply(actionHandlers.Capt, [captData]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Capt", captData);
       let isValid = captData != undefined;
       if (!isValid) return;
       let finishedCapture = captData.newIncome != null;
@@ -1044,7 +1177,6 @@
       }
       let myID = getMyID();
       let isSpectator = isPlayerSpectator(myID);
-      console.log(isSpectator, captData.buildingInfo.buildings_team, myID);
       let isMyCapture = isSpectator || captData.buildingInfo.buildings_team == myID;
       let sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
       playSFX(sfx);
@@ -1052,7 +1184,6 @@
     actionHandlers.Build = (data) => {
       ahBuild?.apply(actionHandlers.Build, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Build", data);
       let myID = getMyID();
       let isMyBuild = data.newUnit.units_players_id == myID;
       if (!isMyBuild) playSFX(GameSFX.unitSupply);
@@ -1060,59 +1191,50 @@
     actionHandlers.Load = (data) => {
       ahLoad?.apply(actionHandlers.Load, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Load", data);
       playSFX(GameSFX.unitLoad);
     };
     actionHandlers.Unload = (unloadData) => {
       ahUnload?.apply(actionHandlers.Unload, [unloadData]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Unload", unloadData);
       playSFX(GameSFX.unitUnload);
     };
     actionHandlers.Supply = (data) => {
       ahSupply?.apply(actionHandlers.Supply, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Supply", data);
       playSFX(GameSFX.unitSupply);
     };
     actionHandlers.Repair = (data) => {
       ahRepair?.apply(actionHandlers.Repair, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Repair", data);
       playSFX(GameSFX.unitSupply);
     };
     actionHandlers.Hide = (data) => {
       ahHide?.apply(actionHandlers.Hide, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Hide", data);
       playSFX(GameSFX.unitHide);
       stopMovementSound(data.unitId);
     };
     actionHandlers.Unhide = (data) => {
       ahUnhide?.apply(actionHandlers.Unhide, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Unhide", data);
       playSFX(GameSFX.unitUnhide);
       stopMovementSound(data.unitId);
     };
     actionHandlers.Join = (data) => {
       ahJoin?.apply(actionHandlers.Join, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Join", data);
       stopMovementSound(data.joinID);
       stopMovementSound(data.joinedUnit.units_id);
     };
     actionHandlers.Launch = (data) => {
       ahLaunch?.apply(actionHandlers.Launch, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Launch", data);
       playSFX(GameSFX.unitMissileSend);
       setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
     };
     actionHandlers.NextTurn = (data) => {
       ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("NextTurn", data);
       if (data.swapCos) {
         playSFX(GameSFX.tagSwap);
       }
@@ -1121,36 +1243,36 @@
     actionHandlers.Elimination = (data) => {
       ahElimination?.apply(actionHandlers.Elimination, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Elimination", data);
       debugger;
     };
     actionHandlers.Power = (data) => {
       ahPower?.apply(actionHandlers.Power, [data]);
       if (!musicPlayerSettings.isPlaying) return;
-      console.log("Power", data);
-      let coName = data.coName;
-      let isAW1 = musicPlayerSettings.gameType === SettingsGameType.AW1;
+      let coName = data.coName.toLowerCase().replaceAll(" ", "");
       let isBH = isBlackHoleCO(coName);
       let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
-      musicPlayerSettings.themeType = isSuperCOPower
-        ? SettingsThemeType.SUPER_CO_POWER
-        : SettingsThemeType.CO_POWER;
-      if (isAW1) {
-        playSFX(GameSFX.powerActivateAW1COP);
-        stopThemeSong(4500);
-        return;
+      musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
+      switch (musicPlayerSettings.gameType) {
+        case SettingsGameType.AW1:
+          playSFX(GameSFX.powerActivateAW1COP);
+          stopThemeSong(4500);
+          break;
+        case SettingsGameType.AW2:
+        case SettingsGameType.DS:
+          if (isSuperCOPower) {
+            let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+            playSFX(sfx);
+            stopThemeSong(850);
+            break;
+          }
+          let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+          playSFX(sfx);
+          stopThemeSong(500);
+          break;
+        case SettingsGameType.RBC:
+          break;
       }
-      if (isSuperCOPower) {
-        let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-        playSFX(sfx);
-        stopThemeSong(850);
-        return;
-      }
-      let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-      playSFX(sfx);
-      stopThemeSong(500);
       if (coName === "colin") {
-        console.log("Colin's Gold Rush");
         setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
       }
     };
@@ -1161,7 +1283,6 @@
     };
   }
 
-  console.log("Running main script for AWBW Improved Music Player!", musicPlayerSettings);
   musicPlayerUI.addToAWBWPage();
   addGameHandlers();
   preloadAllCommonAudio(() => {

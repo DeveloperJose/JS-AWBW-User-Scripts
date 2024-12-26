@@ -56,19 +56,8 @@ import {
   replayCloseBtn,
   replayDaySelectorCheckBox,
 } from "../shared/awbw_page";
-import {
-  playThemeSong,
-  playSFX,
-  stopMovementSound,
-  playMovementSound,
-  stopThemeSong,
-} from "./music";
-import {
-  getCurrentThemeType,
-  musicPlayerSettings,
-  SettingsGameType,
-  SettingsThemeType,
-} from "./music_settings";
+import { playThemeSong, playSFX, stopMovementSound, playMovementSound, stopThemeSong } from "./music";
+import { getCurrentThemeType, musicPlayerSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
 
@@ -160,7 +149,7 @@ export function addGameHandlers() {
   openMenu = (menu, x, y) => {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Open Menu", menu, x, y);
+    // console.log("Open Menu", menu, x, y);
 
     let menuOptions = document.getElementsByClassName("menu-option");
     for (var i = 0; i < menuOptions.length; i++) {
@@ -168,10 +157,7 @@ export function addGameHandlers() {
         playSFX(GameSFX.uiMenuMove);
       });
 
-      menuOptions[i].addEventListener(
-        "click",
-        (_event) => (menuItemClick = MenuClickType.MenuItem),
-      );
+      menuOptions[i].addEventListener("click", (_event) => (menuItemClick = MenuClickType.MenuItem));
     }
 
     menuOpen = true;
@@ -180,7 +166,7 @@ export function addGameHandlers() {
 
   closeMenu = () => {
     ahCloseMenu?.apply(closeMenu, []);
-    console.log("CloseMenu", menuOpen, menuItemClick);
+    // console.log("CloseMenu", menuOpen, menuItemClick);
     if (!musicPlayerSettings.isPlaying) return;
 
     let confirmedAction = menuOpen && menuItemClick === MenuClickType.MenuItem;
@@ -188,13 +174,13 @@ export function addGameHandlers() {
     let canceledUnitAction =
       !menuOpen && getCurrentClickData()?.type === "unit" && menuItemClick !== MenuClickType.None;
 
-    console.log(
-      "Actions",
-      confirmedAction,
-      canceledAction,
-      canceledUnitAction,
-      getCurrentClickData()?.type,
-    );
+    // console.log(
+    //   "Actions",
+    //   confirmedAction,
+    //   canceledAction,
+    //   canceledUnitAction,
+    //   getCurrentClickData()?.type,
+    // );
 
     if (confirmedAction) {
       // playSFX(GameSFX.uiMenuOpen);
@@ -210,7 +196,7 @@ export function addGameHandlers() {
   unitClickHandler = (clicked) => {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Unit Click", clicked);
+    // console.log("Unit Click", clicked);
 
     menuItemClick = MenuClickType.Unit;
     playSFX(GameSFX.uiUnitSelect);
@@ -234,7 +220,7 @@ export function addGameHandlers() {
 
   animUnit = (path, unitId, unitSpan, unitTeam, viewerTeam, i) => {
     ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
-    console.log("AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
+    // console.log("AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
 
     if (!musicPlayerSettings.isPlaying) return;
     // Only check if valid
@@ -271,7 +257,7 @@ export function addGameHandlers() {
   updateAirUnitFogOnMove = (x, y, mType, neighbours, unitVisible, change, delay) => {
     ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Fog", x, y, mType, neighbours, unitVisible, change, delay);
+    // console.log("Fog", x, y, mType, neighbours, unitVisible, change, delay);
 
     let unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
@@ -286,7 +272,7 @@ export function addGameHandlers() {
       ahFire?.apply(actionHandlers.Fire, [response]);
       return;
     }
-    console.log("Fire", response);
+    // console.log("Fire", response);
 
     let attackerID = response.copValues.attacker.playerId;
     let defenderID = response.copValues.defender.playerId;
@@ -334,7 +320,7 @@ export function addGameHandlers() {
   actionHandlers.AttackSeam = (response) => {
     ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("AttackSeam", response);
+    // console.log("AttackSeam", response);
 
     // Pipe wiggle animation
     if (gameAnimations) {
@@ -382,7 +368,7 @@ export function addGameHandlers() {
   actionHandlers.Move = (response, loadFlag) => {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Move", response);
+    // console.log("Move", response);
 
     let unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
@@ -396,7 +382,7 @@ export function addGameHandlers() {
   actionHandlers.Capt = (captData) => {
     ahCapt?.apply(actionHandlers.Capt, [captData]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Capt", captData);
+    //console.log("Capt", captData);
 
     let isValid = captData != undefined;
     if (!isValid) return;
@@ -411,7 +397,7 @@ export function addGameHandlers() {
     // The unit is done capping this property
     let myID = getMyID();
     let isSpectator = isPlayerSpectator(myID);
-    console.log(isSpectator, captData.buildingInfo.buildings_team, myID);
+    //console.log(isSpectator, captData.buildingInfo.buildings_team, myID);
     // buildings_team (string) == id (number)
     let isMyCapture = isSpectator || captData.buildingInfo.buildings_team == myID;
     let sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
@@ -421,7 +407,7 @@ export function addGameHandlers() {
   actionHandlers.Build = (data) => {
     ahBuild?.apply(actionHandlers.Build, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Build", data);
+    //console.log("Build", data);
 
     let myID = getMyID();
     let isMyBuild = data.newUnit.units_players_id == myID;
@@ -431,21 +417,21 @@ export function addGameHandlers() {
   actionHandlers.Load = (data) => {
     ahLoad?.apply(actionHandlers.Load, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Load", data);
+    //console.log("Load", data);
     playSFX(GameSFX.unitLoad);
   };
 
   actionHandlers.Unload = (unloadData) => {
     ahUnload?.apply(actionHandlers.Unload, [unloadData]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Unload", unloadData);
+    //console.log("Unload", unloadData);
     playSFX(GameSFX.unitUnload);
   };
 
   actionHandlers.Supply = (data) => {
     ahSupply?.apply(actionHandlers.Supply, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Supply", data);
+    //console.log("Supply", data);
 
     // We could play the sfx for each supplied unit in the list
     // but instead we decided to play the supply sound once.
@@ -455,14 +441,14 @@ export function addGameHandlers() {
   actionHandlers.Repair = (data) => {
     ahRepair?.apply(actionHandlers.Repair, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Repair", data);
+    //console.log("Repair", data);
     playSFX(GameSFX.unitSupply);
   };
 
   actionHandlers.Hide = (data) => {
     ahHide?.apply(actionHandlers.Hide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Hide", data);
+    //console.log("Hide", data);
     playSFX(GameSFX.unitHide);
     stopMovementSound(data.unitId);
   };
@@ -470,7 +456,7 @@ export function addGameHandlers() {
   actionHandlers.Unhide = (data) => {
     ahUnhide?.apply(actionHandlers.Unhide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Unhide", data);
+    //console.log("Unhide", data);
     playSFX(GameSFX.unitUnhide);
     stopMovementSound(data.unitId);
   };
@@ -478,7 +464,7 @@ export function addGameHandlers() {
   actionHandlers.Join = (data) => {
     ahJoin?.apply(actionHandlers.Join, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Join", data);
+    //console.log("Join", data);
     stopMovementSound(data.joinID);
     stopMovementSound(data.joinedUnit.units_id);
   };
@@ -486,7 +472,7 @@ export function addGameHandlers() {
   actionHandlers.Launch = (data) => {
     ahLaunch?.apply(actionHandlers.Launch, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Launch", data);
+    //console.log("Launch", data);
 
     playSFX(GameSFX.unitMissileSend);
     setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
@@ -495,7 +481,7 @@ export function addGameHandlers() {
   actionHandlers.NextTurn = (data) => {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("NextTurn", data);
+    //console.log("NextTurn", data);
 
     // COs performed a tag and swapped
     if (data.swapCos) {
@@ -508,7 +494,7 @@ export function addGameHandlers() {
   actionHandlers.Elimination = (data) => {
     ahElimination?.apply(actionHandlers.Elimination, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Elimination", data);
+    //console.log("Elimination", data);
 
     debugger;
   };
@@ -516,41 +502,43 @@ export function addGameHandlers() {
   actionHandlers.Power = (data) => {
     ahPower?.apply(actionHandlers.Power, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.log("Power", data);
+    //console.log("Power", data);
 
-    let coName = data.coName;
-    let isAW1 = musicPlayerSettings.gameType === SettingsGameType.AW1;
+    // Match name to our internal name format
+    let coName = data.coName.toLowerCase().replaceAll(" ", "");
     let isBH = isBlackHoleCO(coName);
     let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
     // Update the theme type
-    musicPlayerSettings.themeType = isSuperCOPower
-      ? SettingsThemeType.SUPER_CO_POWER
-      : SettingsThemeType.CO_POWER;
+    musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
 
-    // Advance Wars 1 will use the same sound for both CO and Super CO power activations
-    if (isAW1) {
-      playSFX(GameSFX.powerActivateAW1COP);
-      stopThemeSong(4500);
-      return;
+    switch (musicPlayerSettings.gameType) {
+      case SettingsGameType.AW1:
+        // Advance Wars 1 will use the same sound for both CO and Super CO power activations
+        playSFX(GameSFX.powerActivateAW1COP);
+        stopThemeSong(4500);
+        break;
+      case SettingsGameType.AW2:
+      case SettingsGameType.DS:
+        // Super CO Power
+        if (isSuperCOPower) {
+          let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+          playSFX(sfx);
+          stopThemeSong(850);
+          break;
+        }
+        // Regular CO Power
+        let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+        playSFX(sfx);
+        stopThemeSong(500);
+        break;
+      case SettingsGameType.RBC:
+        break;
     }
-
-    // Super CO Power
-    if (isSuperCOPower) {
-      let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-      playSFX(sfx);
-      stopThemeSong(850);
-      return;
-    }
-
-    // Regular CO Power
-    let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-    playSFX(sfx);
-    stopThemeSong(500);
 
     // Colin's gold rush SFX
     if (coName === "colin") {
-      console.log("Colin's Gold Rush");
+      //console.log("Colin's Gold Rush");
       setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
     }
   };

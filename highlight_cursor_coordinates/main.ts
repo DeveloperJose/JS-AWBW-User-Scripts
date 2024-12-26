@@ -3,14 +3,7 @@
  */
 import { mapRows, mapCols } from "../shared/awbw_globals";
 import { ahCursorMove } from "../shared/awbw_handlers";
-import {
-  gamemap,
-  gamemapContainer,
-  zoomInBtn,
-  zoomOutBtn,
-  zoomLevel,
-  cursor,
-} from "../shared/awbw_page";
+import { gamemap, gamemapContainer, zoomInBtn, zoomOutBtn, zoomLevel, cursor } from "../shared/awbw_page";
 import { maximizeBtn } from "../shared/other_userscripts";
 
 /********************** Script Variables ***********************/

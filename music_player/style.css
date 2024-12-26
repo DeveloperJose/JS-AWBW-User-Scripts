@@ -1,76 +1,79 @@
 /* Context Menu */
-.cls-context-menu-link {
-  display: block;
-  padding: 20px;
-  background: #ececec;
-}
-
 .cls-context-menu {
-  position: absolute;
-  display: none;
-  width: 175px;
-  height: 347px;
-  padding-top: 4px;
+  /* display: none; */
+  display: flex;
+  top: 40px;
+  flex-direction: column;
+  width: 275px;
 }
 
-.cls-context-menu ul,
-#context-menu li {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  background: white;
+.cls-context-menu label {
+  width: 100%;
+  font-size: 14px;
+  background-color: #dedede;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
-.cls-context-menu {
-  border: 1px solid #888888 !important;
-}
-.cls-context-menu li {
-  border: 1px solid #888888;
-}
-.cls-context-menu li:last-child {
-  border: none;
-}
-.cls-context-menu li a {
-  display: block;
-  padding: 5px 10px;
-  text-decoration: none;
-  color: blue;
-}
-.cls-context-menu li a:hover {
-  background: blue;
-  color: #fff;
+.cls-context-menu .cls-horizontal-box {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-/* Input Range */
-:root {
+.cls-context-menu .cls-vertical-box label {
+  background-color: white;
+  font-size: 12px;
+}
+
+.cls-context-menu .cls-vertical-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding-left: 5px;
+  padding-right: 5px;
+  width: 100%;
+}
+
+.cls-context-menu image {
+  vertical-align: middle;
+}
+
+.cls-context-menu label[id$="version"] {
+  width: 100%;
+  font-size: 9px;
+  color: #888888;
+  background-color: #f0f0f0;
+}
+
+/* :root {
   --shadow-len: -60px;
 }
-input[type="range"] {
-  margin: auto;
-  -webkit-appearance: none;
-  position: relative;
-  overflow: hidden;
+
+::-moz-range-thumb, ::-webkit-slider-thumb {
+  width: 20px;
   height: 25px;
-  cursor: pointer;
-  border-radius: 0; /* iOS */
-}
+  background: #fff;
+  box-shadow: -200px 0 0 200px #0066cc;
+  border: 2px solid #888888;
+  clip-path: inset(0px 0px 0px let(--shadow-len));
+} */
+
+/*
 
 ::-webkit-slider-runnable-track {
   background: #ddd;
 }
 
-/*
-     * 1. Set to 0 width and remove border for a slider without a thumb
-     * 2. Shadow is negative the full width of the input and has a spread
-     *    of the width of the input.
-     */
 ::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 20px; /* 1 */
+  width: 20px;
   height: 25px;
   background: #fff;
-  box-shadow: -200px 0 0 200px #0066cc; /* 2 */
-  border: 2px solid #888888; /* 1 */
+  box-shadow: -200px 0 0 200px #0066cc;
+  border: 2px solid #888888;
   clip-path: inset(0px 0px 0px let(--shadow-len));
 }
 
@@ -121,6 +124,48 @@ input[type="range"] {
   display: none;
 }
 
+
+.cls-context-menu-link {
+  display: block;
+  padding: 20px;
+  background: #ececec;
+}
+
+.cls-context-menu ul,
+#context-menu li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+.cls-context-menu {
+  border: 1px solid #888888 !important;
+}
+.cls-context-menu li {
+  border: 1px solid #888888;
+}
+.cls-context-menu li:last-child {
+  border: none;
+}
+.cls-context-menu li a {
+  display: block;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: blue;
+}
+.cls-context-menu li a:hover {
+  background: blue;
+  color: #fff;
+}
+
+*/
+/* Input Range */
+/* 
+
+
+
+
 .theme-radio-btn {
   height: 14px;
   width: 14px;
@@ -167,4 +212,4 @@ input[type="range"] {
   color: #0066cc;
   font-weight: bold;
   text-decoration: underline;
-}
+} */

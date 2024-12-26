@@ -9,21 +9,17 @@
 
 // Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";
+import "./style_sliders.css";
 
 import { musicPlayerUI } from "./music_player_menu";
 import { preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
-import {
-  getCurrentThemeType,
-  loadSettingsFromLocalStorage,
-  musicPlayerSettings,
-} from "./music_settings";
+import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
 import { addGameHandlers } from "./handlers";
 import { isMapEditor } from "../shared/awbw_page";
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-console.log("Running main script for AWBW Improved Music Player!", musicPlayerSettings);
 musicPlayerUI.addToAWBWPage();
 addGameHandlers();
 

@@ -1,0 +1,52 @@
+/* 
+ * CSS Custom Range Slider
+ * https://www.sitepoint.com/css-custom-range-slider/ 
+ */
+
+.cls-context-menu input[type="range"] {
+  --c: rgb(73, 140, 208); /* active color */
+  --l: 15px; /* line thickness*/
+  --h: 30px; /* thumb height */
+  --w: 20px; /* thumb width */
+
+  width: 90%;
+  height: var(--h); /* needed for Firefox*/
+  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  display: inline-block;
+}
+.cls-context-menu input:focus-visible,
+.cls-context-menu input:hover {
+  --p: 25%;
+}
+
+/* chromium */
+.cls-context-menu input[type="range" i]::-webkit-slider-thumb {
+  height: var(--h);
+  width: var(--w);
+  background: var(--_c);
+  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: 0.3s;
+}
+/* Firefox */
+.cls-context-menu input[type="range"]::-moz-range-thumb {
+  height: var(--h);
+  width: var(--w);
+  background: var(--_c);
+  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: 0.3s;
+}
+@supports not (color: color-mix(in srgb, red, red)) {
+  .cls-context-menu input {
+    --_c: var(--c);
+  }
+}

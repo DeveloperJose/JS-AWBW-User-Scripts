@@ -274,7 +274,7 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction: () => void)
     if (event.type !== "error") {
       urlAudioMap.set(audio.src, audio);
     } else {
-      console.log("Could not pre-load: ", audio.src);
+      console.log("[AWBW Improved Music Player] Could not pre-load: ", audio.src);
     }
 
     // All the audio from the list has been loaded
@@ -306,28 +306,31 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction: () => void)
 function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   if (!musicPlayerSettings.isPlaying) return;
 
-  // We want to play the same song we already are playing
-  let currentTheme = urlAudioMap.get(currentThemeKey);
-  let nextTheme = currentTheme;
+  // We want to play a new song, so pause the previous one and mark it as the current song
   if (srcURL !== currentThemeKey) {
-    // We want to play a new song, so pause the previous one
     stopThemeSong();
-
-    // This is now the current song
     currentThemeKey = srcURL;
-
-    // The song isn't preloaded
-    if (!urlAudioMap.has(srcURL)) {
-      urlAudioMap.set(srcURL, new Audio(srcURL));
-    }
-    nextTheme = urlAudioMap.get(srcURL);
   }
+
+  // The song isn't preloaded
+  if (!urlAudioMap.has(srcURL)) {
+    let audio = new Audio(srcURL);
+    audio.volume = musicPlayerSettings.volume;
+    audio.loop = true;
+    audio.addEventListener("canplaythrough", (e) => (e.target as HTMLAudioElement).play(), {
+      once: true,
+    });
+    urlAudioMap.set(srcURL, audio);
+    return;
+  }
+
+  let nextTheme = urlAudioMap.get(srcURL);
 
   // Restart the song if requested
   if (startFromBeginning) nextTheme.currentTime = 0;
 
   // Play the song
-  console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
+  // console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
   nextTheme.volume = musicPlayerSettings.volume;
   nextTheme.loop = true;
   nextTheme.play();

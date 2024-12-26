@@ -3,12 +3,7 @@
  */
 import { isBlackHoleCO } from "../shared/awbw_globals";
 import { isMapEditor } from "../shared/awbw_page";
-import {
-  SettingsGameType,
-  SettingsThemeType,
-  getCurrentThemeType,
-  musicPlayerSettings,
-} from "./music_settings";
+import { SettingsGameType, SettingsThemeType, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
 /**
  * Base URL where all the files needed for this script are located.
@@ -163,26 +158,21 @@ const onMovementRolloffMap = new Map([
 const alternateThemes = new Map([
   [SettingsGameType.AW1, new Set(["sturm", "vonbolt"])],
   [SettingsGameType.AW2, new Set(["sturm", "vonbolt"])],
-  [
-    SettingsGameType.AW_RBC,
-    new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"]),
-  ],
-  [SettingsGameType.AW_DS, new Set(["sturm", "vonbolt"])],
+  [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"])],
+  [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
 ]);
 
-function getAlternateMusicFilename(
-  coName: string,
-  gameType: SettingsGameType,
-  themeType: SettingsThemeType,
-) {
+function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
   // Check if this CO has an alternate theme
-  coName = coName.toLowerCase();
+  if (!alternateThemes.has(gameType)) {
+    console.log("ERROR: getAlternate()", gameType, "not found in alternateThemes");
+  }
   let alternateThemesSet = alternateThemes.get(gameType);
   let faction = isBlackHoleCO(coName) ? "bh" : "ally";
 
   // RBC individual CO power themes -> RBC shared factory themes
   let isPowerActive = themeType !== SettingsThemeType.REGULAR;
-  if (gameType === SettingsGameType.AW_RBC && isPowerActive) {
+  if (gameType === SettingsGameType.RBC && isPowerActive) {
     return `t-${faction}-${themeType}`;
   }
 
@@ -192,7 +182,7 @@ function getAlternateMusicFilename(
   }
 
   // Andy -> Clone Andy
-  if (coName === "andy" && gameType == SettingsGameType.AW_RBC) {
+  if (coName === "andy" && gameType == SettingsGameType.RBC) {
     return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
   }
 
@@ -207,11 +197,7 @@ function getAlternateMusicFilename(
  * @param themeType - Which type of music whether regular or power.
  * @returns - The filename of the music to play given the parameters.
  */
-function getMusicFilename(
-  coName: string,
-  gameType: SettingsGameType,
-  themeType: SettingsThemeType,
-) {
+function getMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
   // Check if we want to play the map editor theme
   if (coName === "map-editor") return "t-map-editor";
 
@@ -229,7 +215,7 @@ function getMusicFilename(
   }
 
   // For RBC, we play the new power themes
-  if (gameType === SettingsGameType.AW_RBC) {
+  if (gameType === SettingsGameType.RBC) {
     return `t-${coName}-cop`;
   }
   // For all other games, play the ally or black hole themes during the CO and Super CO powers
@@ -246,15 +232,15 @@ function getMusicFilename(
  * @param themeType - (Optional) Which type of music to use whether regular or power.
  * @returns - The complete URL of the music to play given the parameters.
  */
-export function getMusicURL(
-  coName: string,
-  gameType: SettingsGameType = null,
-  themeType: SettingsThemeType = null,
-) {
+export function getMusicURL(coName: string, gameType: SettingsGameType = null, themeType: SettingsThemeType = null) {
   if (gameType === null) gameType = musicPlayerSettings.gameType;
   if (themeType === null) themeType = musicPlayerSettings.themeType;
 
-  let gameDir = gameType;
+  let gameDir = gameType as string;
+  if (!gameDir.startsWith("AW")) {
+    gameDir = "AW_" + gameDir;
+  }
+
   let filename = getMusicFilename(coName, gameType, themeType);
   let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");

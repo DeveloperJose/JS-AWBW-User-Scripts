@@ -78,10 +78,7 @@ export function moveDivToOffset(
     return;
   }
 
-  setTimeout(
-    () => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations),
-    moveAnimationDelayMS,
-  );
+  setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations), moveAnimationDelayMS);
   let left = parseFloat(div.style.left);
   let top = parseFloat(div.style.top);
   left += dx;
