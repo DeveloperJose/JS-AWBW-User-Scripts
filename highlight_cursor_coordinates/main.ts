@@ -2,6 +2,7 @@
  * @file Main script that loads everything for the AWBW Highlight Cursor Coordinates userscript.
  */
 import { mapRows, mapCols } from "../shared/awbw_globals";
+import { ahCursorMove } from "../shared/awbw_handlers";
 import {
   gamemap,
   gamemapContainer,
@@ -14,9 +15,12 @@ import { maximizeBtn } from "../shared/other_userscripts";
 
 /********************** Script Variables ***********************/
 const CURSOR_THRESHOLD_MS = 30;
+const FONT_SIZE = 9;
 let previousHighlight: HTMLElement[] = [];
 let isMaximizeToggled = false;
 let lastCursorCall = Date.now();
+let lastCursorX = -1;
+let lastCursorY = -1;
 
 let spotSpanTemplate = document.createElement("span");
 spotSpanTemplate.style.width = "16px";
@@ -25,12 +29,18 @@ spotSpanTemplate.style.left = "-16px";
 spotSpanTemplate.style.top = mapRows * 16 + "px";
 spotSpanTemplate.style.fontFamily = "monospace";
 spotSpanTemplate.style.position = "absolute";
-spotSpanTemplate.style.fontSize = "11px";
+spotSpanTemplate.style.fontSize = FONT_SIZE + "px";
 spotSpanTemplate.style.zIndex = "100";
+spotSpanTemplate.style.alignContent = "center";
+// spotSpanTemplate.style.backgroundImage = "url(https://awbw.amarriner.com/terrain/ani/plain.gif)";
 // spotSpanTemplate.style.visibility = "hidden";
 
 /********************** Script Functions **********************/
 function setHighlight(node: HTMLElement, highlight: boolean) {
+  if (!node) {
+    console.log("[AWBW Highlight Cursor Coordinates] Node is null, something isn't right.");
+    return;
+  }
   let fontWeight = "";
   let color = "";
   let backgroundColor = "";
@@ -56,34 +66,37 @@ function onZoomChangeEvent(_event: MouseEvent, zoom: number = -1) {
 }
 
 /********************** Intercepted Action Handlers ***********************/
-let oldUpdateCursor = updateCursor;
-
-updateCursor = function () {
-  oldUpdateCursor.apply(updateCursor, arguments);
-
-  if (Date.now() - lastCursorCall <= CURSOR_THRESHOLD_MS) {
-    lastCursorCall = Date.now();
-    return;
-  }
+updateCursor = (cursorX, cursorY) => {
+  ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
 
   // Get cursor row and column indices then the span
   let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
   let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
   let highlightRow = document.getElementById("grid-spot-row-" + cursorRow);
   let highlightCol = document.getElementById("grid-spot-col-" + cursorCol);
+  let dx = Math.abs(cursorX - lastCursorX);
+  let dy = Math.abs(cursorY - lastCursorY);
+  let cursorMoved = dx >= 1 || dy >= 1;
+  let timeSinceLastCursorCall = Date.now() - lastCursorCall;
 
-  // Remove highlight for previous
-  if (previousHighlight != null) {
-    setHighlight(previousHighlight[0], false);
-    setHighlight(previousHighlight[1], false);
+  // Don't play the sound if we moved the cursor too quickly
+  if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
+
+  if (cursorMoved) {
+    // Remove highlight for previous
+    if (previousHighlight.length > 0) {
+      setHighlight(previousHighlight[0], false);
+      setHighlight(previousHighlight[1], false);
+    }
+
+    // Highlight current
+    setHighlight(highlightRow, true);
+    setHighlight(highlightCol, true);
+    previousHighlight = [highlightRow, highlightCol];
+    lastCursorCall = Date.now();
   }
-
-  // Highlight current
-  setHighlight(highlightRow, true);
-  setHighlight(highlightCol, true);
-  previousHighlight = [highlightRow, highlightCol];
-
-  lastCursorCall = Date.now();
+  lastCursorX = cursorX;
+  lastCursorY = cursorY;
 };
 
 /******************************************************************
@@ -120,7 +133,7 @@ for (let row = 0; row < mapRows; row++) {
   let spotSpan = spotSpanTemplate.cloneNode(true) as HTMLSpanElement;
   spotSpan.id = "grid-spot-row-" + row;
   spotSpan.style.top = row * 16 + "px";
-  spotSpan.textContent = row.toString();
+  spotSpan.textContent = row.toString().padStart(2, "0");
   gamemap.appendChild(spotSpan);
 }
 
@@ -128,7 +141,7 @@ for (let col = 0; col < mapCols; col++) {
   let spotSpan = spotSpanTemplate.cloneNode(true) as HTMLSpanElement;
   spotSpan.id = "grid-spot-col-" + col;
   spotSpan.style.left = col * 16 + "px";
-  spotSpan.textContent = col.toString();
+  spotSpan.textContent = col.toString().padStart(2, "0");
   gamemap.appendChild(spotSpan);
 }
 
