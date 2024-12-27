@@ -84,13 +84,13 @@ enum InputName {
 
 enum InputDescription {
   Volume = "Adjust the volume of the CO theme music.",
-  SFX_Volume = "Adjust the volume of the unit movement and CO power sound effects.",
-  UI_Volume = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, selecting units.",
+  SFX_Volume = "Adjust the volume of the unit movement, CO power, and other misc. sound effects.",
+  UI_Volume = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
   Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
-  AW1 = "Play the GBA Advance Wars 1 soundtrack.",
-  AW2 = "Play the GBA Advance Wars 2 soundtrack.",
-  DS = "Play the Nintendo DS Advance Wars: Dual Strike soundtrack.",
-  RBC = "Play the Nintendo Switch Advance Wars: Re-Boot Camp soundtrack.",
+  AW1 = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!",
+  AW2 = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.",
+  DS = "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.",
+  RBC = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!",
   Normal_Themes = "Play the music depending on who the current CO is.",
   Random_Themes = "Play random music every turn.",
 }
