@@ -1,7 +1,7 @@
 /**
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
-import { getCurrentGameDay } from "../shared/awbw_game";
+import { getAllPlayingCONames, getCurrentGameDay } from "../shared/awbw_game";
 import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
 import { SettingsGameType, SettingsThemeType, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
@@ -211,12 +211,16 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
  * @param themeType - Which type of music whether regular or power.
  * @returns - The filename of the music to play given the parameters.
  */
-function getMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
+function getMusicFilename(
+  coName: string,
+  gameType: SettingsGameType,
+  themeType: SettingsThemeType,
+  useAlternateTheme: boolean,
+) {
   // Check if we want to play the map editor theme
   if (coName === "map-editor") return "t-map-editor";
 
   // Check if we need to play an alternate theme
-  let useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
   if (useAlternateTheme) {
     let alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
     if (alternateFilename) return alternateFilename;
@@ -245,22 +249,32 @@ function getMusicFilename(coName: string, gameType: SettingsGameType, themeType:
  * @param coName - Name of the CO whose music to use.
  * @param gameType - (Optional) Which game soundtrack to use.
  * @param themeType - (Optional) Which type of music to use whether regular or power.
+ * @param useAlternateTheme - (Optional) Whether to use the alternate theme for the given CO.
  * @returns - The complete URL of the music to play given the parameters.
  */
-export function getMusicURL(coName: string, gameType?: SettingsGameType, themeType?: SettingsThemeType) {
+export function getMusicURL(
+  coName: string,
+  gameType?: SettingsGameType,
+  themeType?: SettingsThemeType,
+  useAlternateTheme?: boolean,
+) {
   if (!gameType) gameType = musicPlayerSettings.gameType;
   if (!themeType) themeType = musicPlayerSettings.themeType;
+  if (!useAlternateTheme) useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
 
   // Check if we want to play the victory or defeat theme
   if (coName === "victory") return VICTORY_THEME_URL;
   if (coName === "defeat") return DEFEAT_THEME_URL;
+
+  // Convert name to internal format
+  coName = coName.toLowerCase().replaceAll(" ", "");
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) {
     gameDir = "AW_" + gameDir;
   }
 
-  let filename = getMusicFilename(coName, gameType, themeType);
+  let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
   let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
 }
@@ -299,6 +313,21 @@ export function getMovementRollOffURL(unitName: string) {
  */
 export function hasMovementRollOff(unitName: string) {
   return onMovementRolloffMap.has(unitName);
+}
+
+/**
+ * Gets the URL for the themes of all the current COs in the game.
+ */
+export function getAllCurrentThemes(): Set<string> {
+  let coNames = getAllPlayingCONames();
+  let audioList = new Set<string>();
+  // Get the regular theme and the alternates if there are any
+  coNames.forEach((name) => {
+    audioList.add(getMusicURL(name));
+    audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true));
+  });
+
+  return audioList;
 }
 
 /**

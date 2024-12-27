@@ -159,8 +159,10 @@ function addMapEditorHandlers() {
 function refreshMusic(playDelayMS = 0) {
   visibilityMap.clear();
   musicPlayerSettings.currentRandomCO = getRandomCO();
-  musicPlayerSettings.themeType = getCurrentThemeType();
-  setTimeout(playThemeSong, playDelayMS);
+  setTimeout(() => {
+    musicPlayerSettings.themeType = getCurrentThemeType();
+    playThemeSong();
+  }, playDelayMS);
 }
 
 /**
@@ -176,12 +178,12 @@ function addReplayHandlers() {
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
   // Keep the music in sync when moving one step at a time
-  const replaySyncMusic = () => setTimeout(playThemeSong, 500);
-  replayBackwardActionBtn.addEventListener("click", replaySyncMusic);
-  replayForwardActionBtn.addEventListener("click", replaySyncMusic);
+  // const replaySyncMusic = () => setTimeout(playThemeSong, 500);
+  const replayChangeTurn = () => refreshMusic(500);
+  replayBackwardActionBtn.addEventListener("click", replayChangeTurn);
+  replayForwardActionBtn.addEventListener("click", replayChangeTurn);
 
   // This makes sure when randomizing the COs, the music changes as well
-  const replayChangeTurn = () => refreshMusic(500);
   replayForwardBtn.addEventListener("click", replayChangeTurn);
   replayBackwardBtn.addEventListener("click", replayChangeTurn);
   replayOpenBtn.addEventListener("click", replayChangeTurn);
@@ -245,7 +247,7 @@ function onCursorMove(cursorX: number, cursorY: number) {
 function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
   ahOpenMenu?.apply(openMenu, [menu, x, y]);
   if (!musicPlayerSettings.isPlaying) return;
-  console.debug("[MP] Open Menu", menu, x, y);
+  // console.debug("[MP] Open Menu", menu, x, y);
 
   menuOpen = true;
   playSFX(GameSFX.uiMenuOpen);
@@ -263,7 +265,11 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
 function onCloseMenu() {
   ahCloseMenu?.apply(closeMenu, []);
   if (!musicPlayerSettings.isPlaying) return;
-  console.debug("[MP] CloseMenu", menuOpen);
+  // console.debug("[MP] CloseMenu", menuOpen);
+
+  if (menuOpen) {
+    playSFX(GameSFX.uiMenuClose);
+  }
 
   // let confirmedAction = menuOpen && menuItemClick === MenuClickType.MenuItem;
   // let canceledAction = menuOpen && menuItemClick === MenuClickType.None;
@@ -289,7 +295,7 @@ function onCloseMenu() {
 function onUnitClick(clicked: any) {
   ahUnitClick?.apply(unitClickHandler, [clicked]);
   if (!musicPlayerSettings.isPlaying) return;
-  console.debug("[MP] Unit Click", clicked);
+  // console.debug("[MP] Unit Click", clicked);
 
   menuItemClick = MenuClickType.Unit;
   playSFX(GameSFX.uiUnitSelect);
@@ -416,45 +422,55 @@ function onFire(response: FireResponse) {
   }, delay);
 }
 
+/**
+ * Moves a div back and forth to create a wiggle effect.
+ * @param div - The div to wiggle.
+ * @param startDelay - The delay in milliseconds before the wiggle starts.
+ */
+function wiggleTile(div: HTMLDivElement, startDelay = 0) {
+  let stepsX = 12;
+  let stepsY = 4;
+  let deltaX = 0.2;
+  let deltaY = 0.05;
+  let wiggleAnimation = () => {
+    moveDivToOffset(
+      div,
+      deltaX,
+      0,
+      stepsX,
+      { then: [0, -deltaY, stepsY] },
+      { then: [-deltaX * 2, 0, stepsX] },
+      { then: [deltaX * 2, 0, stepsX] },
+      { then: [0, -deltaY, stepsY] },
+      { then: [-deltaX * 2, 0, stepsX] },
+      { then: [deltaX * 2, 0, stepsX] },
+      { then: [0, deltaY, stepsY] },
+      { then: [-deltaX * 2, 0, stepsX] },
+      { then: [deltaX, 0, stepsX] },
+      { then: [0, deltaY, stepsY] },
+    );
+  };
+  setTimeout(wiggleAnimation, startDelay);
+}
+
 function onAttackSeam(response: SeamResponse) {
   ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] AttackSeam", response);
+  let seamWasDestroyed = response.seamHp <= 0;
 
   // Pipe wiggle animation
   if (areAnimationsEnabled()) {
     let x = response.seamX;
     let y = response.seamY;
-    if (!isValidBuilding(x, y)) return;
-
     let pipeSeamInfo = getBuildingInfo(x, y);
     let pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
-    let stepsX = 12;
-    let stepsY = 4;
-    let deltaX = 0.2;
-    let deltaY = 0.05;
-    let wiggleAnimation = () => {
-      moveDivToOffset(
-        pipeSeamDiv,
-        deltaX,
-        0,
-        stepsX,
-        { then: [0, -deltaY, stepsY] },
-        { then: [-deltaX * 2, 0, stepsX] },
-        { then: [deltaX * 2, 0, stepsX] },
-        { then: [0, -deltaY, stepsY] },
-        { then: [-deltaX * 2, 0, stepsX] },
-        { then: [deltaX * 2, 0, stepsX] },
-        { then: [0, deltaY, stepsY] },
-        { then: [-deltaX * 2, 0, stepsX] },
-        { then: [deltaX, 0, stepsX] },
-        { then: [0, deltaY, stepsY] },
-      );
-    };
+
     // Subtract how long the wiggle takes so it matches the sound a bit better
-    setTimeout(wiggleAnimation, attackDelayMS);
+    let wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
+    wiggleTile(pipeSeamDiv, wiggleDelay);
   }
-  if (response.seamHp <= 0) {
+  if (seamWasDestroyed) {
     playSFX(GameSFX.unitAttackPipeSeam);
     playSFX(GameSFX.unitExplode);
     return;
@@ -599,10 +615,11 @@ function onPower(data: PowerData) {
   if (!musicPlayerSettings.isPlaying) return;
   //console.debug("[MP] Power", data);
 
-  // Match name to our internal name format
-  let coName = data.coName.toLowerCase().replaceAll(" ", "");
+  // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
+  let coName = data.coName;
   let isBH = isBlackHoleCO(coName);
   let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
+
   // Update the theme type
   musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
   switch (musicPlayerSettings.gameType) {
@@ -613,23 +630,22 @@ function onPower(data: PowerData) {
       return;
     case SettingsGameType.AW2:
     case SettingsGameType.DS:
+    case SettingsGameType.RBC:
       // Super CO Power
       if (isSuperCOPower) {
         let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
         playSFX(sfx);
-        stopThemeSong(850);
+        stopThemeSong(950);
         break;
       }
       // Regular CO Power
       let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
       playSFX(sfx);
-      stopThemeSong(500);
-      break;
-    case SettingsGameType.RBC:
+      stopThemeSong(1100);
       break;
   }
   // Colin's gold rush SFX for AW2, DS, and RBC
-  if (coName === "colin") {
+  if (coName === "Colin" && !isSuperCOPower) {
     setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
   }
 }

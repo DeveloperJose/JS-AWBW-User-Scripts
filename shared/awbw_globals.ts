@@ -80,7 +80,9 @@ export function areAnimationsEnabled() {
  * @returns - True if the given CO is part of Black Hole.
  */
 export function isBlackHoleCO(coName: string) {
-  return BLACK_HOLE_COs.has(coName.toLowerCase());
+  // Convert to internal format just in case
+  coName = coName.toLowerCase().replaceAll(" ", "");
+  return BLACK_HOLE_COs.has(coName);
 }
 
 /**

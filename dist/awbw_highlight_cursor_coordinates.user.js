@@ -78,7 +78,7 @@
   spotSpanTemplate.style.alignContent = "center";
   function setHighlight(node, highlight) {
     if (!node) {
-      console.log("[AWBW Highlight Cursor Coordinates] Node is null, something isn't right.");
+      console.error("[AWBW Highlight Cursor Coordinates] Node is null, something isn't right.");
       return;
     }
     let fontWeight = "";
@@ -116,7 +116,7 @@
     let cursorMoved = dx >= 1 || dy >= 1;
     let timeSinceLastCursorCall = Date.now() - lastCursorCall;
     if (!highlightRow || !highlightCol) {
-      console.log("[AWBW Highlight Cursor Coordinates] Highlight row or column is null, something isn't right.");
+      console.error("[AWBW Highlight Cursor Coordinates] Highlight row or column is null, something isn't right.");
       return;
     }
     if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;

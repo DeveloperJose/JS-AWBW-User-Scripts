@@ -21,6 +21,11 @@ export class CustomMenuSettingsUI {
   menuElements: Map<string, HTMLElement> = new Map();
 
   /**
+   * An array of all the input elements in the menu.
+   */
+  inputElements: Array<HTMLInputElement> = [];
+
+  /**
    * A boolean that represents whether the settings menu is open or not.
    */
   private isSettingsMenuOpen = false;
@@ -31,6 +36,11 @@ export class CustomMenuSettingsUI {
   private prefix = "";
 
   /**
+   * Text to be displayed when hovering over the main button.
+   */
+  private parentHoverText = "";
+
+  /**
    * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
    * @param prefix - A string used to prefix the IDs of the elements in the menu.
    * @param buttonImageURL - The URL of the image to be used as the button.
@@ -38,6 +48,8 @@ export class CustomMenuSettingsUI {
    */
   constructor(prefix: string, buttonImageURL: string, hoverText = "") {
     this.prefix = prefix;
+    this.parentHoverText = hoverText;
+
     this.root = document.createElement("div");
     this.root.id = prefix + "-parent";
     this.root.classList.add("game-tools-btn");
@@ -60,6 +72,10 @@ export class CustomMenuSettingsUI {
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
     this.root.appendChild(bgDiv);
     this.menuElements.set("bg", bgDiv);
+
+    // Reset hover text for parent button
+    bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
+    bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
 
     // Button
     let btnLink = document.createElement("a");
@@ -112,11 +128,14 @@ export class CustomMenuSettingsUI {
   /**
    * Changes the hover text of the main button.
    * @param text - The text to be displayed when hovering over the button.
+   * @param replaceParent - Whether to replace the current hover text for the main button or not.
    */
-  setHoverText(text: string) {
+  setHoverText(text: string, replaceParent = false) {
     let hoverSpan = this.menuElements.get("hover");
     if (!hoverSpan) return;
     hoverSpan.innerText = text;
+
+    if (replaceParent) this.parentHoverText = text;
   }
 
   /**
@@ -193,6 +212,7 @@ export class CustomMenuSettingsUI {
     slider.min = String(min);
     slider.max = String(max);
     slider.step = String(step);
+    this.inputElements.push(slider);
 
     // Set the label to the current value of the slider
     slider.addEventListener("input", (e) => {
@@ -249,14 +269,15 @@ export class CustomMenuSettingsUI {
     radio.type = "radio";
     radio.name = groupName;
     radioBox.appendChild(radio);
+    this.inputElements.push(radio);
 
     // Radio button label
     const label = document.createElement("label");
     label.id = this.prefix + "-" + id + "-label";
     label.innerText = name;
     radioBox.appendChild(label);
-
     radioGroupDiv?.appendChild(radioBox);
+
     return radio;
   }
 
@@ -270,5 +291,16 @@ export class CustomMenuSettingsUI {
     versionDiv.id = this.prefix + "-version";
     versionDiv.innerText = `VERSION: ${version}`;
     contextMenu?.appendChild(versionDiv);
+  }
+
+  /**
+   * Calls the input event on all input elements in the menu.
+   * Useful for updating the labels of all the inputs.
+   */
+  updateAllInputLabels() {
+    const event = new Event("input");
+    this.inputElements.forEach((input) => {
+      input.dispatchEvent(event);
+    });
   }
 }

@@ -44,7 +44,7 @@
   }
 
   var css_248z$1 =
-    '/* Context Menu */\n.cls-context-menu {\n  /* display: none; */\n  display: flex;\n  top: 40px;\n  flex-direction: column;\n  width: 275px;\n}\n\n.cls-context-menu label {\n  width: 100%;\n  font-size: 14px;\n  background-color: #dedede;\n  padding-top: 5px;\n  padding-bottom: 5px;\n}\n\n.cls-context-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  padding-left: 10px;\n  padding-right: 10px;\n}\n\n.cls-context-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-context-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 10px;\n  padding-right: 10px;\n  width: 100%;\n}\n\n.cls-context-menu image {\n  vertical-align: middle;\n}\n\n.cls-context-menu label[id$="version"] {\n  width: 100%;\n  font-size: 9px;\n  color: #888888;\n  background-color: #f0f0f0;\n}';
+    '/* Context Menu */\n.cls-context-menu {\n  /* display: none; */\n  display: flex;\n  top: 40px;\n  flex-direction: column;\n  width: 275px;\n}\n\n.cls-context-menu label {\n  width: 100%;\n  font-size: 14px;\n  background-color: #dedede;\n  padding-top: 5px;\n  padding-bottom: 5px;\n}\n\n.cls-context-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  padding-left: 10px;\n  padding-right: 10px;\n}\n\n.cls-context-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-context-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 10px;\n  padding-right: 10px;\n  width: 100%;\n}\n\n.cls-context-menu image {\n  vertical-align: middle;\n}\n\n.cls-context-menu label[id$="version"] {\n  width: 100%;\n  font-size: 9px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -64,7 +64,8 @@
     return typeof gameAnims !== "undefined" ? gameAnims : false;
   }
   function isBlackHoleCO(coName) {
-    return BLACK_HOLE_COs.has(coName.toLowerCase());
+    coName = coName.toLowerCase().replaceAll(" ", "");
+    return BLACK_HOLE_COs.has(coName);
   }
   function getRandomCO() {
     const COs = getAllCONames();
@@ -164,9 +165,6 @@
     let info = getPlayerInfo(pid);
     return info.players_co_power >= info.players_co_max_spower;
   }
-  function isValidBuilding(x, y) {
-    return buildingsInfo[x] && buildingsInfo[x][y];
-  }
   function getBuildingInfo(x, y) {
     return buildingsInfo[x][y];
   }
@@ -205,12 +203,21 @@
         if (myWin) return "victory";
         else return "defeat";
       }
-      return this.info?.co_name.toLowerCase().replaceAll(" ", "");
+      return this.info?.co_name;
     }
   }
   function getAllPlayingCONames() {
     if (getIsMapEditor()) return new Set(["map-editor"]);
-    return new Set(getAllPlayersInfo().map((info) => info.co_name.toLowerCase().replaceAll(" ", "")));
+    let allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
+    let allTagPlayers = getAllTagCONames();
+    return new Set([...allPlayers, ...allTagPlayers]);
+  }
+  function isTagGame() {
+    return typeof tagInfo !== "undefined" && tagInfo;
+  }
+  function getAllTagCONames() {
+    if (!isTagGame()) return new Set();
+    return new Set(tagInfo.map((tag) => tag.co_name));
   }
   function getUnitInfo(unitId) {
     return unitsInfo[unitId];
@@ -261,6 +268,7 @@
     static __randomThemes = false;
     static __themeType = SettingsThemeType.REGULAR;
     static __currentRandomCO = getRandomCO();
+    static __isLoaded = false;
     static toJSON() {
       return JSON.stringify({
         isPlaying: this.__isPlaying,
@@ -280,8 +288,10 @@
           this[key] = savedSettings[key];
         }
       }
+      this.__isLoaded = true;
     }
     static set isPlaying(val) {
+      if (this.__isPlaying === val) return;
       this.__isPlaying = val;
       this.onSettingChangeEvent("isPlaying");
     }
@@ -289,7 +299,7 @@
       return this.__isPlaying;
     }
     static set volume(val) {
-      if (val === this.__volume) return;
+      if (this.__volume === val) return;
       this.__volume = val;
       this.onSettingChangeEvent("volume");
     }
@@ -297,7 +307,7 @@
       return this.__volume;
     }
     static set sfxVolume(val) {
-      if (val === this.__sfxVolume) return;
+      if (this.__sfxVolume === val) return;
       this.__sfxVolume = val;
       this.onSettingChangeEvent("sfxVolume");
     }
@@ -305,7 +315,7 @@
       return this.__sfxVolume;
     }
     static set uiVolume(val) {
-      if (val === this.__uiVolume) return;
+      if (this.__uiVolume === val) return;
       this.__uiVolume = val;
       this.onSettingChangeEvent("uiVolume");
     }
@@ -313,7 +323,7 @@
       return this.__uiVolume;
     }
     static set gameType(val) {
-      if (val === this.__gameType) return;
+      if (this.__gameType === val) return;
       this.__gameType = val;
       this.onSettingChangeEvent("gameType");
     }
@@ -321,7 +331,7 @@
       return this.__gameType;
     }
     static set themeType(val) {
-      if (val === this.__themeType) return;
+      if (this.__themeType === val) return;
       this.__themeType = val;
       this.onSettingChangeEvent("themeType");
     }
@@ -329,7 +339,7 @@
       return this.__themeType;
     }
     static set alternateThemeDay(val) {
-      if (val === this.__alternateThemeDay) return;
+      if (this.__alternateThemeDay === val) return;
       this.__alternateThemeDay = val;
       this.onSettingChangeEvent("alternateThemeDay");
     }
@@ -337,7 +347,7 @@
       return this.__alternateThemeDay;
     }
     static set randomThemes(val) {
-      if (val === this.__randomThemes) return;
+      if (this.__randomThemes === val) return;
       this.__randomThemes = val;
       this.onSettingChangeEvent("randomThemes");
     }
@@ -348,25 +358,33 @@
       return this.__currentRandomCO;
     }
     static set currentRandomCO(val) {
-      if (val === this.__currentRandomCO) return;
+      if (this.__currentRandomCO === val) return;
       this.__currentRandomCO = val;
       this.onSettingChangeEvent("currentRandomCO");
     }
     static onSettingChangeEvent(key) {
-      onSettingsChangeListeners.forEach((fn) => fn(key));
+      onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
     }
   }
   function loadSettingsFromLocalStorage() {
     let storageData = localStorage.getItem(STORAGE_KEY);
     if (!storageData || storageData === "undefined") {
+      console.log("[AWBW Music Player] No saved settings found, storing defaults");
       storageData = updateSettingsInLocalStorage();
     }
     musicPlayerSettings.fromJSON(storageData);
-    addSettingsChangeListener(updateSettingsInLocalStorage);
+    onSettingsChangeListeners.forEach((fn) => fn("all", true));
+    addSettingsChangeListener(onSettingsChange$2);
+    console.debug("[MP] Settings loaded from storage:", storageData);
+  }
+  function onSettingsChange$2(_key, _isFirstLoad) {
+    if (_key === "themeType" || _key === "currentRandomCO") return "";
+    updateSettingsInLocalStorage();
   }
   function updateSettingsInLocalStorage() {
     let jsonSettings = musicPlayerSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
+    console.debug("[MP] Saving settings...", jsonSettings);
     return jsonSettings;
   }
 
@@ -498,9 +516,8 @@
     }
     return `t-${coName}-2`;
   }
-  function getMusicFilename(coName, gameType, themeType) {
+  function getMusicFilename(coName, gameType, themeType, useAlternateTheme) {
     if (coName === "map-editor") return "t-map-editor";
-    let useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
     if (useAlternateTheme) {
       let alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
       if (alternateFilename) return alternateFilename;
@@ -516,16 +533,18 @@
     let faction = isBlackHoleCO(coName) ? "bh" : "ally";
     return `t-${faction}-${themeType}`;
   }
-  function getMusicURL(coName, gameType, themeType) {
+  function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
     if (!gameType) gameType = musicPlayerSettings.gameType;
     if (!themeType) themeType = musicPlayerSettings.themeType;
+    if (!useAlternateTheme) useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
     if (coName === "victory") return VICTORY_THEME_URL;
     if (coName === "defeat") return DEFEAT_THEME_URL;
+    coName = coName.toLowerCase().replaceAll(" ", "");
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) {
       gameDir = "AW_" + gameDir;
     }
-    let filename = getMusicFilename(coName, gameType, themeType);
+    let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
     let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
   }
@@ -540,6 +559,15 @@
   }
   function hasMovementRollOff(unitName) {
     return onMovementRolloffMap.has(unitName);
+  }
+  function getAllCurrentThemes() {
+    let coNames = getAllPlayingCONames();
+    let audioList = new Set();
+    coNames.forEach((name) => {
+      audioList.add(getMusicURL(name));
+      audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true));
+    });
+    return audioList;
   }
   function getAllSoundEffectURLs() {
     let allSoundURLs = new Set();
@@ -569,10 +597,13 @@
   class CustomMenuSettingsUI {
     root;
     menuElements = new Map();
+    inputElements = [];
     isSettingsMenuOpen = false;
     prefix = "";
+    parentHoverText = "";
     constructor(prefix, buttonImageURL, hoverText = "") {
       this.prefix = prefix;
+      this.parentHoverText = hoverText;
       this.root = document.createElement("div");
       this.root.id = prefix + "-parent";
       this.root.classList.add("game-tools-btn");
@@ -591,6 +622,8 @@
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
       this.root.appendChild(bgDiv);
       this.menuElements.set("bg", bgDiv);
+      bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
+      bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
       let btnLink = document.createElement("a");
       btnLink.id = prefix + "-link";
       btnLink.classList.add("norm2");
@@ -626,10 +659,11 @@
     addToAWBWPage() {
       getMenu()?.appendChild(this.root);
     }
-    setHoverText(text) {
+    setHoverText(text, replaceParent = false) {
       let hoverSpan = this.menuElements.get("hover");
       if (!hoverSpan) return;
       hoverSpan.innerText = text;
+      if (replaceParent) this.parentHoverText = text;
     }
     setProgress(progress) {
       let bgDiv = this.menuElements.get("bg");
@@ -668,6 +702,7 @@
       slider.min = String(min);
       slider.max = String(max);
       slider.step = String(step);
+      this.inputElements.push(slider);
       slider.addEventListener("input", (e) => {
         let displayValue = slider.value;
         if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
@@ -703,6 +738,7 @@
       radio.type = "radio";
       radio.name = groupName;
       radioBox.appendChild(radio);
+      this.inputElements.push(radio);
       const label = document.createElement("label");
       label.id = this.prefix + "-" + id + "-label";
       label.innerText = name;
@@ -716,6 +752,12 @@
       versionDiv.id = this.prefix + "-version";
       versionDiv.innerText = `VERSION: ${version}`;
       contextMenu?.appendChild(versionDiv);
+    }
+    updateAllInputLabels() {
+      const event = new Event("input");
+      this.inputElements.forEach((input) => {
+        input.dispatchEvent(event);
+      });
     }
   }
 
@@ -736,119 +778,117 @@
   function onMusicBtnClick(_event) {
     musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
   }
-  function onSettingsChange$1(key) {
-    volumeSlider.value = musicPlayerSettings.volume.toString();
-    sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
-    uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
-    daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
-    const event = new Event("input");
-    volumeSlider.dispatchEvent(event);
-    sfxVolumeSlider.dispatchEvent(event);
-    uiVolumeSlider.dispatchEvent(event);
-    daySlider.dispatchEvent(event);
-    let radio = radioMap.get(musicPlayerSettings.gameType);
-    if (radio) {
-      radio.checked = true;
-      radio.dispatchEvent(event);
-    }
-    radioNormal.checked = !musicPlayerSettings.randomThemes;
-    radioRandom.checked = musicPlayerSettings.randomThemes;
-    if (musicPlayerSettings.randomThemes) {
-      radioRandom.dispatchEvent(event);
-    } else {
-      radioNormal.dispatchEvent(event);
+  function onSettingsChange$1(key, isFirstLoad) {
+    if (isFirstLoad) {
+      volumeSlider.value = musicPlayerSettings.volume.toString();
+      sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
+      uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
+      daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
+      let radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
+      if (radio) radio.checked = true;
+      radioNormal.checked = !musicPlayerSettings.randomThemes;
+      radioRandom.checked = musicPlayerSettings.randomThemes;
+      musicPlayerUI.updateAllInputLabels();
     }
     if (musicPlayerSettings.isPlaying) {
-      musicPlayerUI.setHoverText("Stop Tunes");
+      musicPlayerUI.setHoverText("Stop Tunes", true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
     } else {
-      musicPlayerUI.setHoverText("Play Tunes");
+      musicPlayerUI.setHoverText("Play Tunes", true);
       musicPlayerUI.setImage(NEUTRAL_IMG_URL);
     }
   }
+  const parseInputFloat = (event) => parseFloat(event.target.value);
+  const parseInputInt = (event) => parseInt(event.target.value);
   const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
   musicPlayerUI.addEventListener("click", onMusicBtnClick);
-  let volumeSlider = musicPlayerUI.addSlider("Music Volume", 0, 1, 0.005, "Adjust the volume of the CO theme music.");
-  let sfxVolumeSlider = musicPlayerUI.addSlider(
-    "SFX Volume",
-    0,
-    1,
-    0.005,
-    "Adjust the volume of the unit movement and CO power sound effects.",
-  );
-  let uiVolumeSlider = musicPlayerUI.addSlider(
-    "UI Volume",
-    0,
-    1,
-    0.005,
-    "Adjust the volume of the UI sound effects like moving your cursor, opening menus, selecting units.",
-  );
-  volumeSlider.addEventListener("input", (val) => {
-    musicPlayerSettings.volume = parseFloat(val.target.value);
-  });
-  sfxVolumeSlider.addEventListener("input", (val) => {
-    musicPlayerSettings.sfxVolume = parseFloat(val.target.value);
-  });
-  uiVolumeSlider.addEventListener("input", (val) => {
-    musicPlayerSettings.uiVolume = parseFloat(val.target.value);
-  });
-  let daySlider = musicPlayerUI.addSlider(
-    "Alternate Themes Start On Day",
-    0,
-    30,
-    1,
-    "After what day should alternate themes start playing? Can you find all the hidden themes?",
-  );
-  daySlider.addEventListener("input", (val) => {
-    musicPlayerSettings.alternateThemeDay = parseInt(val.target.value);
-  });
-  const radioMap = new Map();
-  const hoverDescriptions = new Map([
-    [SettingsGameType.AW1, "Play the GBA Advance Wars 1 soundtrack"],
-    [SettingsGameType.AW2, "Play the GBA Advance Wars 2 soundtrack"],
-    [SettingsGameType.DS, "Play the Nintendo DS Advance Wars: Dual Strike soundtrack"],
-    [SettingsGameType.RBC, "Play the Nintendo Switch Advance Wars: Re-Boot Camp soundtrack"],
-  ]);
+  var InputName;
+  (function (InputName) {
+    InputName["Volume"] = "Music Volume";
+    InputName["SFX_Volume"] = "SFX Volume";
+    InputName["UI_Volume"] = "UI Volume";
+    InputName["Alternate_Day"] = "Alternate Themes Start On Day";
+  })(InputName || (InputName = {}));
+  var InputDescription;
+  (function (InputDescription) {
+    InputDescription["Volume"] = "Adjust the volume of the CO theme music.";
+    InputDescription["SFX_Volume"] = "Adjust the volume of the unit movement and CO power sound effects.";
+    InputDescription["UI_Volume"] =
+      "Adjust the volume of the UI sound effects like moving your cursor, opening menus, selecting units.";
+    InputDescription["Alternate_Day"] =
+      "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
+    InputDescription["AW1"] = "Play the GBA Advance Wars 1 soundtrack.";
+    InputDescription["AW2"] = "Play the GBA Advance Wars 2 soundtrack.";
+    InputDescription["DS"] = "Play the Nintendo DS Advance Wars: Dual Strike soundtrack.";
+    InputDescription["RBC"] = "Play the Nintendo Switch Advance Wars: Re-Boot Camp soundtrack.";
+    InputDescription["Normal_Themes"] = "Play the music depending on who the current CO is.";
+    InputDescription["Random_Themes"] = "Play random music every turn.";
+  })(InputDescription || (InputDescription = {}));
+  let volumeSlider = musicPlayerUI.addSlider(InputName.Volume, 0, 1, 0.005, InputDescription.Volume);
+  let sfxVolumeSlider = musicPlayerUI.addSlider(InputName.SFX_Volume, 0, 1, 0.005, InputDescription.SFX_Volume);
+  let uiVolumeSlider = musicPlayerUI.addSlider(InputName.UI_Volume, 0, 1, 0.005, InputDescription.UI_Volume);
+  volumeSlider.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
+  sfxVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
+  uiVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
+  let daySlider = musicPlayerUI.addSlider(InputName.Alternate_Day, 0, 30, 1, InputDescription.Alternate_Day);
+  daySlider.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
+  const gameTypeRadioMap = new Map();
   for (const gameType of Object.values(SettingsGameType)) {
-    let radio = musicPlayerUI.addRadioButton(gameType, "Soundtrack", hoverDescriptions.get(gameType));
-    radioMap.set(gameType, radio);
-    radio.parentElement?.addEventListener("input", (_event) => {
-      musicPlayerSettings.gameType = gameType;
-    });
+    let description = InputDescription[gameType];
+    let radio = musicPlayerUI.addRadioButton(gameType, "Soundtrack", description);
+    gameTypeRadioMap.set(gameType, radio);
+    radio.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.gameType = gameType));
   }
-  let radioNormal = musicPlayerUI.addRadioButton(
-    "Off",
-    "Random Themes",
-    "Play the music depending on who the current CO is.",
-  );
-  let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", "Play random music every turn.");
-  radioNormal.parentElement?.addEventListener("input", (_event) => {
-    musicPlayerSettings.randomThemes = false;
-  });
-  radioRandom.parentElement?.addEventListener("input", (_event) => {
-    musicPlayerSettings.randomThemes = true;
-  });
+  let radioNormal = musicPlayerUI.addRadioButton("Off", "Random Themes", InputDescription.Normal_Themes);
+  let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", InputDescription.Random_Themes);
+  radioNormal.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.randomThemes = false));
+  radioRandom.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.randomThemes = true));
   musicPlayerUI.addVersion(versions.music_player);
 
   let currentThemeKey = "";
   const urlAudioMap = new Map();
   const unitIDAudioMap = new Map();
   let currentlyDelaying = false;
-  let delayThemeMS = 0;
-  let onAudioLoadPauseIt = (event) => event.target.pause();
+  function whenAudioLoadsPauseIt(event) {
+    event.target.pause();
+  }
+  function whenAudioLoadsPlayIt(event) {
+    let audio = event.target;
+    audio.volume = musicPlayerSettings.volume;
+    audio.loop = true;
+    if (audio.src === currentThemeKey) audio.play();
+  }
   addSettingsChangeListener(onSettingsChange);
+  function playMusicURL(srcURL, startFromBeginning = false) {
+    if (!musicPlayerSettings.isPlaying) return;
+    if (srcURL !== currentThemeKey) {
+      stopThemeSong();
+      currentThemeKey = srcURL;
+      console.log("[AWBW Music Player] Now Playing: ", srcURL);
+    }
+    let nextTheme = urlAudioMap.get(srcURL);
+    if (!nextTheme) {
+      console.debug("[AWBW Music Player] Loading new song", srcURL);
+      let audio = new Audio(srcURL);
+      audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
+      urlAudioMap.set(srcURL, audio);
+      return;
+    }
+    if (startFromBeginning) nextTheme.currentTime = 0;
+    nextTheme.volume = musicPlayerSettings.volume;
+    nextTheme.loop = true;
+    nextTheme.play();
+  }
+  function playOneShotURL(srcURL, volume) {
+    if (!musicPlayerSettings.isPlaying) return;
+    let soundInstance = new Audio(srcURL);
+    soundInstance.currentTime = 0;
+    soundInstance.volume = volume;
+    soundInstance.play();
+  }
   function playThemeSong(startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
     if (currentlyDelaying) return;
-    if (delayThemeMS > 0) {
-      setTimeout(() => {
-        currentlyDelaying = false;
-        playThemeSong();
-      }, delayThemeMS);
-      delayThemeMS = 0;
-      currentlyDelaying = true;
-      return;
-    }
     let coName = currentPlayer.coName;
     if (!coName) coName = "map-editor";
     let isEndTheme = coName === "victory" || coName === "defeat";
@@ -858,15 +898,21 @@
     playMusicURL(getMusicURL(coName), startFromBeginning);
   }
   function stopThemeSong(delayMS = 0) {
-    if (delayMS > 0) delayThemeMS = delayMS;
+    if (delayMS > 0) {
+      setTimeout(() => {
+        currentlyDelaying = false;
+        playThemeSong();
+      }, delayMS);
+      currentlyDelaying = true;
+    }
     if (!urlAudioMap.has(currentThemeKey)) return;
     let currentTheme = urlAudioMap.get(currentThemeKey);
     if (!currentTheme || currentTheme.paused) return;
+    console.debug("[AWBW Music Player] Pausing: ", currentTheme.src);
     if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-      currentTheme.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
+      currentTheme.addEventListener("canplaythrough", whenAudioLoadsPauseIt, { once: true });
       return;
     }
-    console.log("[AWBW Improved Music Player] Pausing: ", currentTheme.src);
     currentTheme.pause();
   }
   function playMovementSound(unitId) {
@@ -889,7 +935,7 @@
     let movementAudio = unitIDAudioMap.get(unitId);
     if (!movementAudio || movementAudio.paused) return;
     if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-      movementAudio.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
+      movementAudio.addEventListener("canplaythrough", whenAudioLoadsPauseIt, { once: true });
       return;
     }
     movementAudio.pause();
@@ -905,8 +951,10 @@
     if (!musicPlayerSettings.isPlaying) return;
     let sfxURL = getSoundEffectURL(sfx);
     let vol = musicPlayerSettings.sfxVolume;
-    if (sfx.startsWith("sfx-ui")) {
+    if (sfx.startsWith("ui")) {
       vol = musicPlayerSettings.uiVolume;
+    } else if (sfx.startsWith("power")) {
+      vol = musicPlayerSettings.volume;
     }
     if (!urlAudioMap.has(sfxURL)) {
       urlAudioMap.set(sfxURL, new Audio(sfxURL));
@@ -927,12 +975,11 @@
     }
   }
   function preloadAllCommonAudio(afterPreloadFunction) {
-    let coNames = getAllPlayingCONames();
-    let audioList = new Set();
-    coNames.forEach((name) => audioList.add(getMusicURL(name)));
+    let audioList = getAllCurrentThemes();
     audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
     audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
     preloadAudios(audioList, afterPreloadFunction);
+    console.debug("[AWBW Music Player] Pre-loading common audio", audioList);
   }
   function preloadAllExtraAudio(afterPreloadFunction) {
     if (getIsMapEditor()) return;
@@ -942,7 +989,7 @@
       for (const themeType in SettingsThemeType) {
         const gameTypeEnum = gameType;
         const themeTypeEnum = themeType;
-        coNames.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
+        coNames?.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
       }
     }
     preloadAudios(audioList, afterPreloadFunction);
@@ -954,14 +1001,16 @@
       numLoadedAudios++;
       let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
       musicPlayerUI.setProgress(loadPercentage);
-      if (event.type !== "error") {
-        urlAudioMap.set(audio.src, audio);
-      } else {
-        console.log("[AWBW Improved Music Player] Could not pre-load: ", audio.src);
-      }
       if (numLoadedAudios >= audioURLs.size) {
         numLoadedAudios = 0;
         if (afterPreloadFunction) afterPreloadFunction();
+      }
+      if (event.type === "error") {
+        console.error("[AWBW Music Player] Could not pre-load: ", audio.src);
+        return;
+      }
+      if (!urlAudioMap.has(audio.src)) {
+        urlAudioMap.set(audio.src, audio);
       }
     };
     audioURLs.forEach((url) => {
@@ -974,43 +1023,9 @@
       audio.addEventListener("error", onAudioPreload, { once: true });
     });
   }
-  function playMusicURL(srcURL, startFromBeginning = false) {
-    if (!musicPlayerSettings.isPlaying) return;
-    let previousSongURL = currentThemeKey;
-    if (srcURL !== currentThemeKey) {
-      stopThemeSong();
-      currentThemeKey = srcURL;
-    }
-    if (!urlAudioMap.has(srcURL)) {
-      let audio = new Audio(srcURL);
-      urlAudioMap.set(srcURL, audio);
-      let onAudioLoadPlayIfStillValid = (event) => {
-        let audio = event.target;
-        audio.volume = musicPlayerSettings.volume;
-        audio.loop = true;
-        if (audio.src === currentThemeKey) audio.play();
-      };
-      audio.addEventListener("canplaythrough", onAudioLoadPlayIfStillValid, { once: true });
-      return;
-    }
-    let nextTheme = urlAudioMap.get(srcURL);
-    if (!nextTheme) return;
-    if (startFromBeginning) nextTheme.currentTime = 0;
-    if (previousSongURL !== srcURL) {
-      console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
-    }
-    nextTheme.volume = musicPlayerSettings.volume;
-    nextTheme.loop = true;
-    nextTheme.play();
-  }
-  function playOneShotURL(srcURL, volume) {
-    if (!musicPlayerSettings.isPlaying) return;
-    let soundInstance = new Audio(srcURL);
-    soundInstance.currentTime = 0;
-    soundInstance.volume = volume;
-    soundInstance.play();
-  }
-  function onSettingsChange(key) {
+  let allThemesPreloaded = false;
+  function onSettingsChange(key, isFirstLoad) {
+    if (isFirstLoad) return;
     switch (key) {
       case "isPlaying":
         if (musicPlayerSettings.isPlaying) {
@@ -1028,10 +1043,11 @@
         playThemeSong(restartMusic);
         break;
       case "randomThemes":
-        if (musicPlayerSettings.randomThemes) {
-          console.log("[AWBW Improved Music Player] Pre-loading all themes since random themes are enabled");
+        if (musicPlayerSettings.randomThemes && !allThemesPreloaded) {
+          console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
           let audioList = getAllThemeURLs();
-          preloadAudios(audioList, () => console.log("[AWBW Improved Music Player] All themes have been pre-loaded!"));
+          allThemesPreloaded = true;
+          preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
         }
         musicPlayerSettings.currentRandomCO = getRandomCO();
         playThemeSong();
@@ -1184,8 +1200,10 @@
   function refreshMusic(playDelayMS = 0) {
     visibilityMap.clear();
     musicPlayerSettings.currentRandomCO = getRandomCO();
-    musicPlayerSettings.themeType = getCurrentThemeType();
-    setTimeout(playThemeSong, playDelayMS);
+    setTimeout(() => {
+      musicPlayerSettings.themeType = getCurrentThemeType();
+      playThemeSong();
+    }, playDelayMS);
   }
   function addReplayHandlers() {
     const replayForwardActionBtn = getReplayForwardActionBtn();
@@ -1195,10 +1213,9 @@
     const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
-    const replaySyncMusic = () => setTimeout(playThemeSong, 500);
-    replayBackwardActionBtn.addEventListener("click", replaySyncMusic);
-    replayForwardActionBtn.addEventListener("click", replaySyncMusic);
     const replayChangeTurn = () => refreshMusic(500);
+    replayBackwardActionBtn.addEventListener("click", replayChangeTurn);
+    replayForwardActionBtn.addEventListener("click", replayChangeTurn);
     replayForwardBtn.addEventListener("click", replayChangeTurn);
     replayBackwardBtn.addEventListener("click", replayChangeTurn);
     replayOpenBtn.addEventListener("click", replayChangeTurn);
@@ -1250,7 +1267,6 @@
   function onOpenMenu(menu, x, y) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Open Menu", menu, x, y);
     menuOpen = true;
     playSFX(GameSFX.uiMenuOpen);
     let menuOptions = document.getElementsByClassName("menu-option");
@@ -1265,13 +1281,14 @@
   function onCloseMenu() {
     ahCloseMenu?.apply(closeMenu, []);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] CloseMenu", menuOpen);
+    if (menuOpen) {
+      playSFX(GameSFX.uiMenuClose);
+    }
     menuOpen = false;
   }
   function onUnitClick(clicked) {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Unit Click", clicked);
     MenuClickType.Unit;
     playSFX(GameSFX.uiUnitSelect);
   }
@@ -1348,40 +1365,44 @@
       else if (madeCOPAvailable) playSFX(GameSFX.powerCOPAvailable);
     }, delay);
   }
+  function wiggleTile(div, startDelay = 0) {
+    let stepsX = 12;
+    let stepsY = 4;
+    let deltaX = 0.2;
+    let deltaY = 0.05;
+    let wiggleAnimation = () => {
+      moveDivToOffset(
+        div,
+        deltaX,
+        0,
+        stepsX,
+        { then: [0, -deltaY, stepsY] },
+        { then: [-deltaX * 2, 0, stepsX] },
+        { then: [deltaX * 2, 0, stepsX] },
+        { then: [0, -deltaY, stepsY] },
+        { then: [-deltaX * 2, 0, stepsX] },
+        { then: [deltaX * 2, 0, stepsX] },
+        { then: [0, deltaY, stepsY] },
+        { then: [-deltaX * 2, 0, stepsX] },
+        { then: [deltaX, 0, stepsX] },
+        { then: [0, deltaY, stepsY] },
+      );
+    };
+    setTimeout(wiggleAnimation, startDelay);
+  }
   function onAttackSeam(response) {
     ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
     if (!musicPlayerSettings.isPlaying) return;
+    let seamWasDestroyed = response.seamHp <= 0;
     if (areAnimationsEnabled()) {
       let x = response.seamX;
       let y = response.seamY;
-      if (!isValidBuilding(x, y)) return;
       let pipeSeamInfo = getBuildingInfo(x, y);
       let pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
-      let stepsX = 12;
-      let stepsY = 4;
-      let deltaX = 0.2;
-      let deltaY = 0.05;
-      let wiggleAnimation = () => {
-        moveDivToOffset(
-          pipeSeamDiv,
-          deltaX,
-          0,
-          stepsX,
-          { then: [0, -deltaY, stepsY] },
-          { then: [-deltaX * 2, 0, stepsX] },
-          { then: [deltaX * 2, 0, stepsX] },
-          { then: [0, -deltaY, stepsY] },
-          { then: [-deltaX * 2, 0, stepsX] },
-          { then: [deltaX * 2, 0, stepsX] },
-          { then: [0, deltaY, stepsY] },
-          { then: [-deltaX * 2, 0, stepsX] },
-          { then: [deltaX, 0, stepsX] },
-          { then: [0, deltaY, stepsY] },
-        );
-      };
-      setTimeout(wiggleAnimation, attackDelayMS);
+      let wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
+      wiggleTile(pipeSeamDiv, wiggleDelay);
     }
-    if (response.seamHp <= 0) {
+    if (seamWasDestroyed) {
       playSFX(GameSFX.unitAttackPipeSeam);
       playSFX(GameSFX.unitExplode);
       return;
@@ -1478,7 +1499,7 @@
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    let coName = data.coName.toLowerCase().replaceAll(" ", "");
+    let coName = data.coName;
     let isBH = isBlackHoleCO(coName);
     let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
@@ -1489,20 +1510,19 @@
         return;
       case SettingsGameType.AW2:
       case SettingsGameType.DS:
+      case SettingsGameType.RBC:
         if (isSuperCOPower) {
           let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
           playSFX(sfx);
-          stopThemeSong(850);
+          stopThemeSong(950);
           break;
         }
         let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
         playSFX(sfx);
-        stopThemeSong(500);
-        break;
-      case SettingsGameType.RBC:
+        stopThemeSong(1100);
         break;
     }
-    if (coName === "colin") {
+    if (coName === "Colin" && !isSuperCOPower) {
       setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
     }
   }
@@ -1514,11 +1534,13 @@
 
   console.debug("[AWBW Improved Music Player] Script starting...");
   addHandlers();
+  loadSettingsFromLocalStorage();
   musicPlayerUI.addToAWBWPage();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
-    loadSettingsFromLocalStorage();
     musicPlayerSettings.themeType = getCurrentThemeType();
+    musicPlayerUI.updateAllInputLabels();
+    playThemeSong();
     preloadAllExtraAudio(() => {
       console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
     });

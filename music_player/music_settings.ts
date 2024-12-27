@@ -46,15 +46,20 @@ export function getCurrentThemeType() {
 const STORAGE_KEY = "musicPlayerSettings";
 
 /**
+ * Function signature for a listener function that will be called whenever a setting changes.
+ */
+type SettingsChangeListener = (key: string, isFirstLoad: boolean) => void;
+
+/**
  * List of listener functions that will be called anytime settings are changed.
  */
-const onSettingsChangeListeners: ((key: string) => void)[] = [];
+const onSettingsChangeListeners: SettingsChangeListener[] = [];
 
 /**
  * Adds a new listener function that will be called whenever a setting changes.
- * @param {(string) => void} fn - The function to call when a setting changes.
+ * @param fn - The function to call when a setting changes.
  */
-export function addSettingsChangeListener(fn: (key: string) => void) {
+export function addSettingsChangeListener(fn: SettingsChangeListener) {
   onSettingsChangeListeners.push(fn);
 }
 
@@ -75,6 +80,7 @@ export abstract class musicPlayerSettings {
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
   private static __currentRandomCO = getRandomCO();
+  private static __isLoaded = false;
 
   static toJSON() {
     return JSON.stringify({
@@ -95,13 +101,14 @@ export abstract class musicPlayerSettings {
       key = key.substring(2); // Remove the __ prefix
       if (Object.hasOwn(savedSettings, key)) {
         (this as any)[key] = savedSettings[key];
-        // console.log("Loading", key, "as", savedSettings[key]);
+        // console.debug("[MP] Loading", key, "as", savedSettings[key]);
       }
     }
+    this.__isLoaded = true;
   }
 
   static set isPlaying(val: boolean) {
-    // if (val === this.__isPlaying) return;
+    if (this.__isPlaying === val) return;
     this.__isPlaying = val;
     this.onSettingChangeEvent("isPlaying");
   }
@@ -111,7 +118,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set volume(val: number) {
-    if (val === this.__volume) return;
+    if (this.__volume === val) return;
     this.__volume = val;
     this.onSettingChangeEvent("volume");
   }
@@ -121,7 +128,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set sfxVolume(val: number) {
-    if (val === this.__sfxVolume) return;
+    if (this.__sfxVolume === val) return;
     this.__sfxVolume = val;
     this.onSettingChangeEvent("sfxVolume");
   }
@@ -131,7 +138,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set uiVolume(val: number) {
-    if (val === this.__uiVolume) return;
+    if (this.__uiVolume === val) return;
     this.__uiVolume = val;
     this.onSettingChangeEvent("uiVolume");
   }
@@ -141,7 +148,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set gameType(val: SettingsGameType) {
-    if (val === this.__gameType) return;
+    if (this.__gameType === val) return;
     this.__gameType = val;
     this.onSettingChangeEvent("gameType");
   }
@@ -150,7 +157,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set themeType(val: SettingsThemeType) {
-    if (val === this.__themeType) return;
+    if (this.__themeType === val) return;
     this.__themeType = val;
     this.onSettingChangeEvent("themeType");
   }
@@ -160,7 +167,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set alternateThemeDay(val: number) {
-    if (val === this.__alternateThemeDay) return;
+    if (this.__alternateThemeDay === val) return;
     this.__alternateThemeDay = val;
     this.onSettingChangeEvent("alternateThemeDay");
   }
@@ -170,7 +177,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set randomThemes(val: boolean) {
-    if (val === this.__randomThemes) return;
+    if (this.__randomThemes === val) return;
     this.__randomThemes = val;
     this.onSettingChangeEvent("randomThemes");
   }
@@ -184,13 +191,13 @@ export abstract class musicPlayerSettings {
   }
 
   static set currentRandomCO(val: string) {
-    if (val === this.__currentRandomCO) return;
+    if (this.__currentRandomCO === val) return;
     this.__currentRandomCO = val;
     this.onSettingChangeEvent("currentRandomCO");
   }
 
   static onSettingChangeEvent(key: string) {
-    onSettingsChangeListeners.forEach((fn) => fn(key));
+    onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
   }
 }
 
@@ -202,15 +209,24 @@ export function loadSettingsFromLocalStorage() {
 
   // Store defaults if nothing or undefined is stored
   if (!storageData || storageData === "undefined") {
-    // console.log("No settings found, storing defaults");
+    console.log("[AWBW Music Player] No saved settings found, storing defaults");
     storageData = updateSettingsInLocalStorage();
   }
-
-  // console.log("Loading settings", storageData);
   musicPlayerSettings.fromJSON(storageData);
 
+  // Tell everyone we just loaded the settings
+  onSettingsChangeListeners.forEach((fn) => fn("all", true));
+
   // From now on, any setting changes will be saved and any listeners will be called
-  addSettingsChangeListener(updateSettingsInLocalStorage);
+  addSettingsChangeListener(onSettingsChange);
+  console.debug("[MP] Settings loaded from storage:", storageData);
+}
+
+function onSettingsChange(_key: string, _isFirstLoad: boolean) {
+  // We can't save the non-configurable settings
+  if (_key === "themeType" || _key === "currentRandomCO") return "";
+  // Save all settings otherwise
+  updateSettingsInLocalStorage();
 }
 
 /**
@@ -219,6 +235,6 @@ export function loadSettingsFromLocalStorage() {
 function updateSettingsInLocalStorage() {
   let jsonSettings = musicPlayerSettings.toJSON();
   localStorage.setItem(STORAGE_KEY, jsonSettings);
-  // console.log("Saving settings...", jsonSettings);
+  console.debug("[MP] Saving settings...", jsonSettings);
   return jsonSettings;
 }

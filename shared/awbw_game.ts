@@ -218,7 +218,7 @@ export abstract class currentPlayer {
       else return "defeat";
     }
 
-    return this.info?.co_name.toLowerCase().replaceAll(" ", "");
+    return this.info?.co_name;
   }
 }
 
@@ -226,9 +226,20 @@ export abstract class currentPlayer {
  * Determine who all the COs of the game are and return a list of their names.
  * @returns - List with the names of each CO in the game.
  */
-export function getAllPlayingCONames() {
+export function getAllPlayingCONames(): Set<string> {
   if (getIsMapEditor()) return new Set(["map-editor"]);
-  return new Set(getAllPlayersInfo().map((info) => info.co_name.toLowerCase().replaceAll(" ", "")));
+  let allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
+  let allTagPlayers = getAllTagCONames();
+  return new Set([...allPlayers, ...allTagPlayers]);
+}
+
+export function isTagGame() {
+  return typeof tagInfo !== "undefined" && tagInfo;
+}
+
+export function getAllTagCONames(): Set<string> {
+  if (!isTagGame()) return new Set();
+  return new Set(tagInfo.map((tag) => tag.co_name));
 }
 
 /**

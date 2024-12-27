@@ -47,6 +47,21 @@ declare const gameEndDate: string;
 
 declare const replay: Object;
 
+interface TagInfo {
+  co_max_power: number;
+  co_max_spower: number;
+  co_name: string;
+  players_co_id: number;
+  players_co_image: string;
+  players_co_max_power: number;
+  players_co_max_spower: number;
+  players_co_power: number;
+  players_co_power_on: string;
+  players_id: number;
+}
+
+declare const tagInfo: TagInfo[];
+
 /**
  * Information about a player's current game state.
  */

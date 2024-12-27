@@ -1,5 +1,5 @@
 import { getAllPlayingCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
-import { musicPlayerUI } from "./menu_ui";
+import { musicPlayerUI } from "./music_ui";
 import {
   getMusicURL,
   getMovementSoundURL,
@@ -9,6 +9,7 @@ import {
   getAllSoundEffectURLs,
   GameSFX,
   getAllThemeURLs,
+  getAllCurrentThemes,
 } from "./resources";
 import {
   musicPlayerSettings,
@@ -45,12 +46,79 @@ let currentlyDelaying = false;
 /**
  * If delaying (see {@link currentlyDelaying}), this determines how long to wait before playing music again in milliseconds.
  */
-let delayThemeMS = 0;
+// let delayThemeMS = 0;
 
-let onAudioLoadPauseIt = (event: Event) => (event.target as HTMLAudioElement).pause();
+/**
+ * Event handler that pauses an audio as soon as it gets loaded.
+ * @param event - The event that triggered this handler. Usually "canplaythrough".
+ */
+function whenAudioLoadsPauseIt(event: Event) {
+  (event.target as HTMLAudioElement).pause();
+}
+
+/**
+ * Event handler that plays an audio as soon as it gets loaded.
+ * Only plays the audio if it's the current theme.
+ * @param event - The event that triggered this handler. Usually "canplaythrough".
+ */
+function whenAudioLoadsPlayIt(event: Event) {
+  let audio = event.target as HTMLAudioElement;
+  audio.volume = musicPlayerSettings.volume;
+  audio.loop = true;
+  // Play it only if it's the current theme
+  if (audio.src === currentThemeKey) audio.play();
+}
 
 // Listen for setting changes to update the internal variables accordingly
 addSettingsChangeListener(onSettingsChange);
+
+/**
+ * Changes the current song to the given new song, stopping the old song if necessary.
+ * @param srcURL - URL of song to play.
+ * @param startFromBeginning - Whether to start from the beginning.
+ */
+function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  // We want to play a new song, so pause the previous one and save the new current song
+  if (srcURL !== currentThemeKey) {
+    stopThemeSong();
+    currentThemeKey = srcURL;
+    console.log("[AWBW Music Player] Now Playing: ", srcURL);
+  }
+
+  // The song isn't preloaded or invalid, load it and play it when it loads
+  let nextTheme = urlAudioMap.get(srcURL);
+  if (!nextTheme) {
+    console.debug("[AWBW Music Player] Loading new song", srcURL);
+    let audio = new Audio(srcURL);
+    audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
+    urlAudioMap.set(srcURL, audio);
+    return;
+  }
+
+  // Restart the song if requested
+  if (startFromBeginning) nextTheme.currentTime = 0;
+
+  // Play the song
+  nextTheme.volume = musicPlayerSettings.volume;
+  nextTheme.loop = true;
+  nextTheme.play();
+}
+
+/**
+ * Plays the given sound by creating a new instance of it.
+ * @param srcURL - URL of the sound to play.
+ * @param volume - Volume at which to play this sound.
+ */
+function playOneShotURL(srcURL: string, volume: number) {
+  if (!musicPlayerSettings.isPlaying) return;
+
+  let soundInstance = new Audio(srcURL);
+  soundInstance.currentTime = 0;
+  soundInstance.volume = volume;
+  soundInstance.play();
+}
 
 /**
  * Plays the appropriate music based on the settings and the current game state.
@@ -63,17 +131,6 @@ export function playThemeSong(startFromBeginning = false) {
   // Someone wants us to delay playing the theme, so wait a little bit then play
   // Ignore all calls to play() while delaying, we are guaranteed to play eventually
   if (currentlyDelaying) return;
-  if (delayThemeMS > 0) {
-    // Delay until I say so
-    setTimeout(() => {
-      currentlyDelaying = false;
-      playThemeSong();
-    }, delayThemeMS);
-
-    delayThemeMS = 0;
-    currentlyDelaying = true;
-    return;
-  }
 
   let coName = currentPlayer.coName;
   if (!coName) coName = "map-editor";
@@ -93,7 +150,15 @@ export function playThemeSong(startFromBeginning = false) {
  */
 export function stopThemeSong(delayMS: number = 0) {
   // Delay the next theme if needed
-  if (delayMS > 0) delayThemeMS = delayMS;
+  if (delayMS > 0) {
+    // Delay until I say so
+    setTimeout(() => {
+      currentlyDelaying = false;
+      playThemeSong();
+    }, delayMS);
+
+    currentlyDelaying = true;
+  }
 
   // Can't stop if there's no loaded music
   if (!urlAudioMap.has(currentThemeKey)) return;
@@ -101,15 +166,15 @@ export function stopThemeSong(delayMS: number = 0) {
   // Can't stop if we are already paused
   let currentTheme = urlAudioMap.get(currentThemeKey);
   if (!currentTheme || currentTheme.paused) return;
+  console.debug("[AWBW Music Player] Pausing: ", currentTheme.src);
 
   // The song hasn't finished loading, so stop it as soon as it does
   if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-    currentTheme.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
+    currentTheme.addEventListener("canplaythrough", whenAudioLoadsPauseIt, { once: true });
     return;
   }
 
   // The song is loaded and playing, so pause it
-  console.log("[AWBW Improved Music Player] Pausing: ", currentTheme.src);
   currentTheme.pause();
 }
 
@@ -154,7 +219,7 @@ export function stopMovementSound(unitId: number, rolloff = true) {
 
   // The audio hasn't finished loading, so pause when it does
   if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-    movementAudio.addEventListener("canplaythrough", onAudioLoadPauseIt, { once: true });
+    movementAudio.addEventListener("canplaythrough", whenAudioLoadsPauseIt, { once: true });
     return;
   }
 
@@ -182,8 +247,11 @@ export function playSFX(sfx: GameSFX) {
 
   // Figure out which volume to use
   let vol = musicPlayerSettings.sfxVolume;
-  if (sfx.startsWith("sfx-ui")) {
+
+  if (sfx.startsWith("ui")) {
     vol = musicPlayerSettings.uiVolume;
+  } else if (sfx.startsWith("power")) {
+    vol = musicPlayerSettings.volume;
   }
 
   // This sound effect hasn't been loaded yet
@@ -224,16 +292,14 @@ export function stopAllSounds() {
  */
 export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
   // Preload the themes of the COs in this match
-  let coNames = getAllPlayingCONames();
-  let audioList = new Set<string>();
-  coNames.forEach((name) => audioList.add(getMusicURL(name)));
+  let audioList = getAllCurrentThemes();
 
   // Preload the most common UI sounds that might play right after the page loads
   audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
   audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
 
-  // console.log("Preloading common");
   preloadAudios(audioList, afterPreloadFunction);
+  console.debug("[AWBW Music Player] Pre-loading common audio", audioList);
 }
 
 /**
@@ -253,11 +319,10 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
     for (const themeType in SettingsThemeType) {
       const gameTypeEnum = gameType as SettingsGameType;
       const themeTypeEnum = themeType as SettingsThemeType;
-      coNames.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
+      coNames?.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
     }
   }
 
-  // console.log("Preloading extra");
   preloadAudios(audioList, afterPreloadFunction);
 }
 
@@ -267,30 +332,31 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
  * @param afterPreloadFunction - Function to call after all songs are preloaded.
  */
 function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) {
-  // console.log("preloadAudios", audioURLs);
-
   // Event handler for when an audio is loaded
   let numLoadedAudios = 0;
   let onAudioPreload = (event: Event) => {
     let audio = event.target as HTMLAudioElement;
-    // console.log("onAudioLoad", event);
+    numLoadedAudios++;
 
     // Update UI
-    numLoadedAudios++;
     let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
     musicPlayerUI.setProgress(loadPercentage);
-
-    // If the audio loaded properly, then add it to our map
-    if (event.type !== "error") {
-      urlAudioMap.set(audio.src, audio);
-    } else {
-      console.log("[AWBW Improved Music Player] Could not pre-load: ", audio.src);
-    }
 
     // All the audio from the list has been loaded
     if (numLoadedAudios >= audioURLs.size) {
       numLoadedAudios = 0;
       if (afterPreloadFunction) afterPreloadFunction();
+    }
+
+    if (event.type === "error") {
+      console.error("[AWBW Music Player] Could not pre-load: ", audio.src);
+      return;
+    }
+
+    // Add the audio to the map, but only if it hasn't been added already
+    // This prevents a race condition where we might add the same audio twice
+    if (!urlAudioMap.has(audio.src)) {
+      urlAudioMap.set(audio.src, audio);
     }
   };
 
@@ -298,7 +364,6 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
   audioURLs.forEach((url) => {
     // This audio has already been loaded before, so skip it
     if (urlAudioMap.has(url)) {
-      // console.log("Skipping", url);
       numLoadedAudios++;
       return;
     }
@@ -308,71 +373,16 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
   });
 }
 
-/**
- * Changes the current song to the given new song, stopping the old song if necessary.
- * @param srcURL - URL of song to play.
- * @param startFromBeginning - Whether to start from the beginning.
- */
-function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
-  if (!musicPlayerSettings.isPlaying) return;
-  let previousSongURL = currentThemeKey;
-
-  // We want to play a new song, so pause the previous one and mark it as the current song
-  if (srcURL !== currentThemeKey) {
-    stopThemeSong();
-    currentThemeKey = srcURL;
-  }
-
-  // The song isn't preloaded
-  if (!urlAudioMap.has(srcURL)) {
-    let audio = new Audio(srcURL);
-    urlAudioMap.set(srcURL, audio);
-
-    let onAudioLoadPlayIfStillValid = (event: Event) => {
-      let audio = event.target as HTMLAudioElement;
-      audio.volume = musicPlayerSettings.volume;
-      audio.loop = true;
-      if (audio.src === currentThemeKey) audio.play();
-    };
-    audio.addEventListener("canplaythrough", onAudioLoadPlayIfStillValid, { once: true });
-    return;
-  }
-
-  let nextTheme = urlAudioMap.get(srcURL);
-  if (!nextTheme) return;
-
-  // Restart the song if requested
-  if (startFromBeginning) nextTheme.currentTime = 0;
-
-  if (previousSongURL !== srcURL) {
-    console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
-  }
-
-  // Play the song
-  nextTheme.volume = musicPlayerSettings.volume;
-  nextTheme.loop = true;
-  nextTheme.play();
-}
-
-/**
- * Plays the given sound by creating a new instance of it.
- * @param srcURL - URL of the sound to play.
- * @param volume - Volume at which to play this sound.
- */
-function playOneShotURL(srcURL: string, volume: number) {
-  if (!musicPlayerSettings.isPlaying) return;
-
-  let soundInstance = new Audio(srcURL);
-  soundInstance.currentTime = 0;
-  soundInstance.volume = volume;
-  soundInstance.play();
-}
-
+let allThemesPreloaded = false;
 /**
  * Updates the internal audio components to match the current music player settings when the settings change.
- * @param _key - Key of the setting which has been changed.
+ * @param key - Key of the setting which has been changed.
+ * @param isFirstLoad - Whether this is the first time the settings are being loaded.
  */
-function onSettingsChange(key: string) {
+function onSettingsChange(key: string, isFirstLoad: boolean) {
+  // Don't do anything if this is the first time the settings are being loaded
+  if (isFirstLoad) return;
+
   switch (key) {
     case "isPlaying":
       if (musicPlayerSettings.isPlaying) {
@@ -390,10 +400,11 @@ function onSettingsChange(key: string) {
       playThemeSong(restartMusic);
       break;
     case "randomThemes":
-      if (musicPlayerSettings.randomThemes) {
-        console.log("[AWBW Improved Music Player] Pre-loading all themes since random themes are enabled");
+      if (musicPlayerSettings.randomThemes && !allThemesPreloaded) {
+        console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
         let audioList = getAllThemeURLs();
-        preloadAudios(audioList, () => console.log("[AWBW Improved Music Player] All themes have been pre-loaded!"));
+        allThemesPreloaded = true;
+        preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
       }
       musicPlayerSettings.currentRandomCO = getRandomCO();
       playThemeSong();

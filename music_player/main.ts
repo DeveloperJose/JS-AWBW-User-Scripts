@@ -10,8 +10,8 @@
 import "./style.css";
 import "./style_sliders.css";
 
-import { musicPlayerUI } from "./menu_ui";
-import { preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
+import { musicPlayerUI } from "./music_ui";
+import { playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
 
@@ -20,13 +20,17 @@ import { addHandlers } from "./handlers";
  ******************************************************************/
 console.debug("[AWBW Improved Music Player] Script starting...");
 addHandlers();
+loadSettingsFromLocalStorage();
 musicPlayerUI.addToAWBWPage();
 
 preloadAllCommonAudio(() => {
   console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 
-  loadSettingsFromLocalStorage();
+  // Set dynamic settings based on the current game state
+  // Lastly, update the UI to reflect the current settings
   musicPlayerSettings.themeType = getCurrentThemeType();
+  musicPlayerUI.updateAllInputLabels();
+  playThemeSong();
 
   preloadAllExtraAudio(() => {
     console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
