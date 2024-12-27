@@ -209,7 +209,7 @@ export abstract class currentPlayer {
     if (hasGameEnded() && !isReplayActive()) {
       // Check if we are spectating
       let myID = getMyID();
-      if (isPlayerSpectator(myID)) return "map-editor"; // TODO:
+      if (isPlayerSpectator(myID)) return "victory";
 
       // Check if we won
       let myInfo = getPlayerInfo(myID);
