@@ -1,13 +1,10 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of the music player UI.
  */
-import { isMapEditor } from "../shared/awbw_page";
-import { menu } from "../shared/awbw_page";
 import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from "./music_settings";
 import { CustomMenuSettingsUI } from "../shared/custom_ui";
 import { versions } from "../shared/config";
-import { getRandomCO } from "../shared/awbw_globals";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -16,7 +13,7 @@ addSettingsChangeListener(onSettingsChange);
  * Event handler for when the music button is clicked that turns the music ON/OFF.
  * @param _event - Click event handler, not used.
  */
-function onMusicBtnClick(_event: MouseEvent) {
+function onMusicBtnClick(_event: Event) {
   musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
 }
 
@@ -44,8 +41,10 @@ function onSettingsChange(key: string) {
 
   // Check the radio button that matches the current game type
   let radio = radioMap.get(musicPlayerSettings.gameType);
-  radio.checked = true;
-  radio.dispatchEvent(event);
+  if (radio) {
+    radio.checked = true;
+    radio.dispatchEvent(event);
+  }
 
   // Check the radio button that matches the current random themes setting
   radioNormal.checked = !musicPlayerSettings.randomThemes;
@@ -126,7 +125,7 @@ for (const gameType of Object.values(SettingsGameType)) {
   radioMap.set(gameType, radio);
 
   // Allows label to also be clicked to change the radio button
-  radio.parentElement.addEventListener("input", (_event) => {
+  radio.parentElement?.addEventListener("input", (_event) => {
     musicPlayerSettings.gameType = gameType;
   });
 }
@@ -138,10 +137,10 @@ let radioNormal = musicPlayerUI.addRadioButton(
   "Play the music depending on who the current CO is.",
 );
 let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", "Play random music every turn.");
-radioNormal.parentElement.addEventListener("input", (_event) => {
+radioNormal.parentElement?.addEventListener("input", (_event) => {
   musicPlayerSettings.randomThemes = false;
 });
-radioRandom.parentElement.addEventListener("input", (_event) => {
+radioRandom.parentElement?.addEventListener("input", (_event) => {
   musicPlayerSettings.randomThemes = true;
 });
 

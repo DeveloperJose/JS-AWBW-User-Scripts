@@ -1,12 +1,27 @@
 /**
  * @file Main script that loads everything for the AWBW Highlight Cursor Coordinates userscript.
  */
-import { mapRows, mapCols } from "../shared/awbw_globals";
-import { ahCursorMove } from "../shared/awbw_handlers";
-import { gamemap, gamemapContainer, zoomInBtn, zoomOutBtn, zoomLevel, cursor } from "../shared/awbw_page";
-import { maximizeBtn } from "../shared/other_userscripts";
 
-/********************** Script Variables ***********************/
+import { getMapColumns, getMapRows } from "../shared/awbw_globals";
+import { getCursorMoveFn } from "../shared/awbw_handlers";
+import {
+  getCursor,
+  getGamemap,
+  getGamemapContainer,
+  getZoomInBtn,
+  getZoomLevel,
+  getZoomOutBtn,
+} from "../shared/awbw_page";
+import { getMaximizeBtn } from "../shared/other_userscripts";
+
+/********************** AWBW Stuff ***********************/
+const mapRows = getMapRows();
+const mapCols = getMapColumns();
+const cursor = getCursor();
+const gamemap = getGamemap();
+const gamemapContainer = getGamemapContainer();
+
+/********************** Script Variables & Functions ***********************/
 const CURSOR_THRESHOLD_MS = 30;
 const FONT_SIZE = 9;
 let previousHighlight: HTMLElement[] = [];
@@ -28,7 +43,6 @@ spotSpanTemplate.style.alignContent = "center";
 // spotSpanTemplate.style.backgroundImage = "url(https://awbw.amarriner.com/terrain/ani/plain.gif)";
 // spotSpanTemplate.style.visibility = "hidden";
 
-/********************** Script Functions **********************/
 function setHighlight(node: HTMLElement, highlight: boolean) {
   if (!node) {
     console.log("[AWBW Highlight Cursor Coordinates] Node is null, something isn't right.");
@@ -48,9 +62,12 @@ function setHighlight(node: HTMLElement, highlight: boolean) {
   node.style.backgroundColor = backgroundColor;
 }
 
-function onZoomChangeEvent(_event: MouseEvent, zoom: number = -1) {
+function onZoomChangeEvent(_event?: MouseEvent, zoom: number = -1) {
   if (zoom < 0) {
-    zoom = parseFloat(zoomLevel.textContent);
+    const zoomLevelText = getZoomLevel().textContent;
+    if (zoomLevelText !== null) {
+      zoom = parseFloat(zoomLevelText);
+    }
   }
 
   let padding = 16 * zoom;
@@ -59,8 +76,9 @@ function onZoomChangeEvent(_event: MouseEvent, zoom: number = -1) {
 }
 
 /********************** Intercepted Action Handlers ***********************/
+let ahCursorMove = getCursorMoveFn();
 updateCursor = (cursorX, cursorY) => {
-  ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
+  ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
 
   // Get cursor row and column indices then the span
   let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
@@ -71,6 +89,11 @@ updateCursor = (cursorX, cursorY) => {
   let dy = Math.abs(cursorY - lastCursorY);
   let cursorMoved = dx >= 1 || dy >= 1;
   let timeSinceLastCursorCall = Date.now() - lastCursorCall;
+
+  if (!highlightRow || !highlightCol) {
+    console.log("[AWBW Highlight Cursor Coordinates] Highlight row or column is null, something isn't right.");
+    return;
+  }
 
   // Don't play the sound if we moved the cursor too quickly
   if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
@@ -95,31 +118,28 @@ updateCursor = (cursorX, cursorY) => {
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
+const zoomInBtn = getZoomInBtn();
 if (zoomInBtn != null) {
   zoomInBtn.addEventListener("click", onZoomChangeEvent);
 }
 
+const zoomOutBtn = getZoomOutBtn();
 if (zoomOutBtn != null) {
   zoomOutBtn.addEventListener("click", onZoomChangeEvent);
 }
 
 // Synergize with AWBW Maximize if that script is running as well
+const maximizeBtn = getMaximizeBtn();
 if (maximizeBtn != null) {
-  console.log("AWBW Highlight Cursor Coordinates script found AWBW Maximize script");
+  console.log("[AWBW Highlight Cursor Coordinates] Found AWBW Maximize script and connected to it.");
   maximizeBtn.addEventListener("click", (event) => {
     isMaximizeToggled = !isMaximizeToggled;
     onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : -1);
   });
-  // let old_fn = maximizeBtn.onclick;
-  // maximizeBtn.onclick = (h, event) => {
-  //   old_fn(h, event);
-  //   isMaximizeToggled = !isMaximizeToggled;
-  //   onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : null);
-  // };
 }
 
 // Scale to current zoom level
-onZoomChangeEvent(null);
+onZoomChangeEvent();
 
 // Create squares
 for (let row = 0; row < mapRows; row++) {

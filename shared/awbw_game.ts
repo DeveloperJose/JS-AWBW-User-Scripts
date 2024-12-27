@@ -3,8 +3,8 @@
  *  A lot of useful information came from game.js and the code at the bottom of each game page.
  */
 
-import { gameAnimations } from "./awbw_globals";
-import { isMapEditor } from "./awbw_page";
+import { areAnimationsEnabled } from "./awbw_globals";
+import { getIsMapEditor } from "./awbw_page";
 
 /**
  * Enum for the different states a CO Power can be in.
@@ -20,20 +20,23 @@ export enum COPowerEnum {
  * The amount of time between the silo launch animation and the hit animation in milliseconds.
  * Copied from game.js
  */
-export let siloDelayMS = gameAnimations ? 3000 : 0;
+export let siloDelayMS = areAnimationsEnabled() ? 3000 : 0;
 
 /**
  * The amount of time between an attack animation starting and the attack finishing in milliseconds.
  * Copied from game.js
  */
-export let attackDelayMS = gameAnimations ? 1000 : 0;
+export let attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
 
 /**
  * Gets the username of the person logged in to the website.
  */
-export let myName = (
-  document.querySelector("#profile-menu").getElementsByClassName("dropdown-menu-link")[0] as HTMLAnchorElement
-).href.split("username=")[1];
+export function getMyUsername() {
+  const profileMenu = document.querySelector("#profile-menu");
+  if (!profileMenu) return null;
+  const link = profileMenu.getElementsByClassName("dropdown-menu-link")[0] as HTMLAnchorElement;
+  return link.href.split("username=")[1];
+}
 
 /**
  * The player ID for the person logged in to the website.
@@ -48,7 +51,7 @@ let myID: number = -1;
 export function getMyID() {
   if (myID < 0) {
     getAllPlayersInfo().forEach((entry) => {
-      if (entry.users_username === myName) {
+      if (entry.users_username === getMyUsername()) {
         myID = entry.players_id;
       }
     });
@@ -131,14 +134,26 @@ export function getCurrentClickData() {
   return currentClick;
 }
 
+/**
+ * Checks if we are currently in replay mode.
+ * @returns - True if we are in replay mode.
+ */
 export function isReplayActive() {
   return Object.keys(replay).length > 0;
 }
 
+/**
+ * Checks if the game has ended.
+ * @returns - True if the game has ended.
+ */
 export function hasGameEnded() {
   return typeof gameEndDate !== "undefined" && gameEndDate !== "";
 }
 
+/**
+ * Gets the current day in the game, also works properly in replay mode.
+ * @returns - The current day in the game.
+ */
 export function getCurrentGameDay() {
   if (!isReplayActive()) return gameDay;
   let replayData = Object.values(replay);
@@ -152,7 +167,7 @@ export abstract class currentPlayer {
   /**
    * Get the internal info object containing the state of the current player.
    */
-  static get info(): PlayerInfo {
+  static get info(): PlayerInfo | null {
     if (typeof currentTurn === "undefined") return null;
     return getPlayerInfo(currentTurn);
   }
@@ -173,21 +188,28 @@ export abstract class currentPlayer {
     return this.info?.players_co_power_on;
   }
 
+  /**
+   * Determine if the current player has been eliminated from the game.
+   * @returns - True if the current player has been eliminated.
+   */
   static get isEliminated() {
     return this.info?.players_eliminated === "Y";
   }
 
   /**
    * Gets the name of the CO for the current player.
+   * If the game has ended, it will return "victory" or "defeat".
+   * If we are in the map editor, it will return "map-editor".
+   * @returns - The name of the CO for the current player.
    */
   static get coName() {
-    if (isMapEditor) return "map-editor";
+    if (getIsMapEditor()) return "map-editor";
 
     // Play victory/defeat themes after the game ends for everyone
     if (hasGameEnded() && !isReplayActive()) {
       // Check if we are spectating
       let myID = getMyID();
-      if (isPlayerSpectator(myID)) return "t-vonbolt"; // TODO:
+      if (isPlayerSpectator(myID)) return "map-editor"; // TODO:
 
       // Check if we won
       let myInfo = getPlayerInfo(myID);
@@ -196,7 +218,7 @@ export abstract class currentPlayer {
       else return "defeat";
     }
 
-    return isMapEditor ? "map-editor" : this.info?.co_name.toLowerCase().replaceAll(" ", "");
+    return this.info?.co_name.toLowerCase().replaceAll(" ", "");
   }
 }
 
@@ -205,7 +227,7 @@ export abstract class currentPlayer {
  * @returns - List with the names of each CO in the game.
  */
 export function getAllPlayingCONames() {
-  if (isMapEditor) return new Set(["map-editor"]);
+  if (getIsMapEditor()) return new Set(["map-editor"]);
   return new Set(getAllPlayersInfo().map((info) => info.co_name.toLowerCase().replaceAll(" ", "")));
 }
 

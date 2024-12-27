@@ -2,41 +2,80 @@
  * @file Constants, variables, and functions that come from analyzing the web pages of AWBW.
  */
 
-// ============================== AWBW Page Elements ==============================
-export let gamemap: HTMLElement = document.querySelector("#gamemap");
-export let gamemapContainer: HTMLElement = document.querySelector("#gamemap-container");
-export let zoomInBtn: HTMLElement = document.querySelector("#zoom-in");
-export let zoomOutBtn: HTMLElement = document.querySelector("#zoom-out");
-export let zoomLevel: HTMLElement = document.querySelector(".zoom-level");
-export let cursor: HTMLElement = document.querySelector("#cursor");
-export let eventUsername: HTMLElement = document.querySelector(".event-username");
-
-export let supplyIcon: HTMLElement = document.querySelector(".supply-icon");
-export let trappedIcon: HTMLElement = document.querySelector(".trapped-icon");
-export let targetIcon: HTMLElement = document.querySelector(".target-icon");
-export let explosionIcon: HTMLElement = document.querySelector(".destroy-icon");
-
-export let replayOpenBtn: HTMLElement = document.querySelector(".replay-open");
-export let replayCloseBtn: HTMLElement = document.querySelector(".replay-close");
-export let replayForwardBtn: HTMLElement = document.querySelector(".replay-forward");
-export let replayForwardActionBtn: HTMLElement = document.querySelector(".replay-forward-action");
-export let replayBackwardBtn: HTMLElement = document.querySelector(".replay-backward");
-export let replayBackwardActionBtn: HTMLElement = document.querySelector(".replay-backward-action");
-export let replayDaySelectorCheckBox: HTMLElement = document.querySelector(".replay-day-selector");
-
 /**
  * Are we in the map editor?
  */
+export function getIsMapEditor() {
+  return window.location.href.indexOf("editmap.php?") > -1;
+}
 
-export let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
+// ============================== AWBW Page Elements ==============================
+export function getGamemap() {
+  return document.querySelector("#gamemap") as HTMLElement;
+}
+
+export function getGamemapContainer() {
+  return document.querySelector("#gamemap-container") as HTMLElement;
+}
+export function getZoomInBtn() {
+  return document.querySelector("#zoom-in") as HTMLElement;
+}
+export function getZoomOutBtn() {
+  return document.querySelector("#zoom-out") as HTMLElement;
+}
+export function getZoomLevel() {
+  return document.querySelector(".zoom-level") as HTMLElement;
+}
+export function getCursor() {
+  return document.querySelector("#cursor") as HTMLElement;
+}
+export function getEventUsername() {
+  return document.querySelector(".event-username") as HTMLElement;
+}
+
+export function getSupplyIcon() {
+  return document.querySelector(".supply-icon") as HTMLElement;
+}
+export function getTrappedIcon() {
+  return document.querySelector(".trapped-icon") as HTMLElement;
+}
+export function getTargetIcon() {
+  return document.querySelector(".target-icon") as HTMLElement;
+}
+export function getExplosionIcon() {
+  return document.querySelector(".destroy-icon") as HTMLElement;
+}
+
+export function getReplayOpenBtn() {
+  return document.querySelector(".replay-open") as HTMLElement;
+}
+export function getReplayCloseBtn() {
+  return document.querySelector(".replay-close") as HTMLElement;
+}
+export function getReplayForwardBtn() {
+  return document.querySelector(".replay-forward") as HTMLElement;
+}
+export function getReplayForwardActionBtn() {
+  return document.querySelector(".replay-forward-action") as HTMLElement;
+}
+export function getReplayBackwardBtn() {
+  return document.querySelector(".replay-backward") as HTMLElement;
+}
+export function getReplayBackwardActionBtn() {
+  return document.querySelector(".replay-backward-action") as HTMLElement;
+}
+export function getReplayDaySelectorCheckBox() {
+  return document.querySelector(".replay-day-selector") as HTMLElement;
+}
 
 /**
  * The HTML node for the game menu, the little bar with all the icons.
  */
-export let menu = isMapEditor
-  ? document.querySelector("#replay-misc-controls")
-  : document.querySelector("#game-map-menu")?.parentNode;
-
+export function getMenu() {
+  return getIsMapEditor()
+    ? document.querySelector("#replay-misc-controls")
+    : document.querySelector("#game-map-menu")?.parentNode;
+}
 // ============================== Useful Page Utilities ==============================
 
 /**
@@ -44,15 +83,26 @@ export let menu = isMapEditor
  * @param buildingID - The ID of the building.
  * @returns - The HTML div element for the building, or null if it does not exist.
  */
-export function getBuildingDiv(buildingID: number): HTMLDivElement {
-  return document.querySelector(`.game-building[data-building-id='${buildingID}']`);
+export function getBuildingDiv(buildingID: number) {
+  return document.querySelector(`.game-building[data-building-id='${buildingID}']`) as HTMLDivElement;
 }
 
 /**
  * How much time in milliseconds to let pass between animation steps for {@link moveDivToOffset}.
  * The lower, the faster the "animation" will play.
+ * @constant
  */
-let moveAnimationDelayMS = 5;
+const moveAnimationDelayMS = 5;
+
+/**
+ * A follow-up animation to play after the current one finishes.
+ */
+interface FollowUpAnimation {
+  /**
+   * The next animation to play, as [dx, dy, steps].
+   */
+  then: [number, number, number];
+}
 
 /**
  * Animates the movement of a div element through moving it by a certain number of pixels in each direction at each step.
@@ -68,13 +118,13 @@ export function moveDivToOffset(
   dx: number,
   dy: number,
   steps: number,
-  ...followUpAnimations: DivAnimationData[]
+  ...followUpAnimations: FollowUpAnimation[]
 ) {
   if (steps <= 1) {
-    if (followUpAnimations.length > 0) {
-      let nextSet = followUpAnimations.shift().then;
-      moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
-    }
+    if (!followUpAnimations || followUpAnimations.length === 0) return;
+    let nextSet = followUpAnimations.shift()?.then;
+    if (!nextSet) return;
+    moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
     return;
   }
 

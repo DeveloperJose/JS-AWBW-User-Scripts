@@ -67,7 +67,11 @@ interface PlayerInfo {
   players_co_power: number;
   players_co_power_on: string;
   players_countries_id: number;
-  players_eliminated: YesNoString;
+  /**
+   * Whether the player has been eliminated or not.
+   * Y if eliminated, N if not.
+   */
+  players_eliminated: string;
   players_funds: number;
   players_id: number;
   players_income: number;
@@ -140,7 +144,6 @@ interface PathInfo {
 
 /**
  * Function called when a unit is moved along a given path.
- * @callback animUnit
  * @param path - Array with path the unit will move along.
  * @param unitId - The ID of the unit that will move.
  * @param unitSpan - The span of the unit that will move.

@@ -2,16 +2,40 @@
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
 
-import { menu } from "./awbw_page";
+import { getMenu } from "./awbw_page";
 
-const FONT_SIZE = "13px";
-
+/**
+ * A class that represents a custom menu UI that can be added to the AWBW page.
+ */
 export class CustomMenuSettingsUI {
+  /**
+   * The root element or parent of the custom menu.
+   */
   root: HTMLDivElement;
-  childrenMap: Map<string, HTMLElement> = new Map();
+
+  /**
+   * A map that contains the important nodes of the menu.
+   * The keys are the names of the children, and the values are the elements themselves.
+   * Allows for easy access to any element in the menu.
+   */
+  menuElements: Map<string, HTMLElement> = new Map();
+
+  /**
+   * A boolean that represents whether the settings menu is open or not.
+   */
   private isSettingsMenuOpen = false;
+
+  /**
+   * A string used to prefix the IDs of the elements in the menu.
+   */
   private prefix = "";
 
+  /**
+   * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
+   * @param prefix - A string used to prefix the IDs of the elements in the menu.
+   * @param buttonImageURL - The URL of the image to be used as the button.
+   * @param hoverText - The text to be displayed when hovering over the button.
+   */
   constructor(prefix: string, buttonImageURL: string, hoverText = "") {
     this.prefix = prefix;
     this.root = document.createElement("div");
@@ -27,7 +51,7 @@ export class CustomMenuSettingsUI {
     hoverSpan.classList.add("game-tools-btn-text", "small_text");
     hoverSpan.innerText = hoverText;
     this.root.appendChild(hoverSpan);
-    this.childrenMap.set("hover", hoverSpan);
+    this.menuElements.set("hover", hoverSpan);
 
     // Button BG
     let bgDiv = document.createElement("div");
@@ -35,7 +59,7 @@ export class CustomMenuSettingsUI {
     bgDiv.classList.add("game-tools-bg");
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
     this.root.appendChild(bgDiv);
-    this.childrenMap.set("bg", bgDiv);
+    this.menuElements.set("bg", bgDiv);
 
     // Button
     let btnLink = document.createElement("a");
@@ -45,17 +69,16 @@ export class CustomMenuSettingsUI {
 
     let btnImg = document.createElement("img") as HTMLImageElement;
     btnImg.id = prefix + "-link-img";
-    // btnImg.style.verticalAlign = "middle";
     btnImg.src = buttonImageURL;
     btnLink.appendChild(btnImg);
-    this.childrenMap.set("img", btnImg);
+    this.menuElements.set("img", btnImg);
 
     // Context Menu
     let contextMenu = document.createElement("div");
     contextMenu.id = prefix + "-context-menu";
     contextMenu.classList.add("cls-context-menu");
     this.root.appendChild(contextMenu);
-    this.childrenMap.set("context-menu", contextMenu);
+    this.menuElements.set("context-menu", contextMenu);
 
     // Enable right-click to open and close the context menu
     this.root.addEventListener("contextmenu", (event) => {
@@ -79,54 +102,89 @@ export class CustomMenuSettingsUI {
     });
   }
 
+  /**
+   * Adds the custom menu to the AWBW page.
+   */
   addToAWBWPage() {
-    menu.appendChild(this.root);
+    getMenu()?.appendChild(this.root);
   }
 
+  /**
+   * Changes the hover text of the main button.
+   * @param text - The text to be displayed when hovering over the button.
+   */
   setHoverText(text: string) {
-    let hoverSpan = this.childrenMap.get("hover");
+    let hoverSpan = this.menuElements.get("hover");
+    if (!hoverSpan) return;
     hoverSpan.innerText = text;
   }
 
   /**
    * Sets the progress of the UI by coloring the background of the main button.
-   * @param progress A number between 0 and 100 representing the percentage of the progress bar to fill.
+   * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
    */
   setProgress(progress: number) {
-    let bgDiv = this.childrenMap.get("bg");
+    let bgDiv = this.menuElements.get("bg");
+    if (!bgDiv) return;
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
   }
 
+  /**
+   * Sets the image of the main button.
+   * @param imageURL - The URL of the image to be used on the button.
+   */
   setImage(imageURL: string) {
-    let btnImg = this.childrenMap.get("img") as HTMLImageElement;
+    let btnImg = this.menuElements.get("img") as HTMLImageElement;
     btnImg.src = imageURL;
   }
 
+  /**
+   * Adds an event listener to the main button.
+   * @param type - The type of event to listen for.
+   * @param listener - The function to be called when the event is triggered.
+   */
   addEventListener(type: string, listener: (event: Event) => void) {
-    let div = this.childrenMap.get("bg");
-    div.addEventListener(type, listener);
+    let div = this.menuElements.get("bg");
+    div?.addEventListener(type, listener);
   }
 
+  /**
+   * Opens the context (right-click) menu.
+   */
   openContextMenu() {
-    let contextMenu = this.childrenMap.get("context-menu");
+    let contextMenu = this.menuElements.get("context-menu");
+    if (!contextMenu) return;
     contextMenu.style.display = "flex";
     this.isSettingsMenuOpen = true;
   }
 
+  /**
+   * Closes the context (right-click) menu.
+   */
   closeContextMenu() {
-    let contextMenu = this.childrenMap.get("context-menu");
+    let contextMenu = this.menuElements.get("context-menu");
+    if (!contextMenu) return;
     contextMenu.style.display = "none";
     this.isSettingsMenuOpen = false;
   }
 
+  /**
+   * Adds an input slider to the context menu.
+   * @param name - The name of the slider.
+   * @param min - The minimum value of the slider.
+   * @param max - The maximum value of the slider.
+   * @param step - The step value of the slider.
+   * @param hoverText - The text to be displayed when hovering over the slider.
+   * @returns - The slider element.
+   */
   addSlider(name: string, min: number, max: number, step: number, hoverText = "") {
-    let contextMenu = this.childrenMap.get("context-menu");
-    let id = name.toLowerCase().replace(" ", "-");
+    let contextMenu = this.menuElements.get("context-menu");
 
     // Slider label
+    let id = name.toLowerCase().replace(" ", "-");
     let label = document.createElement("label");
     label.id = this.prefix + "-" + id + "-label";
-    contextMenu.appendChild(label);
+    contextMenu?.appendChild(label);
 
     // Then slider
     let slider = document.createElement("input");
@@ -143,38 +201,47 @@ export class CustomMenuSettingsUI {
 
       label.innerText = `${name}: ${displayValue}`;
     });
-    contextMenu.appendChild(slider);
+    contextMenu?.appendChild(slider);
 
     // Hover text
-    slider.addEventListener("mouseover", () => {
-      this.setHoverText(hoverText);
-    });
-    slider.addEventListener("mouseout", () => {
-      this.setHoverText("");
-    });
+    slider.addEventListener("mouseover", () => this.setHoverText(hoverText));
+    slider.addEventListener("mouseout", () => this.setHoverText(""));
     return slider;
   }
 
+  /**
+   * Adds a radio button to the context menu in a specific group.
+   * @param name - The name of the radio button.
+   * @param groupName - The name of the group the radio button belongs to.
+   * @param hoverText - The text to be displayed when hovering over the radio button.
+   * @returns - The radio button element.
+   */
   addRadioButton(name: string, groupName: string, hoverText = "") {
-    const contextMenu = this.childrenMap.get("context-menu");
+    const contextMenu = this.menuElements.get("context-menu");
     let id = name.toLowerCase().replace(" ", "-");
     // Check if the group already exists
-    if (!this.childrenMap.has(groupName)) {
+    if (!this.menuElements.has(groupName)) {
       const groupLabel = document.createElement("label");
       groupLabel.id = this.prefix + "-" + groupName + "-label";
       groupLabel.innerText = groupName;
-      contextMenu.appendChild(groupLabel);
+      contextMenu?.appendChild(groupLabel);
 
       const group = document.createElement("div");
       group.id = this.prefix + "-" + groupName;
       group.classList.add("cls-horizontal-box");
-      this.childrenMap.set(groupName, group);
-      contextMenu.appendChild(group);
+      this.menuElements.set(groupName, group);
+      contextMenu?.appendChild(group);
     }
-    const radioGroupDiv = this.childrenMap.get(groupName);
+    const radioGroupDiv = this.menuElements.get(groupName);
+
+    // Container for radio button and label
     const radioBox = document.createElement("div");
     radioBox.id = this.prefix + "-" + id;
     radioBox.classList.add("cls-vertical-box");
+
+    // Hover text
+    radioBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
+    radioBox.addEventListener("mouseout", () => this.setHoverText(""));
 
     // Radio button
     const radio = document.createElement("input");
@@ -189,24 +256,19 @@ export class CustomMenuSettingsUI {
     label.innerText = name;
     radioBox.appendChild(label);
 
-    // Hover text
-    radioBox.addEventListener("mouseover", () => {
-      this.setHoverText(hoverText);
-    });
-    radioBox.addEventListener("mouseout", () => {
-      this.setHoverText("");
-    });
-
-    radioGroupDiv.appendChild(radioBox);
+    radioGroupDiv?.appendChild(radioBox);
     return radio;
   }
 
+  /**
+   * Adds a special version label to the context menu.
+   * @param version - The version to be displayed.
+   */
   addVersion(version: string) {
-    let contextMenu = this.childrenMap.get("context-menu");
-
+    let contextMenu = this.menuElements.get("context-menu");
     let versionDiv = document.createElement("label");
     versionDiv.id = this.prefix + "-version";
     versionDiv.innerText = `VERSION: ${version}`;
-    contextMenu.appendChild(versionDiv);
+    contextMenu?.appendChild(versionDiv);
   }
 }

@@ -1,6 +1,5 @@
 import { getAllPlayingCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
-import { isMapEditor } from "../shared/awbw_page";
-import { musicPlayerUI } from "./music_player_menu";
+import { musicPlayerUI } from "./menu_ui";
 import {
   getMusicURL,
   getMovementSoundURL,
@@ -19,6 +18,7 @@ import {
   getCurrentThemeType,
 } from "./music_settings";
 import { getRandomCO } from "../shared/awbw_globals";
+import { getIsMapEditor } from "../shared/awbw_page";
 
 /**
  * The URL of the current theme that is playing.
@@ -76,6 +76,7 @@ export function playThemeSong(startFromBeginning = false) {
   }
 
   let coName = currentPlayer.coName;
+  if (!coName) coName = "map-editor";
 
   // Don't randomize the victory and defeat themes
   let isEndTheme = coName === "victory" || coName === "defeat";
@@ -99,7 +100,7 @@ export function stopThemeSong(delayMS: number = 0) {
 
   // Can't stop if we are already paused
   let currentTheme = urlAudioMap.get(currentThemeKey);
-  if (currentTheme.paused) return;
+  if (!currentTheme || currentTheme.paused) return;
 
   // The song hasn't finished loading, so stop it as soon as it does
   if (currentTheme.readyState !== HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
@@ -128,6 +129,7 @@ export function playMovementSound(unitId: number) {
 
   // Restart the audio and then play it
   let movementAudio = unitIDAudioMap.get(unitId);
+  if (!movementAudio) return;
   movementAudio.currentTime = 0;
   movementAudio.loop = false;
   movementAudio.volume = musicPlayerSettings.sfxVolume;
@@ -148,7 +150,7 @@ export function stopMovementSound(unitId: number, rolloff = true) {
 
   // Can't stop if the sound is already stopped
   let movementAudio = unitIDAudioMap.get(unitId);
-  if (movementAudio.paused) return;
+  if (!movementAudio || movementAudio.paused) return;
 
   // The audio hasn't finished loading, so pause when it does
   if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
@@ -191,6 +193,7 @@ export function playSFX(sfx: GameSFX) {
 
   // The sound is loaded, so play it
   let audio = urlAudioMap.get(sfxURL);
+  if (!audio) return;
   audio.volume = vol;
   audio.currentTime = 0;
   audio.play();
@@ -239,7 +242,7 @@ export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
  * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
  */
 export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
-  if (isMapEditor) return;
+  if (getIsMapEditor()) return;
 
   // Preload ALL sound effects
   let audioList = getAllSoundEffectURLs();
@@ -312,6 +315,7 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
  */
 function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   if (!musicPlayerSettings.isPlaying) return;
+  let previousSongURL = currentThemeKey;
 
   // We want to play a new song, so pause the previous one and mark it as the current song
   if (srcURL !== currentThemeKey) {
@@ -335,12 +339,16 @@ function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   }
 
   let nextTheme = urlAudioMap.get(srcURL);
+  if (!nextTheme) return;
 
   // Restart the song if requested
   if (startFromBeginning) nextTheme.currentTime = 0;
 
+  if (previousSongURL !== srcURL) {
+    console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
+  }
+
   // Play the song
-  console.log("[AWBW Improved Music Player] Now Playing: ", srcURL);
   nextTheme.volume = musicPlayerSettings.volume;
   nextTheme.loop = true;
   nextTheme.play();

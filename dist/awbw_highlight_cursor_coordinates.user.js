@@ -14,72 +14,51 @@
 (function () {
   "use strict";
 
-  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
-  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
-  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
-  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
-  const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
-  new Set([...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs]);
-  let mapCols = typeof maxX !== "undefined" ? maxX : -1;
-  let mapRows = typeof maxY !== "undefined" ? maxY : -1;
-  typeof gameAnims !== "undefined" ? gameAnims : false;
+  function getMapColumns() {
+    return typeof maxX !== "undefined" ? maxX : -1;
+  }
+  function getMapRows() {
+    return typeof maxY !== "undefined" ? maxY : -1;
+  }
 
-  let ahCursorMove =
-    typeof updateCursor !== "undefined"
-      ? updateCursor
-      : typeof designMapEditor !== "undefined"
-        ? designMapEditor.updateCursor
-        : null;
-  typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
-  typeof openMenu !== "undefined" ? openMenu : null;
-  typeof closeMenu !== "undefined" ? closeMenu : null;
-  typeof resetAttack !== "undefined" ? resetAttack : null;
-  typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
-  typeof waitUnit !== "undefined" ? waitUnit : null;
-  typeof animUnit !== "undefined" ? animUnit : null;
-  typeof animExplosion !== "undefined" ? animExplosion : null;
-  typeof updateAirUnitFogOnMove !== "undefined" ? updateAirUnitFogOnMove : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Fire : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.AttackSeam : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Move : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Capt : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Build : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Load : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Unload : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Supply : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Repair : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Hide : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Unhide : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Join : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Launch : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
-  typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
+  function getIsMapEditor() {
+    return window.location.href.indexOf("editmap.php?") > -1;
+  }
+  function getGamemap() {
+    return document.querySelector("#gamemap");
+  }
+  function getGamemapContainer() {
+    return document.querySelector("#gamemap-container");
+  }
+  function getZoomInBtn() {
+    return document.querySelector("#zoom-in");
+  }
+  function getZoomOutBtn() {
+    return document.querySelector("#zoom-out");
+  }
+  function getZoomLevel() {
+    return document.querySelector(".zoom-level");
+  }
+  function getCursor() {
+    return document.querySelector("#cursor");
+  }
 
-  let gamemap = document.querySelector("#gamemap");
-  let gamemapContainer = document.querySelector("#gamemap-container");
-  let zoomInBtn = document.querySelector("#zoom-in");
-  let zoomOutBtn = document.querySelector("#zoom-out");
-  let zoomLevel = document.querySelector(".zoom-level");
-  let cursor = document.querySelector("#cursor");
-  document.querySelector(".event-username");
-  document.querySelector(".supply-icon");
-  document.querySelector(".trapped-icon");
-  document.querySelector(".target-icon");
-  document.querySelector(".destroy-icon");
-  document.querySelector(".replay-open");
-  document.querySelector(".replay-close");
-  document.querySelector(".replay-forward");
-  document.querySelector(".replay-forward-action");
-  document.querySelector(".replay-backward");
-  document.querySelector(".replay-backward-action");
-  document.querySelector(".replay-day-selector");
-  let isMapEditor = window.location.href.indexOf("editmap.php?") > -1;
-  isMapEditor ? document.querySelector("#replay-misc-controls") : document.querySelector("#game-map-menu")?.parentNode;
+  function getCursorMoveFn() {
+    if (getIsMapEditor()) {
+      return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
+    }
+    return typeof updateCursor !== "undefined" ? updateCursor : null;
+  }
 
-  let maximizeBtn = document.getElementsByClassName("AWBWMaxmiseButton")[0];
+  function getMaximizeBtn() {
+    return document.getElementsByClassName("AWBWMaxmiseButton")[0];
+  }
 
+  const mapRows = getMapRows();
+  const mapCols = getMapColumns();
+  const cursor = getCursor();
+  const gamemap = getGamemap();
+  const gamemapContainer = getGamemapContainer();
   const CURSOR_THRESHOLD_MS = 30;
   const FONT_SIZE = 9;
   let previousHighlight = [];
@@ -116,14 +95,18 @@
   }
   function onZoomChangeEvent(_event, zoom = -1) {
     if (zoom < 0) {
-      zoom = parseFloat(zoomLevel.textContent);
+      const zoomLevelText = getZoomLevel().textContent;
+      if (zoomLevelText !== null) {
+        zoom = parseFloat(zoomLevelText);
+      }
     }
     let padding = 16 * zoom;
     gamemapContainer.style.paddingBottom = padding + "px";
     gamemapContainer.style.paddingLeft = padding + "px";
   }
+  let ahCursorMove = getCursorMoveFn();
   updateCursor = (cursorX, cursorY) => {
-    ahCursorMove.apply(updateCursor, [cursorX, cursorY]);
+    ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
     let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
     let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
     let highlightRow = document.getElementById("grid-spot-row-" + cursorRow);
@@ -132,6 +115,10 @@
     let dy = Math.abs(cursorY - lastCursorY);
     let cursorMoved = dx >= 1 || dy >= 1;
     let timeSinceLastCursorCall = Date.now() - lastCursorCall;
+    if (!highlightRow || !highlightCol) {
+      console.log("[AWBW Highlight Cursor Coordinates] Highlight row or column is null, something isn't right.");
+      return;
+    }
     if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
     if (cursorMoved) {
       if (previousHighlight.length > 0) {
@@ -146,14 +133,17 @@
     lastCursorX = cursorX;
     lastCursorY = cursorY;
   };
+  const zoomInBtn = getZoomInBtn();
   if (zoomInBtn != null) {
     zoomInBtn.addEventListener("click", onZoomChangeEvent);
   }
+  const zoomOutBtn = getZoomOutBtn();
   if (zoomOutBtn != null) {
     zoomOutBtn.addEventListener("click", onZoomChangeEvent);
   }
+  const maximizeBtn = getMaximizeBtn();
   if (maximizeBtn != null) {
-    console.log("AWBW Highlight Cursor Coordinates script found AWBW Maximize script");
+    console.log("[AWBW Highlight Cursor Coordinates] Found AWBW Maximize script and connected to it.");
     maximizeBtn.addEventListener("click", (event) => {
       isMaximizeToggled = !isMaximizeToggled;
       onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : -1);

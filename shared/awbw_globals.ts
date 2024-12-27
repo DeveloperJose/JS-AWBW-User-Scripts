@@ -31,16 +31,8 @@ const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
 const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
 
 /**
- * List of all COs in the game, stored in a set for more efficient lookups.
+ * List of COs that are only available in Dual Strike, stored in a set for more efficient lookups.
  */
-export const ALL_COs = new Set([
-  ...ORANGE_STAR_COs,
-  ...BLUE_MOON_COs,
-  ...GREEN_EARTH_COs,
-  ...YELLOW_COMET_COs,
-  ...BLACK_HOLE_COs,
-]);
-
 export const AW_DS_ONLY_COs = new Set([
   "jake",
   "rachel",
@@ -53,21 +45,34 @@ export const AW_DS_ONLY_COs = new Set([
   "vonbolt",
 ]);
 
+/**
+ * List of all COs in the game.
+ */
+export function getAllCONames() {
+  return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+}
+
 // ============================== AWBW Page Global Variables ==============================
 /**
  * The number of columns of this map.
  */
-export let mapCols = typeof maxX !== "undefined" ? maxX : -1;
+export function getMapColumns() {
+  return typeof maxX !== "undefined" ? maxX : -1;
+}
 
 /**
  * The number of rows of this map.
  */
-export let mapRows = typeof maxY !== "undefined" ? maxY : -1;
+export function getMapRows() {
+  return typeof maxY !== "undefined" ? maxY : -1;
+}
 
 /**
  * Whether game animations are enabled or not.
  */
-export let gameAnimations = typeof gameAnims !== "undefined" ? gameAnims : false;
+export function areAnimationsEnabled() {
+  return typeof gameAnims !== "undefined" ? gameAnims : false;
+}
 
 /**
  * Determines if the given CO is an ally or a part of Black Hole.
@@ -83,7 +88,7 @@ export function isBlackHoleCO(coName: string) {
  * @returns - The name of the randomly selected CO.
  */
 export function getRandomCO() {
-  const COs = Array.from(ALL_COs);
+  const COs = getAllCONames();
   COs.push("map-editor", "victory", "defeat");
   return COs[Math.floor(Math.random() * COs.length)];
 }

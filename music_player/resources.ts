@@ -2,8 +2,7 @@
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
 import { getCurrentGameDay } from "../shared/awbw_game";
-import { ALL_COs, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
-import { isMapEditor } from "../shared/awbw_page";
+import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
 import { SettingsGameType, SettingsThemeType, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
 /**
@@ -36,7 +35,16 @@ export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
  */
 export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
 
+/**
+ * URL for the victory theme music.
+ * @constant {string}
+ */
 export const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
+
+/**
+ * URL for the defeat theme music.
+ * @constant {string}
+ */
 export const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
 
 /**
@@ -159,6 +167,9 @@ const onMovementRolloffMap = new Map([
   ["Tank", MovementSFX.moveTreadLightOneShot],
 ]);
 
+/**
+ * Map that takes a game type and gives you a set of CO names that have alternate themes for that game type.
+ */
 const alternateThemes = new Map([
   [SettingsGameType.AW1, new Set(["sturm", "vonbolt"])],
   [SettingsGameType.AW2, new Set(["sturm", "vonbolt"])],
@@ -168,10 +179,9 @@ const alternateThemes = new Map([
 
 function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
   // Check if this CO has an alternate theme
-  if (!alternateThemes.has(gameType)) {
-    console.log("ERROR: getAlternate()", gameType, "not found in alternateThemes");
-  }
+  if (!alternateThemes.has(gameType)) return;
   let alternateThemesSet = alternateThemes.get(gameType);
+
   let faction = isBlackHoleCO(coName) ? "bh" : "ally";
 
   // RBC individual CO power themes -> RBC shared factory themes
@@ -181,7 +191,7 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
   }
 
   // No alternate theme or it's a power
-  if (!alternateThemesSet.has(coName) || isPowerActive) {
+  if (!alternateThemesSet?.has(coName) || isPowerActive) {
     return false;
   }
 
@@ -237,9 +247,9 @@ function getMusicFilename(coName: string, gameType: SettingsGameType, themeType:
  * @param themeType - (Optional) Which type of music to use whether regular or power.
  * @returns - The complete URL of the music to play given the parameters.
  */
-export function getMusicURL(coName: string, gameType: SettingsGameType = null, themeType: SettingsThemeType = null) {
-  if (gameType === null) gameType = musicPlayerSettings.gameType;
-  if (themeType === null) themeType = musicPlayerSettings.themeType;
+export function getMusicURL(coName: string, gameType?: SettingsGameType, themeType?: SettingsThemeType) {
+  if (!gameType) gameType = musicPlayerSettings.gameType;
+  if (!themeType) themeType = musicPlayerSettings.themeType;
 
   // Check if we want to play the victory or defeat theme
   if (coName === "victory") return VICTORY_THEME_URL;
@@ -310,10 +320,14 @@ export function getAllSoundEffectURLs() {
   return allSoundURLs;
 }
 
+/**
+ * Gets a list of the URLs for all the music themes the music player might ever use.
+ * @returns - Set with all the URLs for all the music player themes.
+ */
 export function getAllThemeURLs() {
   let allSoundURLs = new Set<string>();
 
-  for (let coName of ALL_COs) {
+  for (let coName of getAllCONames()) {
     for (let gameType of Object.values(SettingsGameType)) {
       for (let themeType of Object.values(SettingsThemeType)) {
         allSoundURLs.add(getMusicURL(coName, gameType, themeType));

@@ -10,16 +10,16 @@
 import "./style.css";
 import "./style_sliders.css";
 
-import { musicPlayerUI } from "./music_player_menu";
+import { musicPlayerUI } from "./menu_ui";
 import { preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
-import { addGameHandlers } from "./handlers";
-import { isMapEditor } from "../shared/awbw_page";
+import { addHandlers } from "./handlers";
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-addGameHandlers();
+console.debug("[AWBW Improved Music Player] Script starting...");
+addHandlers();
 musicPlayerUI.addToAWBWPage();
 
 preloadAllCommonAudio(() => {
