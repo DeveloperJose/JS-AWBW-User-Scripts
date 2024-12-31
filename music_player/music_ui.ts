@@ -3,8 +3,9 @@
  */
 import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from "./music_settings";
-import { CustomMenuSettingsUI } from "../shared/custom_ui";
+import { CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
+import { getRandomCO } from "../shared/awbw_globals";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -42,8 +43,14 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     // Check the radio button that matches the current random themes setting
     radioNormal.checked = !musicPlayerSettings.randomThemes;
     radioRandom.checked = musicPlayerSettings.randomThemes;
+
+    // Check the checkboxes that match the settings
+    captProgressBox.checked = musicPlayerSettings.captureProgressSFX;
+    pipeSeamBox.checked = musicPlayerSettings.pipeSeamSFX;
     musicPlayerUI.updateAllInputLabels();
   }
+
+  shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
 
   // Update UI
   if (musicPlayerSettings.isPlaying) {
@@ -75,14 +82,17 @@ export const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IM
 // Determine who will catch when the user clicks the play/stop button
 musicPlayerUI.addEventListener("click", onMusicBtnClick);
 
-enum InputName {
+enum Name {
   Volume = "Music Volume",
   SFX_Volume = "SFX Volume",
   UI_Volume = "UI Volume",
   Alternate_Day = "Alternate Themes Start On Day",
+  Shuffle = "Shuffle",
+  Capture_Progress = "Capture Progress SFX",
+  Pipe_Seam_SFX = "Pipe Seam Attack SFX",
 }
 
-enum InputDescription {
+enum Description {
   Volume = "Adjust the volume of the CO theme music, power activations, and power themes.",
   SFX_Volume = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
   UI_Volume = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
@@ -93,40 +103,52 @@ enum InputDescription {
   RBC = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!",
   Normal_Themes = "Play the music depending on who the current CO is.",
   Random_Themes = "Play random music every turn.",
+  Shuffle = "Changes the current theme to a new random one.",
+  Capture_Progress = "Play a sound effect when a unit makes progress capturing a property.",
+  Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
 }
 
 // Volume sliders
-let volumeSlider = musicPlayerUI.addSlider(InputName.Volume, 0, 1, 0.005, InputDescription.Volume);
-let sfxVolumeSlider = musicPlayerUI.addSlider(InputName.SFX_Volume, 0, 1, 0.005, InputDescription.SFX_Volume);
-let uiVolumeSlider = musicPlayerUI.addSlider(InputName.UI_Volume, 0, 1, 0.005, InputDescription.UI_Volume);
+let volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume);
+let sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume);
+let uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume);
 volumeSlider.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
 sfxVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
 uiVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
 
 // Day slider
-let daySlider = musicPlayerUI.addSlider(InputName.Alternate_Day, 0, 30, 1, InputDescription.Alternate_Day);
+let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day);
 daySlider.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
 
 // GameType radio buttons
 const gameTypeRadioMap: Map<SettingsGameType, HTMLInputElement> = new Map();
+const soundtrackGroup = "Soundtrack";
 
 for (const gameType of Object.values(SettingsGameType)) {
-  let description = InputDescription[gameType as keyof typeof InputDescription];
-  let radio = musicPlayerUI.addRadioButton(gameType, "Soundtrack", description);
+  let description = Description[gameType as keyof typeof Description];
+  let radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
   gameTypeRadioMap.set(gameType, radio);
-
-  // Set the game type when the radio button is clicked.
-  // By adding the event to the parent, we allow the user to also click the label to select the radio button.
-  radio.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.gameType = gameType));
+  radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
 }
 
 // Random themes radio buttons
-let radioNormal = musicPlayerUI.addRadioButton("Off", "Random Themes", InputDescription.Normal_Themes);
-let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", InputDescription.Random_Themes);
-radioNormal.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.randomThemes = false));
-radioRandom.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.randomThemes = true));
+const randomGroup = "Random Themes";
+let radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
+let radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
+radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
+radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
 
-// Toggles
+// Random theme shuffle button
+let shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
+shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
+
+// Sound effect toggle checkboxes
+const toggleGroup = "Sound Effects";
+musicPlayerUI.getGroupOrAddIfNeeded(toggleGroup, GroupType.Vertical);
+let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
+let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
+pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
 
 // Version
 musicPlayerUI.addVersion(versions.music_player);

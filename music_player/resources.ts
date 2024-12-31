@@ -276,9 +276,12 @@ export function getMusicURL(
   themeType?: SettingsThemeType,
   useAlternateTheme?: boolean,
 ) {
-  if (!gameType) gameType = musicPlayerSettings.gameType;
-  if (!themeType) themeType = musicPlayerSettings.themeType;
-  if (!useAlternateTheme) useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
+  // Override optional parameters with current settings if not provided
+  if (gameType === null || gameType === undefined) gameType = musicPlayerSettings.gameType;
+  if (themeType === null || themeType === undefined) themeType = musicPlayerSettings.themeType;
+  if (useAlternateTheme === null || useAlternateTheme === undefined) {
+    useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
+  }
 
   // Convert name to internal format
   coName = coName.toLowerCase().replaceAll(" ", "");
@@ -307,7 +310,9 @@ export function getMusicURL(
 export function getCONameFromURL(url: string) {
   let parts = url.split("/");
   let filename = parts[parts.length - 1];
-  let coName = filename.split(".")[0].split("t-")[1];
+
+  // Remove t- prefix and .ogg extension
+  let coName = filename.split(".")[0].substring(2);
   return coName;
 }
 
@@ -428,11 +433,12 @@ export function getAllThemeURLs() {
     for (let gameType of Object.values(SettingsGameType)) {
       for (let themeType of Object.values(SettingsThemeType)) {
         let url = getMusicURL(coName, gameType, themeType, false);
+        if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
+          allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
+        }
         let alternateURL = getMusicURL(coName, gameType, themeType, true);
         allSoundURLs.add(url);
         allSoundURLs.add(alternateURL);
-        if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName))
-          allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
       }
     }
   }

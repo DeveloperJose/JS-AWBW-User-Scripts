@@ -42,11 +42,39 @@ const urlAudioMap: Map<string, HTMLAudioElement> = new Map();
 const unitIDAudioMap: Map<number, HTMLAudioElement> = new Map();
 
 /**
+ * Map containing the special loop URLs for themes that have them. These get added after the original theme ends.
+ * The keys are the original theme URLs.
+ * The values are the special loop URLs to play after the original theme ends.
+ */
+const specialLoopMap = new Map<string, string>();
+
+/**
  * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
  */
 let currentlyDelaying = false;
 
+/**
+ * Timeout ID for the timer that switches the current theme when it ends for a new random one.
+ */
 let randomThemeTimeout: number | null;
+
+function setRandomThemeTimeout(nextTheme: HTMLAudioElement) {
+  if (!nextTheme.duration) {
+    console.error("[AWBW Music Player] Duration is 0, can't set timeout! Please report this bug!", nextTheme);
+    return;
+  }
+
+  // Clear the previous timeout if it exists
+  if (randomThemeTimeout) clearTimeout(randomThemeTimeout);
+
+  // Set a new timeout for the next theme
+  const songDurationMS = nextTheme.duration * 1000;
+  randomThemeTimeout = setTimeout(() => {
+    musicPlayerSettings.currentRandomCO = getRandomCO();
+    randomThemeTimeout = null;
+    playThemeSong(true);
+  }, songDurationMS);
+}
 
 /**
  * Event handler that pauses an audio as soon as it gets loaded.
@@ -68,12 +96,9 @@ function whenAudioLoadsPlayIt(event: Event) {
   playThemeSong();
 }
 
-const specialLoopMap = new Map<string, string>();
-
 function createNewThemeAudio(srcURL: string) {
   let audio = new Audio(srcURL);
   if (hasSpecialLoop(srcURL)) {
-    // console.debug("[AWBW Music Player] Special loop detected: ", srcURL);
     audio.loop = false;
     audio.addEventListener("ended", (event) => {
       const loopURL = srcURL.replace(".ogg", "-loop.ogg");
@@ -111,8 +136,8 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
   }
 
   // The song isn't preloaded or invalid, load it and play it when it loads
-  let nextTheme = urlAudioMap.get(srcURL);
-  if (!nextTheme) {
+  let nextSong = urlAudioMap.get(srcURL);
+  if (!nextSong) {
     console.debug("[AWBW Music Player] Loading new song", srcURL);
     let audio = createNewThemeAudio(srcURL);
     audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
@@ -120,24 +145,27 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
   }
 
   // Restart the song if requested
-  if (startFromBeginning) nextTheme.currentTime = 0;
+  if (startFromBeginning) nextSong.currentTime = 0;
 
   // Loop all themes except for the special ones
-  nextTheme.loop = !hasSpecialLoop(srcURL);
+  nextSong.loop = !hasSpecialLoop(srcURL);
 
-  // We are playing random themes, so set a timer for when this song will end to switch songs
-  if (musicPlayerSettings.randomThemes && !randomThemeTimeout) {
-    const songDurationMS = nextTheme.duration * 1000;
-    randomThemeTimeout = setTimeout(() => {
-      musicPlayerSettings.currentRandomCO = getRandomCO();
-      randomThemeTimeout = null;
-      playThemeSong(true);
-    }, songDurationMS);
+  // Play the song.
+  nextSong.volume = musicPlayerSettings.volume;
+  nextSong.play();
+
+  // We aren't playing random themes, and if we are, we are already waiting for the next song to start
+  if (!musicPlayerSettings.randomThemes || randomThemeTimeout) return;
+
+  // We are playing random themes, and there is no timer to switch to the next song yet so set one if possible
+  if (nextSong.duration > 0) {
+    setRandomThemeTimeout(nextSong);
+    return;
   }
 
-  // Play the song
-  nextTheme.volume = musicPlayerSettings.volume;
-  nextTheme.play();
+  // Duration isn't loaded yet, so wait until it is to set the timeout
+  const eventType = "loadedmetadata";
+  nextSong.addEventListener(eventType, (e) => setRandomThemeTimeout(e.target as HTMLAudioElement), { once: true });
 }
 
 /**
@@ -429,6 +457,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   if (isFirstLoad) return;
 
   switch (key) {
+    case "currentRandomCO":
     case "isPlaying":
       if (musicPlayerSettings.isPlaying) {
         playThemeSong();
@@ -451,6 +480,10 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
         return;
       }
 
+      // We want a new random theme
+      musicPlayerSettings.currentRandomCO = getRandomCO();
+      playThemeSong(true);
+
       // Preload all themes if we are going to play random themes
       if (!allThemesPreloaded) {
         console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
@@ -458,14 +491,6 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
         allThemesPreloaded = true;
         preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
       }
-
-      // We want a new random theme
-      if (randomThemeTimeout) {
-        clearTimeout(randomThemeTimeout);
-        randomThemeTimeout = null;
-      }
-      musicPlayerSettings.currentRandomCO = getRandomCO();
-      playThemeSong(true);
       break;
     case "volume": {
       // Adjust the volume of the current theme

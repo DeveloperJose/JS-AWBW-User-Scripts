@@ -71,11 +71,13 @@ export abstract class musicPlayerSettings {
   // User configurable settings
   private static __isPlaying = false;
   private static __volume = 0.5;
-  private static __sfxVolume = 0.35;
-  private static __uiVolume = 0.425;
+  private static __sfxVolume = 0.5;
+  private static __uiVolume = 0.5;
   private static __gameType = SettingsGameType.DS;
   private static __alternateThemeDay = 15;
   private static __randomThemes = false;
+  private static __captureProgressSFX = true;
+  private static __pipeSeamSFX = true;
 
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
@@ -91,6 +93,8 @@ export abstract class musicPlayerSettings {
       gameType: this.__gameType,
       alternateThemeDay: this.__alternateThemeDay,
       randomThemes: this.__randomThemes,
+      captureProgressSFX: this.__captureProgressSFX,
+      pipeSeamSFX: this.__pipeSeamSFX,
     });
   }
 
@@ -156,16 +160,6 @@ export abstract class musicPlayerSettings {
     return this.__gameType;
   }
 
-  static set themeType(val: SettingsThemeType) {
-    if (this.__themeType === val) return;
-    this.__themeType = val;
-    this.onSettingChangeEvent("themeType");
-  }
-
-  static get themeType() {
-    return this.__themeType;
-  }
-
   static set alternateThemeDay(val: number) {
     if (this.__alternateThemeDay === val) return;
     this.__alternateThemeDay = val;
@@ -174,6 +168,38 @@ export abstract class musicPlayerSettings {
 
   static get alternateThemeDay() {
     return this.__alternateThemeDay;
+  }
+
+  static set captureProgressSFX(val: boolean) {
+    if (this.__captureProgressSFX === val) return;
+    this.__captureProgressSFX = val;
+    this.onSettingChangeEvent("captureProgressSFX");
+  }
+
+  static get captureProgressSFX() {
+    return this.__captureProgressSFX;
+  }
+
+  static set pipeSeamSFX(val: boolean) {
+    if (this.__pipeSeamSFX === val) return;
+    this.__pipeSeamSFX = val;
+    this.onSettingChangeEvent("pipeSeamSFX");
+  }
+
+  static get pipeSeamSFX() {
+    return this.__pipeSeamSFX;
+  }
+
+  // ************* Non-user configurable settings from here on
+
+  static set themeType(val: SettingsThemeType) {
+    if (this.__themeType === val) return;
+    this.__themeType = val;
+    this.onSettingChangeEvent("themeType");
+  }
+
+  static get themeType() {
+    return this.__themeType;
   }
 
   static set randomThemes(val: boolean) {
@@ -222,7 +248,7 @@ export function loadSettingsFromLocalStorage() {
 
   // From now on, any setting changes will be saved and any listeners will be called
   addSettingsChangeListener(onSettingsChange);
-  console.debug("[MP] Settings loaded from storage:", storageData);
+  console.debug("[Music Player] Settings loaded from storage:", storageData);
 }
 
 function onSettingsChange(_key: string, _isFirstLoad: boolean) {
@@ -238,6 +264,6 @@ function onSettingsChange(_key: string, _isFirstLoad: boolean) {
 function updateSettingsInLocalStorage() {
   let jsonSettings = musicPlayerSettings.toJSON();
   localStorage.setItem(STORAGE_KEY, jsonSettings);
-  console.debug("[MP] Saving settings...", jsonSettings);
+  console.debug("[Music Player] Saving settings...", jsonSettings);
   return jsonSettings;
 }

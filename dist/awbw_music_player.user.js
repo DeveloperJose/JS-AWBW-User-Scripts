@@ -283,11 +283,13 @@
   class musicPlayerSettings {
     static __isPlaying = false;
     static __volume = 0.5;
-    static __sfxVolume = 0.35;
-    static __uiVolume = 0.425;
+    static __sfxVolume = 0.5;
+    static __uiVolume = 0.5;
     static __gameType = SettingsGameType.DS;
     static __alternateThemeDay = 15;
     static __randomThemes = false;
+    static __captureProgressSFX = true;
+    static __pipeSeamSFX = true;
     static __themeType = SettingsThemeType.REGULAR;
     static __currentRandomCO = getRandomCO();
     static __isLoaded = false;
@@ -300,6 +302,8 @@
         gameType: this.__gameType,
         alternateThemeDay: this.__alternateThemeDay,
         randomThemes: this.__randomThemes,
+        captureProgressSFX: this.__captureProgressSFX,
+        pipeSeamSFX: this.__pipeSeamSFX,
       });
     }
     static fromJSON(json) {
@@ -352,14 +356,6 @@
     static get gameType() {
       return this.__gameType;
     }
-    static set themeType(val) {
-      if (this.__themeType === val) return;
-      this.__themeType = val;
-      this.onSettingChangeEvent("themeType");
-    }
-    static get themeType() {
-      return this.__themeType;
-    }
     static set alternateThemeDay(val) {
       if (this.__alternateThemeDay === val) return;
       this.__alternateThemeDay = val;
@@ -367,6 +363,30 @@
     }
     static get alternateThemeDay() {
       return this.__alternateThemeDay;
+    }
+    static set captureProgressSFX(val) {
+      if (this.__captureProgressSFX === val) return;
+      this.__captureProgressSFX = val;
+      this.onSettingChangeEvent("captureProgressSFX");
+    }
+    static get captureProgressSFX() {
+      return this.__captureProgressSFX;
+    }
+    static set pipeSeamSFX(val) {
+      if (this.__pipeSeamSFX === val) return;
+      this.__pipeSeamSFX = val;
+      this.onSettingChangeEvent("pipeSeamSFX");
+    }
+    static get pipeSeamSFX() {
+      return this.__pipeSeamSFX;
+    }
+    static set themeType(val) {
+      if (this.__themeType === val) return;
+      this.__themeType = val;
+      this.onSettingChangeEvent("themeType");
+    }
+    static get themeType() {
+      return this.__themeType;
     }
     static set randomThemes(val) {
       if (this.__randomThemes === val) return;
@@ -560,9 +580,11 @@
     return `t-${faction}-${themeType}`;
   }
   function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
-    if (!gameType) gameType = musicPlayerSettings.gameType;
-    if (!themeType) themeType = musicPlayerSettings.themeType;
-    if (!useAlternateTheme) useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
+    if (gameType === null || gameType === undefined) gameType = musicPlayerSettings.gameType;
+    if (themeType === null || themeType === undefined) themeType = musicPlayerSettings.themeType;
+    if (useAlternateTheme === null || useAlternateTheme === undefined) {
+      useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
+    }
     coName = coName.toLowerCase().replaceAll(" ", "");
     if (coName === "victory") return VICTORY_THEME_URL;
     if (coName === "defeat") return DEFEAT_THEME_URL;
@@ -577,7 +599,7 @@
   function getCONameFromURL(url) {
     let parts = url.split("/");
     let filename = parts[parts.length - 1];
-    let coName = filename.split(".")[0].split("t-")[1];
+    let coName = filename.split(".")[0].substring(2);
     return coName;
   }
   function getSoundEffectURL(sfx) {
@@ -643,20 +665,33 @@
       for (let gameType of Object.values(SettingsGameType)) {
         for (let themeType of Object.values(SettingsThemeType)) {
           let url = getMusicURL(coName, gameType, themeType, false);
+          if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
+            allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
+          }
           let alternateURL = getMusicURL(coName, gameType, themeType, true);
           allSoundURLs.add(url);
           allSoundURLs.add(alternateURL);
-          if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName))
-            allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
         }
       }
     }
     return allSoundURLs;
   }
 
+  var CustomInputType;
+  (function (CustomInputType) {
+    CustomInputType["Radio"] = "radio";
+    CustomInputType["Checkbox"] = "checkbox";
+    CustomInputType["Button"] = "button";
+  })(CustomInputType || (CustomInputType = {}));
+  var GroupType;
+  (function (GroupType) {
+    GroupType["Vertical"] = "cls-vertical-box";
+    GroupType["Horizontal"] = "cls-horizontal-box";
+  })(GroupType || (GroupType = {}));
   class CustomMenuSettingsUI {
     root;
     menuElements = new Map();
+    groupTypes = new Map();
     inputElements = [];
     isSettingsMenuOpen = false;
     prefix = "";
@@ -773,38 +808,56 @@
       slider.addEventListener("mouseout", () => this.setHoverText(""));
       return slider;
     }
-    addRadioButton(name, groupName, hoverText = "") {
+    getGroupOrAddIfNeeded(groupName, type = GroupType.Horizontal) {
       const contextMenu = this.menuElements.get("context-menu");
+      if (this.menuElements.has(groupName)) return this.menuElements.get(groupName);
+      const groupLabel = document.createElement("label");
+      groupLabel.id = this.prefix + "-" + groupName + "-label";
+      groupLabel.innerText = groupName;
+      contextMenu?.appendChild(groupLabel);
+      const group = document.createElement("div");
+      group.id = this.prefix + "-" + groupName;
+      group.classList.add(type);
+      this.menuElements.set(groupName, group);
+      contextMenu?.appendChild(group);
+      let otherType = type === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
+      this.groupTypes.set(groupName, otherType);
+      return group;
+    }
+    addRadioButton(name, groupName, hoverText = "") {
+      return this.addInput(name, groupName, hoverText, CustomInputType.Radio);
+    }
+    addCheckbox(name, groupName, hoverText = "") {
+      return this.addInput(name, groupName, hoverText, CustomInputType.Checkbox);
+    }
+    addButton(name, groupName, hoverText = "") {
+      return this.addInput(name, groupName, hoverText, CustomInputType.Button);
+    }
+    addInput(name, groupName, hoverText = "", type) {
+      this.menuElements.get("context-menu");
       let id = name.toLowerCase().replace(" ", "-");
-      if (!this.menuElements.has(groupName)) {
-        const groupLabel = document.createElement("label");
-        groupLabel.id = this.prefix + "-" + groupName + "-label";
-        groupLabel.innerText = groupName;
-        contextMenu?.appendChild(groupLabel);
-        const group = document.createElement("div");
-        group.id = this.prefix + "-" + groupName;
-        group.classList.add("cls-horizontal-box");
-        this.menuElements.set(groupName, group);
-        contextMenu?.appendChild(group);
-      }
-      const radioGroupDiv = this.menuElements.get(groupName);
-      const radioBox = document.createElement("div");
-      radioBox.id = this.prefix + "-" + id;
-      radioBox.classList.add("cls-vertical-box");
-      radioBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
-      radioBox.addEventListener("mouseout", () => this.setHoverText(""));
-      const radio = document.createElement("input");
-      radio.id = this.prefix + "-" + id + "-radio";
-      radio.type = "radio";
-      radio.name = groupName;
-      radioBox.appendChild(radio);
-      this.inputElements.push(radio);
+      const groupDiv = this.getGroupOrAddIfNeeded(groupName);
+      const groupType = this.groupTypes.get(groupName);
+      const inputBox = document.createElement("div");
+      inputBox.id = this.prefix + "-" + id;
+      if (groupType) inputBox.classList.add(groupType);
+      inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
+      inputBox.addEventListener("mouseout", () => this.setHoverText(""));
+      const input = document.createElement("input");
+      input.id = this.prefix + "-" + id + "-" + type;
+      input.type = type;
+      input.name = groupName;
+      inputBox.appendChild(input);
+      this.inputElements.push(input);
       const label = document.createElement("label");
       label.id = this.prefix + "-" + id + "-label";
       label.innerText = name;
-      radioBox.appendChild(label);
-      radioGroupDiv?.appendChild(radioBox);
-      return radio;
+      inputBox.appendChild(label);
+      groupDiv?.appendChild(inputBox);
+      label.addEventListener("click", () => {
+        input.click();
+      });
+      return input;
     }
     addVersion(version) {
       let contextMenu = this.menuElements.get("context-menu");
@@ -848,8 +901,11 @@
       if (radio) radio.checked = true;
       radioNormal.checked = !musicPlayerSettings.randomThemes;
       radioRandom.checked = musicPlayerSettings.randomThemes;
+      captProgressBox.checked = musicPlayerSettings.captureProgressSFX;
+      pipeSeamBox.checked = musicPlayerSettings.pipeSeamSFX;
       musicPlayerUI.updateAllInputLabels();
     }
+    shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
     if (musicPlayerSettings.isPlaying) {
       musicPlayerUI.setHoverText("Stop Tunes", true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -862,56 +918,85 @@
   const parseInputInt = (event) => parseInt(event.target.value);
   const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
   musicPlayerUI.addEventListener("click", onMusicBtnClick);
-  var InputName;
-  (function (InputName) {
-    InputName["Volume"] = "Music Volume";
-    InputName["SFX_Volume"] = "SFX Volume";
-    InputName["UI_Volume"] = "UI Volume";
-    InputName["Alternate_Day"] = "Alternate Themes Start On Day";
-  })(InputName || (InputName = {}));
-  var InputDescription;
-  (function (InputDescription) {
-    InputDescription["Volume"] = "Adjust the volume of the CO theme music, power activations, and power themes.";
-    InputDescription["SFX_Volume"] =
-      "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.";
-    InputDescription["UI_Volume"] =
+  var Name;
+  (function (Name) {
+    Name["Volume"] = "Music Volume";
+    Name["SFX_Volume"] = "SFX Volume";
+    Name["UI_Volume"] = "UI Volume";
+    Name["Alternate_Day"] = "Alternate Themes Start On Day";
+    Name["Shuffle"] = "Shuffle";
+    Name["Capture_Progress"] = "Capture Progress SFX";
+    Name["Pipe_Seam_SFX"] = "Pipe Seam Attack SFX";
+  })(Name || (Name = {}));
+  var Description;
+  (function (Description) {
+    Description["Volume"] = "Adjust the volume of the CO theme music, power activations, and power themes.";
+    Description["SFX_Volume"] = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.";
+    Description["UI_Volume"] =
       "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.";
-    InputDescription["Alternate_Day"] =
+    Description["Alternate_Day"] =
       "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
-    InputDescription["AW1"] = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!";
-    InputDescription["AW2"] = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.";
-    InputDescription["DS"] =
+    Description["AW1"] = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!";
+    Description["AW2"] = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.";
+    Description["DS"] =
       "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.";
-    InputDescription["RBC"] = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!";
-    InputDescription["Normal_Themes"] = "Play the music depending on who the current CO is.";
-    InputDescription["Random_Themes"] = "Play random music every turn.";
-  })(InputDescription || (InputDescription = {}));
-  let volumeSlider = musicPlayerUI.addSlider(InputName.Volume, 0, 1, 0.005, InputDescription.Volume);
-  let sfxVolumeSlider = musicPlayerUI.addSlider(InputName.SFX_Volume, 0, 1, 0.005, InputDescription.SFX_Volume);
-  let uiVolumeSlider = musicPlayerUI.addSlider(InputName.UI_Volume, 0, 1, 0.005, InputDescription.UI_Volume);
+    Description["RBC"] = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!";
+    Description["Normal_Themes"] = "Play the music depending on who the current CO is.";
+    Description["Random_Themes"] = "Play random music every turn.";
+    Description["Shuffle"] = "Changes the current theme to a new random one.";
+    Description["Capture_Progress"] = "Play a sound effect when a unit makes progress capturing a property.";
+    Description["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
+  })(Description || (Description = {}));
+  let volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume);
+  let sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume);
+  let uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume);
   volumeSlider.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
   sfxVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
   uiVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
-  let daySlider = musicPlayerUI.addSlider(InputName.Alternate_Day, 0, 30, 1, InputDescription.Alternate_Day);
+  let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day);
   daySlider.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
   const gameTypeRadioMap = new Map();
+  const soundtrackGroup = "Soundtrack";
   for (const gameType of Object.values(SettingsGameType)) {
-    let description = InputDescription[gameType];
-    let radio = musicPlayerUI.addRadioButton(gameType, "Soundtrack", description);
+    let description = Description[gameType];
+    let radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
     gameTypeRadioMap.set(gameType, radio);
-    radio.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.gameType = gameType));
+    radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
   }
-  let radioNormal = musicPlayerUI.addRadioButton("Off", "Random Themes", InputDescription.Normal_Themes);
-  let radioRandom = musicPlayerUI.addRadioButton("On", "Random Themes", InputDescription.Random_Themes);
-  radioNormal.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.randomThemes = false));
-  radioRandom.parentElement?.addEventListener("input", (_e) => (musicPlayerSettings.randomThemes = true));
+  const randomGroup = "Random Themes";
+  let radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
+  let radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
+  radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
+  radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
+  let shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
+  shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
+  const toggleGroup = "Sound Effects";
+  musicPlayerUI.getGroupOrAddIfNeeded(toggleGroup, GroupType.Vertical);
+  let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
+  let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+  captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
+  pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
   musicPlayerUI.addVersion(versions.music_player);
 
   let currentThemeKey = "";
   const urlAudioMap = new Map();
   const unitIDAudioMap = new Map();
+  const specialLoopMap = new Map();
   let currentlyDelaying = false;
   let randomThemeTimeout;
+  function setRandomThemeTimeout(nextTheme) {
+    if (!nextTheme.duration) {
+      console.error("[AWBW Music Player] Duration is 0, can't set timeout! Please report this bug!", nextTheme);
+      return;
+    }
+    if (randomThemeTimeout) clearTimeout(randomThemeTimeout);
+    const songDurationMS = nextTheme.duration * 1000;
+    randomThemeTimeout = setTimeout(() => {
+      musicPlayerSettings.currentRandomCO = getRandomCO();
+      randomThemeTimeout = null;
+      playThemeSong(true);
+    }, songDurationMS);
+  }
   function whenAudioLoadsPauseIt(event) {
     event.target.pause();
   }
@@ -920,10 +1005,10 @@
     audio.volume = musicPlayerSettings.volume;
     playThemeSong();
   }
-  const specialLoopMap = new Map();
   function createNewThemeAudio(srcURL) {
     let audio = new Audio(srcURL);
     if (hasSpecialLoop(srcURL)) {
+      console.debug("[AWBW Music Player] Special loop detected: ", srcURL);
       audio.loop = false;
       audio.addEventListener("ended", (event) => {
         const loopURL = srcURL.replace(".ogg", "-loop.ogg");
@@ -947,25 +1032,24 @@
       currentThemeKey = srcURL;
       console.log("[AWBW Music Player] Now Playing: ", srcURL);
     }
-    let nextTheme = urlAudioMap.get(srcURL);
-    if (!nextTheme) {
+    let nextSong = urlAudioMap.get(srcURL);
+    if (!nextSong) {
       console.debug("[AWBW Music Player] Loading new song", srcURL);
       let audio = createNewThemeAudio(srcURL);
       audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
       return;
     }
-    if (startFromBeginning) nextTheme.currentTime = 0;
-    nextTheme.loop = !hasSpecialLoop(srcURL);
-    if (musicPlayerSettings.randomThemes && !randomThemeTimeout) {
-      const songDurationMS = nextTheme.duration * 1000;
-      randomThemeTimeout = setTimeout(() => {
-        musicPlayerSettings.currentRandomCO = getRandomCO();
-        randomThemeTimeout = null;
-        playThemeSong(true);
-      }, songDurationMS);
+    if (startFromBeginning) nextSong.currentTime = 0;
+    nextSong.loop = !hasSpecialLoop(srcURL);
+    nextSong.volume = musicPlayerSettings.volume;
+    nextSong.play();
+    if (!musicPlayerSettings.randomThemes || randomThemeTimeout) return;
+    if (nextSong.duration > 0) {
+      setRandomThemeTimeout(nextSong);
+      return;
     }
-    nextTheme.volume = musicPlayerSettings.volume;
-    nextTheme.play();
+    const eventType = "loadedmetadata";
+    nextSong.addEventListener(eventType, (e) => setRandomThemeTimeout(e.target), { once: true });
   }
   function playOneShotURL(srcURL, volume) {
     if (!musicPlayerSettings.isPlaying) return;
@@ -1119,6 +1203,7 @@
   function onSettingsChange(key, isFirstLoad) {
     if (isFirstLoad) return;
     switch (key) {
+      case "currentRandomCO":
       case "isPlaying":
         if (musicPlayerSettings.isPlaying) {
           playThemeSong();
@@ -1139,18 +1224,14 @@
           playThemeSong();
           return;
         }
+        musicPlayerSettings.currentRandomCO = getRandomCO();
+        playThemeSong(true);
         if (!allThemesPreloaded) {
           console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
           let audioList = getAllThemeURLs();
           allThemesPreloaded = true;
           preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
         }
-        if (randomThemeTimeout) {
-          clearTimeout(randomThemeTimeout);
-          randomThemeTimeout = null;
-        }
-        musicPlayerSettings.currentRandomCO = getRandomCO();
-        playThemeSong(true);
         break;
       case "volume": {
         let currentTheme = urlAudioMap.get(currentThemeKey);

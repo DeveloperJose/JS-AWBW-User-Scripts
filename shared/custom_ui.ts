@@ -4,6 +4,17 @@
 
 import { getMenu } from "./awbw_page";
 
+export enum CustomInputType {
+  Radio = "radio",
+  Checkbox = "checkbox",
+  Button = "button",
+}
+
+export enum GroupType {
+  Vertical = "cls-vertical-box",
+  Horizontal = "cls-horizontal-box",
+}
+
 /**
  * A class that represents a custom menu UI that can be added to the AWBW page.
  */
@@ -19,6 +30,12 @@ export class CustomMenuSettingsUI {
    * Allows for easy access to any element in the menu.
    */
   menuElements: Map<string, HTMLElement> = new Map();
+
+  /**
+   * A map that contains the group types for each group in the menu.
+   * The keys are the names of the groups, and the values are the types of the groups.
+   */
+  groupTypes: Map<string, GroupType> = new Map();
 
   /**
    * An array of all the input elements in the menu.
@@ -229,56 +246,83 @@ export class CustomMenuSettingsUI {
     return slider;
   }
 
-  /**
-   * Adds a radio button to the context menu in a specific group.
-   * @param name - The name of the radio button.
-   * @param groupName - The name of the group the radio button belongs to.
-   * @param hoverText - The text to be displayed when hovering over the radio button.
-   * @returns - The radio button element.
-   */
+  getGroupOrAddIfNeeded(groupName: string, type: GroupType = GroupType.Horizontal) {
+    const contextMenu = this.menuElements.get("context-menu");
+    if (this.menuElements.has(groupName)) return this.menuElements.get(groupName);
+
+    const groupLabel = document.createElement("label");
+    groupLabel.id = this.prefix + "-" + groupName + "-label";
+    groupLabel.innerText = groupName;
+    contextMenu?.appendChild(groupLabel);
+
+    const group = document.createElement("div");
+    group.id = this.prefix + "-" + groupName;
+    group.classList.add(type);
+    this.menuElements.set(groupName, group);
+    contextMenu?.appendChild(group);
+
+    let otherType = type === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
+    this.groupTypes.set(groupName, otherType);
+    return group;
+  }
+
   addRadioButton(name: string, groupName: string, hoverText = "") {
+    return this.addInput(name, groupName, hoverText, CustomInputType.Radio);
+  }
+
+  addCheckbox(name: string, groupName: string, hoverText = "") {
+    return this.addInput(name, groupName, hoverText, CustomInputType.Checkbox);
+  }
+
+  addButton(name: string, groupName: string, hoverText = "") {
+    return this.addInput(name, groupName, hoverText, CustomInputType.Button);
+  }
+
+  /**
+   * Adds an input to the context menu in a specific group.
+   * @param name - The name of the input.
+   * @param groupName - The name of the group the input belongs to.
+   * @param hoverText - The text to be displayed when hovering over the input.
+   * @returns - The input element.
+   */
+  private addInput(name: string, groupName: string, hoverText = "", type: CustomInputType) {
     const contextMenu = this.menuElements.get("context-menu");
     let id = name.toLowerCase().replace(" ", "-");
+
     // Check if the group already exists
-    if (!this.menuElements.has(groupName)) {
-      const groupLabel = document.createElement("label");
-      groupLabel.id = this.prefix + "-" + groupName + "-label";
-      groupLabel.innerText = groupName;
-      contextMenu?.appendChild(groupLabel);
+    const groupDiv = this.getGroupOrAddIfNeeded(groupName);
+    const groupType = this.groupTypes.get(groupName);
 
-      const group = document.createElement("div");
-      group.id = this.prefix + "-" + groupName;
-      group.classList.add("cls-horizontal-box");
-      this.menuElements.set(groupName, group);
-      contextMenu?.appendChild(group);
-    }
-    const radioGroupDiv = this.menuElements.get(groupName);
-
-    // Container for radio button and label
-    const radioBox = document.createElement("div");
-    radioBox.id = this.prefix + "-" + id;
-    radioBox.classList.add("cls-vertical-box");
+    // Container for input and label
+    const inputBox = document.createElement("div");
+    inputBox.id = this.prefix + "-" + id;
+    if (groupType) inputBox.classList.add(groupType);
 
     // Hover text
-    radioBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
-    radioBox.addEventListener("mouseout", () => this.setHoverText(""));
+    inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
+    inputBox.addEventListener("mouseout", () => this.setHoverText(""));
 
-    // Radio button
-    const radio = document.createElement("input");
-    radio.id = this.prefix + "-" + id + "-radio";
-    radio.type = "radio";
-    radio.name = groupName;
-    radioBox.appendChild(radio);
-    this.inputElements.push(radio);
+    // Input
+    const input = document.createElement("input");
+    input.id = this.prefix + "-" + id + "-" + type;
+    input.type = type;
+    input.name = groupName;
+    inputBox.appendChild(input);
+    this.inputElements.push(input);
 
-    // Radio button label
+    // Input label
     const label = document.createElement("label");
     label.id = this.prefix + "-" + id + "-label";
     label.innerText = name;
-    radioBox.appendChild(label);
-    radioGroupDiv?.appendChild(radioBox);
+    inputBox.appendChild(label);
+    groupDiv?.appendChild(inputBox);
 
-    return radio;
+    // Propagate label clicks to the input
+    label.addEventListener("click", () => {
+      input.click();
+    });
+
+    return input;
   }
 
   /**
