@@ -419,7 +419,7 @@
     musicPlayerSettings.fromJSON(storageData);
     onSettingsChangeListeners.forEach((fn) => fn("all", true));
     addSettingsChangeListener(onSettingsChange$2);
-    console.debug("[MP] Settings loaded from storage:", storageData);
+    console.debug("[Music Player] Settings loaded from storage:", storageData);
   }
   function onSettingsChange$2(_key, _isFirstLoad) {
     if (_key === "themeType" || _key === "currentRandomCO") return "";
@@ -428,7 +428,7 @@
   function updateSettingsInLocalStorage() {
     let jsonSettings = musicPlayerSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
-    console.debug("[MP] Saving settings...", jsonSettings);
+    console.debug("[Music Player] Saving settings...", jsonSettings);
     return jsonSettings;
   }
 
@@ -1008,7 +1008,6 @@
   function createNewThemeAudio(srcURL) {
     let audio = new Audio(srcURL);
     if (hasSpecialLoop(srcURL)) {
-      console.debug("[AWBW Music Player] Special loop detected: ", srcURL);
       audio.loop = false;
       audio.addEventListener("ended", (event) => {
         const loopURL = srcURL.replace(".ogg", "-loop.ogg");
@@ -1125,6 +1124,8 @@
   }
   function playSFX(sfx) {
     if (!musicPlayerSettings.isPlaying) return;
+    if (!musicPlayerSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
+    if (!musicPlayerSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
     let sfxURL = getSoundEffectURL(sfx);
     let vol = musicPlayerSettings.sfxVolume;
     if (sfx.startsWith("ui")) {

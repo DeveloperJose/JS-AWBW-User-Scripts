@@ -311,6 +311,10 @@ export function stopMovementSound(unitId: number, rolloff = true) {
 export function playSFX(sfx: GameSFX) {
   if (!musicPlayerSettings.isPlaying) return;
 
+  // Check the user settings to see if we should play this sound effect
+  if (!musicPlayerSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
+  if (!musicPlayerSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
+
   let sfxURL = getSoundEffectURL(sfx);
 
   // Figure out which volume to use

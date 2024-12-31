@@ -9,6 +9,11 @@ This project is managed with [npm](https://www.npmjs.com/), all code is formatte
 
 I am using [rollup.js](https://rollupjs.org/) so I can modularize code across many files and then bundle them into a single userscript, making everything easier to organize and read when writing code instead of having a huge single file for each project.
 
+# Development Instructions
+To build the project simply install the npm dependencies with ```npm install``` and then run the ```npm run package``` to build all the projects in the repo.
+
+I use ```npm run build``` to build a single project in the repo, the one I'm currently focusing on. Feel free to change that in **./package.json** if you'd like.
+
 # File Structure
 * **dist/** - Contains all the final bundled userscripts with filenames ending in **.user.js**
 * **shared/** - Contains all shared code between all my userscripts. It's basically an unofficial AWBW API. See [./shared/README.md](./shared/README.md) for more information.
@@ -29,9 +34,10 @@ Below are the changes from the original script:
 * Added the option to switch between AW1, AW2, AW:Dual Strike, and AW:Reboot Camp soundtracks. Note that in AW1 there are no special power themes, but the activation sound makes up for it! The Reboot Camp power themes for all COs were added as well.
 * Added alternate themes that start after a certain day. If enabled, for example, the Reboot Camp power themes will switch from the CO themes to the factory themes like in the factory campaign missions. There are some other hidden alternate themes, be on the lookout!
 * Added sound effects: subs and stealths hiding and unhiding, units getting trapped, loaded missile silos being launched, black bombs exploding, units making progress capturing a property, pipe seams getting attacked (prepare to be surprised), CO and Super CO Power becoming available, Colin's Gold Rush sound effect, COs tag swapping.
-* Each song will continue where it left off the last time it played instead of always starting at the beginning. This means when a turn change happens, if the next CO is the same as the previous CO the music won't restart.
+* Each song will continue where it left off the last time it played instead of always starting at the beginning. This means when a turn change happens, if the next CO is the same as the previous CO the music won't restart. Note that this feature is disabled when using the random theme setting.
 * Fixed issues where some replay controls weren't updating the music properly.
 * Added cursor moving sound effects to design map page. 
+* Added music to maintenance page.
 
 ![Picture of the music player icon on the browser](./AWBW_Music_Player_1.png)
 
