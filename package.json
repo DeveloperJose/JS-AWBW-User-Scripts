@@ -6,7 +6,8 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "build": "rollup -c && npm run prettier",
+    "build": "rollup -c --configInputDir music_player && npm run prettier",
+    "package": "rollup -c && npm run prettier",
     "netlify": "cd ../JS-Website && netlify deploy --prod --dir=./public",
     "prettier": "prettier --write \"**/*.{js,ts,css}\"",
     "clean": "rm dist/*.js",

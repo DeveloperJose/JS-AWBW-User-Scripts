@@ -76,6 +76,9 @@
   function getIsMapEditor() {
     return window.location.href.indexOf("editmap.php?") > -1;
   }
+  function getIsMaintenance() {
+    return document.querySelector("#server-maintenance-alert") !== null;
+  }
   function getReplayOpenBtn() {
     return document.querySelector(".replay-open");
   }
@@ -197,7 +200,7 @@
       if (getIsMapEditor()) return "map-editor";
       if (hasGameEnded() && !isReplayActive()) {
         let myID = getMyID();
-        if (isPlayerSpectator(myID)) return "map-editor";
+        if (isPlayerSpectator(myID)) return "victory";
         let myInfo = getPlayerInfo(myID);
         let myWin = myInfo?.players_eliminated === "N";
         if (myWin) return "victory";
@@ -213,11 +216,11 @@
     return new Set([...allPlayers, ...allTagPlayers]);
   }
   function isTagGame() {
-    return typeof tagInfo !== "undefined" && tagInfo;
+    return typeof tagsInfo !== "undefined" && tagsInfo;
   }
   function getAllTagCONames() {
     if (!isTagGame()) return new Set();
-    return new Set(tagInfo.map((tag) => tag.co_name));
+    return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
   }
   function getUnitInfo(unitId) {
     return unitsInfo[unitId];
@@ -264,7 +267,7 @@
     static __sfxVolume = 0.35;
     static __uiVolume = 0.425;
     static __gameType = SettingsGameType.DS;
-    static __alternateThemeDay = 5;
+    static __alternateThemeDay = 15;
     static __randomThemes = false;
     static __themeType = SettingsThemeType.REGULAR;
     static __currentRandomCO = getRandomCO();
@@ -395,6 +398,7 @@
   const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
   const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
   const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
+  const MAINTENANCE_THEME_URL = BASE_MUSIC_URL + "/t-maintenance.ogg";
   var GameSFX;
   (function (GameSFX) {
     GameSFX["coGoldRush"] = "co-gold-rush";
@@ -500,6 +504,7 @@
     [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"])],
     [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
   ]);
+  const specialLoops = new Set(["vonbolt"]);
   function getAlternateMusicFilename(coName, gameType, themeType) {
     if (!alternateThemes.has(gameType)) return;
     let alternateThemesSet = alternateThemes.get(gameType);
@@ -533,7 +538,7 @@
     let faction = isBlackHoleCO(coName) ? "bh" : "ally";
     return `t-${faction}-${themeType}`;
   }
-  function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
+  function getMusicURL(coName, gameType, themeType, useAlternateTheme, looping) {
     if (!gameType) gameType = musicPlayerSettings.gameType;
     if (!themeType) themeType = musicPlayerSettings.themeType;
     if (!useAlternateTheme) useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
@@ -545,8 +550,17 @@
       gameDir = "AW_" + gameDir;
     }
     let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+    if (looping && specialLoops.has(coName)) {
+      filename += "-loop";
+    }
     let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
+  }
+  function getCONameFromURL(url) {
+    let parts = url.split("/");
+    let filename = parts[parts.length - 1];
+    let coName = filename.split(".")[0];
+    return coName;
   }
   function getSoundEffectURL(sfx) {
     return `${BASE_SFX_URL}/${sfx}.ogg`;
@@ -566,6 +580,7 @@
     coNames.forEach((name) => {
       audioList.add(getMusicURL(name));
       audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true));
+      audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, false, true));
     });
     return audioList;
   }
@@ -587,7 +602,8 @@
     for (let coName of getAllCONames()) {
       for (let gameType of Object.values(SettingsGameType)) {
         for (let themeType of Object.values(SettingsThemeType)) {
-          allSoundURLs.add(getMusicURL(coName, gameType, themeType));
+          allSoundURLs.add(getMusicURL(coName, gameType, themeType, false));
+          allSoundURLs.add(getMusicURL(coName, gameType, themeType, true));
         }
       }
     }
@@ -812,15 +828,16 @@
   var InputDescription;
   (function (InputDescription) {
     InputDescription["Volume"] = "Adjust the volume of the CO theme music.";
-    InputDescription["SFX_Volume"] = "Adjust the volume of the unit movement and CO power sound effects.";
+    InputDescription["SFX_Volume"] = "Adjust the volume of the unit movement, CO power, and other misc. sound effects.";
     InputDescription["UI_Volume"] =
-      "Adjust the volume of the UI sound effects like moving your cursor, opening menus, selecting units.";
+      "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.";
     InputDescription["Alternate_Day"] =
       "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
-    InputDescription["AW1"] = "Play the GBA Advance Wars 1 soundtrack.";
-    InputDescription["AW2"] = "Play the GBA Advance Wars 2 soundtrack.";
-    InputDescription["DS"] = "Play the Nintendo DS Advance Wars: Dual Strike soundtrack.";
-    InputDescription["RBC"] = "Play the Nintendo Switch Advance Wars: Re-Boot Camp soundtrack.";
+    InputDescription["AW1"] = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!";
+    InputDescription["AW2"] = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.";
+    InputDescription["DS"] =
+      "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.";
+    InputDescription["RBC"] = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!";
     InputDescription["Normal_Themes"] = "Play the music depending on who the current CO is.";
     InputDescription["Random_Themes"] = "Play random music every turn.";
   })(InputDescription || (InputDescription = {}));
@@ -855,8 +872,32 @@
   function whenAudioLoadsPlayIt(event) {
     let audio = event.target;
     audio.volume = musicPlayerSettings.volume;
-    audio.loop = true;
     if (audio.src === currentThemeKey) audio.play();
+  }
+  function whenAudioEndsLoop(event) {
+    let audio = event.target;
+    let coName = getCONameFromURL(audio.src);
+    console.log(coName);
+    if (!coName.startsWith("t-")) return;
+    if (coName !== "t-vonbolt") {
+      audio.currentTime = 0;
+      audio.play();
+      return;
+    }
+    let newAudio = urlAudioMap.get(audio.src.replace(".ogg", "-loop.ogg"));
+    console.log(newAudio);
+    if (newAudio) {
+      newAudio.currentTime = 0;
+      newAudio.volume = musicPlayerSettings.volume;
+      newAudio.loop = true;
+      newAudio.play();
+    }
+    if (audio.src !== currentThemeKey) return;
+    if (musicPlayerSettings.randomThemes) {
+      musicPlayerSettings.currentRandomCO = getRandomCO();
+      playThemeSong();
+      return;
+    }
   }
   addSettingsChangeListener(onSettingsChange);
   function playMusicURL(srcURL, startFromBeginning = false) {
@@ -871,12 +912,13 @@
       console.debug("[AWBW Music Player] Loading new song", srcURL);
       let audio = new Audio(srcURL);
       audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
+      audio.addEventListener("ended", whenAudioEndsLoop);
       urlAudioMap.set(srcURL, audio);
       return;
     }
     if (startFromBeginning) nextTheme.currentTime = 0;
+    if (srcURL.endsWith("-loop.ogg")) nextTheme.loop = true;
     nextTheme.volume = musicPlayerSettings.volume;
-    nextTheme.loop = true;
     nextTheme.play();
   }
   function playOneShotURL(srcURL, volume) {
@@ -886,7 +928,7 @@
     soundInstance.volume = volume;
     soundInstance.play();
   }
-  function playThemeSong(startFromBeginning = false) {
+  function playThemeSong(startFromBeginning = false, loop = false) {
     if (!musicPlayerSettings.isPlaying) return;
     if (currentlyDelaying) return;
     let coName = currentPlayer.coName;
@@ -895,7 +937,7 @@
     if (musicPlayerSettings.randomThemes && !isEndTheme) {
       coName = musicPlayerSettings.currentRandomCO;
     }
-    playMusicURL(getMusicURL(coName), startFromBeginning);
+    playMusicURL(getMusicURL(coName, undefined, undefined, undefined, loop), startFromBeginning);
   }
   function stopThemeSong(delayMS = 0) {
     if (delayMS > 0) {
@@ -989,9 +1031,10 @@
       for (const themeType in SettingsThemeType) {
         const gameTypeEnum = gameType;
         const themeTypeEnum = themeType;
-        coNames?.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
+        coNames?.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum, false)));
       }
     }
+    console.debug("[AWBW Music Player] Pre-loading extra audio", audioList);
     preloadAudios(audioList, afterPreloadFunction);
   }
   function preloadAudios(audioURLs, afterPreloadFunction = () => {}) {
@@ -1006,9 +1049,10 @@
         if (afterPreloadFunction) afterPreloadFunction();
       }
       if (event.type === "error") {
-        console.error("[AWBW Music Player] Could not pre-load: ", audio.src);
+        console.error("[AWBW Music Player] Could not pre-load: ", audio.src, event);
         return;
       }
+      audio.currentTime = audio.duration * 0.94;
       if (!urlAudioMap.has(audio.src)) {
         urlAudioMap.set(audio.src, audio);
       }
@@ -1021,6 +1065,7 @@
       let audio = new Audio(url);
       audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
       audio.addEventListener("error", onAudioPreload, { once: true });
+      audio.addEventListener("ended", whenAudioEndsLoop);
     });
   }
   let allThemesPreloaded = false;
@@ -1532,17 +1577,26 @@
     playThemeSong(true);
   }
 
-  console.debug("[AWBW Improved Music Player] Script starting...");
-  addHandlers();
-  loadSettingsFromLocalStorage();
-  musicPlayerUI.addToAWBWPage();
-  preloadAllCommonAudio(() => {
-    console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
-    musicPlayerSettings.themeType = getCurrentThemeType();
-    musicPlayerUI.updateAllInputLabels();
-    playThemeSong();
-    preloadAllExtraAudio(() => {
-      console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+  function main() {
+    console.debug("[AWBW Improved Music Player] Script starting...");
+    if (getIsMaintenance()) {
+      console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
+      musicPlayerSettings.isPlaying = true;
+      playMusicURL(MAINTENANCE_THEME_URL);
+      return;
+    }
+    addHandlers();
+    loadSettingsFromLocalStorage();
+    musicPlayerUI.addToAWBWPage();
+    preloadAllCommonAudio(() => {
+      console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+      musicPlayerSettings.themeType = getCurrentThemeType();
+      musicPlayerUI.updateAllInputLabels();
+      playThemeSong();
+      preloadAllExtraAudio(() => {
+        console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+      });
     });
-  });
+  }
+  main();
 })();

@@ -24,6 +24,9 @@
   function getIsMapEditor() {
     return window.location.href.indexOf("editmap.php?") > -1;
   }
+  function getIsMaintenance() {
+    return document.querySelector("#server-maintenance-alert") !== null;
+  }
   function getGamemap() {
     return document.querySelector("#gamemap");
   }
@@ -59,6 +62,9 @@
   const cursor = getCursor();
   const gamemap = getGamemap();
   const gamemapContainer = getGamemapContainer();
+  const zoomInBtn = getZoomInBtn();
+  const zoomOutBtn = getZoomOutBtn();
+  const ahCursorMove = getCursorMoveFn();
   const CURSOR_THRESHOLD_MS = 30;
   const FONT_SIZE = 9;
   let previousHighlight = [];
@@ -104,8 +110,7 @@
     gamemapContainer.style.paddingBottom = padding + "px";
     gamemapContainer.style.paddingLeft = padding + "px";
   }
-  let ahCursorMove = getCursorMoveFn();
-  updateCursor = (cursorX, cursorY) => {
+  function onCursorMove(cursorX, cursorY) {
     ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
     let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
     let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
@@ -132,37 +137,39 @@
     }
     lastCursorX = cursorX;
     lastCursorY = cursorY;
-  };
-  const zoomInBtn = getZoomInBtn();
-  if (zoomInBtn != null) {
-    zoomInBtn.addEventListener("click", onZoomChangeEvent);
   }
-  const zoomOutBtn = getZoomOutBtn();
-  if (zoomOutBtn != null) {
-    zoomOutBtn.addEventListener("click", onZoomChangeEvent);
+  function main() {
+    if (getIsMaintenance()) {
+      console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
+      return;
+    }
+    updateCursor = onCursorMove;
+    if (zoomInBtn != null) zoomInBtn.addEventListener("click", onZoomChangeEvent);
+    if (zoomOutBtn != null) zoomOutBtn.addEventListener("click", onZoomChangeEvent);
+    const maximizeBtn = getMaximizeBtn();
+    if (maximizeBtn != null) {
+      console.log("[AWBW Highlight Cursor Coordinates] Found AWBW Maximize script and connected to it.");
+      maximizeBtn.addEventListener("click", (event) => {
+        isMaximizeToggled = !isMaximizeToggled;
+        onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : -1);
+      });
+    }
+    onZoomChangeEvent();
+    for (let row = 0; row < mapRows; row++) {
+      let spotSpan = spotSpanTemplate.cloneNode(true);
+      spotSpan.id = "grid-spot-row-" + row;
+      spotSpan.style.top = row * 16 + "px";
+      spotSpan.textContent = row.toString().padStart(2, "0");
+      gamemap.appendChild(spotSpan);
+    }
+    for (let col = 0; col < mapCols; col++) {
+      let spotSpan = spotSpanTemplate.cloneNode(true);
+      spotSpan.id = "grid-spot-col-" + col;
+      spotSpan.style.left = col * 16 + "px";
+      spotSpan.textContent = col.toString().padStart(2, "0");
+      gamemap.appendChild(spotSpan);
+    }
+    console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
   }
-  const maximizeBtn = getMaximizeBtn();
-  if (maximizeBtn != null) {
-    console.log("[AWBW Highlight Cursor Coordinates] Found AWBW Maximize script and connected to it.");
-    maximizeBtn.addEventListener("click", (event) => {
-      isMaximizeToggled = !isMaximizeToggled;
-      onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : -1);
-    });
-  }
-  onZoomChangeEvent();
-  for (let row = 0; row < mapRows; row++) {
-    let spotSpan = spotSpanTemplate.cloneNode(true);
-    spotSpan.id = "grid-spot-row-" + row;
-    spotSpan.style.top = row * 16 + "px";
-    spotSpan.textContent = row.toString().padStart(2, "0");
-    gamemap.appendChild(spotSpan);
-  }
-  for (let col = 0; col < mapCols; col++) {
-    let spotSpan = spotSpanTemplate.cloneNode(true);
-    spotSpan.id = "grid-spot-col-" + col;
-    spotSpan.style.left = col * 16 + "px";
-    spotSpan.textContent = col.toString().padStart(2, "0");
-    gamemap.appendChild(spotSpan);
-  }
-  console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
+  main();
 })();

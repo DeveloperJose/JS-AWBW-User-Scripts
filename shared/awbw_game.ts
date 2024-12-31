@@ -233,13 +233,21 @@ export function getAllPlayingCONames(): Set<string> {
   return new Set([...allPlayers, ...allTagPlayers]);
 }
 
+/**
+ * Checks if the game is a tag game with 2 COs per team.
+ * @returns - True if the game is a tag game.
+ */
 export function isTagGame() {
-  return typeof tagInfo !== "undefined" && tagInfo;
+  return typeof tagsInfo !== "undefined" && tagsInfo;
 }
 
+/**
+ * If the game is a tag game, get the names of all secondary COs that are part of the tags.
+ * @returns - Set with the names of each secondary CO in the tag.
+ */
 export function getAllTagCONames(): Set<string> {
   if (!isTagGame()) return new Set();
-  return new Set(tagInfo.map((tag) => tag.co_name));
+  return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
 }
 
 /**

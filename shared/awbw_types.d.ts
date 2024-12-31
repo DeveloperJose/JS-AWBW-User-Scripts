@@ -60,7 +60,7 @@ interface TagInfo {
   players_id: number;
 }
 
-declare const tagInfo: TagInfo[];
+declare const tagsInfo: TagInfo[];
 
 /**
  * Information about a player's current game state.

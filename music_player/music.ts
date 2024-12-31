@@ -10,6 +10,7 @@ import {
   GameSFX,
   getAllThemeURLs,
   getAllCurrentThemes,
+  getCONameFromURL,
 } from "./resources";
 import {
   musicPlayerSettings,
@@ -18,7 +19,7 @@ import {
   SettingsThemeType,
   getCurrentThemeType,
 } from "./music_settings";
-import { getRandomCO } from "../shared/awbw_globals";
+import { getAllCONames, getRandomCO } from "../shared/awbw_globals";
 import { getIsMapEditor } from "../shared/awbw_page";
 
 /**
@@ -43,10 +44,7 @@ const unitIDAudioMap: Map<number, HTMLAudioElement> = new Map();
  */
 let currentlyDelaying = false;
 
-/**
- * If delaying (see {@link currentlyDelaying}), this determines how long to wait before playing music again in milliseconds.
- */
-// let delayThemeMS = 0;
+const themePlayMap: Map<string, number> = new Map([["t-vonbolt", 29.837]]);
 
 /**
  * Event handler that pauses an audio as soon as it gets loaded.
@@ -64,9 +62,73 @@ function whenAudioLoadsPauseIt(event: Event) {
 function whenAudioLoadsPlayIt(event: Event) {
   let audio = event.target as HTMLAudioElement;
   audio.volume = musicPlayerSettings.volume;
-  audio.loop = true;
+  // audio.loop = true;
   // Play it only if it's the current theme
   if (audio.src === currentThemeKey) audio.play();
+}
+
+function whenAudioEndsLoop(event: Event) {
+  let audio = event.target as HTMLAudioElement;
+  let coName = getCONameFromURL(audio.src);
+
+  // Only loop CO themes
+  // if (!coName.startsWith("t-")) return;
+  // if (audio.src.endsWith("-loop.ogg")) return;
+  console.log(coName);
+  if (!coName.startsWith("t-")) return;
+  if (coName !== "t-vonbolt") {
+    audio.currentTime = 0;
+    audio.play();
+    return;
+  }
+
+  // audio.play();
+  // console.log("looping", audio.currentTime, coName);
+  // audio.currentTime = themePlayMap?.get(coName) ?? 0;
+  // audio.volume = musicPlayerSettings.volume;
+  let newAudio = urlAudioMap.get(audio.src.replace(".ogg", "-loop.ogg"));
+  console.log(newAudio);
+  if (newAudio) {
+    newAudio.currentTime = 0;
+    newAudio.volume = musicPlayerSettings.volume;
+    newAudio.loop = true;
+    newAudio.play();
+  }
+
+  if (audio.src !== currentThemeKey) return;
+
+  // If we are playing random themes, don't loop just play a new random theme
+  if (musicPlayerSettings.randomThemes) {
+    musicPlayerSettings.currentRandomCO = getRandomCO();
+    playThemeSong();
+    return;
+  }
+}
+
+// function whenAudioPlays(event: Event) {
+//   let audio = event.target as HTMLAudioElement;
+//   // https://stackoverflow.com/questions/7330023/gapless-looping-audio-html5
+//   const buffer = 0.5;
+//   let timeLeft = audio.duration - audio.currentTime;
+//   let audioEnded = audio.currentTime > audio.duration - buffer;
+//   if (audioEnded || audio.currentTime < 0.001) {
+//     // Only loop CO themes
+//     let coName = getCONameFromURL(audio.src);
+//     console.log("Looped", coName, audioEnded, timeLeft);
+//     if (!coName.startsWith("t-")) return;
+//     audio.currentTime = themePlayMap?.get(coName) ?? 0;
+//     audio.currentTime -= timeLeft;
+//     audio.volume = musicPlayerSettings.volume;
+//   }
+// }
+
+function createNewThemeAudio(srcURL: string) {
+  let audio = new Audio(srcURL);
+  audio.addEventListener("ended", whenAudioEndsLoop);
+
+  // audio.addEventListener("timeupdate", whenAudioPlays);
+  // audio.loop = true;
+  urlAudioMap.set(srcURL, audio);
 }
 
 // Listen for setting changes to update the internal variables accordingly
@@ -77,7 +139,7 @@ addSettingsChangeListener(onSettingsChange);
  * @param srcURL - URL of song to play.
  * @param startFromBeginning - Whether to start from the beginning.
  */
-function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
+export function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // We want to play a new song, so pause the previous one and save the new current song
@@ -93,17 +155,21 @@ function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
     console.debug("[AWBW Music Player] Loading new song", srcURL);
     let audio = new Audio(srcURL);
     audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
+    audio.addEventListener("ended", whenAudioEndsLoop);
+    // audio.addEventListener("timeupdate", whenAudioPlays);
+    // audio.loop = true;
     urlAudioMap.set(srcURL, audio);
     return;
   }
 
   // Restart the song if requested
   if (startFromBeginning) nextTheme.currentTime = 0;
+  if (srcURL.endsWith("-loop.ogg")) nextTheme.loop = true;
 
   // Play the song
   nextTheme.volume = musicPlayerSettings.volume;
-  nextTheme.loop = true;
   nextTheme.play();
+  // nextTheme.loop = true;
 }
 
 /**
@@ -125,7 +191,7 @@ function playOneShotURL(srcURL: string, volume: number) {
  * Determines the music automatically so just call this anytime the game state changes.
  * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
  */
-export function playThemeSong(startFromBeginning = false) {
+export function playThemeSong(startFromBeginning = false, loop = false) {
   if (!musicPlayerSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -140,7 +206,7 @@ export function playThemeSong(startFromBeginning = false) {
   if (musicPlayerSettings.randomThemes && !isEndTheme) {
     coName = musicPlayerSettings.currentRandomCO;
   }
-  playMusicURL(getMusicURL(coName), startFromBeginning);
+  playMusicURL(getMusicURL(coName, undefined, undefined, undefined, loop), startFromBeginning);
 }
 
 /**
@@ -319,10 +385,11 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
     for (const themeType in SettingsThemeType) {
       const gameTypeEnum = gameType as SettingsGameType;
       const themeTypeEnum = themeType as SettingsThemeType;
-      coNames?.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
+      coNames?.forEach((name) => audioList.add(getMusicURL(name, gameTypeEnum, themeTypeEnum, false)));
     }
   }
 
+  console.debug("[AWBW Music Player] Pre-loading extra audio", audioList);
   preloadAudios(audioList, afterPreloadFunction);
 }
 
@@ -349,9 +416,12 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
     }
 
     if (event.type === "error") {
-      console.error("[AWBW Music Player] Could not pre-load: ", audio.src);
+      console.error("[AWBW Music Player] Could not pre-load: ", audio.src, event);
       return;
     }
+
+    // TODO: Debugging purposes
+    audio.currentTime = audio.duration * 0.94;
 
     // Add the audio to the map, but only if it hasn't been added already
     // This prevents a race condition where we might add the same audio twice
@@ -370,6 +440,11 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
     let audio = new Audio(url);
     audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
     audio.addEventListener("error", onAudioPreload, { once: true });
+    // COs only
+    // let coFilename = getCONameFromURL(url);
+    // if (!coFilename.startsWith("t-")) return;
+    audio.addEventListener("ended", whenAudioEndsLoop);
+    // audio.addEventListener("timeupdate", whenAudioPlays);
   });
 }
 

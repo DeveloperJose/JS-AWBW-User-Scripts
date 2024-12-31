@@ -48,6 +48,12 @@ export const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
 export const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
 
 /**
+ * URL for the maintenance theme music.
+ * @constant {string}
+ */
+export const MAINTENANCE_THEME_URL = BASE_MUSIC_URL + "/t-maintenance.ogg";
+
+/**
  * Enumeration of all game sound effects. The values are the filenames for the sounds.
  * @enum {string}
  */
@@ -177,6 +183,8 @@ const alternateThemes = new Map([
   [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
 ]);
 
+const specialLoops = new Set(["vonbolt"]);
+
 function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
   // Check if this CO has an alternate theme
   if (!alternateThemes.has(gameType)) return;
@@ -257,6 +265,7 @@ export function getMusicURL(
   gameType?: SettingsGameType,
   themeType?: SettingsThemeType,
   useAlternateTheme?: boolean,
+  looping?: boolean,
 ) {
   if (!gameType) gameType = musicPlayerSettings.gameType;
   if (!themeType) themeType = musicPlayerSettings.themeType;
@@ -275,8 +284,24 @@ export function getMusicURL(
   }
 
   let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+  // For special themes where we switch to a different version when looping
+  if (looping && specialLoops.has(coName)) {
+    filename += "-loop";
+  }
   let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
+}
+
+/**
+ * Gets the name of the CO from the given URL, if any. Also includes the "t-" prefix.
+ * @param url - URL to get the CO name from.
+ * @returns - The name of the CO from the given URL.
+ */
+export function getCONameFromURL(url: string) {
+  let parts = url.split("/");
+  let filename = parts[parts.length - 1];
+  let coName = filename.split(".")[0];
+  return coName;
 }
 
 /**
@@ -325,8 +350,8 @@ export function getAllCurrentThemes(): Set<string> {
   coNames.forEach((name) => {
     audioList.add(getMusicURL(name));
     audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true));
+    audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, false, true));
   });
-
   return audioList;
 }
 
@@ -359,7 +384,8 @@ export function getAllThemeURLs() {
   for (let coName of getAllCONames()) {
     for (let gameType of Object.values(SettingsGameType)) {
       for (let themeType of Object.values(SettingsThemeType)) {
-        allSoundURLs.add(getMusicURL(coName, gameType, themeType));
+        allSoundURLs.add(getMusicURL(coName, gameType, themeType, false));
+        allSoundURLs.add(getMusicURL(coName, gameType, themeType, true));
       }
     }
   }

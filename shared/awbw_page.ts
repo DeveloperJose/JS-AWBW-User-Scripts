@@ -9,6 +9,10 @@ export function getIsMapEditor() {
   return window.location.href.indexOf("editmap.php?") > -1;
 }
 
+export function getIsMaintenance() {
+  return document.querySelector("#server-maintenance-alert") !== null;
+}
+
 // ============================== AWBW Page Elements ==============================
 export function getGamemap() {
   return document.querySelector("#gamemap") as HTMLElement;

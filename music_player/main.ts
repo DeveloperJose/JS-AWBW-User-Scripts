@@ -11,28 +11,42 @@ import "./style.css";
 import "./style_sliders.css";
 
 import { musicPlayerUI } from "./music_ui";
-import { playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
+import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
+import { getIsMaintenance } from "../shared/awbw_page";
+import { MAINTENANCE_THEME_URL } from "./resources";
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-console.debug("[AWBW Improved Music Player] Script starting...");
-addHandlers();
-loadSettingsFromLocalStorage();
-musicPlayerUI.addToAWBWPage();
+function main() {
+  console.debug("[AWBW Improved Music Player] Script starting...");
 
-preloadAllCommonAudio(() => {
-  console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+  if (getIsMaintenance()) {
+    console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
+    musicPlayerSettings.isPlaying = true;
+    playMusicURL(MAINTENANCE_THEME_URL);
+    return;
+  }
 
-  // Set dynamic settings based on the current game state
-  // Lastly, update the UI to reflect the current settings
-  musicPlayerSettings.themeType = getCurrentThemeType();
-  musicPlayerUI.updateAllInputLabels();
-  playThemeSong();
+  addHandlers();
+  loadSettingsFromLocalStorage();
+  musicPlayerUI.addToAWBWPage();
 
-  preloadAllExtraAudio(() => {
-    console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+  preloadAllCommonAudio(() => {
+    console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+
+    // Set dynamic settings based on the current game state
+    // Lastly, update the UI to reflect the current settings
+    musicPlayerSettings.themeType = getCurrentThemeType();
+    musicPlayerUI.updateAllInputLabels();
+    playThemeSong();
+
+    preloadAllExtraAudio(() => {
+      console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+    });
   });
-});
+}
+
+main();
