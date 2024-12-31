@@ -4,7 +4,6 @@
  * @todo Custom settings for each CO if wanted
  * @todo Shuffle button?
  */
-
 // Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";
 import "./style_sliders.css";
@@ -19,7 +18,7 @@ import { MAINTENANCE_THEME_URL } from "./resources";
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-function main() {
+export function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
   musicPlayerUI.addToAWBWPage();
 

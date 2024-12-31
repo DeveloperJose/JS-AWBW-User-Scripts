@@ -15,6 +15,18 @@ export enum GroupType {
   Horizontal = "cls-horizontal-box",
 }
 
+export enum ContextMenuPosition {
+  Left = "context-menu-left",
+  Center = "context-menu-center",
+  Right = "context-menu-right",
+}
+
+export function usefulFunction() {
+  console.log("This is a useful function!");
+}
+
+usefulFunction();
+
 /**
  * A class that represents a custom menu UI that can be added to the AWBW page.
  */
@@ -41,6 +53,11 @@ export class CustomMenuSettingsUI {
    * An array of all the input elements in the menu.
    */
   inputElements: Array<HTMLInputElement> = [];
+
+  /**
+   * An array of all the button elements in the menu.
+   */
+  buttonElements: Array<HTMLButtonElement> = [];
 
   /**
    * A boolean that represents whether the settings menu is open or not.
@@ -111,7 +128,32 @@ export class CustomMenuSettingsUI {
     contextMenu.id = prefix + "-context-menu";
     contextMenu.classList.add("cls-context-menu");
     this.root.appendChild(contextMenu);
-    this.menuElements.set("context-menu", contextMenu);
+    this.menuElements.set("context-menu-parent", contextMenu);
+
+    let contextMenuBoxesContainer = document.createElement("div");
+    contextMenuBoxesContainer.id = prefix + "-context-menu-boxes";
+    contextMenuBoxesContainer.classList.add("cls-horizontal-box");
+    contextMenu.appendChild(contextMenuBoxesContainer);
+    this.menuElements.set("context-menu", contextMenuBoxesContainer);
+
+    // Context Menu 3 Boxes
+    let leftBox = document.createElement("div");
+    leftBox.id = prefix + "-context-menu-left";
+    leftBox.classList.add("cls-context-menu-box");
+    contextMenuBoxesContainer.appendChild(leftBox);
+    this.menuElements.set(ContextMenuPosition.Left, leftBox);
+
+    let centerBox = document.createElement("div");
+    centerBox.id = prefix + "-context-menu-center";
+    centerBox.classList.add("cls-context-menu-box");
+    contextMenuBoxesContainer.appendChild(centerBox);
+    this.menuElements.set(ContextMenuPosition.Center, centerBox);
+
+    let rightBox = document.createElement("div");
+    rightBox.id = prefix + "-context-menu-right";
+    rightBox.classList.add("cls-context-menu-box");
+    contextMenuBoxesContainer.appendChild(rightBox);
+    this.menuElements.set(ContextMenuPosition.Right, rightBox);
 
     // Enable right-click to open and close the context menu
     this.root.addEventListener("contextmenu", (event) => {
@@ -211,13 +253,21 @@ export class CustomMenuSettingsUI {
    * @param max - The maximum value of the slider.
    * @param step - The step value of the slider.
    * @param hoverText - The text to be displayed when hovering over the slider.
+   * @param position - The position of the slider in the context menu.
    * @returns - The slider element.
    */
-  addSlider(name: string, min: number, max: number, step: number, hoverText = "") {
-    let contextMenu = this.menuElements.get("context-menu");
+  addSlider(
+    name: string,
+    min: number,
+    max: number,
+    step: number,
+    hoverText = "",
+    position = ContextMenuPosition.Center,
+  ) {
+    let contextMenu = this.menuElements.get(position);
 
     // Slider label
-    let id = name.toLowerCase().replace(" ", "-");
+    let id = name.toLowerCase().replaceAll(" ", "-");
     let label = document.createElement("label");
     label.id = this.prefix + "-" + id + "-label";
     contextMenu?.appendChild(label);
@@ -246,17 +296,22 @@ export class CustomMenuSettingsUI {
     return slider;
   }
 
-  getGroupOrAddIfNeeded(groupName: string, type: GroupType = GroupType.Horizontal) {
-    const contextMenu = this.menuElements.get("context-menu");
+  getGroupOrAddIfNeeded(
+    groupName: string,
+    type: GroupType = GroupType.Horizontal,
+    position = ContextMenuPosition.Center,
+  ) {
+    const contextMenu = this.menuElements.get(position);
     if (this.menuElements.has(groupName)) return this.menuElements.get(groupName);
 
     const groupLabel = document.createElement("label");
-    groupLabel.id = this.prefix + "-" + groupName + "-label";
+    const id = (this.prefix + "-" + groupName).toLowerCase().replaceAll(" ", "-");
+    groupLabel.id = id + "-label";
     groupLabel.innerText = groupName;
     contextMenu?.appendChild(groupLabel);
 
     const group = document.createElement("div");
-    group.id = this.prefix + "-" + groupName;
+    group.id = id;
     group.classList.add(type);
     this.menuElements.set(groupName, group);
     contextMenu?.appendChild(group);
@@ -266,16 +321,16 @@ export class CustomMenuSettingsUI {
     return group;
   }
 
-  addRadioButton(name: string, groupName: string, hoverText = "") {
-    return this.addInput(name, groupName, hoverText, CustomInputType.Radio);
+  addRadioButton(name: string, groupName: string, hoverText = "", position = ContextMenuPosition.Center) {
+    return this.addInput(name, groupName, hoverText, CustomInputType.Radio, position) as HTMLInputElement;
   }
 
-  addCheckbox(name: string, groupName: string, hoverText = "") {
-    return this.addInput(name, groupName, hoverText, CustomInputType.Checkbox);
+  addCheckbox(name: string, groupName: string, hoverText = "", position = ContextMenuPosition.Center) {
+    return this.addInput(name, groupName, hoverText, CustomInputType.Checkbox, position) as HTMLInputElement;
   }
 
-  addButton(name: string, groupName: string, hoverText = "") {
-    return this.addInput(name, groupName, hoverText, CustomInputType.Button);
+  addButton(name: string, groupName: string, hoverText = "", position = ContextMenuPosition.Center) {
+    return this.addInput(name, groupName, hoverText, CustomInputType.Button, position) as HTMLButtonElement;
   }
 
   /**
@@ -283,14 +338,22 @@ export class CustomMenuSettingsUI {
    * @param name - The name of the input.
    * @param groupName - The name of the group the input belongs to.
    * @param hoverText - The text to be displayed when hovering over the input.
+   * @param type - The type of input to be added.
+   * @param position - The position of the input in the context menu.
    * @returns - The input element.
    */
-  private addInput(name: string, groupName: string, hoverText = "", type: CustomInputType) {
-    const contextMenu = this.menuElements.get("context-menu");
-    let id = name.toLowerCase().replace(" ", "-");
+  private addInput(
+    name: string,
+    groupName: string,
+    hoverText = "",
+    type: CustomInputType,
+    position: ContextMenuPosition,
+  ) {
+    const contextMenu = this.menuElements.get(position);
+    let id = name.toLowerCase().replaceAll(" ", "-");
 
     // Check if the group already exists
-    const groupDiv = this.getGroupOrAddIfNeeded(groupName);
+    const groupDiv = this.getGroupOrAddIfNeeded(groupName, GroupType.Horizontal, position);
     const groupType = this.groupTypes.get(groupName);
 
     // Container for input and label
@@ -302,26 +365,37 @@ export class CustomMenuSettingsUI {
     inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
     inputBox.addEventListener("mouseout", () => this.setHoverText(""));
 
-    // Input
-    const input = document.createElement("input");
+    // Create button or a different type of input
+    let input: HTMLInputElement | HTMLButtonElement;
+    if (type === CustomInputType.Button) {
+      // Buttons don't need a separate label
+      input = document.createElement("button");
+      input.innerText = name;
+      inputBox.appendChild(input);
+      this.buttonElements.push(input as HTMLButtonElement);
+    } else {
+      // Create a label for all other inputs
+      input = document.createElement("input");
+      const label = document.createElement("label");
+      label.id = this.prefix + "-" + id + "-label";
+      label.innerText = name;
+
+      // Input first, then label
+      inputBox.appendChild(input);
+      inputBox.appendChild(label);
+
+      // Propagate label clicks to the input
+      label.addEventListener("click", () => {
+        input.click();
+      });
+      this.inputElements.push(input as HTMLInputElement);
+    }
+
+    // Set the rest of the shared input properties
     input.id = this.prefix + "-" + id + "-" + type;
     input.type = type;
     input.name = groupName;
-    inputBox.appendChild(input);
-    this.inputElements.push(input);
-
-    // Input label
-    const label = document.createElement("label");
-    label.id = this.prefix + "-" + id + "-label";
-    label.innerText = name;
-    inputBox.appendChild(label);
     groupDiv?.appendChild(inputBox);
-
-    // Propagate label clicks to the input
-    label.addEventListener("click", () => {
-      input.click();
-    });
-
     return input;
   }
 
@@ -330,7 +404,7 @@ export class CustomMenuSettingsUI {
    * @param version - The version to be displayed.
    */
   addVersion(version: string) {
-    let contextMenu = this.menuElements.get("context-menu");
+    let contextMenu = this.menuElements.get("context-menu-parent");
     let versionDiv = document.createElement("label");
     versionDiv.id = this.prefix + "-version";
     versionDiv.innerText = `VERSION: ${version}`;

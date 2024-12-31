@@ -3,9 +3,10 @@
  */
 import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from "./music_settings";
-import { CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
+import { ContextMenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
+import { createCOSelector } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -108,47 +109,59 @@ enum Description {
   Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
 }
 
+const CENTER = ContextMenuPosition.Center;
+const LEFT = ContextMenuPosition.Left;
+const RIGHT = ContextMenuPosition.Right;
+/* ************************************ Center Menu ************************************ */
 // Volume sliders
-let volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume);
-let sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume);
-let uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume);
+let volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, CENTER);
+let sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, CENTER);
+let uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, CENTER);
 volumeSlider.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
 sfxVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
 uiVolumeSlider.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
 
 // Day slider
-let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day);
+let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, CENTER);
 daySlider.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
 
+/* ************************************ Left Menu ************************************ */
 // GameType radio buttons
 const gameTypeRadioMap: Map<SettingsGameType, HTMLInputElement> = new Map();
 const soundtrackGroup = "Soundtrack";
 
 for (const gameType of Object.values(SettingsGameType)) {
   let description = Description[gameType as keyof typeof Description];
-  let radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
+  let radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description, LEFT);
   gameTypeRadioMap.set(gameType, radio);
   radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
 }
 
 // Random themes radio buttons
 const randomGroup = "Random Themes";
-let radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
-let radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
+let radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes, LEFT);
+let radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes, LEFT);
 radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
 radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
 
 // Random theme shuffle button
-let shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
+let shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle, LEFT);
 shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
 
 // Sound effect toggle checkboxes
 const toggleGroup = "Sound Effects";
-musicPlayerUI.getGroupOrAddIfNeeded(toggleGroup, GroupType.Vertical);
-let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
-let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+musicPlayerUI.getGroupOrAddIfNeeded(toggleGroup, GroupType.Vertical, LEFT);
+let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress, LEFT);
+let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX, LEFT);
 captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
 pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
 
-// Version
+/* ************************************ Right Menu ************************************ */
+const overrideGroup = "Override Themes";
+musicPlayerUI.getGroupOrAddIfNeeded(overrideGroup, GroupType.Vertical, RIGHT);
+
+const div = createCOSelector();
+musicPlayerUI.menuElements.get(ContextMenuPosition.Right).appendChild(div);
+
+/* ************************************ Version ************************************ */
 musicPlayerUI.addVersion(versions.music_player);

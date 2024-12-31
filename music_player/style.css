@@ -4,28 +4,28 @@
   display: flex;
   top: 40px;
   flex-direction: column;
-  width: 275px;
+  width: 800px;
 }
 
 .cls-context-menu label {
   width: 100%;
   font-size: 14px;
   background-color: #dedede;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .cls-context-menu .cls-horizontal-box {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+  align-items: center;
   padding-left: 10px;
   padding-right: 10px;
-}
-
-.cls-context-menu .cls-vertical-box label {
-  background-color: white;
-  font-size: 12px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  height: 100%;
+  width: 100%;
 }
 
 .cls-context-menu .cls-vertical-box {
@@ -34,7 +34,31 @@
   justify-content: space-evenly;
   padding-left: 10px;
   padding-right: 10px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  height: 100%;
+  /* width: 100%; */
+}
+
+.cls-context-menu-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 1px;
+  padding-bottom: 1px;
   width: 100%;
+}
+
+/* Puts the checkbox next to the label */
+.cls-context-menu .cls-vertical-box[id$="effects"] {
+  align-items: center;
+}
+
+.cls-context-menu .cls-vertical-box label {
+  background-color: white;
+  font-size: 12px;
 }
 
 .cls-context-menu image {
