@@ -1,7 +1,6 @@
 /**
  * @file Main script that loads everything for the AWBW Improved Music Player userscript.
  *
- * @todo Normalize sound levels
  * @todo Custom settings for each CO if wanted
  * @todo Shuffle button?
  */
@@ -16,13 +15,13 @@ import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings 
 import { addHandlers } from "./handlers";
 import { getIsMaintenance } from "../shared/awbw_page";
 import { MAINTENANCE_THEME_URL } from "./resources";
-import { hasGameEnded } from "../shared/awbw_game";
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
 function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
+  musicPlayerUI.addToAWBWPage();
 
   if (getIsMaintenance()) {
     console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
@@ -33,8 +32,6 @@ function main() {
 
   addHandlers();
   loadSettingsFromLocalStorage();
-  musicPlayerUI.addToAWBWPage();
-
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 

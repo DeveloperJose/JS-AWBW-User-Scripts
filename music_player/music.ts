@@ -131,6 +131,7 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
     randomThemeTimeout = setTimeout(() => {
       musicPlayerSettings.currentRandomCO = getRandomCO();
       randomThemeTimeout = null;
+      playThemeSong(true);
     }, songDurationMS);
   }
 
@@ -314,13 +315,20 @@ export function stopAllSounds() {
   stopThemeSong();
 
   // Stop unit sounds
-  for (let unitId of unitIDAudioMap.keys()) {
-    stopMovementSound(unitId, false);
-  }
+  stopAllMovementSounds();
 
   // Mute sound effects
   for (let audio of urlAudioMap.values()) {
     audio.volume = 0;
+  }
+}
+
+/**
+ * Stops all movement sounds of all units.
+ */
+export function stopAllMovementSounds() {
+  for (let unitId of unitIDAudioMap.keys()) {
+    stopMovementSound(unitId, false);
   }
 }
 
@@ -382,18 +390,15 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
     }
 
     if (event.type === "error") {
-      console.error("[AWBW Music Player] Could not pre-load: ", audio.src, audio.networkState, event);
+      console.debug("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
       return;
     }
 
     // TODO: Debugging purposes
-    if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
+    // if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
 
-    // Add the audio to the map, but only if it hasn't been added already
-    // This prevents a race condition where we might add the same audio twice
     if (!urlAudioMap.has(audio.src)) {
-      // urlAudioMap.set(audio.src, audio);
-      console.error("[AWBW Music Player] RACE CONDITION 2", audio.src);
+      console.error("[AWBW Music Player] Race condition on pre-load! Please report this bug!", audio.src);
     }
   };
 
@@ -437,21 +442,27 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
       playThemeSong(restartMusic);
       break;
     case "randomThemes":
-      if (musicPlayerSettings.randomThemes) {
-        if (!allThemesPreloaded) {
-          console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
-          let audioList = getAllThemeURLs();
-          allThemesPreloaded = true;
-          preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
-        }
-        // We want a new random theme
-        if (randomThemeTimeout) {
-          clearTimeout(randomThemeTimeout);
-          randomThemeTimeout = null;
-        }
-        musicPlayerSettings.currentRandomCO = getRandomCO();
+      // Back to normal themes
+      if (!musicPlayerSettings.randomThemes) {
+        playThemeSong();
+        return;
       }
-      playThemeSong();
+
+      // Preload all themes if we are going to play random themes
+      if (!allThemesPreloaded) {
+        console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
+        let audioList = getAllThemeURLs();
+        allThemesPreloaded = true;
+        preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
+      }
+
+      // We want a new random theme
+      if (randomThemeTimeout) {
+        clearTimeout(randomThemeTimeout);
+        randomThemeTimeout = null;
+      }
+      musicPlayerSettings.currentRandomCO = getRandomCO();
+      playThemeSong(true);
       break;
     case "volume": {
       // Adjust the volume of the current theme

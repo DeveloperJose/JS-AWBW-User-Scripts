@@ -109,9 +109,22 @@ interface UnitInfo {
 }
 
 interface BuildingInfo {
-  terrain_name: string;
-  buildings_team: number;
+  buildings_capture: number;
+  buildings_games_id: number;
   buildings_id: number;
+  buildings_last_capture: number;
+  buildings_last_updated: string;
+  buildings_players_id: string;
+  buildings_team: string;
+  buildings_x: number;
+  buildings_y: number;
+  // countries_code: any;
+  // countries_id: any;
+  // countries_name: string;
+  is_occupied: boolean;
+  terrain_defense: string;
+  terrain_id: number;
+  terrain_name: string;
 }
 
 declare let mapClick: (e: Event, e1: Event) => void;
@@ -145,11 +158,20 @@ declare let closeMenu: () => void;
 
 declare let resetAttack: () => void;
 
+interface UnitClickData {
+  el: HTMLSpanElement;
+  id: string;
+  type: string;
+
+  // These only appear when clicking a unit that isn't waited
+  info?: UnitInfo;
+  path?: number[];
+}
+
 /**
  * Function called when a unit is clicked.
- * TODO
  */
-declare let unitClickHandler: (clicked: any) => void;
+declare let unitClickHandler: (clicked: UnitClickData) => void;
 
 /**
  * Function called when a unit is waited.
@@ -201,12 +223,18 @@ declare let updateAirUnitFogOnMove: (
   delay: number,
 ) => void;
 
+interface COPValues {
+  attacker: { playerId: number; copValue: number; tagValue: number };
+  defender: { playerId: number; copValue: number; tagValue: number };
+}
+
 interface FireResponse {
-  copValues: any; // TODO
+  attacker: UnitInfo;
+  copValues: COPValues;
+  defender: UnitInfo;
 }
 
 interface SeamResponse {
-  action: string;
   attacker: UnitInfo;
   newMoveCosts: Object;
   seamHp: number;
@@ -215,18 +243,35 @@ interface SeamResponse {
   seamY: number;
 }
 
+interface PathInfo {
+  unit_visible: boolean;
+  x: number;
+  y: number;
+}
+
 interface MoveResponse {
-  unit: UnitInfo;
-  path: any[]; // TODO
+  discovered: boolean;
+  dist: number;
+  path: PathInfo[];
   trapped: boolean;
+  unit: UnitInfo;
+}
+
+interface CaptureDataBuildingInfo {
+  buildings_capture: number;
+  buildings_id: number;
+  // buildings_team: any;
+  buildings_x: number;
+  buildings_y: number;
 }
 
 interface CaptureData {
   newIncome: number;
-  buildingInfo: BuildingInfo;
+  buildingInfo: CaptureDataBuildingInfo;
 }
 
 interface BuildData {
+  discovered: boolean;
   newUnit: UnitInfo;
 }
 
@@ -240,6 +285,7 @@ interface RepairData {}
 
 interface HideData {
   unitId: number;
+  vision: boolean;
 }
 
 interface UnhideData {

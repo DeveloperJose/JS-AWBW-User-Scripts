@@ -80,9 +80,9 @@ export function getReplayDaySelectorCheckBox() {
  * The HTML node for the game menu, the little bar with all the icons.
  */
 export function getMenu() {
-  return getIsMapEditor()
-    ? document.querySelector("#replay-misc-controls")
-    : document.querySelector("#game-map-menu")?.parentNode;
+  if (getIsMaintenance()) return document.querySelector("#main");
+  if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
+  return document.querySelector("#game-map-menu")?.parentNode;
 }
 // ============================== Useful Page Utilities ==============================
 

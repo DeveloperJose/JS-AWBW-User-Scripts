@@ -4,7 +4,7 @@
  */
 
 import { areAnimationsEnabled } from "./awbw_globals";
-import { getIsMapEditor, getReplayControls } from "./awbw_page";
+import { getIsMaintenance, getIsMapEditor, getReplayControls } from "./awbw_page";
 
 /**
  * Enum for the different states a CO Power can be in.
@@ -64,7 +64,8 @@ export function getMyID() {
  * @param pid - Player ID whose info we will get.
  * @returns - The info for that given player or null if such ID is not present in the game.
  */
-export function getPlayerInfo(pid: number): PlayerInfo {
+export function getPlayerInfo(pid: number): PlayerInfo | null {
+  if (getIsMaintenance()) return null;
   return playersInfo[pid];
 }
 
@@ -73,6 +74,7 @@ export function getPlayerInfo(pid: number): PlayerInfo {
  * @returns - List of player info data for all players in the current game.
  */
 export function getAllPlayersInfo() {
+  if (getIsMaintenance()) return [];
   return Object.values(playersInfo);
 }
 
@@ -82,6 +84,7 @@ export function getAllPlayersInfo() {
  * @returns True if the player is a spectator, false if they are playing in this game.
  */
 export function isPlayerSpectator(pid: number) {
+  if (getIsMaintenance()) return false;
   return !playerKeys.includes(pid);
 }
 
@@ -92,6 +95,7 @@ export function isPlayerSpectator(pid: number) {
  */
 export function canPlayerActivateCOPower(pid: number) {
   let info = getPlayerInfo(pid);
+  if (!info) return false;
   return info.players_co_power >= info.players_co_max_power;
 }
 
@@ -102,6 +106,7 @@ export function canPlayerActivateCOPower(pid: number) {
  */
 export function canPlayerActivateSuperCOPower(pid: number) {
   let info = getPlayerInfo(pid);
+  if (!info) return false;
   return info.players_co_power >= info.players_co_max_spower;
 }
 
@@ -130,6 +135,7 @@ export function getBuildingInfo(x: number, y: number) {
  * @returns - Data of the current building or unit clicked by the user.
  */
 export function getCurrentClickData() {
+  if (typeof currentClick === "undefined") return null;
   if (!currentClick) return null;
   return currentClick;
 }
@@ -139,6 +145,7 @@ export function getCurrentClickData() {
  * @returns - True if we are in replay mode.
  */
 export function isReplayActive() {
+  if (getIsMaintenance()) return false;
   // Check if replay mode is open by checking if the replay section is set to display
   const replayControls = getReplayControls();
   let replayOpen = replayControls.style.display !== "none";
@@ -150,6 +157,7 @@ export function isReplayActive() {
  * @returns - True if the game has ended.
  */
 export function hasGameEnded() {
+  if (getIsMaintenance()) return false;
   // Count how many players are still in the game
   let numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
   return numberOfRemainingPlayers === 1;
@@ -160,6 +168,7 @@ export function hasGameEnded() {
  * @returns - The current day in the game.
  */
 export function getCurrentGameDay() {
+  if (getIsMaintenance()) return -1;
   if (!isReplayActive()) return gameDay;
   let replayData = Object.values(replay);
   if (replayData.length === 0) return gameDay;

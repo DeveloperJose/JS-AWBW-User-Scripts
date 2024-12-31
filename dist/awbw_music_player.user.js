@@ -105,9 +105,9 @@
     return document.querySelector(".replay-day-selector");
   }
   function getMenu() {
-    return getIsMapEditor()
-      ? document.querySelector("#replay-misc-controls")
-      : document.querySelector("#game-map-menu")?.parentNode;
+    if (getIsMaintenance()) return document.querySelector("#main");
+    if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
+    return document.querySelector("#game-map-menu")?.parentNode;
   }
   function getBuildingDiv(buildingID) {
     return document.querySelector(`.game-building[data-building-id='${buildingID}']`);
@@ -156,35 +156,43 @@
     return myID;
   }
   function getPlayerInfo(pid) {
+    if (getIsMaintenance()) return null;
     return playersInfo[pid];
   }
   function getAllPlayersInfo() {
+    if (getIsMaintenance()) return [];
     return Object.values(playersInfo);
   }
   function isPlayerSpectator(pid) {
+    if (getIsMaintenance()) return false;
     return !playerKeys.includes(pid);
   }
   function canPlayerActivateCOPower(pid) {
     let info = getPlayerInfo(pid);
+    if (!info) return false;
     return info.players_co_power >= info.players_co_max_power;
   }
   function canPlayerActivateSuperCOPower(pid) {
     let info = getPlayerInfo(pid);
+    if (!info) return false;
     return info.players_co_power >= info.players_co_max_spower;
   }
   function getBuildingInfo(x, y) {
     return buildingsInfo[x][y];
   }
   function isReplayActive() {
+    if (getIsMaintenance()) return false;
     const replayControls = getReplayControls();
     let replayOpen = replayControls.style.display !== "none";
     return replayOpen;
   }
   function hasGameEnded() {
+    if (getIsMaintenance()) return false;
     let numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
     return numberOfRemainingPlayers === 1;
   }
   function getCurrentGameDay() {
+    if (getIsMaintenance()) return -1;
     if (!isReplayActive()) return gameDay;
     let replayData = Object.values(replay);
     if (replayData.length === 0) return gameDay;
@@ -953,6 +961,7 @@
       randomThemeTimeout = setTimeout(() => {
         musicPlayerSettings.currentRandomCO = getRandomCO();
         randomThemeTimeout = null;
+        playThemeSong(true);
       }, songDurationMS);
     }
     nextTheme.volume = musicPlayerSettings.volume;
@@ -965,7 +974,7 @@
     soundInstance.volume = volume;
     soundInstance.play();
   }
-  function playThemeSong(startFromBeginning = false, loop = false) {
+  function playThemeSong(startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
     if (currentlyDelaying) return;
     let coName = currentPlayer.coName;
@@ -1050,11 +1059,14 @@
   }
   function stopAllSounds() {
     stopThemeSong();
-    for (let unitId of unitIDAudioMap.keys()) {
-      stopMovementSound(unitId, false);
-    }
+    stopAllMovementSounds();
     for (let audio of urlAudioMap.values()) {
       audio.volume = 0;
+    }
+  }
+  function stopAllMovementSounds() {
+    for (let unitId of unitIDAudioMap.keys()) {
+      stopMovementSound(unitId, false);
     }
   }
   function preloadAllCommonAudio(afterPreloadFunction) {
@@ -1083,12 +1095,11 @@
         if (afterPreloadFunction) afterPreloadFunction();
       }
       if (event.type === "error") {
-        console.error("[AWBW Music Player] Could not pre-load: ", audio.src, audio.networkState, event);
+        console.debug("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
         return;
       }
-      if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
       if (!urlAudioMap.has(audio.src)) {
-        console.error("[AWBW Music Player] RACE CONDITION 2", audio.src);
+        console.error("[AWBW Music Player] Race condition on pre-load! Please report this bug!", audio.src);
       }
     };
     audioURLs.forEach((url) => {
@@ -1121,20 +1132,22 @@
         playThemeSong(restartMusic);
         break;
       case "randomThemes":
-        if (musicPlayerSettings.randomThemes) {
-          if (!allThemesPreloaded) {
-            console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
-            let audioList = getAllThemeURLs();
-            allThemesPreloaded = true;
-            preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
-          }
-          if (randomThemeTimeout) {
-            clearTimeout(randomThemeTimeout);
-            randomThemeTimeout = null;
-          }
-          musicPlayerSettings.currentRandomCO = getRandomCO();
+        if (!musicPlayerSettings.randomThemes) {
+          playThemeSong();
+          return;
         }
-        playThemeSong();
+        if (!allThemesPreloaded) {
+          console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
+          let audioList = getAllThemeURLs();
+          allThemesPreloaded = true;
+          preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
+        }
+        if (randomThemeTimeout) {
+          clearTimeout(randomThemeTimeout);
+          randomThemeTimeout = null;
+        }
+        musicPlayerSettings.currentRandomCO = getRandomCO();
+        playThemeSong(true);
         break;
       case "volume": {
         let currentTheme = urlAudioMap.get(currentThemeKey);
@@ -1149,6 +1162,9 @@
       return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
     }
     return typeof updateCursor !== "undefined" ? updateCursor : null;
+  }
+  function getShowEventScreenFn() {
+    return typeof showEventScreen !== "undefined" ? showEventScreen : null;
   }
   function getOpenMenuFn() {
     return typeof openMenu !== "undefined" ? openMenu : null;
@@ -1232,7 +1248,7 @@
   let visibilityMap = new Map();
   let movementResponseMap = new Map();
   let ahCursorMove = getCursorMoveFn();
-  let ahShowEventScreen = showEventScreen;
+  let ahShowEventScreen = getShowEventScreenFn();
   let ahOpenMenu = getOpenMenuFn();
   let ahCloseMenu = getCloseMenuFn();
   let ahUnitClick = getUnitClickFn();
@@ -1267,6 +1283,7 @@
     designMapEditor.updateCursor = onCursorMove;
   }
   function refreshMusic(playDelayMS = 0) {
+    stopAllMovementSounds();
     visibilityMap.clear();
     musicPlayerSettings.currentRandomCO = getRandomCO();
     setTimeout(() => {
@@ -1358,6 +1375,7 @@
       playSFX(GameSFX.uiMenuClose);
     }
     menuOpen = false;
+    stopAllMovementSounds();
   }
   function onUnitClick(clicked) {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
@@ -1368,14 +1386,17 @@
   function onUnitWait(unitId) {
     ahWait?.apply(waitUnit, [unitId]);
     if (!musicPlayerSettings.isPlaying) return;
-    stopMovementSound(unitId);
+    console.debug("[MP] Wait", unitId, getUnitName(unitId));
     if (movementResponseMap.has(unitId)) {
       let response = movementResponseMap.get(unitId);
       if (response?.trapped) {
         playSFX(GameSFX.unitTrap);
       }
+      stopMovementSound(unitId, !response?.trapped);
       movementResponseMap.delete(unitId);
+      return;
     }
+    stopMovementSound(unitId);
   }
   function onAnimUnit(path, unitId, unitSpan, unitTeam, viewerTeam, i) {
     ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
@@ -1404,10 +1425,11 @@
   function onFogUpdate(x, y, mType, neighbours, unitVisible, change, delay) {
     ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
     let unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
     if (change === "Add") {
-      setTimeout(() => stopMovementSound(unitInfo.units_id, false), delay);
+      setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
     }
   }
   function onFire(response) {
@@ -1415,8 +1437,11 @@
       ahFire?.apply(actionHandlers.Fire, [response]);
       return;
     }
+    console.debug("[MP] Fire", response);
     let attackerID = response.copValues.attacker.playerId;
     let defenderID = response.copValues.defender.playerId;
+    stopMovementSound(response.attacker.units_id, false);
+    stopMovementSound(response.defender.units_id, false);
     let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
     let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
     let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
@@ -1485,16 +1510,19 @@
   function onMove(response, loadFlag) {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Move", response, loadFlag);
     let unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
     var movementDist = response.path.length;
     if (movementDist > 1) {
+      stopMovementSound(unitId, false);
       playMovementSound(unitId);
     }
   }
   function onCapture(data) {
     ahCapt?.apply(actionHandlers.Capt, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Capt", data);
     let finishedCapture = data.newIncome != null;
     if (!finishedCapture) {
       playSFX(GameSFX.unitCaptureProgress);
@@ -1509,6 +1537,7 @@
   function onBuild(data) {
     ahBuild?.apply(actionHandlers.Build, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Build", data);
     let myID = getMyID();
     let isMyBuild = data.newUnit.units_players_id == myID;
     if (!isMyBuild) playSFX(GameSFX.unitSupply);
@@ -1516,50 +1545,59 @@
   function onLoad(data) {
     ahLoad?.apply(actionHandlers.Load, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Load", data);
     playSFX(GameSFX.unitLoad);
   }
   function onUnload(data) {
     ahUnload?.apply(actionHandlers.Unload, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Unload", data);
     playSFX(GameSFX.unitUnload);
   }
   function onSupply(data) {
     ahSupply?.apply(actionHandlers.Supply, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Supply", data);
     playSFX(GameSFX.unitSupply);
   }
   function onRepair(data) {
     ahRepair?.apply(actionHandlers.Repair, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Repair", data);
     playSFX(GameSFX.unitSupply);
   }
   function onHide(data) {
     ahHide?.apply(actionHandlers.Hide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Hide", data);
     playSFX(GameSFX.unitHide);
     stopMovementSound(data.unitId);
   }
   function onUnhide(data) {
     ahUnhide?.apply(actionHandlers.Unhide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Unhide", data);
     playSFX(GameSFX.unitUnhide);
     stopMovementSound(data.unitId);
   }
   function onJoin(data) {
     ahJoin?.apply(actionHandlers.Join, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Join", data);
     stopMovementSound(data.joinID);
     stopMovementSound(data.joinedUnit.units_id);
   }
   function onLaunch(data) {
     ahLaunch?.apply(actionHandlers.Launch, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Launch", data);
     playSFX(GameSFX.unitMissileSend);
     setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
   }
   function onNextTurn(data) {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] NextTurn", data);
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
     }
@@ -1568,6 +1606,7 @@
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
     if (!musicPlayerSettings.isPlaying) return;
+    console.debug("[MP] Power", data);
     let coName = data.coName;
     let isBH = isBlackHoleCO(coName);
     let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
@@ -1588,7 +1627,7 @@
         }
         let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
         playSFX(sfx);
-        stopThemeSong(1100);
+        stopThemeSong(1200);
         break;
     }
     if (coName === "Colin" && !isSuperCOPower) {
@@ -1598,6 +1637,7 @@
 
   function main() {
     console.debug("[AWBW Improved Music Player] Script starting...");
+    musicPlayerUI.addToAWBWPage();
     if (getIsMaintenance()) {
       console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
       musicPlayerSettings.isPlaying = true;
@@ -1606,7 +1646,6 @@
     }
     addHandlers();
     loadSettingsFromLocalStorage();
-    musicPlayerUI.addToAWBWPage();
     preloadAllCommonAudio(() => {
       console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
       musicPlayerSettings.themeType = getCurrentThemeType();
