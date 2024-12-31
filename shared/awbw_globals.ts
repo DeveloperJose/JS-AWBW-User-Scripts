@@ -31,6 +31,11 @@ const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
 const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
 
 /**
+ * List of COs that are only available in Advance Wars 2, stored in a set for more efficient lookups.
+ */
+export const AW2_ONLY_COs = new Set(["hachi", "colin", "sensei", "jess", "flak", "adder", "lash", "hawke"]);
+
+/**
  * List of COs that are only available in Dual Strike, stored in a set for more efficient lookups.
  */
 export const AW_DS_ONLY_COs = new Set([
@@ -91,6 +96,6 @@ export function isBlackHoleCO(coName: string) {
  */
 export function getRandomCO() {
   const COs = getAllCONames();
-  COs.push("map-editor", "victory", "defeat");
+  COs.push("map-editor");
   return COs[Math.floor(Math.random() * COs.length)];
 }

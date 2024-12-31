@@ -2,7 +2,7 @@
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
 import { getAllPlayingCONames, getCurrentGameDay } from "../shared/awbw_game";
-import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
+import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO, AW2_ONLY_COs } from "../shared/awbw_globals";
 import { SettingsGameType, SettingsThemeType, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
 
 /**
@@ -177,14 +177,24 @@ const onMovementRolloffMap = new Map([
  * Map that takes a game type and gives you a set of CO names that have alternate themes for that game type.
  */
 const alternateThemes = new Map([
-  [SettingsGameType.AW1, new Set(["sturm", "vonbolt"])],
-  [SettingsGameType.AW2, new Set(["sturm", "vonbolt"])],
-  [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm", "vonbolt"])],
+  [SettingsGameType.AW1, new Set(["sturm"])],
+  [SettingsGameType.AW2, new Set(["sturm"])],
+  [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
   [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
 ]);
 
+/**
+ * Set of CO names that have special loops for their music.
+ */
 const specialLoops = new Set(["vonbolt"]);
 
+/**
+ * Determines the filename for the alternate music to play given a specific CO and other settings (if any).
+ * @param coName - Name of the CO whose music to use.
+ * @param gameType - Which game soundtrack to use.
+ * @param themeType - Which type of music whether regular or power.
+ * @returns - The filename of the alternate music to play given the parameters, if any.
+ */
 function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
   // Check if this CO has an alternate theme
   if (!alternateThemes.has(gameType)) return;
@@ -200,7 +210,7 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
 
   // No alternate theme or it's a power
   if (!alternateThemesSet?.has(coName) || isPowerActive) {
-    return false;
+    return;
   }
 
   // Andy -> Clone Andy
@@ -265,42 +275,39 @@ export function getMusicURL(
   gameType?: SettingsGameType,
   themeType?: SettingsThemeType,
   useAlternateTheme?: boolean,
-  looping?: boolean,
 ) {
   if (!gameType) gameType = musicPlayerSettings.gameType;
   if (!themeType) themeType = musicPlayerSettings.themeType;
   if (!useAlternateTheme) useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
 
+  // Convert name to internal format
+  coName = coName.toLowerCase().replaceAll(" ", "");
+
   // Check if we want to play the victory or defeat theme
   if (coName === "victory") return VICTORY_THEME_URL;
   if (coName === "defeat") return DEFEAT_THEME_URL;
 
-  // Convert name to internal format
-  coName = coName.toLowerCase().replaceAll(" ", "");
+  // Override the game type to a higher game if the CO is not available in the current game.
+  if (gameType !== SettingsGameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = SettingsGameType.DS;
+  if (gameType === SettingsGameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = SettingsGameType.AW2;
 
   let gameDir = gameType as string;
-  if (!gameDir.startsWith("AW")) {
-    gameDir = "AW_" + gameDir;
-  }
+  if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
 
   let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
-  // For special themes where we switch to a different version when looping
-  if (looping && specialLoops.has(coName)) {
-    filename += "-loop";
-  }
   let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
 }
 
 /**
- * Gets the name of the CO from the given URL, if any. Also includes the "t-" prefix.
+ * Gets the name of the CO from the given URL, if any.
  * @param url - URL to get the CO name from.
  * @returns - The name of the CO from the given URL.
  */
 export function getCONameFromURL(url: string) {
   let parts = url.split("/");
   let filename = parts[parts.length - 1];
-  let coName = filename.split(".")[0];
+  let coName = filename.split(".")[0].split("t-")[1];
   return coName;
 }
 
@@ -341,18 +348,54 @@ export function hasMovementRollOff(unitName: string) {
 }
 
 /**
- * Gets the URL for the themes of all the current COs in the game.
+ * Checks if the given URL has a special loop to play after the music finishes.
+ * @param srcURL - URL of the music to check.
+ * @returns - True if the given URL has a special loop to play after the audio finishes.
  */
-export function getAllCurrentThemes(): Set<string> {
+export function hasSpecialLoop(srcURL: string) {
+  let coName = getCONameFromURL(srcURL);
+  return specialLoops.has(coName);
+}
+
+/**
+ * Gets all the URLs for the music of all currently playing COs for the current game settings.
+ * Includes the regular and alternate themes for each CO (if any).
+ * @returns - Set with all the URLs for current music of all currently playing COs.
+ */
+export function getCurrentThemeURLs(): Set<string> {
   let coNames = getAllPlayingCONames();
   let audioList = new Set<string>();
-  // Get the regular theme and the alternates if there are any
+
   coNames.forEach((name) => {
-    audioList.add(getMusicURL(name));
-    audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true));
-    audioList.add(getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, false, true));
+    let regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
+    let powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
+    let superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+    let alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
+    audioList.add(regularURL);
+    audioList.add(alternateURL);
+    audioList.add(powerURL);
+    audioList.add(superPowerURL);
+    if (specialLoops.has(name)) audioList.add(regularURL.replace(".ogg", "-loop.ogg"));
   });
   return audioList;
+}
+
+/**
+ * Gets all the URLs for the music of all currently playing COs for ALL possible game settings.
+ * Includes the regular and alternate themes for each CO (if any).
+ * @returns - Set with all the URLs for all the music of all currently playing COs.
+ */
+export function getAllCurrentThemesExtraAudioURLs(): Set<string> {
+  let audioURLs = new Set<string>();
+  let coNames = getAllPlayingCONames();
+  for (const gameType in SettingsGameType) {
+    for (const themeType in SettingsThemeType) {
+      const gameTypeEnum = gameType as SettingsGameType;
+      const themeTypeEnum = themeType as SettingsThemeType;
+      coNames?.forEach((name) => audioURLs.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
+    }
+  }
+  return audioURLs;
 }
 
 /**
@@ -384,8 +427,12 @@ export function getAllThemeURLs() {
   for (let coName of getAllCONames()) {
     for (let gameType of Object.values(SettingsGameType)) {
       for (let themeType of Object.values(SettingsThemeType)) {
-        allSoundURLs.add(getMusicURL(coName, gameType, themeType, false));
-        allSoundURLs.add(getMusicURL(coName, gameType, themeType, true));
+        let url = getMusicURL(coName, gameType, themeType, false);
+        let alternateURL = getMusicURL(coName, gameType, themeType, true);
+        allSoundURLs.add(url);
+        allSoundURLs.add(alternateURL);
+        if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName))
+          allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
       }
     }
   }

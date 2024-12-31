@@ -191,7 +191,10 @@ export abstract class musicPlayerSettings {
   }
 
   static set currentRandomCO(val: string) {
-    if (this.__currentRandomCO === val) return;
+    // Make sure we don't get the same CO twice in a row
+    while (this.__currentRandomCO === val) {
+      val = getRandomCO();
+    }
     this.__currentRandomCO = val;
     this.onSettingChangeEvent("currentRandomCO");
   }
