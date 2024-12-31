@@ -73,7 +73,7 @@ const specialLoopMap = new Map<string, string>();
 function createNewThemeAudio(srcURL: string) {
   let audio = new Audio(srcURL);
   if (hasSpecialLoop(srcURL)) {
-    console.log("[AWBW Music Player] Special loop detected: ", srcURL);
+    // console.debug("[AWBW Music Player] Special loop detected: ", srcURL);
     audio.loop = false;
     audio.addEventListener("ended", (event) => {
       const loopURL = srcURL.replace(".ogg", "-loop.ogg");
@@ -296,6 +296,7 @@ export function playSFX(sfx: GameSFX) {
 
   // This sound effect hasn't been loaded yet
   if (!urlAudioMap.has(sfxURL)) {
+    console.debug("[AWBW Music Player] Loading new sound effect", sfxURL);
     urlAudioMap.set(sfxURL, new Audio(sfxURL));
   }
 
@@ -390,7 +391,7 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
     }
 
     if (event.type === "error") {
-      console.debug("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
+      console.error("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
       return;
     }
 

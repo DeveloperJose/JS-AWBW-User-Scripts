@@ -923,7 +923,6 @@
   function createNewThemeAudio(srcURL) {
     let audio = new Audio(srcURL);
     if (hasSpecialLoop(srcURL)) {
-      console.log("[AWBW Music Player] Special loop detected: ", srcURL);
       audio.loop = false;
       audio.addEventListener("ended", (event) => {
         const loopURL = srcURL.replace(".ogg", "-loop.ogg");
@@ -1049,6 +1048,7 @@
       vol = musicPlayerSettings.volume;
     }
     if (!urlAudioMap.has(sfxURL)) {
+      console.debug("[AWBW Music Player] Loading new sound effect", sfxURL);
       urlAudioMap.set(sfxURL, new Audio(sfxURL));
     }
     let audio = urlAudioMap.get(sfxURL);
@@ -1095,7 +1095,7 @@
         if (afterPreloadFunction) afterPreloadFunction();
       }
       if (event.type === "error") {
-        console.debug("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
+        console.error("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
         return;
       }
       if (!urlAudioMap.has(audio.src)) {
@@ -1283,7 +1283,6 @@
     designMapEditor.updateCursor = onCursorMove;
   }
   function refreshMusic(playDelayMS = 0) {
-    stopAllMovementSounds();
     visibilityMap.clear();
     musicPlayerSettings.currentRandomCO = getRandomCO();
     setTimeout(() => {
@@ -1307,6 +1306,8 @@
     replayOpenBtn.addEventListener("click", replayChangeTurn);
     replayCloseBtn.addEventListener("click", replayChangeTurn);
     replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
+    replayForwardBtn.addEventListener("click", stopAllMovementSounds);
+    replayBackwardBtn.addEventListener("click", stopAllMovementSounds);
   }
   function addGameHandlers() {
     updateCursor = onCursorMove;
@@ -1375,7 +1376,6 @@
       playSFX(GameSFX.uiMenuClose);
     }
     menuOpen = false;
-    stopAllMovementSounds();
   }
   function onUnitClick(clicked) {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
@@ -1386,7 +1386,6 @@
   function onUnitWait(unitId) {
     ahWait?.apply(waitUnit, [unitId]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Wait", unitId, getUnitName(unitId));
     if (movementResponseMap.has(unitId)) {
       let response = movementResponseMap.get(unitId);
       if (response?.trapped) {
@@ -1425,7 +1424,6 @@
   function onFogUpdate(x, y, mType, neighbours, unitVisible, change, delay) {
     ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
     let unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
     if (change === "Add") {
@@ -1437,11 +1435,8 @@
       ahFire?.apply(actionHandlers.Fire, [response]);
       return;
     }
-    console.debug("[MP] Fire", response);
     let attackerID = response.copValues.attacker.playerId;
     let defenderID = response.copValues.defender.playerId;
-    stopMovementSound(response.attacker.units_id, false);
-    stopMovementSound(response.defender.units_id, false);
     let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
     let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
     let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
@@ -1510,19 +1505,17 @@
   function onMove(response, loadFlag) {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Move", response, loadFlag);
     let unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
     var movementDist = response.path.length;
+    stopMovementSound(unitId, false);
     if (movementDist > 1) {
-      stopMovementSound(unitId, false);
       playMovementSound(unitId);
     }
   }
   function onCapture(data) {
     ahCapt?.apply(actionHandlers.Capt, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Capt", data);
     let finishedCapture = data.newIncome != null;
     if (!finishedCapture) {
       playSFX(GameSFX.unitCaptureProgress);
@@ -1530,74 +1523,65 @@
     }
     let myID = getMyID();
     let isSpectator = isPlayerSpectator(myID);
-    let isMyCapture = data.buildingInfo.buildings_team == myID || isSpectator;
+    let isMyCapture = data.buildingInfo.buildings_team === myID.toString() || isSpectator;
     let sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
     playSFX(sfx);
   }
   function onBuild(data) {
     ahBuild?.apply(actionHandlers.Build, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Build", data);
     let myID = getMyID();
     let isMyBuild = data.newUnit.units_players_id == myID;
-    if (!isMyBuild) playSFX(GameSFX.unitSupply);
+    let isReplay = isReplayActive();
+    if (!isMyBuild || isReplay) playSFX(GameSFX.unitSupply);
   }
   function onLoad(data) {
     ahLoad?.apply(actionHandlers.Load, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Load", data);
     playSFX(GameSFX.unitLoad);
   }
   function onUnload(data) {
     ahUnload?.apply(actionHandlers.Unload, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Unload", data);
     playSFX(GameSFX.unitUnload);
   }
   function onSupply(data) {
     ahSupply?.apply(actionHandlers.Supply, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Supply", data);
     playSFX(GameSFX.unitSupply);
   }
   function onRepair(data) {
     ahRepair?.apply(actionHandlers.Repair, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Repair", data);
     playSFX(GameSFX.unitSupply);
   }
   function onHide(data) {
     ahHide?.apply(actionHandlers.Hide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Hide", data);
     playSFX(GameSFX.unitHide);
     stopMovementSound(data.unitId);
   }
   function onUnhide(data) {
     ahUnhide?.apply(actionHandlers.Unhide, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Unhide", data);
     playSFX(GameSFX.unitUnhide);
     stopMovementSound(data.unitId);
   }
   function onJoin(data) {
     ahJoin?.apply(actionHandlers.Join, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Join", data);
     stopMovementSound(data.joinID);
     stopMovementSound(data.joinedUnit.units_id);
   }
   function onLaunch(data) {
     ahLaunch?.apply(actionHandlers.Launch, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Launch", data);
     playSFX(GameSFX.unitMissileSend);
     setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
   }
   function onNextTurn(data) {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] NextTurn", data);
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
     }
@@ -1606,7 +1590,6 @@
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
     if (!musicPlayerSettings.isPlaying) return;
-    console.debug("[MP] Power", data);
     let coName = data.coName;
     let isBH = isBlackHoleCO(coName);
     let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
@@ -1626,8 +1609,9 @@
           break;
         }
         let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+        let delay = isBH ? 1019 : 881;
         playSFX(sfx);
-        stopThemeSong(1200);
+        stopThemeSong(delay);
         break;
     }
     if (coName === "Colin" && !isSuperCOPower) {

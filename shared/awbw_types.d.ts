@@ -260,7 +260,7 @@ interface MoveResponse {
 interface CaptureDataBuildingInfo {
   buildings_capture: number;
   buildings_id: number;
-  // buildings_team: any;
+  buildings_team: string;
   buildings_x: number;
   buildings_y: number;
 }
