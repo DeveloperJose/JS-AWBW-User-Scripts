@@ -14,6 +14,12 @@ import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings 
 import { addHandlers } from "./handlers";
 import { getIsMaintenance } from "../shared/awbw_page";
 import { MAINTENANCE_THEME_URL } from "./resources";
+import { notifyCOSelectorListeners } from "../shared/custom_ui";
+
+/******************************************************************
+ * MODULE EXPORTS
+ ******************************************************************/
+export { notifyCOSelectorListeners as notifyCOSelectorListeners };
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)

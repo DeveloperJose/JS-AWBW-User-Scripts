@@ -2,6 +2,7 @@
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
 
+import { getAllCONames } from "./awbw_globals";
 import { getMenu } from "./awbw_page";
 
 export enum CustomInputType {
@@ -20,12 +21,6 @@ export enum ContextMenuPosition {
   Center = "context-menu-center",
   Right = "context-menu-right",
 }
-
-export function usefulFunction() {
-  console.log("This is a useful function!");
-}
-
-usefulFunction();
 
 /**
  * A class that represents a custom menu UI that can be added to the AWBW page.
@@ -421,4 +416,93 @@ export class CustomMenuSettingsUI {
       input.dispatchEvent(event);
     });
   }
+}
+
+type COSelectorListener = (coName: string) => void;
+
+const coSelectorListeners: COSelectorListener[] = [
+  (coName: string) => {
+    console.log(coName, "selected");
+  },
+];
+export function addCOSelectorListener(listener: COSelectorListener) {
+  coSelectorListeners.push(listener);
+}
+
+export function notifyCOSelectorListeners(coName: string) {
+  coSelectorListeners.forEach((listener) => listener(coName));
+}
+
+export function createCOSelector() {
+  const template = (coName: string) => {
+    const location = "javascript:void(0)";
+    const internalName = coName.toLowerCase().replaceAll(" ", "");
+    const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+    const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
+
+    return (
+      `<tr>` +
+      `<td class=borderwhite><img class=co_portrait src=${imgSrc}></td>` +
+      `<td class=borderwhite align=center valign=center>` +
+      `<span class=small_text>` +
+      `<a onclick="${onClickFn}" href=${location}>${coName}</a></b>` +
+      `</span>` +
+      `</td>` +
+      `</tr>`
+    );
+  };
+
+  const coSelector = document.createElement("a");
+  coSelector.id = "music-player-co-selector";
+  coSelector.classList.add("game-tools-btn");
+  coSelector.href = "javascript:void(0)";
+
+  const allCOs = getAllCONames(true).sort();
+  let columnHTML = "";
+  for (let i = 0; i < 7; i++) {
+    const startIDX = i * 4;
+    const endIDX = startIDX + 4;
+    columnHTML += "<td><table>" + allCOs.slice(startIDX, endIDX).map(template).join("") + "</table></td>";
+  }
+  const innerHTML = `<table><tr>${columnHTML}</tr></table>`;
+
+  coSelector.onclick = () => {
+    return overlib(
+      innerHTML,
+      STICKY,
+      CAPTION,
+      "<img src=terrain/ani/blankred.gif height=16 width=1 align=absmiddle>Select CO",
+      OFFSETY,
+      25,
+      OFFSETX,
+      -322,
+      CLOSECLICK,
+    );
+  };
+
+  const imgCaret = document.createElement("img");
+  imgCaret.id = "music-player-co-caret";
+  imgCaret.src = "terrain/co_down_caret.gif";
+  imgCaret.style.position = "absolute";
+  imgCaret.style.top = "28px";
+  imgCaret.style.left = "25px";
+  imgCaret.style.border = "none";
+  imgCaret.style.zIndex = "110";
+
+  const imgCO = document.createElement("img");
+  imgCO.id = "music-player-co-portrait";
+  imgCO.src = "terrain/ani/aw2andy.png?v=1";
+  imgCO.style.position = "absolute";
+  imgCO.style.top = "0px";
+  imgCO.style.left = "0px";
+  imgCO.style.borderColor = "#009966";
+  imgCO.style.zIndex = "100";
+  imgCO.style.border = "2";
+  // imgCO.align = "absmiddle";
+  imgCO.style.verticalAlign = "middle";
+  imgCO.classList.add("co_portrait");
+
+  coSelector.appendChild(imgCaret);
+  coSelector.appendChild(imgCO);
+  return coSelector;
 }

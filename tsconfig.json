@@ -18,5 +18,5 @@
     //   "vite/client"
     // ],
   },
-  "include": ["**/*.ts", "**/*.js", "**/*.tsx", "**/*.jsx"],
+  "include": ["**/*.ts"],
 }

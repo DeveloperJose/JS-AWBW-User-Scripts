@@ -38,13 +38,3 @@ export default (commandLineArgs) => {
   if (commandLineArgs.configInputDir) return createUserscriptRollUpConfig(commandLineArgs.configInputDir);
   return [createUserscriptRollUpConfig("music_player"), createUserscriptRollUpConfig("highlight_cursor_coordinates")];
 };
-
-// export default {
-//   input: "./music_player/main.ts",
-//   output: {
-//     file: "dist/awbw.user.js",
-//     format: "iife",
-//     name: "MyUserscript",
-//   },
-//   plugins: [postcss(), typescript()],
-// };

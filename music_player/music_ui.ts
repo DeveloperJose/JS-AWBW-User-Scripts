@@ -3,10 +3,9 @@
  */
 import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
 import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from "./music_settings";
-import { ContextMenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
+import { ContextMenuPosition, CustomMenuSettingsUI, GroupType, createCOSelector } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
-import { createCOSelector } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);

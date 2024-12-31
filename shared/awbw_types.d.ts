@@ -393,3 +393,10 @@ interface MapEditorVue {
   updateCursor: (x: number, y: number) => void;
 }
 declare let designMapEditor: MapEditorVue;
+
+declare var overlib: any;
+declare const STICKY: number;
+declare const CAPTION: number;
+declare const OFFSETY: number;
+declare const OFFSETX: number;
+declare const CLOSECLICK: number;

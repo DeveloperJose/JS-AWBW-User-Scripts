@@ -7,7 +7,7 @@
 /**
  * List of Orange Star COs, stored in a set for more efficient lookups.
  */
-const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
+const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
 
 /**
  * List of Blue Moon COs, stored in a set for more efficient lookups.
@@ -53,8 +53,12 @@ export const AW_DS_ONLY_COs = new Set([
 /**
  * List of all COs in the game.
  */
-export function getAllCONames() {
-  return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+export function getAllCONames(properCase = false) {
+  if (!properCase)
+    return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+  let allCOs = [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+  allCOs[allCOs.indexOf("vonbolt")] = "Von Bolt";
+  return allCOs.map((co) => co[0].toUpperCase() + co.slice(1));
 }
 
 // ============================== AWBW Page Global Variables ==============================

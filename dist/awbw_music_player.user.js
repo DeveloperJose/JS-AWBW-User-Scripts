@@ -58,7 +58,7 @@ var awbw_music_player = (function (exports) {
   /**
    * List of Orange Star COs, stored in a set for more efficient lookups.
    */
-  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi"]);
+  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
   /**
    * List of Blue Moon COs, stored in a set for more efficient lookups.
    */
@@ -87,8 +87,12 @@ var awbw_music_player = (function (exports) {
   /**
    * List of all COs in the game.
    */
-  function getAllCONames() {
-    return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+  function getAllCONames(properCase = false) {
+    if (!properCase)
+      return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+    let allCOs = [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+    allCOs[allCOs.indexOf("vonbolt")] = "Von Bolt";
+    return allCOs.map((co) => co[0].toUpperCase() + co.slice(1));
   }
   /**
    * Whether game animations are enabled or not.
@@ -198,65 +202,6 @@ var awbw_music_player = (function (exports) {
     top += dy;
     div.style.left = left + "px";
     div.style.top = top + "px";
-  }
-  function global3() {
-    console.log("global3");
-  }
-  function createCOSelector() {
-    // let location = document.location.href;
-    let location = "javascript:void(0)";
-    global3();
-    const coSelector = document.createElement("a");
-    coSelector.id = "music-player-co-selector";
-    coSelector.classList.add("game-tools-btn");
-    coSelector.href = "javascript:void(0)";
-    coSelector.onclick = () => {
-      console.log("overlib");
-      return overlib(
-        `<table><tr><td><table>
-      <tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2adder.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text>
-      <a onclick="window.test2();" href=${location}&new_co_id=11&amp;change_co=1>Adder</a></b></span></td></tr>
-
-      <tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2andy.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text>
-      <a href=${location}&amp;new_co_id=1&amp;change_co=1>Andy</a></b></span></td></tr>
-      
-      <tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2colin.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text>
-      <a href=${location}&amp;new_co_id=15&amp;change_co=1>Colin</a></b></span></td></tr>
-      
-      <tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2drake.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=5&amp;change_co=1>Drake</a></b></span></td></tr></table></td><td valign=top><table><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2eagle.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=10&amp;change_co=1>Eagle</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2flak.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=25&amp;change_co=1>Flak</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2grimm.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=20&amp;change_co=1>Grimm</a></b></span></td></tr><tr><td class=borderblue><img class=co_portrait src=terrain/ani/aw2grit.png?v=1></td><td class=borderblue align=center valign=center><span class=small_text><b>Grit</a></b></span></td></tr></table></td><td valign=top><table><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2hachi.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=17&amp;change_co=1>Hachi</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2hawke.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=12&amp;change_co=1>Hawke</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2jake.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=22&amp;change_co=1>Jake</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2javier.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=27&amp;change_co=1>Javier</a></b></span></td></tr></table></td><td valign=top><table><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2jess.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=14&amp;change_co=1>Jess</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2jugger.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=26&amp;change_co=1>Jugger</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2kanbei.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=3&amp;change_co=1>Kanbei</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2kindle.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=23&amp;change_co=1>Kindle</a></b></span></td></tr></table></td><td valign=top><table><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2koal.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=21&amp;change_co=1>Koal</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2lash.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=16&amp;change_co=1>Lash</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2max.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=7&amp;change_co=1>Max</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2nell.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=24&amp;change_co=1>Nell</a></b></span></td></tr></table></td><td valign=top><table><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2olaf.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=9&amp;change_co=1>Olaf</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2rachel.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=28&amp;change_co=1>Rachel</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2sami.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=8&amp;change_co=1>Sami</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2sasha.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=19&amp;change_co=1>Sasha</a></b></span></td></tr></table></td><td valign=top><table><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2sensei.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=13&amp;change_co=1>Sensei</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2sonja.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=18&amp;change_co=1>Sonja</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2sturm.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=29&amp;change_co=1>Sturm</a></b></span></td></tr><tr><td class=borderwhite><img class=co_portrait src=terrain/ani/aw2vonbolt.png?v=1></td><td class=borderwhite align=center valign=center><span class=small_text><a href=${location}&amp;new_co_id=30&amp;change_co=1>Von Bolt</a></b></span></td></tr></table></td><td valign=top><table></table></td></tr></table>`,
-        STICKY,
-        CAPTION,
-        "<img src=terrain/ani/blankred.gif height=16 width=1 align=absmiddle>Select CO",
-        OFFSETY,
-        25,
-        OFFSETX,
-        -322,
-        CLOSECLICK,
-      );
-    };
-    const imgCaret = document.createElement("img");
-    imgCaret.id = "music-player-co-caret";
-    imgCaret.src = "terrain/co_down_caret.gif";
-    imgCaret.style.position = "absolute";
-    imgCaret.style.top = "28px";
-    imgCaret.style.left = "25px";
-    imgCaret.style.border = "none";
-    imgCaret.style.zIndex = "110";
-    const imgCO = document.createElement("img");
-    imgCO.id = "music-player-co-portrait";
-    imgCO.src = "terrain/ani/aw2andy.png?v=1";
-    imgCO.style.position = "absolute";
-    imgCO.style.top = "0px";
-    imgCO.style.left = "0px";
-    imgCO.style.borderColor = "#009966";
-    imgCO.style.zIndex = "100";
-    imgCO.style.border = "2";
-    // imgCO.align = "absmiddle";
-    imgCO.style.verticalAlign = "middle";
-    imgCO.classList.add("co_portrait");
-    coSelector.appendChild(imgCaret);
-    coSelector.appendChild(imgCO);
-    return coSelector;
   }
 
   /**
@@ -1148,10 +1093,6 @@ var awbw_music_player = (function (exports) {
     ContextMenuPosition["Center"] = "context-menu-center";
     ContextMenuPosition["Right"] = "context-menu-right";
   })(ContextMenuPosition || (ContextMenuPosition = {}));
-  function usefulFunction() {
-    console.log("This is a useful function!");
-  }
-  usefulFunction();
   /**
    * A class that represents a custom menu UI that can be added to the AWBW page.
    */
@@ -1477,6 +1418,80 @@ var awbw_music_player = (function (exports) {
         input.dispatchEvent(event);
       });
     }
+  }
+  const coSelectorListeners = [
+    (coName) => {
+      console.log(coName, "selected");
+    },
+  ];
+  function notifyCOSelectorListeners(coName) {
+    coSelectorListeners.forEach((listener) => listener(coName));
+  }
+  function createCOSelector() {
+    const template = (coName) => {
+      const location = "javascript:void(0)";
+      const internalName = coName.toLowerCase().replaceAll(" ", "");
+      const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+      const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
+      return (
+        `<tr>` +
+        `<td class=borderwhite><img class=co_portrait src=${imgSrc}></td>` +
+        `<td class=borderwhite align=center valign=center>` +
+        `<span class=small_text>` +
+        `<a onclick="${onClickFn}" href=${location}>${coName}</a></b>` +
+        `</span>` +
+        `</td>` +
+        `</tr>`
+      );
+    };
+    const coSelector = document.createElement("a");
+    coSelector.id = "music-player-co-selector";
+    coSelector.classList.add("game-tools-btn");
+    coSelector.href = "javascript:void(0)";
+    const allCOs = getAllCONames(true).sort();
+    let columnHTML = "";
+    for (let i = 0; i < 7; i++) {
+      const startIDX = i * 4;
+      const endIDX = startIDX + 4;
+      columnHTML += "<td><table>" + allCOs.slice(startIDX, endIDX).map(template).join("") + "</table></td>";
+    }
+    const innerHTML = `<table><tr>${columnHTML}</tr></table>`;
+    coSelector.onclick = () => {
+      return overlib(
+        innerHTML,
+        STICKY,
+        CAPTION,
+        "<img src=terrain/ani/blankred.gif height=16 width=1 align=absmiddle>Select CO",
+        OFFSETY,
+        25,
+        OFFSETX,
+        -322,
+        CLOSECLICK,
+      );
+    };
+    const imgCaret = document.createElement("img");
+    imgCaret.id = "music-player-co-caret";
+    imgCaret.src = "terrain/co_down_caret.gif";
+    imgCaret.style.position = "absolute";
+    imgCaret.style.top = "28px";
+    imgCaret.style.left = "25px";
+    imgCaret.style.border = "none";
+    imgCaret.style.zIndex = "110";
+    const imgCO = document.createElement("img");
+    imgCO.id = "music-player-co-portrait";
+    imgCO.src = "terrain/ani/aw2andy.png?v=1";
+    imgCO.style.position = "absolute";
+    imgCO.style.top = "0px";
+    imgCO.style.left = "0px";
+    imgCO.style.borderColor = "#009966";
+    imgCO.style.zIndex = "100";
+    imgCO.style.border = "2";
+    // imgCO.align = "absmiddle";
+    imgCO.style.verticalAlign = "middle";
+    imgCO.classList.add("co_portrait");
+    coSelector.appendChild(imgCaret);
+    coSelector.appendChild(imgCO);
+    return coSelector;
   }
 
   /**
@@ -2672,6 +2687,7 @@ var awbw_music_player = (function (exports) {
   main();
 
   exports.main = main;
+  exports.notifyCOSelectorListeners = notifyCOSelectorListeners;
 
   return exports;
 })({});
