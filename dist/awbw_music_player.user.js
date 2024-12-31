@@ -871,8 +871,9 @@
   })(InputName || (InputName = {}));
   var InputDescription;
   (function (InputDescription) {
-    InputDescription["Volume"] = "Adjust the volume of the CO theme music.";
-    InputDescription["SFX_Volume"] = "Adjust the volume of the unit movement, CO power, and other misc. sound effects.";
+    InputDescription["Volume"] = "Adjust the volume of the CO theme music, power activations, and power themes.";
+    InputDescription["SFX_Volume"] =
+      "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.";
     InputDescription["UI_Volume"] =
       "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.";
     InputDescription["Alternate_Day"] =
@@ -1048,7 +1049,6 @@
       vol = musicPlayerSettings.volume;
     }
     if (!urlAudioMap.has(sfxURL)) {
-      console.debug("[AWBW Music Player] Loading new sound effect", sfxURL);
       urlAudioMap.set(sfxURL, new Audio(sfxURL));
     }
     let audio = urlAudioMap.get(sfxURL);
@@ -1095,7 +1095,10 @@
         if (afterPreloadFunction) afterPreloadFunction();
       }
       if (event.type === "error") {
-        console.error("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
+        let msg = `[AWBW Music Player] Could not pre-load: ${audio.src}, code=${audio.networkState}.`;
+        msg += "(This might not be a problem, the music and sound effects may still play normally.)";
+        console.error(msg);
+        urlAudioMap.delete(audio.src);
         return;
       }
       if (!urlAudioMap.has(audio.src)) {
@@ -1162,6 +1165,9 @@
       return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
     }
     return typeof updateCursor !== "undefined" ? updateCursor : null;
+  }
+  function getQueryTurnFn() {
+    return typeof queryTurn !== "undefined" ? queryTurn : null;
   }
   function getShowEventScreenFn() {
     return typeof showEventScreen !== "undefined" ? showEventScreen : null;
@@ -1248,6 +1254,7 @@
   let visibilityMap = new Map();
   let movementResponseMap = new Map();
   let ahCursorMove = getCursorMoveFn();
+  let ahQueryTurn = getQueryTurnFn();
   let ahShowEventScreen = getShowEventScreenFn();
   let ahOpenMenu = getOpenMenuFn();
   let ahCloseMenu = getCloseMenuFn();
@@ -1282,7 +1289,7 @@
   function addMapEditorHandlers() {
     designMapEditor.updateCursor = onCursorMove;
   }
-  function refreshMusic(playDelayMS = 0) {
+  function refreshMusicForNextTurn(playDelayMS = 0) {
     visibilityMap.clear();
     musicPlayerSettings.currentRandomCO = getRandomCO();
     setTimeout(() => {
@@ -1298,19 +1305,19 @@
     const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
-    const replayChangeTurn = () => refreshMusic(500);
-    replayBackwardActionBtn.addEventListener("click", replayChangeTurn);
-    replayForwardActionBtn.addEventListener("click", replayChangeTurn);
+    const syncMusic = () => setTimeout(playThemeSong, 500);
+    replayBackwardActionBtn.addEventListener("click", syncMusic);
+    replayForwardActionBtn.addEventListener("click", syncMusic);
+    const replayChangeTurn = () => refreshMusicForNextTurn(500);
     replayForwardBtn.addEventListener("click", replayChangeTurn);
     replayBackwardBtn.addEventListener("click", replayChangeTurn);
     replayOpenBtn.addEventListener("click", replayChangeTurn);
     replayCloseBtn.addEventListener("click", replayChangeTurn);
     replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
-    replayForwardBtn.addEventListener("click", stopAllMovementSounds);
-    replayBackwardBtn.addEventListener("click", stopAllMovementSounds);
   }
   function addGameHandlers() {
     updateCursor = onCursorMove;
+    queryTurn = onQueryTurn;
     showEventScreen = onShowEventScreen;
     openMenu = onOpenMenu;
     closeMenu = onCloseMenu;
@@ -1349,6 +1356,12 @@
     }
     lastCursorX = cursorX;
     lastCursorY = cursorY;
+  }
+  function onQueryTurn(gameId, turn, turnPId, turnDay, replay, initial) {
+    let result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
+    if (!musicPlayerSettings.isPlaying) return result;
+    refreshMusicForNextTurn();
+    return result;
   }
   function onShowEventScreen(event) {
     ahShowEventScreen?.apply(ahShowEventScreen, [event]);
@@ -1585,7 +1598,7 @@
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
     }
-    refreshMusic();
+    refreshMusicForNextTurn();
   }
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
@@ -1604,8 +1617,9 @@
       case SettingsGameType.RBC:
         if (isSuperCOPower) {
           let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+          let delay = isBH ? 1916 : 1100;
           playSFX(sfx);
-          stopThemeSong(950);
+          stopThemeSong(delay);
           break;
         }
         let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;

@@ -296,7 +296,6 @@ export function playSFX(sfx: GameSFX) {
 
   // This sound effect hasn't been loaded yet
   if (!urlAudioMap.has(sfxURL)) {
-    console.debug("[AWBW Music Player] Loading new sound effect", sfxURL);
     urlAudioMap.set(sfxURL, new Audio(sfxURL));
   }
 
@@ -391,7 +390,10 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
     }
 
     if (event.type === "error") {
-      console.error("[AWBW Music Player] Could not pre-load: ", audio.src, ", code=", audio.networkState);
+      let msg = `[AWBW Music Player] Could not pre-load: ${audio.src}, code=${audio.networkState}.`;
+      msg += "(This might not be a problem, the music and sound effects may still play normally.)";
+      console.error(msg);
+      urlAudioMap.delete(audio.src);
       return;
     }
 

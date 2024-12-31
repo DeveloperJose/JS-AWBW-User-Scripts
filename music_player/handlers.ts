@@ -63,6 +63,7 @@ import {
   getNextTurnFn,
   getOpenMenuFn,
   getPowerFn,
+  getQueryTurnFn,
   getRepairFn,
   getResetAttackFn,
   getShowEventScreenFn,
@@ -117,6 +118,7 @@ let movementResponseMap: Map<number, MoveResponse> = new Map();
 
 // Store a copy of all the original functions we are going to override
 let ahCursorMove = getCursorMoveFn();
+let ahQueryTurn = getQueryTurnFn();
 let ahShowEventScreen = getShowEventScreenFn();
 // let ahSwapCosDisplay = getSwapCosDisplayFn();
 let ahOpenMenu = getOpenMenuFn();
@@ -168,11 +170,9 @@ function addMapEditorHandlers() {
  * Syncs the music with the game state. Also randomizes the COs if needed.
  * @param playDelayMS - The delay in milliseconds before the theme song starts playing.
  */
-function refreshMusic(playDelayMS = 0) {
-  // It's a new turn, so we need to clear the visibility map
+function refreshMusicForNextTurn(playDelayMS = 0) {
+  // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
   visibilityMap.clear();
-
-  // Change the current random CO if needed, then sync the theme type and play music
   musicPlayerSettings.currentRandomCO = getRandomCO();
   setTimeout(() => {
     musicPlayerSettings.themeType = getCurrentThemeType();
@@ -193,18 +193,18 @@ function addReplayHandlers() {
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
   // Keep the music in sync
-  const replayChangeTurn = () => refreshMusic(500);
-  replayBackwardActionBtn.addEventListener("click", replayChangeTurn);
-  replayForwardActionBtn.addEventListener("click", replayChangeTurn);
+  const syncMusic = () => setTimeout(playThemeSong, 500);
+  replayBackwardActionBtn.addEventListener("click", syncMusic);
+  replayForwardActionBtn.addEventListener("click", syncMusic);
+
+  // Stop all movement sounds when we are going fast
+  // Randomize COs when we move a full turn
+  const replayChangeTurn = () => refreshMusicForNextTurn(500);
   replayForwardBtn.addEventListener("click", replayChangeTurn);
   replayBackwardBtn.addEventListener("click", replayChangeTurn);
   replayOpenBtn.addEventListener("click", replayChangeTurn);
   replayCloseBtn.addEventListener("click", replayChangeTurn);
   replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
-
-  // Stop all movement sounds when we are going fast
-  replayForwardBtn.addEventListener("click", stopAllMovementSounds);
-  replayBackwardBtn.addEventListener("click", stopAllMovementSounds);
 }
 
 /**
@@ -212,6 +212,7 @@ function addReplayHandlers() {
  */
 function addGameHandlers() {
   updateCursor = onCursorMove;
+  queryTurn = onQueryTurn;
   showEventScreen = onShowEventScreen;
   openMenu = onOpenMenu;
   closeMenu = onCloseMenu;
@@ -259,6 +260,22 @@ function onCursorMove(cursorX: number, cursorY: number) {
   }
   lastCursorX = cursorX;
   lastCursorY = cursorY;
+}
+
+function onQueryTurn(
+  gameId: number,
+  turn: number,
+  turnPId: number,
+  turnDay: number,
+  replay: ReplayObject[],
+  initial: boolean,
+) {
+  let result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
+  if (!musicPlayerSettings.isPlaying) return result;
+  // console.log("[MP] Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
+
+  refreshMusicForNextTurn();
+  return result;
 }
 
 function onShowEventScreen(event: ShowEventScreenData) {
@@ -615,7 +632,8 @@ function onNextTurn(data: NextTurnData) {
   if (data.swapCos) {
     playSFX(GameSFX.tagSwap);
   }
-  refreshMusic();
+
+  refreshMusicForNextTurn();
 }
 
 function onPower(data: PowerData) {
@@ -642,8 +660,9 @@ function onPower(data: PowerData) {
       // Super CO Power
       if (isSuperCOPower) {
         let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+        let delay = isBH ? 1916 : 1100;
         playSFX(sfx);
-        stopThemeSong(950);
+        stopThemeSong(delay);
         break;
       }
       // Regular CO Power

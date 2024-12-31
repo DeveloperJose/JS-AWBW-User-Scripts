@@ -45,7 +45,23 @@ declare const gameDay: number;
 
 declare const gameEndDate: string;
 
+interface ReplayObject {
+  actions: Object[];
+  day: number;
+  gameState: Object;
+  logs: string[];
+}
+
 declare const replay: Object;
+
+declare let queryTurn: (
+  gameId: number,
+  turn: number,
+  turnPId: number,
+  turnDay: number,
+  replay: ReplayObject[],
+  initial: boolean,
+) => Promise<any> | undefined;
 
 interface TagInfo {
   co_max_power: number;

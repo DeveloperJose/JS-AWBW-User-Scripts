@@ -83,8 +83,8 @@ enum InputName {
 }
 
 enum InputDescription {
-  Volume = "Adjust the volume of the CO theme music.",
-  SFX_Volume = "Adjust the volume of the unit movement, CO power, and other misc. sound effects.",
+  Volume = "Adjust the volume of the CO theme music, power activations, and power themes.",
+  SFX_Volume = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
   UI_Volume = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
   Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
   AW1 = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!",

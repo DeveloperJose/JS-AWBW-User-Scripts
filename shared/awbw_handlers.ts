@@ -11,6 +11,10 @@ export function getCursorMoveFn() {
   return typeof updateCursor !== "undefined" ? updateCursor : null;
 }
 
+export function getQueryTurnFn() {
+  return typeof queryTurn !== "undefined" ? queryTurn : null;
+}
+
 export function getShowEventScreenFn() {
   return typeof showEventScreen !== "undefined" ? showEventScreen : null;
 }
