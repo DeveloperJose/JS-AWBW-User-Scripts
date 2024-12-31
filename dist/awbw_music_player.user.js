@@ -79,6 +79,9 @@
   function getIsMaintenance() {
     return document.querySelector("#server-maintenance-alert") !== null;
   }
+  function getReplayControls() {
+    return document.querySelector(".replay-controls");
+  }
   function getReplayOpenBtn() {
     return document.querySelector(".replay-open");
   }
@@ -172,15 +175,22 @@
     return buildingsInfo[x][y];
   }
   function isReplayActive() {
-    return Object.keys(replay).length > 0;
+    const replayControls = getReplayControls();
+    let replayOpen = replayControls.style.display !== "none";
+    return replayOpen;
   }
   function hasGameEnded() {
-    return typeof gameEndDate !== "undefined" && gameEndDate !== "";
+    let numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
+    return numberOfRemainingPlayers === 1;
   }
   function getCurrentGameDay() {
     if (!isReplayActive()) return gameDay;
     let replayData = Object.values(replay);
-    return replayData[replayData.length - 1].day;
+    if (replayData.length === 0) return gameDay;
+    let lastData = replayData[replayData.length - 1];
+    if (typeof lastData === "undefined") return gameDay;
+    if (typeof lastData.day === "undefined") return gameDay;
+    return lastData.day;
   }
   class currentPlayer {
     static get info() {
@@ -198,13 +208,13 @@
     }
     static get coName() {
       if (getIsMapEditor()) return "map-editor";
-      if (hasGameEnded() && !isReplayActive()) {
-        let myID = getMyID();
+      let myID = getMyID();
+      let myInfo = getPlayerInfo(myID);
+      let myLoss = myInfo?.players_eliminated === "Y";
+      if (myLoss) return "defeat";
+      if (hasGameEnded()) {
         if (isPlayerSpectator(myID)) return "victory";
-        let myInfo = getPlayerInfo(myID);
-        let myWin = myInfo?.players_eliminated === "N";
-        if (myWin) return "victory";
-        else return "defeat";
+        return myLoss ? "defeat" : "victory";
       }
       return this.info?.co_name;
     }
@@ -1111,17 +1121,11 @@
     }
     return typeof updateCursor !== "undefined" ? updateCursor : null;
   }
-  function getSwapCosDisplayFn() {
-    return typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
-  }
   function getOpenMenuFn() {
     return typeof openMenu !== "undefined" ? openMenu : null;
   }
   function getCloseMenuFn() {
     return typeof closeMenu !== "undefined" ? closeMenu : null;
-  }
-  function getResetAttackFn() {
-    return typeof resetAttack !== "undefined" ? resetAttack : null;
   }
   function getUnitClickFn() {
     return typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
@@ -1180,14 +1184,8 @@
   function getNextTurnFn() {
     return typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
   }
-  function getEliminationFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
-  }
   function getPowerFn() {
     return typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
-  }
-  function getGameOverFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
   }
 
   const CURSOR_THRESHOLD_MS = 25;
@@ -1205,10 +1203,9 @@
   let visibilityMap = new Map();
   let movementResponseMap = new Map();
   let ahCursorMove = getCursorMoveFn();
-  getSwapCosDisplayFn();
+  let ahShowEventScreen = showEventScreen;
   let ahOpenMenu = getOpenMenuFn();
   let ahCloseMenu = getCloseMenuFn();
-  getResetAttackFn();
   let ahUnitClick = getUnitClickFn();
   let ahWait = getWaitFn();
   let ahAnimUnit = getAnimUnitFn();
@@ -1228,9 +1225,7 @@
   let ahJoin = getJoinFn();
   let ahLaunch = getLaunchFn();
   let ahNextTurn = getNextTurnFn();
-  let ahElimination = getEliminationFn();
   let ahPower = getPowerFn();
-  let ahGameOver = getGameOverFn();
   function addHandlers() {
     if (getIsMapEditor()) {
       addMapEditorHandlers();
@@ -1269,6 +1264,7 @@
   }
   function addGameHandlers() {
     updateCursor = onCursorMove;
+    showEventScreen = onShowEventScreen;
     openMenu = onOpenMenu;
     closeMenu = onCloseMenu;
     unitClickHandler = onUnitClick;
@@ -1290,9 +1286,7 @@
     actionHandlers.Join = onJoin;
     actionHandlers.Launch = onLaunch;
     actionHandlers.NextTurn = onNextTurn;
-    actionHandlers.Elimination = onElimination;
     actionHandlers.Power = onPower;
-    actionHandlers.GameOver = onGameOver;
   }
   function onCursorMove(cursorX, cursorY) {
     ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
@@ -1308,6 +1302,11 @@
     }
     lastCursorX = cursorX;
     lastCursorY = cursorY;
+  }
+  function onShowEventScreen(event) {
+    ahShowEventScreen?.apply(ahShowEventScreen, [event]);
+    if (!musicPlayerSettings.isPlaying) return;
+    playThemeSong();
   }
   function onOpenMenu(menu, x, y) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
@@ -1537,10 +1536,6 @@
     }
     refreshMusic();
   }
-  function onElimination(data) {
-    ahElimination?.apply(actionHandlers.Elimination, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
-  }
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
     if (!musicPlayerSettings.isPlaying) return;
@@ -1571,11 +1566,6 @@
       setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
     }
   }
-  function onGameOver() {
-    ahGameOver?.apply(actionHandlers.GameOver, []);
-    if (!musicPlayerSettings.isPlaying) return;
-    playThemeSong(true);
-  }
 
   function main() {
     console.debug("[AWBW Improved Music Player] Script starting...");
@@ -1584,6 +1574,9 @@
       musicPlayerSettings.isPlaying = true;
       playMusicURL(MAINTENANCE_THEME_URL);
       return;
+    }
+    if (hasGameEnded()) {
+      setTimeout(playThemeSong, 1000);
     }
     addHandlers();
     loadSettingsFromLocalStorage();
@@ -1595,6 +1588,7 @@
       playThemeSong();
       preloadAllExtraAudio(() => {
         console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+        playThemeSong();
       });
     });
   }

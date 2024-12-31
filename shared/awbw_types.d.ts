@@ -124,6 +124,12 @@ declare let swapCosDisplay: (playerId: number) => void;
  */
 declare let updateCursor: (cursorX: number, cursorY: number) => void;
 
+interface ShowEventScreenData {
+  username: string;
+  text: string;
+}
+declare let showEventScreen: (event: ShowEventScreenData) => void;
+
 /**
  * Function called when the action menu is opened.
  * @param menu - The menu that was opened.

@@ -11,6 +11,10 @@ export function getCursorMoveFn() {
   return typeof updateCursor !== "undefined" ? updateCursor : null;
 }
 
+export function getShowEventScreenFn() {
+  return typeof showEventScreen !== "undefined" ? showEventScreen : null;
+}
+
 export function getSwapCosDisplayFn() {
   return typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
 }

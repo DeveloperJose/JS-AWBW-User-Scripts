@@ -4,7 +4,7 @@
  */
 
 import { areAnimationsEnabled } from "./awbw_globals";
-import { getIsMapEditor } from "./awbw_page";
+import { getIsMapEditor, getReplayControls } from "./awbw_page";
 
 /**
  * Enum for the different states a CO Power can be in.
@@ -139,7 +139,10 @@ export function getCurrentClickData() {
  * @returns - True if we are in replay mode.
  */
 export function isReplayActive() {
-  return Object.keys(replay).length > 0;
+  // Check if replay mode is open by checking if the replay section is set to display
+  const replayControls = getReplayControls();
+  let replayOpen = replayControls.style.display !== "none";
+  return replayOpen;
 }
 
 /**
@@ -147,7 +150,9 @@ export function isReplayActive() {
  * @returns - True if the game has ended.
  */
 export function hasGameEnded() {
-  return typeof gameEndDate !== "undefined" && gameEndDate !== "";
+  // Count how many players are still in the game
+  let numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
+  return numberOfRemainingPlayers === 1;
 }
 
 /**
@@ -157,7 +162,13 @@ export function hasGameEnded() {
 export function getCurrentGameDay() {
   if (!isReplayActive()) return gameDay;
   let replayData = Object.values(replay);
-  return replayData[replayData.length - 1].day;
+  if (replayData.length === 0) return gameDay;
+
+  let lastData = replayData[replayData.length - 1];
+  if (typeof lastData === "undefined") return gameDay;
+  if (typeof lastData.day === "undefined") return gameDay;
+
+  return lastData.day;
 }
 
 /**
@@ -205,17 +216,16 @@ export abstract class currentPlayer {
   static get coName() {
     if (getIsMapEditor()) return "map-editor";
 
-    // Play victory/defeat themes after the game ends for everyone
-    if (hasGameEnded() && !isReplayActive()) {
-      // Check if we are spectating
-      let myID = getMyID();
-      if (isPlayerSpectator(myID)) return "victory";
+    // Check if we are eliminated even if the game has not ended
+    let myID = getMyID();
+    let myInfo = getPlayerInfo(myID);
+    let myLoss = myInfo?.players_eliminated === "Y";
+    if (myLoss) return "defeat";
 
-      // Check if we won
-      let myInfo = getPlayerInfo(myID);
-      let myWin = myInfo?.players_eliminated === "N";
-      if (myWin) return "victory";
-      else return "defeat";
+    // Play victory/defeat themes after the game ends for everyone
+    if (hasGameEnded()) {
+      if (isPlayerSpectator(myID)) return "victory";
+      return myLoss ? "defeat" : "victory";
     }
 
     return this.info?.co_name;

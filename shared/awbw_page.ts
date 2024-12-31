@@ -37,6 +37,10 @@ export function getEventUsername() {
   return document.querySelector(".event-username") as HTMLElement;
 }
 
+export function getReplayControls() {
+  return document.querySelector(".replay-controls") as HTMLElement;
+}
+
 export function getSupplyIcon() {
   return document.querySelector(".supply-icon") as HTMLElement;
 }

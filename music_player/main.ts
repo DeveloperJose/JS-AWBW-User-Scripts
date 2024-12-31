@@ -16,6 +16,7 @@ import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings 
 import { addHandlers } from "./handlers";
 import { getIsMaintenance } from "../shared/awbw_page";
 import { MAINTENANCE_THEME_URL } from "./resources";
+import { hasGameEnded } from "../shared/awbw_game";
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
@@ -45,6 +46,7 @@ function main() {
 
     preloadAllExtraAudio(() => {
       console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+      playThemeSong();
     });
   });
 }

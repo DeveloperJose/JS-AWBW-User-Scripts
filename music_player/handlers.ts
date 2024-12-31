@@ -14,6 +14,8 @@ import {
   getUnitName,
   getUnitInfoFromCoords,
   COPowerEnum,
+  currentPlayer,
+  hasGameEnded,
 } from "../shared/awbw_game";
 import {
   getIsMapEditor,
@@ -106,10 +108,11 @@ let movementResponseMap: Map<number, MoveResponse> = new Map();
 
 // Store a copy of all the original functions we are going to override
 let ahCursorMove = getCursorMoveFn();
-let ahSwapCosDisplay = getSwapCosDisplayFn();
+let ahShowEventScreen = showEventScreen;
+// let ahSwapCosDisplay = getSwapCosDisplayFn();
 let ahOpenMenu = getOpenMenuFn();
 let ahCloseMenu = getCloseMenuFn();
-let ahResetAttack = getResetAttackFn();
+// let ahResetAttack = getResetAttackFn();
 let ahUnitClick = getUnitClickFn();
 let ahWait = getWaitFn();
 let ahAnimUnit = getAnimUnitFn();
@@ -129,9 +132,9 @@ let ahUnhide = getUnhideFn();
 let ahJoin = getJoinFn();
 let ahLaunch = getLaunchFn();
 let ahNextTurn = getNextTurnFn();
-let ahElimination = getEliminationFn();
+// let ahElimination = getEliminationFn();
 let ahPower = getPowerFn();
-let ahGameOver = getGameOverFn();
+// let ahGameOver = getGameOverFn();
 
 /**
  * Intercept functions and add our own handlers to the website.
@@ -196,6 +199,7 @@ function addReplayHandlers() {
  */
 function addGameHandlers() {
   updateCursor = onCursorMove;
+  showEventScreen = onShowEventScreen;
   openMenu = onOpenMenu;
   closeMenu = onCloseMenu;
   unitClickHandler = onUnitClick;
@@ -218,9 +222,9 @@ function addGameHandlers() {
   actionHandlers.Join = onJoin;
   actionHandlers.Launch = onLaunch;
   actionHandlers.NextTurn = onNextTurn;
-  actionHandlers.Elimination = onElimination;
+  // actionHandlers.Elimination = onElimination;
   actionHandlers.Power = onPower;
-  actionHandlers.GameOver = onGameOver;
+  // actionHandlers.GameOver = onGameOver;
 }
 
 function onCursorMove(cursorX: number, cursorY: number) {
@@ -242,6 +246,13 @@ function onCursorMove(cursorX: number, cursorY: number) {
   }
   lastCursorX = cursorX;
   lastCursorY = cursorY;
+}
+
+function onShowEventScreen(event: ShowEventScreenData) {
+  ahShowEventScreen?.apply(ahShowEventScreen, [event]);
+  if (!musicPlayerSettings.isPlaying) return;
+  // console.debug("[MP] Show Event Screen", event);
+  playThemeSong();
 }
 
 function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
@@ -271,24 +282,6 @@ function onCloseMenu() {
     playSFX(GameSFX.uiMenuClose);
   }
 
-  // let confirmedAction = menuOpen && menuItemClick === MenuClickType.MenuItem;
-  // let canceledAction = menuOpen && menuItemClick === MenuClickType.None;
-  // let canceledUnitAction = !menuOpen && getCurrentClickData()?.type === "unit" && menuItemClick !== MenuClickType.None;
-  // // console.debug(
-  // //   "Actions",
-  // //   confirmedAction,
-  // //   canceledAction,
-  // //   canceledUnitAction,
-  // //   getCurrentClickData()?.type,
-  // // );
-  // if (confirmedAction) {
-  //   // playSFX(GameSFX.uiMenuOpen);
-  //   menuItemClick = MenuClickType.None;
-  // } else if (canceledAction || canceledUnitAction) {
-  //   // playSFX(GameSFX.uiMenuClose);
-  //   menuItemClick = MenuClickType.None;
-  // }
-  // menuOpen = false;
   menuOpen = false;
 }
 
@@ -604,12 +597,6 @@ function onNextTurn(data: NextTurnData) {
   refreshMusic();
 }
 
-function onElimination(data: EliminationData) {
-  ahElimination?.apply(actionHandlers.Elimination, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
-  //console.debug("[MP] Elimination", data);
-}
-
 function onPower(data: PowerData) {
   ahPower?.apply(actionHandlers.Power, [data]);
   if (!musicPlayerSettings.isPlaying) return;
@@ -648,11 +635,4 @@ function onPower(data: PowerData) {
   if (coName === "Colin" && !isSuperCOPower) {
     setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
   }
-}
-
-function onGameOver() {
-  ahGameOver?.apply(actionHandlers.GameOver, []);
-  if (!musicPlayerSettings.isPlaying) return;
-
-  playThemeSong(true);
 }
