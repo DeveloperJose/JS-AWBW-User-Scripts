@@ -8,6 +8,7 @@
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
 // @version     1.0.2
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
+// @license     MIT
 // @grant       none
 // ==/UserScript==
 

@@ -78,6 +78,7 @@ export abstract class musicPlayerSettings {
   private static __randomThemes = false;
   private static __captureProgressSFX = true;
   private static __pipeSeamSFX = true;
+  private static __overrideList = new Map<string, SettingsGameType>();
 
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
@@ -95,6 +96,7 @@ export abstract class musicPlayerSettings {
       randomThemes: this.__randomThemes,
       captureProgressSFX: this.__captureProgressSFX,
       pipeSeamSFX: this.__pipeSeamSFX,
+      overrideList: Array.from(this.__overrideList.entries()),
     });
   }
 
@@ -104,6 +106,12 @@ export abstract class musicPlayerSettings {
     for (let key in this) {
       key = key.substring(2); // Remove the __ prefix
       if (Object.hasOwn(savedSettings, key)) {
+        // Special case for the overrideList, it's a Map
+        if (key === "overrideList") {
+          this.__overrideList = new Map(savedSettings[key]);
+          continue;
+        }
+        // For all other settings, just set them with the setter function
         (this as any)[key] = savedSettings[key];
         // console.debug("[MP] Loading", key, "as", savedSettings[key]);
       }
@@ -171,7 +179,7 @@ export abstract class musicPlayerSettings {
   }
 
   static set captureProgressSFX(val: boolean) {
-    if (this.__captureProgressSFX === val) return;
+    // if (this.__captureProgressSFX === val) return;
     this.__captureProgressSFX = val;
     this.onSettingChangeEvent("captureProgressSFX");
   }
@@ -181,13 +189,38 @@ export abstract class musicPlayerSettings {
   }
 
   static set pipeSeamSFX(val: boolean) {
-    if (this.__pipeSeamSFX === val) return;
+    // if (this.__pipeSeamSFX === val) return;
     this.__pipeSeamSFX = val;
     this.onSettingChangeEvent("pipeSeamSFX");
   }
 
   static get pipeSeamSFX() {
     return this.__pipeSeamSFX;
+  }
+
+  private static set overrideList(val: Map<string, SettingsGameType>) {
+    this.__overrideList = new Map([...val.entries()].sort());
+    this.onSettingChangeEvent("overrideList");
+  }
+
+  static get overrideList() {
+    return this.__overrideList;
+  }
+
+  static addOverride(coName: string, gameType: SettingsGameType) {
+    this.__overrideList.set(coName, gameType);
+    this.__overrideList = new Map([...this.__overrideList.entries()].sort());
+    this.onSettingChangeEvent("addOverride");
+  }
+
+  static removeOverride(coName: string) {
+    this.__overrideList.delete(coName);
+    this.__overrideList = new Map([...this.__overrideList.entries()].sort());
+    this.onSettingChangeEvent("removeOverride");
+  }
+
+  static getOverride(coName: string) {
+    return this.__overrideList.get(coName);
   }
 
   // ************* Non-user configurable settings from here on
@@ -254,6 +287,7 @@ export function loadSettingsFromLocalStorage() {
 function onSettingsChange(_key: string, _isFirstLoad: boolean) {
   // We can't save the non-configurable settings
   if (_key === "themeType" || _key === "currentRandomCO") return "";
+
   // Save all settings otherwise
   updateSettingsInLocalStorage();
 }

@@ -1,21 +1,22 @@
 /* Context Menu */
-.cls-context-menu {
+.cls-settings-menu {
   /* display: none; */
   display: flex;
   top: 40px;
   flex-direction: column;
   width: 800px;
+  border: black 1px solid;
 }
 
-.cls-context-menu label {
+.cls-settings-menu label {
   width: 100%;
-  font-size: 14px;
+  font-size: 13px;
   background-color: #dedede;
   padding-top: 2px;
   padding-bottom: 2px;
 }
 
-.cls-context-menu .cls-horizontal-box {
+.cls-settings-menu .cls-horizontal-box {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -28,7 +29,7 @@
   width: 100%;
 }
 
-.cls-context-menu .cls-vertical-box {
+.cls-settings-menu .cls-vertical-box {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -40,7 +41,7 @@
   /* width: 100%; */
 }
 
-.cls-context-menu-box {
+.cls-settings-menu-box {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -52,22 +53,37 @@
 }
 
 /* Puts the checkbox next to the label */
-.cls-context-menu .cls-vertical-box[id$="effects"] {
+.cls-settings-menu .cls-vertical-box[id$="effects"] {
   align-items: center;
 }
 
-.cls-context-menu .cls-vertical-box label {
+.cls-settings-menu .cls-vertical-box label {
   background-color: white;
   font-size: 12px;
 }
 
-.cls-context-menu image {
+.cls-settings-menu image {
   vertical-align: middle;
 }
 
-.cls-context-menu label[id$="version"] {
+.cls-settings-menu label[id$="version"] {
   width: 100%;
   font-size: 9px;
   color: #888888;
   background-color: #f0f0f0;
+}
+
+.cls-settings-menu .co_caret {
+  position: absolute;
+  top:28px;
+  left:25px;
+  border:none;
+  z-index: 110;
+}
+
+.cls-settings-menu .co_portrait {
+  border-color: #009966;
+  z-index: 100;
+  border: 2px solid;
+  vertical-align: middle;
 }

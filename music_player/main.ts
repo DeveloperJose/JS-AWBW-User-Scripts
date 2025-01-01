@@ -26,17 +26,18 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
  ******************************************************************/
 export function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
+  loadSettingsFromLocalStorage();
   musicPlayerUI.addToAWBWPage();
 
   if (getIsMaintenance()) {
     console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
     musicPlayerSettings.isPlaying = true;
+    musicPlayerUI.openContextMenu();
     playMusicURL(MAINTENANCE_THEME_URL);
     return;
   }
 
   addHandlers();
-  loadSettingsFromLocalStorage();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 

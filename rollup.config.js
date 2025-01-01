@@ -28,6 +28,7 @@ function createUserscriptRollUpConfig(inputDir, outputDir = "./dist") {
           version: versions[inputDir],
           supportURL: "https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues",
           namespace: "https://awbw.amarriner.com/",
+          license: "MIT",
         },
       }),
     ],
