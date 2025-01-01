@@ -55,6 +55,10 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   // Sort overrides again if we are loading the settings for the first time, or if the override list changed
   if (key === "all" || key === "addOverride" || key === "removeOverride") {
     clearAndRepopulateOverrideList();
+    if (musicPlayerSettings.overrideList.size === 0) {
+      const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
+      musicPlayerUI.addItemToTable(Name.Override_Table, noOverrides);
+    }
   }
 
   shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
@@ -130,10 +134,6 @@ volumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.volume =
 sfxVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
 uiVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
 
-/* **** Group: Day slider **** */
-let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
-daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
-
 /* **** Group: Soundtrack radio buttons (AW1, AW2, DS, RBC) AKA GameType **** */
 const soundtrackGroup = "Soundtrack";
 musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
@@ -170,6 +170,10 @@ let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGro
 let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
 captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
 pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
+
+/* **** Group: Day slider **** */
+let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
+daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
 
 /* ************************************ Right Menu ************************************ */
 const RIGHT = MenuPosition.Right;

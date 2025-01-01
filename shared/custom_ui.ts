@@ -147,21 +147,21 @@ export class CustomMenuSettingsUI {
     let leftBox = document.createElement("div");
     leftBox.id = `${prefix}-settings-left`;
     leftBox.classList.add("cls-settings-menu-box");
-    leftBox.style.visibility = "hidden";
+    leftBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(leftBox);
     this.groups.set(MenuPosition.Left, leftBox);
 
     let centerBox = document.createElement("div");
     centerBox.id = `${prefix}-settings-center`;
     centerBox.classList.add("cls-settings-menu-box");
-    leftBox.style.visibility = "hidden";
+    centerBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(centerBox);
     this.groups.set(MenuPosition.Center, centerBox);
 
     let rightBox = document.createElement("div");
     rightBox.id = `${prefix}-settings-right`;
     rightBox.classList.add("cls-settings-menu-box");
-    leftBox.style.visibility = "hidden";
+    rightBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(rightBox);
     this.groups.set(MenuPosition.Right, rightBox);
 
@@ -186,15 +186,19 @@ export class CustomMenuSettingsUI {
       // Find the first parent that has an ID if the element doesn't have one
       if (!elmnt.id) {
         while (!elmnt.id) {
-          elmnt = elmnt.parentElement as HTMLElement;
-          // Just in case we reach the top of the document
-          if (!elmnt) break; 
+          elmnt = elmnt.parentNode as HTMLElement;
+          // Break if we reach the top of the document or this element isn't properly connected
+          if (!elmnt) break;
         }
       }
 
-      // Check if we are in the music player or the overlib overDiv
+      // Most likely this element is part of our UI and was created with JS and not properly connected so don't close
+      if (!elmnt) return;
+
+      // Check if we are in the music player or the overlib overDiv, so we don't close the menu
       if (elmnt.id.startsWith(prefix) || elmnt.id === "overDiv") return;
 
+      // Close the menu if we clicked outside of it
       console.debug("[MP] Clicked on: ", elmnt.id);
       this.closeContextMenu();
     });
@@ -210,7 +214,7 @@ export class CustomMenuSettingsUI {
   getGroup(groupName: string) {
     const container = this.groups.get(groupName);
     if (!container) return;
-    container.style.visibility = "visible";
+    if (container.style.display === "none") container.style.display = "flex";
     return container;
   }
 
@@ -223,9 +227,8 @@ export class CustomMenuSettingsUI {
     let hoverSpan = this.groups.get("hover");
     if (!hoverSpan) return;
     if (replaceParent) this.parentHoverText = text;
-    if (text === "") hoverSpan.style.display = "none";
-
     hoverSpan.innerText = text;
+    hoverSpan.style.display = text === "" ? "none" : "block";
   }
 
   /**
@@ -304,6 +307,7 @@ export class CustomMenuSettingsUI {
 
     // Slider
     let slider = document.createElement("input");
+    slider.id = `${this.prefix}-${sanitize(name)}`;
     slider.type = "range";
     slider.min = String(min);
     slider.max = String(max);
@@ -551,7 +555,8 @@ export class CustomMenuSettingsUI {
   private createCOSelectorItem(coName: string) {
     const location = "javascript:void(0)";
     const internalName = coName.toLowerCase().replaceAll(" ", "");
-    const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+
+    let imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
     const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
 
     return (
@@ -577,6 +582,11 @@ export class CustomMenuSettingsUI {
     const imgCO = document.createElement("img");
     imgCO.classList.add("co_portrait");
     imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+
+    // Allows other icons to be used
+    if (!getAllCONames().includes(coName)) {
+      imgCO.src = `terrain/${coName}`;
+    }
     return imgCO;
   }
 

@@ -1,17 +1,18 @@
-/* Context Menu */
+/* This file is used to style the music player settings */
+
 .cls-settings-menu {
   /* display: none; */
   display: flex;
   top: 40px;
   flex-direction: column;
-  width: 800px;
+  width: 850px;
   border: black 1px solid;
 }
 
 .cls-settings-menu label {
   width: 100%;
   font-size: 13px;
-  background-color: #dedede;
+  background-color: #d6e0ed;
   padding-top: 2px;
   padding-bottom: 2px;
 }
@@ -21,8 +22,8 @@
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
   padding-top: 1px;
   padding-bottom: 1px;
   height: 100%;
@@ -33,8 +34,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
   padding-top: 1px;
   padding-bottom: 1px;
   height: 100%;
@@ -45,8 +46,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
   padding-top: 1px;
   padding-bottom: 1px;
   width: 100%;
@@ -55,6 +56,7 @@
 /* Puts the checkbox next to the label */
 .cls-settings-menu .cls-vertical-box[id$="effects"] {
   align-items: center;
+  align-self: center;
 }
 
 .cls-settings-menu .cls-vertical-box label {
@@ -68,16 +70,16 @@
 
 .cls-settings-menu label[id$="version"] {
   width: 100%;
-  font-size: 9px;
+  font-size: 10px;
   color: #888888;
   background-color: #f0f0f0;
 }
 
 .cls-settings-menu .co_caret {
   position: absolute;
-  top:28px;
-  left:25px;
-  border:none;
+  top: 28px;
+  left: 25px;
+  border: none;
   z-index: 110;
 }
 
@@ -86,4 +88,9 @@
   z-index: 100;
   border: 2px solid;
   vertical-align: middle;
+  align-self: center;
+}
+
+.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {
+  --c: rgb(168, 73, 208); /* active color */
 }

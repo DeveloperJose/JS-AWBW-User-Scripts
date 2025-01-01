@@ -4,12 +4,12 @@
  */
 
 .cls-settings-menu input[type="range"] {
-  --c: rgb(73, 140, 208); /* active color */
-  --l: 20px; /* line thickness*/
+  --c: rgb(53 57 60); /* active color */
+  --l: 15px; /* line thickness*/
   --h: 30px; /* thumb height */
-  --w: 10px; /* thumb width */
+  --w: 15px; /* thumb width */
 
-  width: 100%;
+  /* width: 100%; */
   height: var(--h); /* needed for Firefox*/
   --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));
   -webkit-appearance: none;
