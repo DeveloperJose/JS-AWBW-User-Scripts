@@ -461,6 +461,9 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   if (isFirstLoad) return;
 
   switch (key) {
+    case "addOverride":
+    case "removeOverride":
+    case "overrideList":
     case "currentRandomCO":
     case "isPlaying":
       if (musicPlayerSettings.isPlaying) {

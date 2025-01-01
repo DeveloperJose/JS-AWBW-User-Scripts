@@ -962,6 +962,9 @@ var awbw_music_player = (function (exports) {
     // Check if we want to play the victory or defeat theme
     if (coName === "victory") return VICTORY_THEME_URL;
     if (coName === "defeat") return DEFEAT_THEME_URL;
+    // First apply player overrides, that way we can override their overrides later...
+    const overrideType = musicPlayerSettings.getOverride(coName);
+    if (overrideType) gameType = overrideType;
     // Override the game type to a higher game if the CO is not available in the current game.
     if (gameType !== SettingsGameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = SettingsGameType.DS;
     if (gameType === SettingsGameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = SettingsGameType.AW2;
@@ -2208,6 +2211,9 @@ var awbw_music_player = (function (exports) {
     // Don't do anything if this is the first time the settings are being loaded
     if (isFirstLoad) return;
     switch (key) {
+      case "addOverride":
+      case "removeOverride":
+      case "overrideList":
       case "currentRandomCO":
       case "isPlaying":
         if (musicPlayerSettings.isPlaying) {

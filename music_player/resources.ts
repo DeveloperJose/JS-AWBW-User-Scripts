@@ -290,6 +290,10 @@ export function getMusicURL(
   if (coName === "victory") return VICTORY_THEME_URL;
   if (coName === "defeat") return DEFEAT_THEME_URL;
 
+  // First apply player overrides, that way we can override their overrides later...
+  const overrideType = musicPlayerSettings.getOverride(coName);
+  if (overrideType) gameType = overrideType;
+
   // Override the game type to a higher game if the CO is not available in the current game.
   if (gameType !== SettingsGameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = SettingsGameType.DS;
   if (gameType === SettingsGameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = SettingsGameType.AW2;
