@@ -10,6 +10,7 @@
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @grant       none
+// @unwrap
 // ==/UserScript==
 
 var awbw_music_player = (function (exports) {
@@ -2872,6 +2873,8 @@ var awbw_music_player = (function (exports) {
 
   /**
    * @file Main script that loads everything for the AWBW Improved Music Player userscript.
+   *
+   * @TODO - More map editor sound effects
    */
   // Add our CSS to the page using rollup-plugin-postcss
   /******************************************************************

@@ -28,12 +28,15 @@ I use ```npm run build``` to build a single project in the repo, the one I'm cur
 ## 1. Improved AWBW Music Player
 Directory: **music_player/**
 
+Adds a music player to Advance Wars by Web that comes with all the CO themes and game sound effects, just like in the cartridge! Look for the CD icon next to the "Menu" at the gamebar on top of the game map.
+
 This is a major code refactoring and update to twiggy_'s original AWBW Music Player 2.0.8 script (https://greasyfork.org/en/scripts/459630-awbw-music-player). I have rewritten the original code fully in Typescript with some improvements, split the code into modules, and documented everything more in depth.
 
 Below are the changes from the original script:
 * Added the option to switch between AW1, AW2, AW:Dual Strike, and AW:Reboot Camp soundtracks. Note that in AW1 there are no special power themes, but the activation sound makes up for it! The Reboot Camp power themes for all COs were added as well.
+* You can also add overrides for themes of specific COs. For example, if you really like Sonja's Reboot Camp theme you can add an override for Sonja so that her Reboot Camp theme will play even when your selected soundtrack is AW1/AW2/AWDS.
 * Added alternate themes that start after a certain day. If enabled, for example, the Reboot Camp power themes will switch from the CO themes to the factory themes like in the factory campaign missions. There are some other hidden alternate themes, be on the lookout!
-* Added sound effects: subs and stealths hiding and unhiding, units getting trapped, loaded missile silos being launched, black bombs exploding, units making progress capturing a property, pipe seams getting attacked (prepare to be surprised), CO and Super CO Power becoming available, Colin's Gold Rush sound effect, COs tag swapping.
+* Added sound effects: subs and stealths hiding and unhiding, units getting trapped, loaded missile silos being launched, black bombs exploding, units making progress capturing a property, pipe seams getting attacked (prepare to be surprised), CO and Super CO Power becoming available, Colin's Gold Rush sound effect, COs tag swapping, and canceling actions.
 * Each song will continue where it left off the last time it played instead of always starting at the beginning. This means when a turn change happens, if the next CO is the same as the previous CO the music won't restart. Note that this feature is disabled when using the random theme setting.
 * Fixed issues where some replay controls weren't updating the music properly.
 * Added cursor moving sound effects to design map page. 
@@ -41,7 +44,7 @@ Below are the changes from the original script:
 
 ![Picture of the music player icon on the browser](./AWBW_Music_Player_1.png)
 
-![Picture of the music player settings](./AWBW_Music_Player_2.png)
+![Picture of the music player settings](./AWBW_Improved_Music_Player_Settings.png)
 
 ## 2. AWBW Highlight Cursor Coordinates
 Directory: **highlight_cursor_coordinates/**
