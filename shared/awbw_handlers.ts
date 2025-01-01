@@ -31,6 +31,10 @@ export function getCloseMenuFn() {
   return typeof closeMenu !== "undefined" ? closeMenu : null;
 }
 
+export function getCreateDamageSquaresFn() {
+  return typeof createDamageSquares !== "undefined" ? createDamageSquares : null;
+}
+
 export function getResetAttackFn() {
   return typeof resetAttack !== "undefined" ? resetAttack : null;
 }

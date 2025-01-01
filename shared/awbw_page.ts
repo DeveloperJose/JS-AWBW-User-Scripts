@@ -95,6 +95,10 @@ export function getBuildingDiv(buildingID: number) {
   return document.querySelector(`.game-building[data-building-id='${buildingID}']`) as HTMLDivElement;
 }
 
+export function getAllDamageSquares() {
+  return Array.from(document.getElementsByClassName("dmg-square"));
+}
+
 /**
  * How much time in milliseconds to let pass between animation steps for {@link moveDivToOffset}.
  * The lower, the faster the "animation" will play.

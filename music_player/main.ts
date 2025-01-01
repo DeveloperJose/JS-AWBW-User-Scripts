@@ -1,8 +1,5 @@
 /**
  * @file Main script that loads everything for the AWBW Improved Music Player userscript.
- *
- * @todo Custom settings for each CO if wanted
- * @todo Shuffle button?
  */
 // Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";

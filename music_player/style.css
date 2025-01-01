@@ -1,8 +1,8 @@
 /* This file is used to style the music player settings */
 
 .cls-settings-menu {
-  /* display: none; */
-  display: flex;
+  display: none;
+  /* display: flex; */
   top: 40px;
   flex-direction: column;
   width: 850px;
@@ -28,6 +28,11 @@
   padding-bottom: 1px;
   height: 100%;
   width: 100%;
+}
+
+.cls-settings-menu .cls-horizontal-box[id$="random-themes"],
+.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {
+  justify-content: center;
 }
 
 .cls-settings-menu .cls-vertical-box {

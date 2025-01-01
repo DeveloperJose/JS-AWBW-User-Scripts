@@ -172,6 +172,13 @@ declare let openMenu: (menu: HTMLDivElement, x: number, y: number) => void;
  */
 declare let closeMenu: () => void;
 
+declare let createDamageSquares: (
+  attackerUnit: UnitInfo,
+  unitsInRange: UnitInfo[],
+  movementInfo: any,
+  movingUnit: any,
+) => void;
+
 declare let resetAttack: () => void;
 
 interface UnitClickData {

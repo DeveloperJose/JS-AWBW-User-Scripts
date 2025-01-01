@@ -45,7 +45,7 @@ var awbw_music_player = (function (exports) {
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  /* display: none; */\n  display: flex;\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  /* width: 100%; */\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="effects"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  /* width: 100%; */\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="effects"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -173,6 +173,9 @@ var awbw_music_player = (function (exports) {
    */
   function getBuildingDiv(buildingID) {
     return document.querySelector(`.game-building[data-building-id='${buildingID}']`);
+  }
+  function getAllDamageSquares() {
+    return Array.from(document.getElementsByClassName("dmg-square"));
   }
   /**
    * How much time in milliseconds to let pass between animation steps for {@link moveDivToOffset}.
@@ -460,6 +463,14 @@ var awbw_music_player = (function (exports) {
    */
   function isValidUnit(unitId) {
     return unitId !== undefined && unitsInfo[unitId] !== undefined;
+  }
+  /**
+   * Checks if the given unit has moved this turn.
+   * @param unitId - ID of the unit we want to check.
+   * @returns - True if the unit is valid and it has moved this turn.
+   */
+  function hasUnitMovedThisTurn(unitId) {
+    return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
   }
 
   /**
@@ -1083,27 +1094,6 @@ var awbw_music_player = (function (exports) {
     }
     return allSoundURLs;
   }
-  /**
-   * Gets a list of the URLs for all the music themes the music player might ever use.
-   * @returns - Set with all the URLs for all the music player themes.
-   */
-  function getAllThemeURLs() {
-    let allSoundURLs = new Set();
-    for (let coName of getAllCONames()) {
-      for (let gameType of Object.values(SettingsGameType)) {
-        for (let themeType of Object.values(SettingsThemeType)) {
-          let url = getMusicURL(coName, gameType, themeType, false);
-          if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
-            allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
-          }
-          let alternateURL = getMusicURL(coName, gameType, themeType, true);
-          allSoundURLs.add(url);
-          allSoundURLs.add(alternateURL);
-        }
-      }
-    }
-    return allSoundURLs;
-  }
 
   /**
    * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
@@ -1269,7 +1259,7 @@ var awbw_music_player = (function (exports) {
         // Check if we are in the music player or the overlib overDiv, so we don't close the menu
         if (elmnt.id.startsWith(prefix) || elmnt.id === "overDiv") return;
         // Close the menu if we clicked outside of it
-        console.debug("[MP] Clicked on: ", elmnt.id);
+        // console.debug("[MP] Clicked on: ", elmnt.id);
         this.closeContextMenu();
       });
     }
@@ -2201,7 +2191,6 @@ var awbw_music_player = (function (exports) {
       audio.addEventListener("error", onAudioPreload, { once: true });
     });
   }
-  let allThemesPreloaded = false;
   /**
    * Updates the internal audio components to match the current music player settings when the settings change.
    * @param key - Key of the setting which has been changed.
@@ -2240,12 +2229,13 @@ var awbw_music_player = (function (exports) {
         musicPlayerSettings.currentRandomCO = getRandomCO();
         playThemeSong(true);
         // Preload all themes if we are going to play random themes
-        if (!allThemesPreloaded) {
-          console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
-          let audioList = getAllThemeURLs();
-          allThemesPreloaded = true;
-          preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
-        }
+        // TODO:
+        // if (!allThemesPreloaded) {
+        //   console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
+        //   let audioList = getAllThemeURLs();
+        //   allThemesPreloaded = true;
+        //   preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
+        // }
         break;
       case "volume": {
         // Adjust the volume of the current theme
@@ -2276,6 +2266,9 @@ var awbw_music_player = (function (exports) {
   }
   function getCloseMenuFn() {
     return typeof closeMenu !== "undefined" ? closeMenu : null;
+  }
+  function getCreateDamageSquaresFn() {
+    return typeof createDamageSquares !== "undefined" ? createDamageSquares : null;
   }
   function getUnitClickFn() {
     return typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
@@ -2359,14 +2352,14 @@ var awbw_music_player = (function (exports) {
    * The last known Y coordinate of the cursor.
    */
   let lastCursorY = -1;
-  var MenuClickType;
-  (function (MenuClickType) {
-    MenuClickType[(MenuClickType["None"] = 0)] = "None";
-    MenuClickType[(MenuClickType["Unit"] = 1)] = "Unit";
-    MenuClickType[(MenuClickType["MenuItem"] = 2)] = "MenuItem";
-  })(MenuClickType || (MenuClickType = {}));
-  MenuClickType.None;
-  let menuOpen = false;
+  var MenuOpenType;
+  (function (MenuOpenType) {
+    MenuOpenType["None"] = "None";
+    MenuOpenType["DamageSquare"] = "DamageSquare";
+    MenuOpenType["Regular"] = "Regular";
+    MenuOpenType["UnitSelect"] = "UnitSelect";
+  })(MenuOpenType || (MenuOpenType = {}));
+  let currentMenuType = MenuOpenType.None;
   /**
    * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.
    */
@@ -2375,6 +2368,7 @@ var awbw_music_player = (function (exports) {
    * Map of unit IDs to their movement responses. Used to check if a unit got trapped.
    */
   let movementResponseMap = new Map();
+  let clickedDamageSquaresMap = new Map();
   // Store a copy of all the original functions we are going to override
   let ahCursorMove = getCursorMoveFn();
   let ahQueryTurn = getQueryTurnFn();
@@ -2382,6 +2376,7 @@ var awbw_music_player = (function (exports) {
   // let ahSwapCosDisplay = getSwapCosDisplayFn();
   let ahOpenMenu = getOpenMenuFn();
   let ahCloseMenu = getCloseMenuFn();
+  let ahCreateDamageSquares = getCreateDamageSquaresFn();
   // let ahResetAttack = getResetAttackFn();
   let ahUnitClick = getUnitClickFn();
   let ahWait = getWaitFn();
@@ -2468,6 +2463,7 @@ var awbw_music_player = (function (exports) {
     showEventScreen = onShowEventScreen;
     openMenu = onOpenMenu;
     closeMenu = onCloseMenu;
+    createDamageSquares = onCreateDamageSquares;
     unitClickHandler = onUnitClick;
     waitUnit = onUnitWait;
     animUnit = onAnimUnit;
@@ -2525,13 +2521,13 @@ var awbw_music_player = (function (exports) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Open Menu", menu, x, y);
-    menuOpen = true;
+    currentMenuType = MenuOpenType.Regular;
     playSFX(GameSFX.uiMenuOpen);
     let menuOptions = document.getElementsByClassName("menu-option");
     for (var i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
       menuOptions[i].addEventListener("click", (_e) => {
-        menuOpen = false;
+        currentMenuType = MenuOpenType.None;
         playSFX(GameSFX.uiMenuOpen);
       });
     }
@@ -2539,17 +2535,48 @@ var awbw_music_player = (function (exports) {
   function onCloseMenu() {
     ahCloseMenu?.apply(closeMenu, []);
     if (!musicPlayerSettings.isPlaying) return;
-    // console.debug("[MP] CloseMenu", menuOpen);
-    if (menuOpen) {
+    const isMenuOpen = currentMenuType !== MenuOpenType.None;
+    // console.debug("[MP] CloseMenu", currentMenuType, isMenuOpen);
+    if (isMenuOpen) {
       playSFX(GameSFX.uiMenuClose);
+      clickedDamageSquaresMap.clear();
+      currentMenuType = MenuOpenType.None;
     }
-    menuOpen = false;
+  }
+  function onCreateDamageSquares(attackerUnit, unitsInRange, movementInfo, movingUnit) {
+    ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
+    if (!musicPlayerSettings.isPlaying) return;
+    // console.debug("[MP] Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
+    // Hook up to all new damage squares
+    for (const damageSquare of getAllDamageSquares()) {
+      damageSquare.addEventListener("click", (event) => {
+        if (!event.target) return;
+        const targetSpan = event.target;
+        playSFX(GameSFX.uiMenuOpen);
+        // If we have clicked this before, then this click is to finalize the attack so no more open menu
+        if (clickedDamageSquaresMap.has(targetSpan)) {
+          currentMenuType = MenuOpenType.None;
+          clickedDamageSquaresMap.clear();
+          return;
+        }
+        // If we haven't clicked this before, then consider it like opening a menu
+        currentMenuType = MenuOpenType.DamageSquare;
+        clickedDamageSquaresMap.set(targetSpan, true);
+      });
+    }
   }
   function onUnitClick(clicked) {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Unit Click", clicked);
-    MenuClickType.Unit;
+    // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
+    const unitInfo = getUnitInfo(Number(clicked.id));
+    const myID = getMyID();
+    const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
+    const isMyUnit = unitInfo.units_players_id === myID;
+    const canActionsBeTaken = !isUnitWaited && isMyUnit;
+    // If action can be taken, then we can cancel out of that action
+    currentMenuType = canActionsBeTaken ? MenuOpenType.UnitSelect : MenuOpenType.None;
     playSFX(GameSFX.uiUnitSelect);
   }
   function onUnitWait(unitId) {
@@ -2845,9 +2872,6 @@ var awbw_music_player = (function (exports) {
 
   /**
    * @file Main script that loads everything for the AWBW Improved Music Player userscript.
-   *
-   * @todo Custom settings for each CO if wanted
-   * @todo Shuffle button?
    */
   // Add our CSS to the page using rollup-plugin-postcss
   /******************************************************************

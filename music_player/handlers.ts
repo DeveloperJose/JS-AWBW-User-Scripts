@@ -17,8 +17,11 @@ import {
   currentPlayer,
   hasGameEnded,
   isReplayActive,
+  getUnitInfo,
+  hasUnitMovedThisTurn,
 } from "../shared/awbw_game";
 import {
+  getAllDamageSquares,
   getIsMapEditor,
   getReplayBackwardActionBtn,
   getReplayBackwardBtn,
@@ -50,6 +53,7 @@ import {
   getBuildFn,
   getCaptFn,
   getCloseMenuFn,
+  getCreateDamageSquaresFn,
   getCursorMoveFn,
   getEliminationFn,
   getFireFn,
@@ -97,14 +101,14 @@ let lastCursorX = -1;
  */
 let lastCursorY = -1;
 
-enum MenuClickType {
-  None,
-  Unit,
-  MenuItem,
+enum MenuOpenType {
+  None = "None",
+  DamageSquare = "DamageSquare",
+  Regular = "Regular",
+  UnitSelect = "UnitSelect",
 }
 
-let menuItemClick = MenuClickType.None;
-let menuOpen = false;
+let currentMenuType = MenuOpenType.None;
 
 /**
  * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.
@@ -116,6 +120,8 @@ let visibilityMap: Map<number, boolean> = new Map();
  */
 let movementResponseMap: Map<number, MoveResponse> = new Map();
 
+let clickedDamageSquaresMap: Map<HTMLSpanElement, boolean> = new Map();
+
 // Store a copy of all the original functions we are going to override
 let ahCursorMove = getCursorMoveFn();
 let ahQueryTurn = getQueryTurnFn();
@@ -123,6 +129,7 @@ let ahShowEventScreen = getShowEventScreenFn();
 // let ahSwapCosDisplay = getSwapCosDisplayFn();
 let ahOpenMenu = getOpenMenuFn();
 let ahCloseMenu = getCloseMenuFn();
+let ahCreateDamageSquares = getCreateDamageSquaresFn();
 // let ahResetAttack = getResetAttackFn();
 let ahUnitClick = getUnitClickFn();
 let ahWait = getWaitFn();
@@ -216,6 +223,7 @@ function addGameHandlers() {
   showEventScreen = onShowEventScreen;
   openMenu = onOpenMenu;
   closeMenu = onCloseMenu;
+  createDamageSquares = onCreateDamageSquares;
   unitClickHandler = onUnitClick;
   waitUnit = onUnitWait;
   animUnit = onAnimUnit;
@@ -290,14 +298,14 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Open Menu", menu, x, y);
 
-  menuOpen = true;
+  currentMenuType = MenuOpenType.Regular;
   playSFX(GameSFX.uiMenuOpen);
 
   let menuOptions = document.getElementsByClassName("menu-option");
   for (var i = 0; i < menuOptions.length; i++) {
     menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
     menuOptions[i].addEventListener("click", (_e) => {
-      menuOpen = false;
+      currentMenuType = MenuOpenType.None;
       playSFX(GameSFX.uiMenuOpen);
     });
   }
@@ -306,13 +314,39 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
 function onCloseMenu() {
   ahCloseMenu?.apply(closeMenu, []);
   if (!musicPlayerSettings.isPlaying) return;
-  // console.debug("[MP] CloseMenu", menuOpen);
 
-  if (menuOpen) {
+  const isMenuOpen = currentMenuType !== MenuOpenType.None;
+  // console.debug("[MP] CloseMenu", currentMenuType, isMenuOpen);
+  if (isMenuOpen) {
     playSFX(GameSFX.uiMenuClose);
+    clickedDamageSquaresMap.clear();
+    currentMenuType = MenuOpenType.None;
   }
+}
 
-  menuOpen = false;
+function onCreateDamageSquares(attackerUnit: UnitInfo, unitsInRange: UnitInfo[], movementInfo: any, movingUnit: any) {
+  ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
+  if (!musicPlayerSettings.isPlaying) return;
+  // console.debug("[MP] Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
+
+  // Hook up to all new damage squares
+  for (const damageSquare of getAllDamageSquares()) {
+    damageSquare.addEventListener("click", (event) => {
+      if (!event.target) return;
+      const targetSpan = event.target as HTMLSpanElement;
+      playSFX(GameSFX.uiMenuOpen);
+
+      // If we have clicked this before, then this click is to finalize the attack so no more open menu
+      if (clickedDamageSquaresMap.has(targetSpan)) {
+        currentMenuType = MenuOpenType.None;
+        clickedDamageSquaresMap.clear();
+        return;
+      }
+      // If we haven't clicked this before, then consider it like opening a menu
+      currentMenuType = MenuOpenType.DamageSquare;
+      clickedDamageSquaresMap.set(targetSpan, true);
+    });
+  }
 }
 
 function onUnitClick(clicked: UnitClickData) {
@@ -320,7 +354,16 @@ function onUnitClick(clicked: UnitClickData) {
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Unit Click", clicked);
 
-  menuItemClick = MenuClickType.Unit;
+  // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
+  const unitInfo = getUnitInfo(Number(clicked.id));
+  const myID = getMyID();
+  const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
+  const isMyUnit = unitInfo.units_players_id === myID;
+  const canActionsBeTaken = !isUnitWaited && isMyUnit;
+
+  // If action can be taken, then we can cancel out of that action
+  currentMenuType = canActionsBeTaken ? MenuOpenType.UnitSelect : MenuOpenType.None;
+
   playSFX(GameSFX.uiUnitSelect);
 }
 

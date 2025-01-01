@@ -492,12 +492,13 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
       playThemeSong(true);
 
       // Preload all themes if we are going to play random themes
-      if (!allThemesPreloaded) {
-        console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
-        let audioList = getAllThemeURLs();
-        allThemesPreloaded = true;
-        preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
-      }
+      // TODO:
+      // if (!allThemesPreloaded) {
+      //   console.log("[AWBW Music Player] Pre-loading all themes since random themes are enabled");
+      //   let audioList = getAllThemeURLs();
+      //   allThemesPreloaded = true;
+      //   preloadAudios(audioList, () => console.log("[AWBW Music Player] All themes have been pre-loaded!"));
+      // }
       break;
     case "volume": {
       // Adjust the volume of the current theme

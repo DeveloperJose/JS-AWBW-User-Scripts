@@ -199,7 +199,7 @@ export class CustomMenuSettingsUI {
       if (elmnt.id.startsWith(prefix) || elmnt.id === "overDiv") return;
 
       // Close the menu if we clicked outside of it
-      console.debug("[MP] Clicked on: ", elmnt.id);
+      // console.debug("[MP] Clicked on: ", elmnt.id);
       this.closeContextMenu();
     });
   }
