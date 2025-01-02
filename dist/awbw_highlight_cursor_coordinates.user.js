@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/*?replays_id=*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
-// @version     1.0.2
+// @version     2.0.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @grant       none
@@ -821,6 +821,10 @@
       console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
       return;
     }
+    // Hide by default on map editor and move planner
+    if (getIsMapEditor() || getIsMovePlanner()) {
+      isEnabled = false;
+    }
     // designmap.php, wait until designerMapEditor is loaded to run script
     const isMapEditorAndNotLoaded = getIsMapEditor() && !designMapEditor?.loaded;
     if (isMapEditorAndNotLoaded) {
@@ -853,7 +857,7 @@
     // Scale to current zoom level
     onZoomChangeEvent();
     // Add highlight boxes around map edges
-    addHighlightBoxesAroundMapEdges();
+    if (isEnabled) addHighlightBoxesAroundMapEdges();
     // Create UI button to toggle highlight boxes
     const customUI = new CustomMenuSettingsUI(PREFIX, BUTTON_IMG_URL, "Disable Highlight Cursor Coordinates");
     customUI.addEventListener("click", () => {
@@ -865,7 +869,9 @@
     });
     customUI.addToAWBWPage(getMenu(), true);
     customUI.setProgress(100);
-    if (getIsMapEditor() || getIsMovePlanner()) customUI.parent.style.height = "31px";
+    if (getIsMapEditor() || getIsMovePlanner()) {
+      customUI.parent.style.height = "31px";
+    }
     console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
   }
   main();

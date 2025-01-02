@@ -8,5 +8,5 @@
  */
 export const versions = {
   music_player: "3.0.0",
-  highlight_cursor_coordinates: "1.0.2",
+  highlight_cursor_coordinates: "2.0.0",
 };

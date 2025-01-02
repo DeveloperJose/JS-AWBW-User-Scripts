@@ -51,8 +51,12 @@ Directory: **highlight_cursor_coordinates/**
 
 Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
 
+To toggle on and off, look for the cursor select icon to the left of the coordinates display box.
+
+Also works on the map editor and on the move planner (hidden by default though).
+
 ![Picture of the highlight cursor coordinates icon on the page](./Highlight_Coordinates_Icon.png)
 
 ![Picture of the added coordinates next to the map](./Highlight_Coordinates.png)
 
-![Animated picture demonstrating the cursor moving and highlighting the coordinates](./AWBW_Highlight_Coordinates_Long.gif)
+![Animated picture demonstrating the cursor moving and highlighting the coordinates](./Highlight_Coordinates_Long.gif)

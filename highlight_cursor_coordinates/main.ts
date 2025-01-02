@@ -183,6 +183,12 @@ function main() {
     console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
     return;
   }
+
+  // Hide by default on map editor and move planner
+  if (getIsMapEditor() || getIsMovePlanner()) {
+    isEnabled = false;
+  }
+
   // designmap.php, wait until designerMapEditor is loaded to run script
   const isMapEditorAndNotLoaded = getIsMapEditor() && !designMapEditor?.loaded;
   if (isMapEditorAndNotLoaded) {
@@ -221,7 +227,7 @@ function main() {
   onZoomChangeEvent();
 
   // Add highlight boxes around map edges
-  addHighlightBoxesAroundMapEdges();
+  if (isEnabled) addHighlightBoxesAroundMapEdges();
 
   // Create UI button to toggle highlight boxes
   const customUI = new CustomMenuSettingsUI(PREFIX, BUTTON_IMG_URL, "Disable Highlight Cursor Coordinates");
@@ -236,7 +242,9 @@ function main() {
   customUI.addToAWBWPage(getMenu() as HTMLElement, true);
   customUI.setProgress(100);
 
-  if (getIsMapEditor() || getIsMovePlanner()) customUI.parent.style.height = "31px";
+  if (getIsMapEditor() || getIsMovePlanner()) {
+    customUI.parent.style.height = "31px";
+  }
 
   console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
 }
