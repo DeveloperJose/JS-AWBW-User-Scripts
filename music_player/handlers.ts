@@ -22,7 +22,10 @@ import {
 } from "../shared/awbw_game";
 import {
   getAllDamageSquares,
+  getCoordsDiv,
+  getIsMaintenance,
   getIsMapEditor,
+  getIsMovePlanner,
   getReplayBackwardActionBtn,
   getReplayBackwardBtn,
   getReplayCloseBtn,
@@ -158,10 +161,18 @@ let ahPower = getPowerFn();
  * Intercept functions and add our own handlers to the website.
  */
 export function addHandlers() {
+  if (getIsMaintenance()) return;
+
   if (getIsMapEditor()) {
     addMapEditorHandlers();
     return;
   }
+
+  if (getIsMovePlanner()) {
+    addMovePlannerHandlers();
+    return;
+  }
+
   addReplayHandlers();
   addGameHandlers();
 }
@@ -171,6 +182,33 @@ export function addHandlers() {
  */
 function addMapEditorHandlers() {
   designMapEditor.updateCursor = onCursorMove;
+}
+
+function addMovePlannerHandlers() {
+  closeMenu = onCloseMenu;
+
+  // updateCursor
+  const coordsDiv = getCoordsDiv();
+  // Catch when div textContent is changed
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type !== "childList") return;
+      if (!mutation.target) return;
+      if (!mutation.target.textContent) return;
+
+      // (X, Y)
+      let coordsText = mutation.target.textContent;
+
+      // Remove parentheses and split by comma
+      coordsText = coordsText.substring(1, coordsText.length - 1);
+      const splitCoords = coordsText.split(",");
+
+      const cursorX = Number(splitCoords[0]);
+      const cursorY = Number(splitCoords[1]);
+      onCursorMove(cursorX, cursorY);
+    }
+  });
+  observer.observe(coordsDiv, { childList: true });
 }
 
 /**
@@ -304,7 +342,15 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
   let menuOptions = document.getElementsByClassName("menu-option");
   for (var i = 0; i < menuOptions.length; i++) {
     menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
-    menuOptions[i].addEventListener("click", (_e) => {
+    menuOptions[i].addEventListener("click", (event) => {
+      const target = event.target as HTMLDivElement;
+      if (!target) return;
+
+      // Check if we clicked on a unit we cannot buy
+      if (target.classList.contains("forbidden")) {
+        playSFX(GameSFX.uiInvalid);
+        return;
+      }
       currentMenuType = MenuOpenType.None;
       playSFX(GameSFX.uiMenuOpen);
     });

@@ -88,6 +88,7 @@ export enum GameSFX {
   unitExplode = "unit-explode",
 
   uiCursorMove = "ui-cursor-move",
+  uiInvalid = "ui-invalid",
   uiMenuOpen = "ui-menu-open",
   uiMenuClose = "ui-menu-close",
   uiMenuMove = "ui-menu-move",

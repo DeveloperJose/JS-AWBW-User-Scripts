@@ -13,6 +13,10 @@ export function getIsMaintenance() {
   return document.querySelector("#server-maintenance-alert") !== null;
 }
 
+export function getIsMovePlanner() {
+  return window.location.href.indexOf("moveplanner.php") > -1;
+}
+
 // ============================== AWBW Page Elements ==============================
 export function getGamemap() {
   return document.querySelector("#gamemap") as HTMLElement;
@@ -30,9 +34,14 @@ export function getZoomOutBtn() {
 export function getZoomLevel() {
   return document.querySelector(".zoom-level") as HTMLElement;
 }
-export function getCursor() {
+export function getCursorImg() {
   return document.querySelector("#cursor") as HTMLElement;
 }
+
+export function getCoordsDiv() {
+  return document.querySelector("#coords") as HTMLElement;
+}
+
 export function getEventUsername() {
   return document.querySelector(".event-username") as HTMLElement;
 }
@@ -82,6 +91,7 @@ export function getReplayDaySelectorCheckBox() {
 export function getMenu() {
   if (getIsMaintenance()) return document.querySelector("#main");
   if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
+  if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
   return document.querySelector("#game-map-menu")?.parentNode;
 }
 // ============================== Useful Page Utilities ==============================

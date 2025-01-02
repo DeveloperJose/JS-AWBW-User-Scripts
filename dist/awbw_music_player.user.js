@@ -10,7 +10,6 @@
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @grant       none
-// @unwrap
 // ==/UserScript==
 
 var awbw_music_player = (function (exports) {
@@ -134,6 +133,12 @@ var awbw_music_player = (function (exports) {
   function getIsMaintenance() {
     return document.querySelector("#server-maintenance-alert") !== null;
   }
+  function getIsMovePlanner() {
+    return window.location.href.indexOf("moveplanner.php") > -1;
+  }
+  function getCoordsDiv() {
+    return document.querySelector("#coords");
+  }
   function getReplayControls() {
     return document.querySelector(".replay-controls");
   }
@@ -164,6 +169,7 @@ var awbw_music_player = (function (exports) {
   function getMenu() {
     if (getIsMaintenance()) return document.querySelector("#main");
     if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
+    if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
     return document.querySelector("#game-map-menu")?.parentNode;
   }
   // ============================== Useful Page Utilities ==============================
@@ -800,6 +806,7 @@ var awbw_music_player = (function (exports) {
     GameSFX["unitUnload"] = "unit-unload";
     GameSFX["unitExplode"] = "unit-explode";
     GameSFX["uiCursorMove"] = "ui-cursor-move";
+    GameSFX["uiInvalid"] = "ui-invalid";
     GameSFX["uiMenuOpen"] = "ui-menu-open";
     GameSFX["uiMenuClose"] = "ui-menu-close";
     GameSFX["uiMenuMove"] = "ui-menu-move";
@@ -2405,8 +2412,13 @@ var awbw_music_player = (function (exports) {
    * Intercept functions and add our own handlers to the website.
    */
   function addHandlers() {
+    if (getIsMaintenance()) return;
     if (getIsMapEditor()) {
       addMapEditorHandlers();
+      return;
+    }
+    if (getIsMovePlanner()) {
+      addMovePlannerHandlers();
       return;
     }
     addReplayHandlers();
@@ -2417,6 +2429,28 @@ var awbw_music_player = (function (exports) {
    */
   function addMapEditorHandlers() {
     designMapEditor.updateCursor = onCursorMove;
+  }
+  function addMovePlannerHandlers() {
+    closeMenu = onCloseMenu;
+    // updateCursor
+    const coordsDiv = getCoordsDiv();
+    // Catch when div textContent is changed
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type !== "childList") return;
+        if (!mutation.target) return;
+        if (!mutation.target.textContent) return;
+        // (X, Y)
+        let coordsText = mutation.target.textContent;
+        // Remove parentheses and split by comma
+        coordsText = coordsText.substring(1, coordsText.length - 1);
+        const splitCoords = coordsText.split(",");
+        const cursorX = Number(splitCoords[0]);
+        const cursorY = Number(splitCoords[1]);
+        onCursorMove(cursorX, cursorY);
+      }
+    });
+    observer.observe(coordsDiv, { childList: true });
   }
   /**
    * Syncs the music with the game state. Also randomizes the COs if needed.
@@ -2527,7 +2561,14 @@ var awbw_music_player = (function (exports) {
     let menuOptions = document.getElementsByClassName("menu-option");
     for (var i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
-      menuOptions[i].addEventListener("click", (_e) => {
+      menuOptions[i].addEventListener("click", (event) => {
+        const target = event.target;
+        if (!target) return;
+        // Check if we clicked on a unit we cannot buy
+        if (target.classList.contains("forbidden")) {
+          playSFX(GameSFX.uiInvalid);
+          return;
+        }
         currentMenuType = MenuOpenType.None;
         playSFX(GameSFX.uiMenuOpen);
       });
@@ -2875,6 +2916,7 @@ var awbw_music_player = (function (exports) {
    * @file Main script that loads everything for the AWBW Improved Music Player userscript.
    *
    * @TODO - More map editor sound effects
+   * @TODO - Add unwrap to rollup
    */
   // Add our CSS to the page using rollup-plugin-postcss
   /******************************************************************
@@ -2882,16 +2924,23 @@ var awbw_music_player = (function (exports) {
    ******************************************************************/
   function main() {
     console.debug("[AWBW Improved Music Player] Script starting...");
-    loadSettingsFromLocalStorage();
     musicPlayerUI.addToAWBWPage();
+    addHandlers();
+    if (getIsMovePlanner()) {
+      console.log("[AWBW Improved Music Player] Move Planner detected");
+      musicPlayerSettings.isPlaying = true;
+      musicPlayerUI.setProgress(100);
+      return;
+    }
     if (getIsMaintenance()) {
       console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
       musicPlayerSettings.isPlaying = true;
+      musicPlayerUI.setProgress(100);
       musicPlayerUI.openContextMenu();
       playMusicURL(MAINTENANCE_THEME_URL);
       return;
     }
-    addHandlers();
+    loadSettingsFromLocalStorage();
     preloadAllCommonAudio(() => {
       console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
       // Set dynamic settings based on the current game state

@@ -5,7 +5,7 @@
 import { getMapColumns, getMapRows } from "../shared/awbw_globals";
 import { getCursorMoveFn } from "../shared/awbw_handlers";
 import {
-  getCursor,
+  getCursorImg,
   getGamemap,
   getGamemapContainer,
   getIsMaintenance,
@@ -18,7 +18,7 @@ import { getMaximizeBtn } from "../shared/other_userscripts";
 /********************** AWBW Stuff ***********************/
 const mapRows = getMapRows();
 const mapCols = getMapColumns();
-const cursor = getCursor();
+const cursor = getCursorImg();
 const gamemap = getGamemap();
 const gamemapContainer = getGamemapContainer();
 const zoomInBtn = getZoomInBtn();

@@ -12,7 +12,7 @@ import { musicPlayerUI } from "./music_ui";
 import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
-import { getIsMaintenance } from "../shared/awbw_page";
+import { getIsMaintenance, getIsMovePlanner } from "../shared/awbw_page";
 import { MAINTENANCE_THEME_URL } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 
@@ -26,18 +26,26 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
  ******************************************************************/
 export function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
-  loadSettingsFromLocalStorage();
   musicPlayerUI.addToAWBWPage();
+  addHandlers();
+
+  if (getIsMovePlanner()) {
+    console.log("[AWBW Improved Music Player] Move Planner detected");
+    musicPlayerSettings.isPlaying = true;
+    musicPlayerUI.setProgress(100);
+    return;
+  }
 
   if (getIsMaintenance()) {
     console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
     musicPlayerSettings.isPlaying = true;
+    musicPlayerUI.setProgress(100);
     musicPlayerUI.openContextMenu();
     playMusicURL(MAINTENANCE_THEME_URL);
     return;
   }
 
-  addHandlers();
+  loadSettingsFromLocalStorage();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 
