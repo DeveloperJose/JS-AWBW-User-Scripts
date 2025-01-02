@@ -6,12 +6,12 @@ import { getMapColumns, getMapRows } from "../shared/awbw_globals";
 import { getResizeMapFn } from "../shared/awbw_handlers";
 import {
   addUpdateCursorObserver,
-  getCoordsDiv,
   getCurrentZoomLevel,
   getGamemap,
   getGamemapContainer,
   getIsMaintenance,
   getIsMapEditor,
+  getIsMovePlanner,
   getZoomInBtn,
   getZoomOutBtn,
 } from "../shared/awbw_page";
@@ -29,6 +29,7 @@ let ahResizeMap = getResizeMapFn();
 /********************** Script Variables & Functions ***********************/
 const CURSOR_THRESHOLD_MS = 30;
 const FONT_SIZE = 9;
+const PREFIX = "highlight_cursor_coordinates";
 const BUTTON_IMG_URL = "https://awbw.amarriner.com/terrain/unit_select.gif";
 
 let isEnabled = true;
@@ -39,7 +40,19 @@ let lastCursorX = -1;
 let lastCursorY = -1;
 const currentSquares = new Array<HTMLElement>();
 
+/**
+ * Where should we place the highlight cursor coordinates UI?
+ */
+function getMenu() {
+  if (getIsMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
+  if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
+
+  return document.querySelector("#game-menu-controls")?.children[0];
+}
+
 function setHighlight(node: HTMLElement, highlight: boolean) {
+  if (!isEnabled) return;
+
   if (!node) {
     console.error("[AWBW Highlight Cursor Coordinates] Node is null, something isn't right.");
     return;
@@ -59,6 +72,7 @@ function setHighlight(node: HTMLElement, highlight: boolean) {
 }
 
 function onZoomChangeEvent(_event?: MouseEvent, zoom: number = -1) {
+  if (!isEnabled) return;
   if (zoom < 0) {
     zoom = getCurrentZoomLevel();
   }
@@ -69,9 +83,9 @@ function onZoomChangeEvent(_event?: MouseEvent, zoom: number = -1) {
 }
 
 function onCursorMove(cursorX: number, cursorY: number) {
+  if (!isEnabled) return;
+
   // Get cursor row and column indices then the span
-  // let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
-  // let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
   const highlightRow = document.getElementById("grid-spot-row-" + cursorY);
   const highlightCol = document.getElementById("grid-spot-col-" + cursorX);
   const dx = Math.abs(cursorX - lastCursorX);
@@ -106,6 +120,7 @@ function onCursorMove(cursorX: number, cursorY: number) {
 
 function onResizeMap(num: number, btnName: string) {
   ahResizeMap?.apply(ahResizeMap, [num, btnName]);
+  if (!isEnabled) return;
   addHighlightBoxesAroundMapEdges();
 }
 
@@ -113,6 +128,8 @@ function clearHighlightBoxes() {
   if (currentSquares.length > 0) {
     currentSquares.forEach((element) => element.remove());
   }
+  gamemapContainer.style.paddingBottom = "0px";
+  gamemapContainer.style.paddingLeft = "0px";
 }
 
 function addHighlightBoxesAroundMapEdges() {
@@ -154,6 +171,8 @@ function addHighlightBoxesAroundMapEdges() {
     gamemap.appendChild(spotSpan);
     currentSquares.push(spotSpan);
   }
+
+  onZoomChangeEvent();
 }
 
 /******************************************************************
@@ -205,17 +224,19 @@ function main() {
   addHighlightBoxesAroundMapEdges();
 
   // Create UI button to toggle highlight boxes
-  const customUI = new CustomMenuSettingsUI("highlight_cursor_coordinates", BUTTON_IMG_URL);
+  const customUI = new CustomMenuSettingsUI(PREFIX, BUTTON_IMG_URL, "Disable Highlight Cursor Coordinates");
   customUI.addEventListener("click", () => {
     isEnabled = !isEnabled;
     const hoverText = isEnabled ? "Disable Highlight Cursor Coordinates" : "Enable Highlight Cursor Coordinates";
-    customUI.setHoverText(hoverText);
+    customUI.setHoverText(hoverText, true);
 
     if (isEnabled) addHighlightBoxesAroundMapEdges();
     else clearHighlightBoxes();
   });
-  // Add to page
-  getCoordsDiv().prepend(customUI.parent);
+  customUI.addToAWBWPage(getMenu() as HTMLElement, true);
+  customUI.setProgress(100);
+
+  if (getIsMapEditor() || getIsMovePlanner()) customUI.parent.style.height = "31px";
 
   console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
 }

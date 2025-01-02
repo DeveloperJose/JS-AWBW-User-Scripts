@@ -3,7 +3,6 @@
  */
 
 import { getAllCONames } from "./awbw_globals";
-import { getIsMapEditor, getMenu } from "./awbw_page";
 
 export enum CustomInputType {
   Radio = "radio",
@@ -96,10 +95,6 @@ export class CustomMenuSettingsUI {
     this.parent.classList.add("game-tools-btn");
     this.parent.style.width = "34px";
     this.parent.style.height = "30px";
-    this.parent.style.borderLeft = "none";
-    if (getIsMapEditor()) {
-      this.parent.style.borderTop = "none";
-    }
 
     // Hover text
     const hoverSpan = document.createElement("span");
@@ -210,12 +205,19 @@ export class CustomMenuSettingsUI {
   /**
    * Adds the custom menu to the AWBW page.
    */
-  addToAWBWPage() {
-    getMenu()?.appendChild(this.parent);
+  addToAWBWPage(div: HTMLElement, prepend = false) {
+    if (!prepend) {
+      div.appendChild(this.parent);
+      this.parent.style.borderLeft = "none";
+      return;
+    }
+    div.prepend(this.parent);
+    this.parent.style.borderRight = "none";
   }
 
   getGroup(groupName: string) {
     const container = this.groups.get(groupName);
+    // Unhide group
     if (!container) return;
     if (container.style.display === "none") container.style.display = "flex";
     return container;
@@ -269,6 +271,12 @@ export class CustomMenuSettingsUI {
   openContextMenu() {
     const contextMenu = this.groups.get("settings-parent");
     if (!contextMenu) return;
+    // No settings so don't open the menu
+    const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
+    const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
+    const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+    if (!hasLeftMenu && !hasCenterMenu && !hasRightMenu) return;
+
     contextMenu.style.display = "flex";
     this.isSettingsMenuOpen = true;
   }

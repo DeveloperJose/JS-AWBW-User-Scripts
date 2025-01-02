@@ -102,15 +102,6 @@ var awbw_music_player = (function (exports) {
   function getBuildMenu() {
     return document.querySelector("#build-menu");
   }
-  /**
-   * The HTML node for the game menu, the little bar with all the icons.
-   */
-  function getMenu() {
-    if (getIsMaintenance()) return document.querySelector("#main");
-    if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
-    if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
-    return document.querySelector("#game-map-menu")?.parentNode;
-  }
   // ============================== Useful Page Utilities ==============================
   /**
    * Gets the HTML div element for the given building, if it exists.
@@ -1216,10 +1207,6 @@ var awbw_music_player = (function (exports) {
       this.parent.classList.add("game-tools-btn");
       this.parent.style.width = "34px";
       this.parent.style.height = "30px";
-      this.parent.style.borderLeft = "none";
-      if (getIsMapEditor()) {
-        this.parent.style.borderTop = "none";
-      }
       // Hover text
       const hoverSpan = document.createElement("span");
       hoverSpan.id = `${prefix}-hover-span`;
@@ -1313,11 +1300,18 @@ var awbw_music_player = (function (exports) {
     /**
      * Adds the custom menu to the AWBW page.
      */
-    addToAWBWPage() {
-      getMenu()?.appendChild(this.parent);
+    addToAWBWPage(div, prepend = false) {
+      if (!prepend) {
+        div.appendChild(this.parent);
+        this.parent.style.borderLeft = "none";
+        return;
+      }
+      div.prepend(this.parent);
+      this.parent.style.borderRight = "none";
     }
     getGroup(groupName) {
       const container = this.groups.get(groupName);
+      // Unhide group
       if (!container) return;
       if (container.style.display === "none") container.style.display = "flex";
       return container;
@@ -1366,6 +1360,11 @@ var awbw_music_player = (function (exports) {
     openContextMenu() {
       const contextMenu = this.groups.get("settings-parent");
       if (!contextMenu) return;
+      // No settings so don't open the menu
+      const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
+      const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
+      const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+      if (!hasLeftMenu && !hasCenterMenu && !hasRightMenu) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
     }
@@ -2942,12 +2941,21 @@ var awbw_music_player = (function (exports) {
    * @TODO - Add unwrap to rollup
    */
   // Add our CSS to the page using rollup-plugin-postcss
+  /**
+   * Where should we place the music player UI?
+   */
+  function getMenu() {
+    if (getIsMaintenance()) return document.querySelector("#main");
+    if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
+    if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
+    return document.querySelector("#game-map-menu")?.parentNode;
+  }
   /******************************************************************
    * SCRIPT ENTRY (MAIN FUNCTION)
    ******************************************************************/
   function main() {
     console.debug("[AWBW Improved Music Player] Script starting...");
-    musicPlayerUI.addToAWBWPage();
+    musicPlayerUI.addToAWBWPage(getMenu());
     addHandlers();
     if (getIsMovePlanner()) {
       console.log("[AWBW Improved Music Player] Move Planner detected");
@@ -2962,6 +2970,9 @@ var awbw_music_player = (function (exports) {
       musicPlayerUI.openContextMenu();
       playMusicURL(MAINTENANCE_THEME_URL);
       return;
+    }
+    if (getIsMapEditor()) {
+      musicPlayerUI.parent.style.borderTop = "none";
     }
     loadSettingsFromLocalStorage();
     preloadAllCommonAudio(() => {

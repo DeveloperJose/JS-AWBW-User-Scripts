@@ -12,9 +12,19 @@ import { musicPlayerUI } from "./music_ui";
 import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
-import { getIsMaintenance, getIsMovePlanner } from "../shared/awbw_page";
+import { getIsMaintenance, getIsMapEditor, getIsMovePlanner } from "../shared/awbw_page";
 import { MAINTENANCE_THEME_URL } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
+
+/**
+ * Where should we place the music player UI?
+ */
+function getMenu() {
+  if (getIsMaintenance()) return document.querySelector("#main");
+  if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
+  if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
+  return document.querySelector("#game-map-menu")?.parentNode;
+}
 
 /******************************************************************
  * MODULE EXPORTS
@@ -26,7 +36,7 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
  ******************************************************************/
 export function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
-  musicPlayerUI.addToAWBWPage();
+  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement);
   addHandlers();
 
   if (getIsMovePlanner()) {
@@ -43,6 +53,10 @@ export function main() {
     musicPlayerUI.openContextMenu();
     playMusicURL(MAINTENANCE_THEME_URL);
     return;
+  }
+
+  if (getIsMapEditor()) {
+    musicPlayerUI.parent.style.borderTop = "none";
   }
 
   loadSettingsFromLocalStorage();

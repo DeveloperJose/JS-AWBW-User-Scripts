@@ -100,15 +100,6 @@ export function getBuildMenu() {
   return document.querySelector("#build-menu") as HTMLElement;
 }
 
-/**
- * The HTML node for the game menu, the little bar with all the icons.
- */
-export function getMenu() {
-  if (getIsMaintenance()) return document.querySelector("#main");
-  if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
-  if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
-  return document.querySelector("#game-map-menu")?.parentNode;
-}
 // ============================== Useful Page Utilities ==============================
 
 /**

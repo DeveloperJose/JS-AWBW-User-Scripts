@@ -42,15 +42,17 @@ Below are the changes from the original script:
 * Added cursor moving sound effects to design map page. 
 * Added music to maintenance page.
 
-![Picture of the music player icon on the browser](./AWBW_Music_Player_1.png)
+![Picture of the music player icon on the page](./Improved_Music_Player_Icon.png)
 
-![Picture of the music player settings](./AWBW_Improved_Music_Player_Settings.png)
+![Picture of the music player settings](./Improved_Music_Player_Settings.png)
 
 ## 2. AWBW Highlight Cursor Coordinates
 Directory: **highlight_cursor_coordinates/**
 
 Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
 
-![Picture of the added coordinates next to the map](./AWBW_Highlight_Coordinates.png)
+![Picture of the highlight cursor coordinates icon on the page](./Highlight_Coordinates_Icon.png)
+
+![Picture of the added coordinates next to the map](./Highlight_Coordinates.png)
 
 ![Animated picture demonstrating the cursor moving and highlighting the coordinates](./AWBW_Highlight_Coordinates_Long.gif)
