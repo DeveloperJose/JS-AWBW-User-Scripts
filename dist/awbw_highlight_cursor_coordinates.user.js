@@ -27,13 +27,13 @@
    * The number of columns of this map.
    */
   function getMapColumns() {
-    return typeof maxX !== "undefined" ? maxX : -1;
+    return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
   }
   /**
    * The number of rows of this map.
    */
   function getMapRows() {
-    return typeof maxY !== "undefined" ? maxY : -1;
+    return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
   }
 
   /**
@@ -42,9 +42,6 @@
   /**
    * Are we in the map editor?
    */
-  function getIsMapEditor() {
-    return window.location.href.indexOf("editmap.php?") > -1;
-  }
   function getIsMaintenance() {
     return document.querySelector("#server-maintenance-alert") !== null;
   }
@@ -61,21 +58,42 @@
   function getZoomOutBtn() {
     return document.querySelector("#zoom-out");
   }
-  function getZoomLevel() {
-    return document.querySelector(".zoom-level");
+  // export function getZoomLevel() {
+  //   return document.querySelector(".zoom-level") as HTMLElement;
+  // }
+  function getCurrentZoomLevel() {
+    const storedScale = localStorage.getItem("scale") || "1";
+    return parseFloat(storedScale);
   }
-  function getCursor() {
+  function getCursorImg() {
     return document.querySelector("#cursor");
   }
-
+  function getCoordsDiv() {
+    return document.querySelector("#coords");
+  }
   /**
-   * @file Functions used by Advance Wars By Web to handle game actions.
+   * Adds an observer to the cursor coordinates so we can replicate the "updateCursor" function outside of game.php
+   * @param onCursorMove - The function to call when the cursor moves.
    */
-  function getCursorMoveFn() {
-    if (getIsMapEditor()) {
-      return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
-    }
-    return typeof updateCursor !== "undefined" ? updateCursor : null;
+  function addUpdateCursorObserver(onCursorMove) {
+    // We want to catch when div textContent is changed
+    const coordsDiv = getCoordsDiv();
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type !== "childList") return;
+        if (!mutation.target) return;
+        if (!mutation.target.textContent) return;
+        // (X, Y)
+        let coordsText = mutation.target.textContent;
+        // Remove parentheses and split by comma
+        coordsText = coordsText.substring(1, coordsText.length - 1);
+        const splitCoords = coordsText.split(",");
+        const cursorX = Number(splitCoords[0]);
+        const cursorY = Number(splitCoords[1]);
+        onCursorMove(cursorX, cursorY);
+      }
+    });
+    observer.observe(coordsDiv, { childList: true });
   }
 
   /**
@@ -95,12 +113,11 @@
   /********************** AWBW Stuff ***********************/
   const mapRows = getMapRows();
   const mapCols = getMapColumns();
-  const cursor = getCursor();
+  const cursor = getCursorImg();
   const gamemap = getGamemap();
   const gamemapContainer = getGamemapContainer();
   const zoomInBtn = getZoomInBtn();
   const zoomOutBtn = getZoomOutBtn();
-  const ahCursorMove = getCursorMoveFn();
   /********************** Script Variables & Functions ***********************/
   const CURSOR_THRESHOLD_MS = 30;
   const FONT_SIZE = 9;
@@ -140,17 +157,14 @@
   }
   function onZoomChangeEvent(_event, zoom = -1) {
     if (zoom < 0) {
-      const zoomLevelText = getZoomLevel().textContent;
-      if (zoomLevelText !== null) {
-        zoom = parseFloat(zoomLevelText);
-      }
+      zoom = getCurrentZoomLevel();
     }
     let padding = 16 * zoom;
     gamemapContainer.style.paddingBottom = padding + "px";
     gamemapContainer.style.paddingLeft = padding + "px";
   }
   function onCursorMove(cursorX, cursorY) {
-    ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
+    // ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
     // Get cursor row and column indices then the span
     let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
     let cursorCol = Math.abs(Math.ceil(parseInt(cursor.style.left) / 16));
@@ -190,7 +204,11 @@
       return;
     }
     // Intercept AWBW functions
-    updateCursor = onCursorMove;
+    // if (getIsMovePlanner()) {
+    addUpdateCursorObserver(onCursorMove);
+    // } else {
+    //   updateCursor = onCursorMove;
+    // }
     if (zoomInBtn != null) zoomInBtn.addEventListener("click", onZoomChangeEvent);
     if (zoomOutBtn != null) zoomOutBtn.addEventListener("click", onZoomChangeEvent);
     // Synergize with AWBW Maximize if that script is running as well
@@ -219,7 +237,7 @@
       spotSpan.textContent = col.toString().padStart(2, "0");
       gamemap.appendChild(spotSpan);
     }
-    console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
+    console.log("[AWBW Highlight Cursor Coordinates] Script loaded!", mapRows, mapCols);
   }
   main();
 })();

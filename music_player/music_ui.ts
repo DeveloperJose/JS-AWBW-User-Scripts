@@ -6,6 +6,7 @@ import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
+import { getIsMovePlanner } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -63,12 +64,13 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
 
   shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
 
+  const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
   // Update UI
   if (musicPlayerSettings.isPlaying) {
-    musicPlayerUI.setHoverText("Stop Tunes", true);
+    musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
     musicPlayerUI.setImage(PLAYING_IMG_URL);
   } else {
-    musicPlayerUI.setHoverText("Play Tunes", true);
+    musicPlayerUI.setHoverText(`Play ${currentSounds}`, true);
     musicPlayerUI.setImage(NEUTRAL_IMG_URL);
   }
 }

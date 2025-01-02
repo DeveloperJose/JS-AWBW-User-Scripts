@@ -24,14 +24,24 @@ declare const playerKeys: number[];
 declare const buildingsInfo: BuildingInfo[][];
 
 /**
- * The number of columns of this map.
+ * The number of columns of this map (game)
  */
 declare const maxX: number;
 
 /**
- * The number of rows of this map.
+ * The number of columns of this map (moveplanner)
+ */
+declare const map_width: number;
+
+/**
+ * The number of rows of this map (game)
  */
 declare const maxY: number;
+
+/**
+ * The number of rows of this map (moveplanner)
+ */
+declare const map_height: number;
 
 /**
  * Whether game animations are enabled or not.
@@ -151,7 +161,7 @@ declare let swapCosDisplay: (playerId: number) => void;
  * @param cursorX - The x coordinate of the cursor inside the game grid.
  * @param cursorY - The y coordinate of the cursor inside the game grid.
  */
-declare let updateCursor: (cursorX: number, cursorY: number) => void;
+// declare let updateCursor: (cursorX: number, cursorY: number) => void;
 
 interface ShowEventScreenData {
   username: string;

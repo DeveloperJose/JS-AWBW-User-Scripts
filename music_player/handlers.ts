@@ -21,7 +21,9 @@ import {
   hasUnitMovedThisTurn,
 } from "../shared/awbw_game";
 import {
+  addUpdateCursorObserver,
   getAllDamageSquares,
+  getBuildMenu,
   getCoordsDiv,
   getIsMaintenance,
   getIsMapEditor,
@@ -163,6 +165,10 @@ let ahPower = getPowerFn();
 export function addHandlers() {
   if (getIsMaintenance()) return;
 
+  // Global handlers
+  addUpdateCursorObserver(onCursorMove);
+
+  // Specific page handlers
   if (getIsMapEditor()) {
     addMapEditorHandlers();
     return;
@@ -173,6 +179,7 @@ export function addHandlers() {
     return;
   }
 
+  // game.php handlers
   addReplayHandlers();
   addGameHandlers();
 }
@@ -181,34 +188,14 @@ export function addHandlers() {
  * Add all handlers that will intercept clicks and functions on the map editor.
  */
 function addMapEditorHandlers() {
-  designMapEditor.updateCursor = onCursorMove;
+  
 }
 
 function addMovePlannerHandlers() {
-  closeMenu = onCloseMenu;
-
-  // updateCursor
-  const coordsDiv = getCoordsDiv();
-  // Catch when div textContent is changed
-  const observer = new MutationObserver((mutationsList) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type !== "childList") return;
-      if (!mutation.target) return;
-      if (!mutation.target.textContent) return;
-
-      // (X, Y)
-      let coordsText = mutation.target.textContent;
-
-      // Remove parentheses and split by comma
-      coordsText = coordsText.substring(1, coordsText.length - 1);
-      const splitCoords = coordsText.split(",");
-
-      const cursorX = Number(splitCoords[0]);
-      const cursorY = Number(splitCoords[1]);
-      onCursorMove(cursorX, cursorY);
-    }
+  getBuildMenu().addEventListener("click", (event) => {
+    onOpenMenu(event.target as HTMLDivElement, 0, 0);
   });
-  observer.observe(coordsDiv, { childList: true });
+  closeMenu = onCloseMenu;
 }
 
 /**
@@ -256,7 +243,7 @@ function addReplayHandlers() {
  * Add all handlers that will intercept clicks and functions during a game.
  */
 function addGameHandlers() {
-  updateCursor = onCursorMove;
+  // updateCursor = onCursorMove;
   queryTurn = onQueryTurn;
   showEventScreen = onShowEventScreen;
   openMenu = onOpenMenu;
@@ -288,7 +275,7 @@ function addGameHandlers() {
 }
 
 function onCursorMove(cursorX: number, cursorY: number) {
-  ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
+  // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Cursor Move", cursorX, cursorY);
 

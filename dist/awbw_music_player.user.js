@@ -164,6 +164,14 @@ var awbw_music_player = (function (exports) {
     return document.querySelector(".replay-day-selector");
   }
   /**
+   * The HTML node for the unit build menu.
+   * Specifically works in the Move Planner.
+   * @returns The HTML node for the unit build menu.
+   */
+  function getBuildMenu() {
+    return document.querySelector("#build-menu");
+  }
+  /**
    * The HTML node for the game menu, the little bar with all the icons.
    */
   function getMenu() {
@@ -213,6 +221,30 @@ var awbw_music_player = (function (exports) {
     top += dy;
     div.style.left = left + "px";
     div.style.top = top + "px";
+  }
+  /**
+   * Adds an observer to the cursor coordinates so we can replicate the "updateCursor" function outside of game.php
+   * @param onCursorMove - The function to call when the cursor moves.
+   */
+  function addUpdateCursorObserver(onCursorMove) {
+    // We want to catch when div textContent is changed
+    const coordsDiv = getCoordsDiv();
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type !== "childList") return;
+        if (!mutation.target) return;
+        if (!mutation.target.textContent) return;
+        // (X, Y)
+        let coordsText = mutation.target.textContent;
+        // Remove parentheses and split by comma
+        coordsText = coordsText.substring(1, coordsText.length - 1);
+        const splitCoords = coordsText.split(",");
+        const cursorX = Number(splitCoords[0]);
+        const cursorY = Number(splitCoords[1]);
+        onCursorMove(cursorX, cursorY);
+      }
+    });
+    observer.observe(coordsDiv, { childList: true });
   }
 
   /**
@@ -1686,12 +1718,13 @@ var awbw_music_player = (function (exports) {
       }
     }
     shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
+    const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
     // Update UI
     if (musicPlayerSettings.isPlaying) {
-      musicPlayerUI.setHoverText("Stop Tunes", true);
+      musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
     } else {
-      musicPlayerUI.setHoverText("Play Tunes", true);
+      musicPlayerUI.setHoverText(`Play ${currentSounds}`, true);
       musicPlayerUI.setImage(NEUTRAL_IMG_URL);
     }
   }
@@ -2378,7 +2411,7 @@ var awbw_music_player = (function (exports) {
   let movementResponseMap = new Map();
   let clickedDamageSquaresMap = new Map();
   // Store a copy of all the original functions we are going to override
-  let ahCursorMove = getCursorMoveFn();
+  getCursorMoveFn();
   let ahQueryTurn = getQueryTurnFn();
   let ahShowEventScreen = getShowEventScreenFn();
   // let ahSwapCosDisplay = getSwapCosDisplayFn();
@@ -2413,44 +2446,25 @@ var awbw_music_player = (function (exports) {
    */
   function addHandlers() {
     if (getIsMaintenance()) return;
+    // Global handlers
+    addUpdateCursorObserver(onCursorMove);
+    // Specific page handlers
     if (getIsMapEditor()) {
-      addMapEditorHandlers();
       return;
     }
     if (getIsMovePlanner()) {
       addMovePlannerHandlers();
       return;
     }
+    // game.php handlers
     addReplayHandlers();
     addGameHandlers();
   }
-  /**
-   * Add all handlers that will intercept clicks and functions on the map editor.
-   */
-  function addMapEditorHandlers() {
-    designMapEditor.updateCursor = onCursorMove;
-  }
   function addMovePlannerHandlers() {
-    closeMenu = onCloseMenu;
-    // updateCursor
-    const coordsDiv = getCoordsDiv();
-    // Catch when div textContent is changed
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type !== "childList") return;
-        if (!mutation.target) return;
-        if (!mutation.target.textContent) return;
-        // (X, Y)
-        let coordsText = mutation.target.textContent;
-        // Remove parentheses and split by comma
-        coordsText = coordsText.substring(1, coordsText.length - 1);
-        const splitCoords = coordsText.split(",");
-        const cursorX = Number(splitCoords[0]);
-        const cursorY = Number(splitCoords[1]);
-        onCursorMove(cursorX, cursorY);
-      }
+    getBuildMenu().addEventListener("click", (event) => {
+      onOpenMenu(event.target, 0, 0);
     });
-    observer.observe(coordsDiv, { childList: true });
+    closeMenu = onCloseMenu;
   }
   /**
    * Syncs the music with the game state. Also randomizes the COs if needed.
@@ -2493,7 +2507,7 @@ var awbw_music_player = (function (exports) {
    * Add all handlers that will intercept clicks and functions during a game.
    */
   function addGameHandlers() {
-    updateCursor = onCursorMove;
+    // updateCursor = onCursorMove;
     queryTurn = onQueryTurn;
     showEventScreen = onShowEventScreen;
     openMenu = onOpenMenu;
@@ -2523,7 +2537,7 @@ var awbw_music_player = (function (exports) {
     // actionHandlers.GameOver = onGameOver;
   }
   function onCursorMove(cursorX, cursorY) {
-    ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
+    // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Cursor Move", cursorX, cursorY);
     let dx = Math.abs(cursorX - lastCursorX);

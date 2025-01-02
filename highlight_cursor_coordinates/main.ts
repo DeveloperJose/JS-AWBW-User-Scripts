@@ -5,12 +5,14 @@
 import { getMapColumns, getMapRows } from "../shared/awbw_globals";
 import { getCursorMoveFn } from "../shared/awbw_handlers";
 import {
+  addUpdateCursorObserver,
+  getCurrentZoomLevel,
   getCursorImg,
   getGamemap,
   getGamemapContainer,
   getIsMaintenance,
+  getIsMovePlanner,
   getZoomInBtn,
-  getZoomLevel,
   getZoomOutBtn,
 } from "../shared/awbw_page";
 import { getMaximizeBtn } from "../shared/other_userscripts";
@@ -23,7 +25,6 @@ const gamemap = getGamemap();
 const gamemapContainer = getGamemapContainer();
 const zoomInBtn = getZoomInBtn();
 const zoomOutBtn = getZoomOutBtn();
-const ahCursorMove = getCursorMoveFn();
 
 /********************** Script Variables & Functions ***********************/
 const CURSOR_THRESHOLD_MS = 30;
@@ -68,10 +69,7 @@ function setHighlight(node: HTMLElement, highlight: boolean) {
 
 function onZoomChangeEvent(_event?: MouseEvent, zoom: number = -1) {
   if (zoom < 0) {
-    const zoomLevelText = getZoomLevel().textContent;
-    if (zoomLevelText !== null) {
-      zoom = parseFloat(zoomLevelText);
-    }
+    zoom = getCurrentZoomLevel();
   }
 
   let padding = 16 * zoom;
@@ -80,7 +78,8 @@ function onZoomChangeEvent(_event?: MouseEvent, zoom: number = -1) {
 }
 
 function onCursorMove(cursorX: number, cursorY: number) {
-  ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
+  // We aren't overriding updateCursor anymore because of addUpdateCursorObserver
+  // ahCursorMove?.apply(updateCursor, [cursorX, cursorY]);
 
   // Get cursor row and column indices then the span
   let cursorRow = Math.abs(Math.ceil(parseInt(cursor.style.top) / 16));
@@ -127,7 +126,8 @@ function main() {
   }
 
   // Intercept AWBW functions
-  updateCursor = onCursorMove;
+  addUpdateCursorObserver(onCursorMove);
+
   if (zoomInBtn != null) zoomInBtn.addEventListener("click", onZoomChangeEvent);
   if (zoomOutBtn != null) zoomOutBtn.addEventListener("click", onZoomChangeEvent);
 
@@ -161,6 +161,6 @@ function main() {
     gamemap.appendChild(spotSpan);
   }
 
-  console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
+  console.log("[AWBW Highlight Cursor Coordinates] Script loaded!", mapRows, mapCols);
 }
 main();

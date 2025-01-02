@@ -66,14 +66,14 @@ export function getAllCONames(properCase = false) {
  * The number of columns of this map.
  */
 export function getMapColumns() {
-  return typeof maxX !== "undefined" ? maxX : -1;
+  return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
 }
 
 /**
  * The number of rows of this map.
  */
 export function getMapRows() {
-  return typeof maxY !== "undefined" ? maxY : -1;
+  return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
 }
 
 /**

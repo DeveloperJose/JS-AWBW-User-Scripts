@@ -31,9 +31,15 @@ export function getZoomInBtn() {
 export function getZoomOutBtn() {
   return document.querySelector("#zoom-out") as HTMLElement;
 }
-export function getZoomLevel() {
-  return document.querySelector(".zoom-level") as HTMLElement;
+// export function getZoomLevel() {
+//   return document.querySelector(".zoom-level") as HTMLElement;
+// }
+
+export function getCurrentZoomLevel() {
+  const storedScale = localStorage.getItem("scale") || "1";
+  return parseFloat(storedScale);
 }
+
 export function getCursorImg() {
   return document.querySelector("#cursor") as HTMLElement;
 }
@@ -83,6 +89,15 @@ export function getReplayBackwardActionBtn() {
 }
 export function getReplayDaySelectorCheckBox() {
   return document.querySelector(".replay-day-selector") as HTMLElement;
+}
+
+/**
+ * The HTML node for the unit build menu.
+ * Specifically works in the Move Planner.
+ * @returns The HTML node for the unit build menu.
+ */
+export function getBuildMenu() {
+  return document.querySelector("#build-menu") as HTMLElement;
 }
 
 /**
@@ -157,4 +172,32 @@ export function moveDivToOffset(
   top += dy;
   div.style.left = left + "px";
   div.style.top = top + "px";
+}
+
+/**
+ * Adds an observer to the cursor coordinates so we can replicate the "updateCursor" function outside of game.php
+ * @param onCursorMove - The function to call when the cursor moves.
+ */
+export function addUpdateCursorObserver(onCursorMove: (cursorX: number, cursorY: number) => void) {
+  // We want to catch when div textContent is changed
+  const coordsDiv = getCoordsDiv();
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type !== "childList") return;
+      if (!mutation.target) return;
+      if (!mutation.target.textContent) return;
+
+      // (X, Y)
+      let coordsText = mutation.target.textContent;
+
+      // Remove parentheses and split by comma
+      coordsText = coordsText.substring(1, coordsText.length - 1);
+      const splitCoords = coordsText.split(",");
+
+      const cursorX = Number(splitCoords[0]);
+      const cursorY = Number(splitCoords[1]);
+      onCursorMove(cursorX, cursorY);
+    }
+  });
+  observer.observe(coordsDiv, { childList: true });
 }
