@@ -56,13 +56,13 @@ declare const gameDay: number;
 declare const gameEndDate: string;
 
 interface ReplayObject {
-  actions: Object[];
+  actions: object[];
   day: number;
-  gameState: Object;
+  gameState: object;
   logs: string[];
 }
 
-declare const replay: Object;
+declare const replay: object;
 
 declare let queryTurn: (
   gameId: number,
@@ -100,7 +100,7 @@ interface PlayerInfo {
   countries_name: string;
   labs: number;
   numProperties: number;
-  other_buildings: Object;
+  other_buildings: object;
   players_co_id: number;
   players_co_image: string;
   players_co_max_power: number;
@@ -269,7 +269,7 @@ interface FireResponse {
 
 interface SeamResponse {
   attacker: UnitInfo;
-  newMoveCosts: Object;
+  newMoveCosts: object;
   seamHp: number;
   seamTerrainId: number;
   seamX: number;
@@ -403,15 +403,23 @@ declare let currentClick: CurrentClickData | null;
  */
 declare let currentTurn: number;
 
+interface GameMap {
+  maxX: number;
+  maxY: number;
+}
+
 /**
  * Vue instance for the map editor.
  */
 interface MapEditorVue {
   updateCursor: (x: number, y: number) => void;
+  resizeMap: (num: number, btnName: string) => void;
+  map: GameMap;
+  loaded: boolean;
 }
 declare let designMapEditor: MapEditorVue;
 
-declare var overlib: any;
+declare let overlib: any;
 declare const STICKY: number;
 declare const CAPTION: number;
 declare const OFFSETY: number;

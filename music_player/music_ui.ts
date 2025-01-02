@@ -40,7 +40,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
 
     if (daySlider) daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
 
-    let radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
+    const radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
     if (radio) radio.checked = true;
 
     radioNormal.checked = !musicPlayerSettings.randomThemes;
@@ -129,9 +129,9 @@ enum Description {
 const LEFT = MenuPosition.Left;
 
 /* **** Group: Volume sliders **** */
-let volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, LEFT);
-let sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, LEFT);
-let uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, LEFT);
+const volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, LEFT);
+const sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, LEFT);
+const uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, LEFT);
 volumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
 sfxVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
 uiVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
@@ -143,8 +143,8 @@ musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
 // Radio buttons
 const gameTypeRadioMap: Map<SettingsGameType, HTMLInputElement> = new Map();
 for (const gameType of Object.values(SettingsGameType)) {
-  let description = Description[gameType as keyof typeof Description];
-  let radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
+  const description = Description[gameType as keyof typeof Description];
+  const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
   gameTypeRadioMap.set(gameType, radio);
   radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
 }
@@ -154,13 +154,13 @@ const randomGroup = "Random Themes";
 musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
 
 // Radio buttons
-let radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
-let radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
+const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
+const radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
 radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
 radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
 
 // Random theme shuffle button
-let shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
+const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
 shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
 
 /* **** Group: Sound effect toggle checkboxes **** */
@@ -168,13 +168,13 @@ const toggleGroup = "Sound Effects";
 musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
 
 // Checkboxes
-let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
-let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
+const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
 captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
 pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
 
 /* **** Group: Day slider **** */
-let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
+const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
 daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
 
 /* ************************************ Right Menu ************************************ */
@@ -194,7 +194,7 @@ musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSele
 // Game type radio buttons
 const overrideGameTypeRadioMap = new Map<SettingsGameType, HTMLInputElement>();
 for (const gameType of Object.values(SettingsGameType)) {
-  let radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroup, Description.Add_Override);
+  const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroup, Description.Add_Override);
   overrideGameTypeRadioMap.set(gameType, radio);
   radio.checked = true;
 }

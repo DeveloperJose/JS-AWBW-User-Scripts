@@ -3,7 +3,7 @@
  */
 import { getAllPlayingCONames, getCurrentGameDay } from "../shared/awbw_game";
 import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO, AW2_ONLY_COs } from "../shared/awbw_globals";
-import { SettingsGameType, SettingsThemeType, getCurrentThemeType, musicPlayerSettings } from "./music_settings";
+import { SettingsGameType, SettingsThemeType, musicPlayerSettings } from "./music_settings";
 
 /**
  * Base URL where all the files needed for this script are located.
@@ -199,12 +199,12 @@ const specialLoops = new Set(["vonbolt"]);
 function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
   // Check if this CO has an alternate theme
   if (!alternateThemes.has(gameType)) return;
-  let alternateThemesSet = alternateThemes.get(gameType);
+  const alternateThemesSet = alternateThemes.get(gameType);
 
-  let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+  const faction = isBlackHoleCO(coName) ? "bh" : "ally";
 
   // RBC individual CO power themes -> RBC shared factory themes
-  let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+  const isPowerActive = themeType !== SettingsThemeType.REGULAR;
   if (gameType === SettingsGameType.RBC && isPowerActive) {
     return `t-${faction}-${themeType}`;
   }
@@ -241,23 +241,23 @@ function getMusicFilename(
 
   // Check if we need to play an alternate theme
   if (useAlternateTheme) {
-    let alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+    const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
     if (alternateFilename) return alternateFilename;
   }
 
   // Regular theme, either no power or we are in AW1 where there's no power themes.
-  let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+  const isPowerActive = themeType !== SettingsThemeType.REGULAR;
   if (!isPowerActive || gameType === SettingsGameType.AW1) {
     return `t-${coName}`;
   }
 
   // For RBC, we play the new power themes (if they are not in the DS games obviously)
-  let isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+  const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
   if (gameType === SettingsGameType.RBC && isCOInRBC) {
     return `t-${coName}-cop`;
   }
   // For all other games, play the ally or black hole themes during the CO and Super CO powers
-  let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+  const faction = isBlackHoleCO(coName) ? "bh" : "ally";
   return `t-${faction}-${themeType}`;
 }
 
@@ -302,8 +302,8 @@ export function getMusicURL(
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
 
-  let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
-  let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
+  const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+  const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
 }
 
@@ -313,11 +313,11 @@ export function getMusicURL(
  * @returns - The name of the CO from the given URL.
  */
 export function getCONameFromURL(url: string) {
-  let parts = url.split("/");
-  let filename = parts[parts.length - 1];
+  const parts = url.split("/");
+  const filename = parts[parts.length - 1];
 
   // Remove t- prefix and .ogg extension
-  let coName = filename.split(".")[0].substring(2);
+  const coName = filename.split(".")[0].substring(2);
   return coName;
 }
 
@@ -363,7 +363,7 @@ export function hasMovementRollOff(unitName: string) {
  * @returns - True if the given URL has a special loop to play after the audio finishes.
  */
 export function hasSpecialLoop(srcURL: string) {
-  let coName = getCONameFromURL(srcURL);
+  const coName = getCONameFromURL(srcURL);
   return specialLoops.has(coName);
 }
 
@@ -373,14 +373,14 @@ export function hasSpecialLoop(srcURL: string) {
  * @returns - Set with all the URLs for current music of all currently playing COs.
  */
 export function getCurrentThemeURLs(): Set<string> {
-  let coNames = getAllPlayingCONames();
-  let audioList = new Set<string>();
+  const coNames = getAllPlayingCONames();
+  const audioList = new Set<string>();
 
   coNames.forEach((name) => {
-    let regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
-    let powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
-    let superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
-    let alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
+    const regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
+    const powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
+    const superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+    const alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
     audioList.add(regularURL);
     audioList.add(alternateURL);
     audioList.add(powerURL);
@@ -396,8 +396,8 @@ export function getCurrentThemeURLs(): Set<string> {
  * @returns - Set with all the URLs for all the music of all currently playing COs.
  */
 export function getAllCurrentThemesExtraAudioURLs(): Set<string> {
-  let audioURLs = new Set<string>();
-  let coNames = getAllPlayingCONames();
+  const audioURLs = new Set<string>();
+  const coNames = getAllPlayingCONames();
   for (const gameType in SettingsGameType) {
     for (const themeType in SettingsThemeType) {
       const gameTypeEnum = gameType as SettingsGameType;
@@ -414,14 +414,14 @@ export function getAllCurrentThemesExtraAudioURLs(): Set<string> {
  * @returns - Set with all the URLs for all the music player sound effects.
  */
 export function getAllSoundEffectURLs() {
-  let allSoundURLs = new Set<string>();
-  for (let sfx of Object.values(GameSFX)) {
+  const allSoundURLs = new Set<string>();
+  for (const sfx of Object.values(GameSFX)) {
     allSoundURLs.add(getSoundEffectURL(sfx));
   }
-  for (let unitName of onMovementStartMap.keys()) {
+  for (const unitName of onMovementStartMap.keys()) {
     allSoundURLs.add(getMovementSoundURL(unitName));
   }
-  for (let unitName of onMovementRolloffMap.keys()) {
+  for (const unitName of onMovementRolloffMap.keys()) {
     allSoundURLs.add(getMovementRollOffURL(unitName));
   }
   return allSoundURLs;
@@ -432,16 +432,16 @@ export function getAllSoundEffectURLs() {
  * @returns - Set with all the URLs for all the music player themes.
  */
 export function getAllThemeURLs() {
-  let allSoundURLs = new Set<string>();
+  const allSoundURLs = new Set<string>();
 
-  for (let coName of getAllCONames()) {
-    for (let gameType of Object.values(SettingsGameType)) {
-      for (let themeType of Object.values(SettingsThemeType)) {
-        let url = getMusicURL(coName, gameType, themeType, false);
+  for (const coName of getAllCONames()) {
+    for (const gameType of Object.values(SettingsGameType)) {
+      for (const themeType of Object.values(SettingsThemeType)) {
+        const url = getMusicURL(coName, gameType, themeType, false);
         if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
           allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
         }
-        let alternateURL = getMusicURL(coName, gameType, themeType, true);
+        const alternateURL = getMusicURL(coName, gameType, themeType, true);
         allSoundURLs.add(url);
         allSoundURLs.add(alternateURL);
       }

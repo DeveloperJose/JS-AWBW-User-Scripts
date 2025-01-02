@@ -53,75 +53,6 @@ var awbw_music_player = (function (exports) {
   styleInject(css_248z);
 
   /**
-   * @file Global variables exposed by Advance Wars By Web's JS code and other useful constants.
-   */
-  // ============================== Advance Wars Stuff ==============================
-  /**
-   * List of Orange Star COs, stored in a set for more efficient lookups.
-   */
-  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
-  /**
-   * List of Blue Moon COs, stored in a set for more efficient lookups.
-   */
-  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
-  /**
-   * List of Green Earth COs, stored in a set for more efficient lookups.
-   */
-  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
-  /**
-   * List of Yellow Comet COs, stored in a set for more efficient lookups.
-   */
-  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
-  /**
-   * List of Black Hole COs, stored in a set for more efficient lookups.
-   * @constant
-   */
-  const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
-  /**
-   * List of COs that are only available in Advance Wars 2, stored in a set for more efficient lookups.
-   */
-  const AW2_ONLY_COs = new Set(["hachi", "colin", "sensei", "jess", "flak", "adder", "lash", "hawke"]);
-  /**
-   * List of COs that are only available in Dual Strike, stored in a set for more efficient lookups.
-   */
-  const AW_DS_ONLY_COs = new Set(["jake", "rachel", "sasha", "javier", "grimm", "kindle", "jugger", "koal", "vonbolt"]);
-  /**
-   * List of all COs in the game.
-   */
-  function getAllCONames(properCase = false) {
-    if (!properCase)
-      return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
-    let allCOs = [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
-    allCOs[allCOs.indexOf("vonbolt")] = "Von Bolt";
-    return allCOs.map((co) => co[0].toUpperCase() + co.slice(1));
-  }
-  /**
-   * Whether game animations are enabled or not.
-   */
-  function areAnimationsEnabled() {
-    return typeof gameAnims !== "undefined" ? gameAnims : false;
-  }
-  /**
-   * Determines if the given CO is an ally or a part of Black Hole.
-   * @param coName - Name of the CO to check.
-   * @returns - True if the given CO is part of Black Hole.
-   */
-  function isBlackHoleCO(coName) {
-    // Convert to internal format just in case
-    coName = coName.toLowerCase().replaceAll(" ", "");
-    return BLACK_HOLE_COs.has(coName);
-  }
-  /**
-   * Randomly selects a CO from the list of all COs.
-   * @returns - The name of the randomly selected CO.
-   */
-  function getRandomCO() {
-    const COs = getAllCONames();
-    COs.push("map-editor");
-    return COs[Math.floor(Math.random() * COs.length)];
-  }
-
-  /**
    * @file Constants, variables, and functions that come from analyzing the web pages of AWBW.
    */
   /**
@@ -209,7 +140,7 @@ var awbw_music_player = (function (exports) {
   function moveDivToOffset(div, dx, dy, steps, ...followUpAnimations) {
     if (steps <= 1) {
       if (!followUpAnimations || followUpAnimations.length === 0) return;
-      let nextSet = followUpAnimations.shift()?.then;
+      const nextSet = followUpAnimations.shift()?.then;
       if (!nextSet) return;
       moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
       return;
@@ -248,6 +179,75 @@ var awbw_music_player = (function (exports) {
   }
 
   /**
+   * @file Global variables exposed by Advance Wars By Web's JS code and other useful constants.
+   */
+  // ============================== Advance Wars Stuff ==============================
+  /**
+   * List of Orange Star COs, stored in a set for more efficient lookups.
+   */
+  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
+  /**
+   * List of Blue Moon COs, stored in a set for more efficient lookups.
+   */
+  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
+  /**
+   * List of Green Earth COs, stored in a set for more efficient lookups.
+   */
+  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
+  /**
+   * List of Yellow Comet COs, stored in a set for more efficient lookups.
+   */
+  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
+  /**
+   * List of Black Hole COs, stored in a set for more efficient lookups.
+   * @constant
+   */
+  const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
+  /**
+   * List of COs that are only available in Advance Wars 2, stored in a set for more efficient lookups.
+   */
+  const AW2_ONLY_COs = new Set(["hachi", "colin", "sensei", "jess", "flak", "adder", "lash", "hawke"]);
+  /**
+   * List of COs that are only available in Dual Strike, stored in a set for more efficient lookups.
+   */
+  const AW_DS_ONLY_COs = new Set(["jake", "rachel", "sasha", "javier", "grimm", "kindle", "jugger", "koal", "vonbolt"]);
+  /**
+   * List of all COs in the game.
+   */
+  function getAllCONames(properCase = false) {
+    if (!properCase)
+      return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+    const allCOs = [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+    allCOs[allCOs.indexOf("vonbolt")] = "Von Bolt";
+    return allCOs.map((co) => co[0].toUpperCase() + co.slice(1));
+  }
+  /**
+   * Whether game animations are enabled or not.
+   */
+  function areAnimationsEnabled() {
+    return typeof gameAnims !== "undefined" ? gameAnims : false;
+  }
+  /**
+   * Determines if the given CO is an ally or a part of Black Hole.
+   * @param coName - Name of the CO to check.
+   * @returns - True if the given CO is part of Black Hole.
+   */
+  function isBlackHoleCO(coName) {
+    // Convert to internal format just in case
+    coName = coName.toLowerCase().replaceAll(" ", "");
+    return BLACK_HOLE_COs.has(coName);
+  }
+  /**
+   * Randomly selects a CO from the list of all COs.
+   * @returns - The name of the randomly selected CO.
+   */
+  function getRandomCO() {
+    const COs = getAllCONames();
+    COs.push("map-editor");
+    return COs[Math.floor(Math.random() * COs.length)];
+  }
+
+  /**
    * @file Constants, functions, and variables related to the game state in Advance Wars By Web.
    *  A lot of useful information came from game.js and the code at the bottom of each game page.
    */
@@ -265,12 +265,12 @@ var awbw_music_player = (function (exports) {
    * The amount of time between the silo launch animation and the hit animation in milliseconds.
    * Copied from game.js
    */
-  let siloDelayMS = areAnimationsEnabled() ? 3000 : 0;
+  const siloDelayMS = areAnimationsEnabled() ? 3000 : 0;
   /**
    * The amount of time between an attack animation starting and the attack finishing in milliseconds.
    * Copied from game.js
    */
-  let attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
+  const attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
   /**
    * Gets the username of the person logged in to the website.
    */
@@ -331,7 +331,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the player can activate a regular CO Power.
    */
   function canPlayerActivateCOPower(pid) {
-    let info = getPlayerInfo(pid);
+    const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_power;
   }
@@ -341,7 +341,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the player can activate a Super CO Power.
    */
   function canPlayerActivateSuperCOPower(pid) {
-    let info = getPlayerInfo(pid);
+    const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_spower;
   }
@@ -359,10 +359,10 @@ var awbw_music_player = (function (exports) {
    * @returns - True if we are in replay mode.
    */
   function isReplayActive() {
-    if (getIsMaintenance()) return false;
+    if (getIsMaintenance() || getIsMapEditor()) return false;
     // Check if replay mode is open by checking if the replay section is set to display
     const replayControls = getReplayControls();
-    let replayOpen = replayControls.style.display !== "none";
+    const replayOpen = replayControls.style.display !== "none";
     return replayOpen;
   }
   /**
@@ -370,21 +370,24 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the game has ended.
    */
   function hasGameEnded() {
-    if (getIsMaintenance()) return false;
+    if (getIsMaintenance() || getIsMapEditor()) return false;
     // Count how many players are still in the game
-    let numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
+    const numberOfRemainingPlayers = Object.values(playersInfo).filter(
+      (info) => info.players_eliminated === "N",
+    ).length;
     return numberOfRemainingPlayers === 1;
   }
   /**
    * Gets the current day in the game, also works properly in replay mode.
+   * In the map editor, we consider it to be day 1.
    * @returns - The current day in the game.
    */
   function getCurrentGameDay() {
-    if (getIsMaintenance()) return -1;
+    if (getIsMaintenance() || getIsMapEditor()) return 1;
     if (!isReplayActive()) return gameDay;
-    let replayData = Object.values(replay);
+    const replayData = Object.values(replay);
     if (replayData.length === 0) return gameDay;
-    let lastData = replayData[replayData.length - 1];
+    const lastData = replayData[replayData.length - 1];
     if (typeof lastData === "undefined") return gameDay;
     if (typeof lastData.day === "undefined") return gameDay;
     return lastData.day;
@@ -430,9 +433,9 @@ var awbw_music_player = (function (exports) {
     static get coName() {
       if (getIsMapEditor()) return "map-editor";
       // Check if we are eliminated even if the game has not ended
-      let myID = getMyID();
-      let myInfo = getPlayerInfo(myID);
-      let myLoss = myInfo?.players_eliminated === "Y";
+      const myID = getMyID();
+      const myInfo = getPlayerInfo(myID);
+      const myLoss = myInfo?.players_eliminated === "Y";
       if (myLoss) return "defeat";
       // Play victory/defeat themes after the game ends for everyone
       if (hasGameEnded()) {
@@ -448,8 +451,8 @@ var awbw_music_player = (function (exports) {
    */
   function getAllPlayingCONames() {
     if (getIsMapEditor()) return new Set(["map-editor"]);
-    let allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
-    let allTagPlayers = getAllTagCONames();
+    const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
+    const allTagPlayers = getAllTagCONames();
     return new Set([...allPlayers, ...allTagPlayers]);
   }
   /**
@@ -542,7 +545,7 @@ var awbw_music_player = (function (exports) {
    * @returns {SettingsThemeType} The SettingsThemeType enum for the current CO Power state.
    */
   function getCurrentThemeType() {
-    let currentPowerState = currentPlayer?.coPowerState;
+    const currentPowerState = currentPlayer?.coPowerState;
     if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
     if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
     return SettingsThemeType.REGULAR;
@@ -599,7 +602,7 @@ var awbw_music_player = (function (exports) {
     }
     static fromJSON(json) {
       // Only keep and set settings that are in the current version of musicPlayerSettings
-      let savedSettings = JSON.parse(json);
+      const savedSettings = JSON.parse(json);
       for (let key in this) {
         key = key.substring(2); // Remove the __ prefix
         if (Object.hasOwn(savedSettings, key)) {
@@ -609,6 +612,7 @@ var awbw_music_player = (function (exports) {
             continue;
           }
           // For all other settings, just set them with the setter function
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           this[key] = savedSettings[key];
           // console.debug("[MP] Loading", key, "as", savedSettings[key]);
         }
@@ -758,7 +762,7 @@ var awbw_music_player = (function (exports) {
    * Saves the current music player settings in the local storage.
    */
   function updateSettingsInLocalStorage() {
-    let jsonSettings = musicPlayerSettings.toJSON();
+    const jsonSettings = musicPlayerSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
     console.debug("[Music Player] Saving settings...", jsonSettings);
     return jsonSettings;
@@ -944,10 +948,10 @@ var awbw_music_player = (function (exports) {
   function getAlternateMusicFilename(coName, gameType, themeType) {
     // Check if this CO has an alternate theme
     if (!alternateThemes.has(gameType)) return;
-    let alternateThemesSet = alternateThemes.get(gameType);
-    let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+    const alternateThemesSet = alternateThemes.get(gameType);
+    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
     // RBC individual CO power themes -> RBC shared factory themes
-    let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+    const isPowerActive = themeType !== SettingsThemeType.REGULAR;
     if (gameType === SettingsGameType.RBC && isPowerActive) {
       return `t-${faction}-${themeType}`;
     }
@@ -974,21 +978,21 @@ var awbw_music_player = (function (exports) {
     if (coName === "map-editor") return "t-map-editor";
     // Check if we need to play an alternate theme
     if (useAlternateTheme) {
-      let alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+      const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
       if (alternateFilename) return alternateFilename;
     }
     // Regular theme, either no power or we are in AW1 where there's no power themes.
-    let isPowerActive = themeType !== SettingsThemeType.REGULAR;
+    const isPowerActive = themeType !== SettingsThemeType.REGULAR;
     if (!isPowerActive || gameType === SettingsGameType.AW1) {
       return `t-${coName}`;
     }
     // For RBC, we play the new power themes (if they are not in the DS games obviously)
-    let isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+    const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
     if (gameType === SettingsGameType.RBC && isCOInRBC) {
       return `t-${coName}-cop`;
     }
     // For all other games, play the ally or black hole themes during the CO and Super CO powers
-    let faction = isBlackHoleCO(coName) ? "bh" : "ally";
+    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
     return `t-${faction}-${themeType}`;
   }
   /**
@@ -1021,8 +1025,8 @@ var awbw_music_player = (function (exports) {
     if (gameType === SettingsGameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = SettingsGameType.AW2;
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
-    let filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
-    let url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
+    const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+    const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
   }
   /**
@@ -1031,10 +1035,10 @@ var awbw_music_player = (function (exports) {
    * @returns - The name of the CO from the given URL.
    */
   function getCONameFromURL(url) {
-    let parts = url.split("/");
-    let filename = parts[parts.length - 1];
+    const parts = url.split("/");
+    const filename = parts[parts.length - 1];
     // Remove t- prefix and .ogg extension
-    let coName = filename.split(".")[0].substring(2);
+    const coName = filename.split(".")[0].substring(2);
     return coName;
   }
   /**
@@ -1075,7 +1079,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the given URL has a special loop to play after the audio finishes.
    */
   function hasSpecialLoop(srcURL) {
-    let coName = getCONameFromURL(srcURL);
+    const coName = getCONameFromURL(srcURL);
     return specialLoops.has(coName);
   }
   /**
@@ -1084,13 +1088,13 @@ var awbw_music_player = (function (exports) {
    * @returns - Set with all the URLs for current music of all currently playing COs.
    */
   function getCurrentThemeURLs() {
-    let coNames = getAllPlayingCONames();
-    let audioList = new Set();
+    const coNames = getAllPlayingCONames();
+    const audioList = new Set();
     coNames.forEach((name) => {
-      let regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
-      let powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
-      let superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
-      let alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
+      const regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
+      const powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
+      const superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+      const alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
       audioList.add(regularURL);
       audioList.add(alternateURL);
       audioList.add(powerURL);
@@ -1105,8 +1109,8 @@ var awbw_music_player = (function (exports) {
    * @returns - Set with all the URLs for all the music of all currently playing COs.
    */
   function getAllCurrentThemesExtraAudioURLs() {
-    let audioURLs = new Set();
-    let coNames = getAllPlayingCONames();
+    const audioURLs = new Set();
+    const coNames = getAllPlayingCONames();
     for (const gameType in SettingsGameType) {
       for (const themeType in SettingsThemeType) {
         const gameTypeEnum = gameType;
@@ -1122,14 +1126,14 @@ var awbw_music_player = (function (exports) {
    * @returns - Set with all the URLs for all the music player sound effects.
    */
   function getAllSoundEffectURLs() {
-    let allSoundURLs = new Set();
-    for (let sfx of Object.values(GameSFX)) {
+    const allSoundURLs = new Set();
+    for (const sfx of Object.values(GameSFX)) {
       allSoundURLs.add(getSoundEffectURL(sfx));
     }
-    for (let unitName of onMovementStartMap.keys()) {
+    for (const unitName of onMovementStartMap.keys()) {
       allSoundURLs.add(getMovementSoundURL(unitName));
     }
-    for (let unitName of onMovementRolloffMap.keys()) {
+    for (const unitName of onMovementRolloffMap.keys()) {
       allSoundURLs.add(getMovementRollOffURL(unitName));
     }
     return allSoundURLs;
@@ -1213,15 +1217,18 @@ var awbw_music_player = (function (exports) {
       this.parent.style.width = "34px";
       this.parent.style.height = "30px";
       this.parent.style.borderLeft = "none";
+      if (getIsMapEditor()) {
+        this.parent.style.borderTop = "none";
+      }
       // Hover text
-      let hoverSpan = document.createElement("span");
+      const hoverSpan = document.createElement("span");
       hoverSpan.id = `${prefix}-hover-span`;
       hoverSpan.classList.add("game-tools-btn-text", "small_text");
       hoverSpan.innerText = hoverText;
       this.parent.appendChild(hoverSpan);
       this.groups.set("hover", hoverSpan);
       // Button Background
-      let bgDiv = document.createElement("div");
+      const bgDiv = document.createElement("div");
       bgDiv.id = `${prefix}-background`;
       bgDiv.classList.add("game-tools-bg");
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
@@ -1231,40 +1238,40 @@ var awbw_music_player = (function (exports) {
       bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
       bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
       // Button
-      let btnLink = document.createElement("a");
+      const btnLink = document.createElement("a");
       btnLink.id = `${prefix}-link`;
       btnLink.classList.add("norm2");
       bgDiv.appendChild(btnLink);
-      let btnImg = document.createElement("img");
+      const btnImg = document.createElement("img");
       btnImg.id = `${prefix}-link-img`;
       btnImg.src = buttonImageURL;
       btnLink.appendChild(btnImg);
       this.groups.set("img", btnImg);
       // Context Menu
-      let contextMenu = document.createElement("div");
+      const contextMenu = document.createElement("div");
       contextMenu.id = `${prefix}-settings`;
       contextMenu.classList.add("cls-settings-menu");
       this.parent.appendChild(contextMenu);
       this.groups.set("settings-parent", contextMenu);
-      let contextMenuBoxesContainer = document.createElement("div");
+      const contextMenuBoxesContainer = document.createElement("div");
       contextMenuBoxesContainer.id = `${prefix}-settings-container`;
       contextMenuBoxesContainer.classList.add("cls-horizontal-box");
       contextMenu.appendChild(contextMenuBoxesContainer);
       this.groups.set("settings", contextMenuBoxesContainer);
       // Context Menu 3 Boxes
-      let leftBox = document.createElement("div");
+      const leftBox = document.createElement("div");
       leftBox.id = `${prefix}-settings-left`;
       leftBox.classList.add("cls-settings-menu-box");
       leftBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(leftBox);
       this.groups.set(MenuPosition.Left, leftBox);
-      let centerBox = document.createElement("div");
+      const centerBox = document.createElement("div");
       centerBox.id = `${prefix}-settings-center`;
       centerBox.classList.add("cls-settings-menu-box");
       centerBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(centerBox);
       this.groups.set(MenuPosition.Center, centerBox);
-      let rightBox = document.createElement("div");
+      const rightBox = document.createElement("div");
       rightBox.id = `${prefix}-settings-right`;
       rightBox.classList.add("cls-settings-menu-box");
       rightBox.style.display = "none";
@@ -1272,7 +1279,7 @@ var awbw_music_player = (function (exports) {
       this.groups.set(MenuPosition.Right, rightBox);
       // Enable right-click to open and close the context menu
       this.parent.addEventListener("contextmenu", (event) => {
-        let element = event.target;
+        const element = event.target;
         if (element.id.startsWith(prefix)) {
           event.preventDefault();
           this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
@@ -1321,7 +1328,7 @@ var awbw_music_player = (function (exports) {
      * @param replaceParent - Whether to replace the current hover text for the main button or not.
      */
     setHoverText(text, replaceParent = false) {
-      let hoverSpan = this.groups.get("hover");
+      const hoverSpan = this.groups.get("hover");
       if (!hoverSpan) return;
       if (replaceParent) this.parentHoverText = text;
       hoverSpan.innerText = text;
@@ -1332,7 +1339,7 @@ var awbw_music_player = (function (exports) {
      * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
      */
     setProgress(progress) {
-      let bgDiv = this.groups.get("bg");
+      const bgDiv = this.groups.get("bg");
       if (!bgDiv) return;
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
     }
@@ -1341,7 +1348,7 @@ var awbw_music_player = (function (exports) {
      * @param imageURL - The URL of the image to be used on the button.
      */
     setImage(imageURL) {
-      let btnImg = this.groups.get("img");
+      const btnImg = this.groups.get("img");
       btnImg.src = imageURL;
     }
     /**
@@ -1350,14 +1357,14 @@ var awbw_music_player = (function (exports) {
      * @param listener - The function to be called when the event is triggered.
      */
     addEventListener(type, listener) {
-      let div = this.groups.get("bg");
+      const div = this.groups.get("bg");
       div?.addEventListener(type, listener);
     }
     /**
      * Opens the context (right-click) menu.
      */
     openContextMenu() {
-      let contextMenu = this.groups.get("settings-parent");
+      const contextMenu = this.groups.get("settings-parent");
       if (!contextMenu) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
@@ -1366,13 +1373,13 @@ var awbw_music_player = (function (exports) {
      * Closes the context (right-click) menu.
      */
     closeContextMenu() {
-      let contextMenu = this.groups.get("settings-parent");
+      const contextMenu = this.groups.get("settings-parent");
       if (!contextMenu) return;
       contextMenu.style.display = "none";
       this.isSettingsMenuOpen = false;
       // Check if we have a CO selector and need to hide it
-      let overDiv = document.querySelector("#overDiv");
-      let hasCOSelector = this.groups.has("co-selector");
+      const overDiv = document.querySelector("#overDiv");
+      const hasCOSelector = this.groups.has("co-selector");
       if (overDiv && hasCOSelector) {
         overDiv.style.visibility = "hidden";
       }
@@ -1391,10 +1398,10 @@ var awbw_music_player = (function (exports) {
       const container = this.getGroup(position);
       if (!container) return;
       // Slider label
-      let label = document.createElement("label");
+      const label = document.createElement("label");
       container?.appendChild(label);
       // Slider
-      let slider = document.createElement("input");
+      const slider = document.createElement("input");
       slider.id = `${this.prefix}-${sanitize(name)}`;
       slider.type = "range";
       slider.min = String(min);
@@ -1402,7 +1409,7 @@ var awbw_music_player = (function (exports) {
       slider.step = String(step);
       this.inputElements.push(slider);
       // Set the label to the current value of the slider
-      slider.addEventListener("input", (e) => {
+      slider.addEventListener("input", (_e) => {
         let displayValue = slider.value;
         if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
         label.innerText = `${name}: ${displayValue}`;
@@ -1453,7 +1460,7 @@ var awbw_music_player = (function (exports) {
       if (!groupDiv || !groupType) return;
       // Container for input and label
       const inputBox = document.createElement("div");
-      let otherType = groupType === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
+      const otherType = groupType === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
       inputBox.classList.add(otherType);
       groupDiv.appendChild(inputBox);
       // Hover text
@@ -1497,8 +1504,8 @@ var awbw_music_player = (function (exports) {
      * @param version - The version to be displayed.
      */
     addVersion(version) {
-      let contextMenu = this.groups.get("settings-parent");
-      let versionDiv = document.createElement("label");
+      const contextMenu = this.groups.get("settings-parent");
+      const versionDiv = document.createElement("label");
       versionDiv.id = this.prefix + "-version";
       versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
       contextMenu?.appendChild(versionDiv);
@@ -1600,7 +1607,7 @@ var awbw_music_player = (function (exports) {
     createCOSelectorItem(coName) {
       const location = "javascript:void(0)";
       const internalName = coName.toLowerCase().replaceAll(" ", "");
-      let imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+      const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
       const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
       return (
         `<tr>` +
@@ -1700,7 +1707,7 @@ var awbw_music_player = (function (exports) {
       if (sfxVolumeSlider) sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
       if (uiVolumeSlider) uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
       if (daySlider) daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
-      let radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
+      const radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
       if (radio) radio.checked = true;
       radioNormal.checked = !musicPlayerSettings.randomThemes;
       radioRandom.checked = musicPlayerSettings.randomThemes;
@@ -1780,9 +1787,9 @@ var awbw_music_player = (function (exports) {
   /* ************************************ Left Menu ************************************ */
   const LEFT = MenuPosition.Left;
   /* **** Group: Volume sliders **** */
-  let volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, LEFT);
-  let sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, LEFT);
-  let uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, LEFT);
+  const volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, LEFT);
+  const sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, LEFT);
+  const uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, LEFT);
   volumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
   sfxVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
   uiVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
@@ -1792,8 +1799,8 @@ var awbw_music_player = (function (exports) {
   // Radio buttons
   const gameTypeRadioMap = new Map();
   for (const gameType of Object.values(SettingsGameType)) {
-    let description = Description[gameType];
-    let radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
+    const description = Description[gameType];
+    const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
     gameTypeRadioMap.set(gameType, radio);
     radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
   }
@@ -1801,23 +1808,23 @@ var awbw_music_player = (function (exports) {
   const randomGroup = "Random Themes";
   musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
   // Radio buttons
-  let radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
-  let radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
+  const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
+  const radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
   radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
   radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
   // Random theme shuffle button
-  let shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
+  const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
   shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
   /* **** Group: Sound effect toggle checkboxes **** */
   const toggleGroup = "Sound Effects";
   musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
   // Checkboxes
-  let captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
-  let pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+  const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
+  const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
   captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
   pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
   /* **** Group: Day slider **** */
-  let daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
+  const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
   daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
   /* ************************************ Right Menu ************************************ */
   const RIGHT = MenuPosition.Right;
@@ -1833,7 +1840,7 @@ var awbw_music_player = (function (exports) {
   // Game type radio buttons
   const overrideGameTypeRadioMap = new Map();
   for (const gameType of Object.values(SettingsGameType)) {
-    let radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroup, Description.Add_Override);
+    const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroup, Description.Add_Override);
     overrideGameTypeRadioMap.set(gameType, radio);
     radio.checked = true;
   }
@@ -1932,16 +1939,16 @@ var awbw_music_player = (function (exports) {
    * @param event - The event that triggered this handler. Usually "canplaythrough".
    */
   function whenAudioLoadsPlayIt(event) {
-    let audio = event.target;
+    const audio = event.target;
     audio.volume = musicPlayerSettings.volume;
     // if (audio.src === currentThemeKey) audio.play();
     playThemeSong();
   }
   function createNewThemeAudio(srcURL) {
-    let audio = new Audio(srcURL);
+    const audio = new Audio(srcURL);
     if (hasSpecialLoop(srcURL)) {
       audio.loop = false;
-      audio.addEventListener("ended", (event) => {
+      audio.addEventListener("ended", (_event) => {
         const loopURL = srcURL.replace(".ogg", "-loop.ogg");
         specialLoopMap.set(srcURL, loopURL);
         playThemeSong();
@@ -1963,7 +1970,7 @@ var awbw_music_player = (function (exports) {
   function playMusicURL(srcURL, startFromBeginning = false) {
     if (!musicPlayerSettings.isPlaying) return;
     // This song has a special loop, and it's time to play it
-    let specialLoopURL = specialLoopMap.get(srcURL);
+    const specialLoopURL = specialLoopMap.get(srcURL);
     if (specialLoopURL) srcURL = specialLoopURL;
     // We want to play a new song, so pause the previous one and save the new current song
     if (srcURL !== currentThemeKey) {
@@ -1972,10 +1979,10 @@ var awbw_music_player = (function (exports) {
       console.log("[AWBW Music Player] Now Playing: ", srcURL);
     }
     // The song isn't preloaded or invalid, load it and play it when it loads
-    let nextSong = urlAudioMap.get(srcURL);
+    const nextSong = urlAudioMap.get(srcURL);
     if (!nextSong) {
       console.debug("[AWBW Music Player] Loading new song", srcURL);
-      let audio = createNewThemeAudio(srcURL);
+      const audio = createNewThemeAudio(srcURL);
       audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
       return;
     }
@@ -2004,7 +2011,7 @@ var awbw_music_player = (function (exports) {
    */
   function playOneShotURL(srcURL, volume) {
     if (!musicPlayerSettings.isPlaying) return;
-    let soundInstance = new Audio(srcURL);
+    const soundInstance = new Audio(srcURL);
     soundInstance.currentTime = 0;
     soundInstance.volume = volume;
     soundInstance.play();
@@ -2022,7 +2029,7 @@ var awbw_music_player = (function (exports) {
     let coName = currentPlayer.coName;
     if (!coName) coName = "map-editor";
     // Don't randomize the victory and defeat themes
-    let isEndTheme = coName === "victory" || coName === "defeat";
+    const isEndTheme = coName === "victory" || coName === "defeat";
     if (musicPlayerSettings.randomThemes && !isEndTheme) {
       coName = musicPlayerSettings.currentRandomCO;
     }
@@ -2051,7 +2058,7 @@ var awbw_music_player = (function (exports) {
     // Can't stop if there's no loaded music
     if (!urlAudioMap.has(currentThemeKey)) return;
     // Can't stop if we are already paused
-    let currentTheme = urlAudioMap.get(currentThemeKey);
+    const currentTheme = urlAudioMap.get(currentThemeKey);
     if (!currentTheme || currentTheme.paused) return;
     console.debug("[AWBW Music Player] Pausing: ", currentTheme.src);
     // The song hasn't finished loading, so stop it as soon as it does
@@ -2070,12 +2077,12 @@ var awbw_music_player = (function (exports) {
     if (!musicPlayerSettings.isPlaying) return;
     // The audio hasn't been preloaded for this unit
     if (!unitIDAudioMap.has(unitId)) {
-      let unitName = getUnitName(unitId);
-      let movementSoundURL = getMovementSoundURL(unitName);
+      const unitName = getUnitName(unitId);
+      const movementSoundURL = getMovementSoundURL(unitName);
       unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
     }
     // Restart the audio and then play it
-    let movementAudio = unitIDAudioMap.get(unitId);
+    const movementAudio = unitIDAudioMap.get(unitId);
     if (!movementAudio) return;
     movementAudio.currentTime = 0;
     movementAudio.loop = false;
@@ -2093,7 +2100,7 @@ var awbw_music_player = (function (exports) {
     // Can't stop if the unit doesn't have any sounds
     if (!unitIDAudioMap.has(unitId)) return;
     // Can't stop if the sound is already stopped
-    let movementAudio = unitIDAudioMap.get(unitId);
+    const movementAudio = unitIDAudioMap.get(unitId);
     if (!movementAudio || movementAudio.paused) return;
     // The audio hasn't finished loading, so pause when it does
     if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
@@ -2105,9 +2112,9 @@ var awbw_music_player = (function (exports) {
     movementAudio.currentTime = 0;
     // If unit has rolloff, play it
     if (!rolloff) return;
-    let unitName = getUnitName(unitId);
+    const unitName = getUnitName(unitId);
     if (hasMovementRollOff(unitName)) {
-      let audioURL = getMovementRollOffURL(unitName);
+      const audioURL = getMovementRollOffURL(unitName);
       playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
     }
   }
@@ -2120,7 +2127,7 @@ var awbw_music_player = (function (exports) {
     // Check the user settings to see if we should play this sound effect
     if (!musicPlayerSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
     if (!musicPlayerSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
-    let sfxURL = getSoundEffectURL(sfx);
+    const sfxURL = getSoundEffectURL(sfx);
     // Figure out which volume to use
     let vol = musicPlayerSettings.sfxVolume;
     if (sfx.startsWith("ui")) {
@@ -2133,7 +2140,7 @@ var awbw_music_player = (function (exports) {
       urlAudioMap.set(sfxURL, new Audio(sfxURL));
     }
     // The sound is loaded, so play it
-    let audio = urlAudioMap.get(sfxURL);
+    const audio = urlAudioMap.get(sfxURL);
     if (!audio) return;
     audio.volume = vol;
     audio.currentTime = 0;
@@ -2148,7 +2155,7 @@ var awbw_music_player = (function (exports) {
     // Stop unit sounds
     stopAllMovementSounds();
     // Mute sound effects
-    for (let audio of urlAudioMap.values()) {
+    for (const audio of urlAudioMap.values()) {
       audio.volume = 0;
     }
   }
@@ -2156,7 +2163,7 @@ var awbw_music_player = (function (exports) {
    * Stops all movement sounds of all units.
    */
   function stopAllMovementSounds() {
-    for (let unitId of unitIDAudioMap.keys()) {
+    for (const unitId of unitIDAudioMap.keys()) {
       stopMovementSound(unitId, false);
     }
   }
@@ -2167,7 +2174,7 @@ var awbw_music_player = (function (exports) {
    */
   function preloadAllCommonAudio(afterPreloadFunction) {
     // Preload the themes of the COs in this match
-    let audioList = getCurrentThemeURLs();
+    const audioList = getCurrentThemeURLs();
     // Preload the most common UI sounds that might play right after the page loads
     audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
     audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
@@ -2196,11 +2203,11 @@ var awbw_music_player = (function (exports) {
   function preloadAudios(audioURLs, afterPreloadFunction = () => {}) {
     // Event handler for when an audio is loaded
     let numLoadedAudios = 0;
-    let onAudioPreload = (event) => {
-      let audio = event.target;
+    const onAudioPreload = (event) => {
+      const audio = event.target;
       numLoadedAudios++;
       // Update UI
-      let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
+      const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
       musicPlayerUI.setProgress(loadPercentage);
       // All the audio from the list has been loaded
       if (numLoadedAudios >= audioURLs.size) {
@@ -2227,11 +2234,12 @@ var awbw_music_player = (function (exports) {
         numLoadedAudios++;
         return;
       }
-      let audio = createNewThemeAudio(url);
+      const audio = createNewThemeAudio(url);
       audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
       audio.addEventListener("error", onAudioPreload, { once: true });
     });
   }
+  // const allThemesPreloaded = false;
   /**
    * Updates the internal audio components to match the current music player settings when the settings change.
    * @param key - Key of the setting which has been changed.
@@ -2256,10 +2264,11 @@ var awbw_music_player = (function (exports) {
       case "alternateThemeDay":
         setTimeout(() => playThemeSong(), 500);
         break;
-      case "themeType":
-        let restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
+      case "themeType": {
+        const restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
         playThemeSong(restartMusic);
         break;
+      }
       case "randomThemes":
         // Back to normal themes
         if (!musicPlayerSettings.randomThemes) {
@@ -2280,7 +2289,7 @@ var awbw_music_player = (function (exports) {
         break;
       case "volume": {
         // Adjust the volume of the current theme
-        let currentTheme = urlAudioMap.get(currentThemeKey);
+        const currentTheme = urlAudioMap.get(currentThemeKey);
         if (currentTheme) currentTheme.volume = musicPlayerSettings.volume;
         break;
       }
@@ -2290,12 +2299,12 @@ var awbw_music_player = (function (exports) {
   /**
    * @file Functions used by Advance Wars By Web to handle game actions.
    */
-  function getCursorMoveFn() {
-    if (getIsMapEditor()) {
-      return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
-    }
-    return typeof updateCursor !== "undefined" ? updateCursor : null;
-  }
+  // export function getCursorMoveFn() {
+  //   if (getIsMapEditor()) {
+  //     return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
+  //   }
+  //   return typeof updateCursor !== "undefined" ? updateCursor : null;
+  // }
   function getQueryTurnFn() {
     return typeof queryTurn !== "undefined" ? queryTurn : null;
   }
@@ -2404,42 +2413,41 @@ var awbw_music_player = (function (exports) {
   /**
    * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.
    */
-  let visibilityMap = new Map();
+  const visibilityMap = new Map();
   /**
    * Map of unit IDs to their movement responses. Used to check if a unit got trapped.
    */
-  let movementResponseMap = new Map();
-  let clickedDamageSquaresMap = new Map();
+  const movementResponseMap = new Map();
+  const clickedDamageSquaresMap = new Map();
   // Store a copy of all the original functions we are going to override
-  getCursorMoveFn();
-  let ahQueryTurn = getQueryTurnFn();
-  let ahShowEventScreen = getShowEventScreenFn();
+  const ahQueryTurn = getQueryTurnFn();
+  const ahShowEventScreen = getShowEventScreenFn();
   // let ahSwapCosDisplay = getSwapCosDisplayFn();
-  let ahOpenMenu = getOpenMenuFn();
-  let ahCloseMenu = getCloseMenuFn();
-  let ahCreateDamageSquares = getCreateDamageSquaresFn();
+  const ahOpenMenu = getOpenMenuFn();
+  const ahCloseMenu = getCloseMenuFn();
+  const ahCreateDamageSquares = getCreateDamageSquaresFn();
   // let ahResetAttack = getResetAttackFn();
-  let ahUnitClick = getUnitClickFn();
-  let ahWait = getWaitFn();
-  let ahAnimUnit = getAnimUnitFn();
-  let ahAnimExplosion = getAnimExplosionFn();
-  let ahFog = getFogFn();
-  let ahFire = getFireFn();
-  let ahAttackSeam = getAttackSeamFn();
-  let ahMove = getMoveFn();
-  let ahCapt = getCaptFn();
-  let ahBuild = getBuildFn();
-  let ahLoad = getLoadFn();
-  let ahUnload = getUnloadFn();
-  let ahSupply = getSupplyFn();
-  let ahRepair = getRepairFn();
-  let ahHide = getHideFn();
-  let ahUnhide = getUnhideFn();
-  let ahJoin = getJoinFn();
-  let ahLaunch = getLaunchFn();
-  let ahNextTurn = getNextTurnFn();
+  const ahUnitClick = getUnitClickFn();
+  const ahWait = getWaitFn();
+  const ahAnimUnit = getAnimUnitFn();
+  const ahAnimExplosion = getAnimExplosionFn();
+  const ahFog = getFogFn();
+  const ahFire = getFireFn();
+  const ahAttackSeam = getAttackSeamFn();
+  const ahMove = getMoveFn();
+  const ahCapt = getCaptFn();
+  const ahBuild = getBuildFn();
+  const ahLoad = getLoadFn();
+  const ahUnload = getUnloadFn();
+  const ahSupply = getSupplyFn();
+  const ahRepair = getRepairFn();
+  const ahHide = getHideFn();
+  const ahUnhide = getUnhideFn();
+  const ahJoin = getJoinFn();
+  const ahLaunch = getLaunchFn();
+  const ahNextTurn = getNextTurnFn();
   // let ahElimination = getEliminationFn();
-  let ahPower = getPowerFn();
+  const ahPower = getPowerFn();
   // let ahGameOver = getGameOverFn();
   /**
    * Intercept functions and add our own handlers to the website.
@@ -2540,10 +2548,10 @@ var awbw_music_player = (function (exports) {
     // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Cursor Move", cursorX, cursorY);
-    let dx = Math.abs(cursorX - lastCursorX);
-    let dy = Math.abs(cursorY - lastCursorY);
-    let cursorMoved = dx >= 1 || dy >= 1;
-    let timeSinceLastCursorCall = Date.now() - lastCursorCall;
+    const dx = Math.abs(cursorX - lastCursorX);
+    const dy = Math.abs(cursorY - lastCursorY);
+    const cursorMoved = dx >= 1 || dy >= 1;
+    const timeSinceLastCursorCall = Date.now() - lastCursorCall;
     // Don't play the sound if we moved the cursor too quickly
     if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
     if (cursorMoved) {
@@ -2554,7 +2562,7 @@ var awbw_music_player = (function (exports) {
     lastCursorY = cursorY;
   }
   function onQueryTurn(gameId, turn, turnPId, turnDay, replay, initial) {
-    let result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
+    const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
     if (!musicPlayerSettings.isPlaying) return result;
     // console.log("[MP] Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
     refreshMusicForNextTurn();
@@ -2572,8 +2580,8 @@ var awbw_music_player = (function (exports) {
     // console.debug("[MP] Open Menu", menu, x, y);
     currentMenuType = MenuOpenType.Regular;
     playSFX(GameSFX.uiMenuOpen);
-    let menuOptions = document.getElementsByClassName("menu-option");
-    for (var i = 0; i < menuOptions.length; i++) {
+    const menuOptions = document.getElementsByClassName("menu-option");
+    for (let i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
       menuOptions[i].addEventListener("click", (event) => {
         const target = event.target;
@@ -2641,7 +2649,7 @@ var awbw_music_player = (function (exports) {
     // console.debug("[MP] Wait", unitId, getUnitName(unitId));
     // Check if we stopped because we got trapped
     if (movementResponseMap.has(unitId)) {
-      let response = movementResponseMap.get(unitId);
+      const response = movementResponseMap.get(unitId);
       if (response?.trapped) {
         playSFX(GameSFX.unitTrap);
       }
@@ -2662,7 +2670,7 @@ var awbw_music_player = (function (exports) {
     // The unit disappeared already, no need to stop its sound again
     if (visibilityMap.has(unitId)) return;
     // A visible unit just disappeared
-    let unitVisible = path[i].unit_visible;
+    const unitVisible = path[i].unit_visible;
     if (!unitVisible) {
       visibilityMap.set(unitId, unitVisible);
       // Stop the sound after a little delay, giving more time to react to it
@@ -2673,8 +2681,8 @@ var awbw_music_player = (function (exports) {
     ahAnimExplosion?.apply(animExplosion, [unit]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("Exploded", unit);
-    let unitId = unit.units_id;
-    let unitFuel = unit.units_fuel;
+    const unitId = unit.units_id;
+    const unitFuel = unit.units_fuel;
     let sfx = GameSFX.unitExplode;
     if (getUnitName(unitId) === "Black Bomb" && unitFuel > 0) {
       sfx = GameSFX.unitMissileHit;
@@ -2686,7 +2694,7 @@ var awbw_music_player = (function (exports) {
     ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
-    let unitInfo = getUnitInfoFromCoords(x, y);
+    const unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
     if (change === "Add") {
       setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
@@ -2698,8 +2706,8 @@ var awbw_music_player = (function (exports) {
       return;
     }
     // console.debug("[MP] Fire", response);
-    let attackerID = response.copValues.attacker.playerId;
-    let defenderID = response.copValues.defender.playerId;
+    const attackerID = response.copValues.attacker.playerId;
+    const defenderID = response.copValues.defender.playerId;
     // stopMovementSound(response.attacker.units_id, false);
     // stopMovementSound(response.defender.units_id, false);
     // Let the user hear a confirmation sound
@@ -2707,23 +2715,23 @@ var awbw_music_player = (function (exports) {
     //   playSFX(gameSFX.uiMenuOpen);
     // }
     // Calculate charge before attack
-    let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
-    let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
-    let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
-    let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
+    const couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
+    const couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
+    const couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
+    const couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
     // Let the attack proceed normally
     ahFire?.apply(actionHandlers.Fire, [response]);
     // Check if the attack gave enough charge for a power to either side
     // Give it a little bit of time for the animation if needed
-    var delay = areAnimationsEnabled() ? 750 : 0;
-    let canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
-    let canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
-    let canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
-    let canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
-    let madeSCOPAvailable =
+    const delay = areAnimationsEnabled() ? 750 : 0;
+    const canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
+    const canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
+    const canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
+    const canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
+    const madeSCOPAvailable =
       (!couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter) ||
       (!couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter);
-    let madeCOPAvailable =
+    const madeCOPAvailable =
       (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
       (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
     setTimeout(() => {
@@ -2737,11 +2745,11 @@ var awbw_music_player = (function (exports) {
    * @param startDelay - The delay in milliseconds before the wiggle starts.
    */
   function wiggleTile(div, startDelay = 0) {
-    let stepsX = 12;
-    let stepsY = 4;
-    let deltaX = 0.2;
-    let deltaY = 0.05;
-    let wiggleAnimation = () => {
+    const stepsX = 12;
+    const stepsY = 4;
+    const deltaX = 0.2;
+    const deltaY = 0.05;
+    const wiggleAnimation = () => {
       moveDivToOffset(
         div,
         deltaX,
@@ -2765,15 +2773,15 @@ var awbw_music_player = (function (exports) {
     ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] AttackSeam", response);
-    let seamWasDestroyed = response.seamHp <= 0;
+    const seamWasDestroyed = response.seamHp <= 0;
     // Pipe wiggle animation
     if (areAnimationsEnabled()) {
-      let x = response.seamX;
-      let y = response.seamY;
-      let pipeSeamInfo = getBuildingInfo(x, y);
-      let pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
+      const x = response.seamX;
+      const y = response.seamY;
+      const pipeSeamInfo = getBuildingInfo(x, y);
+      const pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
       // Subtract how long the wiggle takes so it matches the sound a bit better
-      let wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
+      const wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
       wiggleTile(pipeSeamDiv, wiggleDelay);
     }
     if (seamWasDestroyed) {
@@ -2787,9 +2795,9 @@ var awbw_music_player = (function (exports) {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Move", response, loadFlag);
-    let unitId = response.unit.units_id;
+    const unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
-    var movementDist = response.path.length;
+    const movementDist = response.path.length;
     stopMovementSound(unitId, false);
     if (movementDist > 1) {
       playMovementSound(unitId);
@@ -2800,27 +2808,27 @@ var awbw_music_player = (function (exports) {
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Capt", data);
     // They didn't finish the capture
-    let finishedCapture = data.newIncome != null;
+    const finishedCapture = data.newIncome != null;
     if (!finishedCapture) {
       playSFX(GameSFX.unitCaptureProgress);
       return;
     }
     // The unit is done capping this property
-    let myID = getMyID();
-    let isSpectator = isPlayerSpectator(myID);
+    const myID = getMyID();
+    const isSpectator = isPlayerSpectator(myID);
     // Don't use triple equals blindly here because the types are different
     // buildings_team (string) == id (number)
-    let isMyCapture = data.buildingInfo.buildings_team === myID.toString() || isSpectator;
-    let sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
+    const isMyCapture = data.buildingInfo.buildings_team === myID.toString() || isSpectator;
+    const sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
     playSFX(sfx);
   }
   function onBuild(data) {
     ahBuild?.apply(actionHandlers.Build, [data]);
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Build", data);
-    let myID = getMyID();
-    let isMyBuild = data.newUnit.units_players_id == myID;
-    let isReplay = isReplayActive();
+    const myID = getMyID();
+    const isMyBuild = data.newUnit.units_players_id == myID;
+    const isReplay = isReplayActive();
     if (!isMyBuild || isReplay) playSFX(GameSFX.unitSupply);
   }
   function onLoad(data) {
@@ -2891,9 +2899,9 @@ var awbw_music_player = (function (exports) {
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Power", data);
     // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
-    let coName = data.coName;
-    let isBH = isBlackHoleCO(coName);
-    let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
+    const coName = data.coName;
+    const isBH = isBlackHoleCO(coName);
+    const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     // Update the theme type
     musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
     switch (musicPlayerSettings.gameType) {
@@ -2904,21 +2912,22 @@ var awbw_music_player = (function (exports) {
         return;
       case SettingsGameType.AW2:
       case SettingsGameType.DS:
-      case SettingsGameType.RBC:
+      case SettingsGameType.RBC: {
         // Super CO Power
         if (isSuperCOPower) {
-          let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-          let delay = isBH ? 1916 : 1100;
+          const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+          const delay = isBH ? 1916 : 1100;
           playSFX(sfx);
           stopThemeSong(delay);
           break;
         }
         // Regular CO Power
-        let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-        let delay = isBH ? 1019 : 881;
+        const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+        const delay = isBH ? 1019 : 881;
         playSFX(sfx);
         stopThemeSong(delay);
         break;
+      }
     }
     // Colin's gold rush SFX for AW2, DS, and RBC
     if (coName === "Colin" && !isSuperCOPower) {

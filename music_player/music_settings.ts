@@ -32,7 +32,7 @@ export enum SettingsThemeType {
  * @returns {SettingsThemeType} The SettingsThemeType enum for the current CO Power state.
  */
 export function getCurrentThemeType() {
-  let currentPowerState = currentPlayer?.coPowerState;
+  const currentPowerState = currentPlayer?.coPowerState;
   if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
   if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
 
@@ -102,7 +102,7 @@ export abstract class musicPlayerSettings {
 
   static fromJSON(json: string) {
     // Only keep and set settings that are in the current version of musicPlayerSettings
-    let savedSettings = JSON.parse(json);
+    const savedSettings = JSON.parse(json);
     for (let key in this) {
       key = key.substring(2); // Remove the __ prefix
       if (Object.hasOwn(savedSettings, key)) {
@@ -112,6 +112,7 @@ export abstract class musicPlayerSettings {
           continue;
         }
         // For all other settings, just set them with the setter function
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this as any)[key] = savedSettings[key];
         // console.debug("[MP] Loading", key, "as", savedSettings[key]);
       }
@@ -296,7 +297,7 @@ function onSettingsChange(_key: string, _isFirstLoad: boolean) {
  * Saves the current music player settings in the local storage.
  */
 function updateSettingsInLocalStorage() {
-  let jsonSettings = musicPlayerSettings.toJSON();
+  const jsonSettings = musicPlayerSettings.toJSON();
   localStorage.setItem(STORAGE_KEY, jsonSettings);
   console.debug("[Music Player] Saving settings...", jsonSettings);
   return jsonSettings;

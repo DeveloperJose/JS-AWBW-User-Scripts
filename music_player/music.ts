@@ -1,4 +1,4 @@
-import { getAllPlayingCONames, getUnitName, currentPlayer } from "../shared/awbw_game";
+import { getUnitName, currentPlayer } from "../shared/awbw_game";
 import { musicPlayerUI } from "./music_ui";
 import {
   getMusicURL,
@@ -8,20 +8,12 @@ import {
   getSoundEffectURL,
   getAllSoundEffectURLs,
   GameSFX,
-  getAllThemeURLs,
   getCurrentThemeURLs,
-  getCONameFromURL,
   hasSpecialLoop,
   getAllCurrentThemesExtraAudioURLs,
 } from "./resources";
-import {
-  musicPlayerSettings,
-  addSettingsChangeListener,
-  SettingsGameType,
-  SettingsThemeType,
-  getCurrentThemeType,
-} from "./music_settings";
-import { getAllCONames, getRandomCO } from "../shared/awbw_globals";
+import { musicPlayerSettings, addSettingsChangeListener, SettingsThemeType } from "./music_settings";
+import { getRandomCO } from "../shared/awbw_globals";
 import { getIsMapEditor } from "../shared/awbw_page";
 
 /**
@@ -90,17 +82,17 @@ function whenAudioLoadsPauseIt(event: Event) {
  * @param event - The event that triggered this handler. Usually "canplaythrough".
  */
 function whenAudioLoadsPlayIt(event: Event) {
-  let audio = event.target as HTMLAudioElement;
+  const audio = event.target as HTMLAudioElement;
   audio.volume = musicPlayerSettings.volume;
   // if (audio.src === currentThemeKey) audio.play();
   playThemeSong();
 }
 
 function createNewThemeAudio(srcURL: string) {
-  let audio = new Audio(srcURL);
+  const audio = new Audio(srcURL);
   if (hasSpecialLoop(srcURL)) {
     audio.loop = false;
-    audio.addEventListener("ended", (event) => {
+    audio.addEventListener("ended", (_event) => {
       const loopURL = srcURL.replace(".ogg", "-loop.ogg");
       specialLoopMap.set(srcURL, loopURL);
       playThemeSong();
@@ -125,7 +117,7 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
   if (!musicPlayerSettings.isPlaying) return;
 
   // This song has a special loop, and it's time to play it
-  let specialLoopURL = specialLoopMap.get(srcURL);
+  const specialLoopURL = specialLoopMap.get(srcURL);
   if (specialLoopURL) srcURL = specialLoopURL;
 
   // We want to play a new song, so pause the previous one and save the new current song
@@ -136,10 +128,10 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
   }
 
   // The song isn't preloaded or invalid, load it and play it when it loads
-  let nextSong = urlAudioMap.get(srcURL);
+  const nextSong = urlAudioMap.get(srcURL);
   if (!nextSong) {
     console.debug("[AWBW Music Player] Loading new song", srcURL);
-    let audio = createNewThemeAudio(srcURL);
+    const audio = createNewThemeAudio(srcURL);
     audio.addEventListener("canplaythrough", whenAudioLoadsPlayIt, { once: true });
     return;
   }
@@ -176,7 +168,7 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
 function playOneShotURL(srcURL: string, volume: number) {
   if (!musicPlayerSettings.isPlaying) return;
 
-  let soundInstance = new Audio(srcURL);
+  const soundInstance = new Audio(srcURL);
   soundInstance.currentTime = 0;
   soundInstance.volume = volume;
   soundInstance.play();
@@ -198,7 +190,7 @@ export function playThemeSong(startFromBeginning = false) {
   if (!coName) coName = "map-editor";
 
   // Don't randomize the victory and defeat themes
-  let isEndTheme = coName === "victory" || coName === "defeat";
+  const isEndTheme = coName === "victory" || coName === "defeat";
   if (musicPlayerSettings.randomThemes && !isEndTheme) {
     coName = musicPlayerSettings.currentRandomCO;
   }
@@ -232,7 +224,7 @@ export function stopThemeSong(delayMS: number = 0) {
   if (!urlAudioMap.has(currentThemeKey)) return;
 
   // Can't stop if we are already paused
-  let currentTheme = urlAudioMap.get(currentThemeKey);
+  const currentTheme = urlAudioMap.get(currentThemeKey);
   if (!currentTheme || currentTheme.paused) return;
   console.debug("[AWBW Music Player] Pausing: ", currentTheme.src);
 
@@ -255,13 +247,13 @@ export function playMovementSound(unitId: number) {
 
   // The audio hasn't been preloaded for this unit
   if (!unitIDAudioMap.has(unitId)) {
-    let unitName = getUnitName(unitId);
-    let movementSoundURL = getMovementSoundURL(unitName);
+    const unitName = getUnitName(unitId);
+    const movementSoundURL = getMovementSoundURL(unitName);
     unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
   }
 
   // Restart the audio and then play it
-  let movementAudio = unitIDAudioMap.get(unitId);
+  const movementAudio = unitIDAudioMap.get(unitId);
   if (!movementAudio) return;
   movementAudio.currentTime = 0;
   movementAudio.loop = false;
@@ -282,7 +274,7 @@ export function stopMovementSound(unitId: number, rolloff = true) {
   if (!unitIDAudioMap.has(unitId)) return;
 
   // Can't stop if the sound is already stopped
-  let movementAudio = unitIDAudioMap.get(unitId);
+  const movementAudio = unitIDAudioMap.get(unitId);
   if (!movementAudio || movementAudio.paused) return;
 
   // The audio hasn't finished loading, so pause when it does
@@ -297,9 +289,9 @@ export function stopMovementSound(unitId: number, rolloff = true) {
 
   // If unit has rolloff, play it
   if (!rolloff) return;
-  let unitName = getUnitName(unitId);
+  const unitName = getUnitName(unitId);
   if (hasMovementRollOff(unitName)) {
-    let audioURL = getMovementRollOffURL(unitName);
+    const audioURL = getMovementRollOffURL(unitName);
     playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
   }
 }
@@ -315,7 +307,7 @@ export function playSFX(sfx: GameSFX) {
   if (!musicPlayerSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
   if (!musicPlayerSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
 
-  let sfxURL = getSoundEffectURL(sfx);
+  const sfxURL = getSoundEffectURL(sfx);
 
   // Figure out which volume to use
   let vol = musicPlayerSettings.sfxVolume;
@@ -332,7 +324,7 @@ export function playSFX(sfx: GameSFX) {
   }
 
   // The sound is loaded, so play it
-  let audio = urlAudioMap.get(sfxURL);
+  const audio = urlAudioMap.get(sfxURL);
   if (!audio) return;
   audio.volume = vol;
   audio.currentTime = 0;
@@ -350,7 +342,7 @@ export function stopAllSounds() {
   stopAllMovementSounds();
 
   // Mute sound effects
-  for (let audio of urlAudioMap.values()) {
+  for (const audio of urlAudioMap.values()) {
     audio.volume = 0;
   }
 }
@@ -359,7 +351,7 @@ export function stopAllSounds() {
  * Stops all movement sounds of all units.
  */
 export function stopAllMovementSounds() {
-  for (let unitId of unitIDAudioMap.keys()) {
+  for (const unitId of unitIDAudioMap.keys()) {
     stopMovementSound(unitId, false);
   }
 }
@@ -371,7 +363,7 @@ export function stopAllMovementSounds() {
  */
 export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
   // Preload the themes of the COs in this match
-  let audioList = getCurrentThemeURLs();
+  const audioList = getCurrentThemeURLs();
 
   // Preload the most common UI sounds that might play right after the page loads
   audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
@@ -407,12 +399,12 @@ export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
 function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) {
   // Event handler for when an audio is loaded
   let numLoadedAudios = 0;
-  let onAudioPreload = (event: Event) => {
-    let audio = event.target as HTMLAudioElement;
+  const onAudioPreload = (event: Event) => {
+    const audio = event.target as HTMLAudioElement;
     numLoadedAudios++;
 
     // Update UI
-    let loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
+    const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
     musicPlayerUI.setProgress(loadPercentage);
 
     // All the audio from the list has been loaded
@@ -444,13 +436,13 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
       numLoadedAudios++;
       return;
     }
-    let audio = createNewThemeAudio(url);
+    const audio = createNewThemeAudio(url);
     audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
     audio.addEventListener("error", onAudioPreload, { once: true });
   });
 }
 
-let allThemesPreloaded = false;
+// const allThemesPreloaded = false;
 /**
  * Updates the internal audio components to match the current music player settings when the settings change.
  * @param key - Key of the setting which has been changed.
@@ -476,10 +468,11 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     case "alternateThemeDay":
       setTimeout(() => playThemeSong(), 500);
       break;
-    case "themeType":
-      let restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
+    case "themeType": {
+      const restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
       playThemeSong(restartMusic);
       break;
+    }
     case "randomThemes":
       // Back to normal themes
       if (!musicPlayerSettings.randomThemes) {
@@ -502,7 +495,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
       break;
     case "volume": {
       // Adjust the volume of the current theme
-      let currentTheme = urlAudioMap.get(currentThemeKey);
+      const currentTheme = urlAudioMap.get(currentThemeKey);
       if (currentTheme) currentTheme.volume = musicPlayerSettings.volume;
       break;
     }

@@ -3,7 +3,7 @@
  */
 
 import { getAllCONames } from "./awbw_globals";
-import { getMenu } from "./awbw_page";
+import { getIsMapEditor, getMenu } from "./awbw_page";
 
 export enum CustomInputType {
   Radio = "radio",
@@ -97,9 +97,12 @@ export class CustomMenuSettingsUI {
     this.parent.style.width = "34px";
     this.parent.style.height = "30px";
     this.parent.style.borderLeft = "none";
+    if (getIsMapEditor()) {
+      this.parent.style.borderTop = "none";
+    }
 
     // Hover text
-    let hoverSpan = document.createElement("span");
+    const hoverSpan = document.createElement("span");
     hoverSpan.id = `${prefix}-hover-span`;
     hoverSpan.classList.add("game-tools-btn-text", "small_text");
     hoverSpan.innerText = hoverText;
@@ -107,7 +110,7 @@ export class CustomMenuSettingsUI {
     this.groups.set("hover", hoverSpan);
 
     // Button Background
-    let bgDiv = document.createElement("div");
+    const bgDiv = document.createElement("div");
     bgDiv.id = `${prefix}-background`;
     bgDiv.classList.add("game-tools-bg");
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
@@ -119,46 +122,46 @@ export class CustomMenuSettingsUI {
     bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
 
     // Button
-    let btnLink = document.createElement("a");
+    const btnLink = document.createElement("a");
     btnLink.id = `${prefix}-link`;
     btnLink.classList.add("norm2");
     bgDiv.appendChild(btnLink);
 
-    let btnImg = document.createElement("img") as HTMLImageElement;
+    const btnImg = document.createElement("img") as HTMLImageElement;
     btnImg.id = `${prefix}-link-img`;
     btnImg.src = buttonImageURL;
     btnLink.appendChild(btnImg);
     this.groups.set("img", btnImg);
 
     // Context Menu
-    let contextMenu = document.createElement("div");
+    const contextMenu = document.createElement("div");
     contextMenu.id = `${prefix}-settings`;
     contextMenu.classList.add("cls-settings-menu");
     this.parent.appendChild(contextMenu);
     this.groups.set("settings-parent", contextMenu);
 
-    let contextMenuBoxesContainer = document.createElement("div");
+    const contextMenuBoxesContainer = document.createElement("div");
     contextMenuBoxesContainer.id = `${prefix}-settings-container`;
     contextMenuBoxesContainer.classList.add("cls-horizontal-box");
     contextMenu.appendChild(contextMenuBoxesContainer);
     this.groups.set("settings", contextMenuBoxesContainer);
 
     // Context Menu 3 Boxes
-    let leftBox = document.createElement("div");
+    const leftBox = document.createElement("div");
     leftBox.id = `${prefix}-settings-left`;
     leftBox.classList.add("cls-settings-menu-box");
     leftBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(leftBox);
     this.groups.set(MenuPosition.Left, leftBox);
 
-    let centerBox = document.createElement("div");
+    const centerBox = document.createElement("div");
     centerBox.id = `${prefix}-settings-center`;
     centerBox.classList.add("cls-settings-menu-box");
     centerBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(centerBox);
     this.groups.set(MenuPosition.Center, centerBox);
 
-    let rightBox = document.createElement("div");
+    const rightBox = document.createElement("div");
     rightBox.id = `${prefix}-settings-right`;
     rightBox.classList.add("cls-settings-menu-box");
     rightBox.style.display = "none";
@@ -167,7 +170,7 @@ export class CustomMenuSettingsUI {
 
     // Enable right-click to open and close the context menu
     this.parent.addEventListener("contextmenu", (event) => {
-      let element = event.target as HTMLElement;
+      const element = event.target as HTMLElement;
       if (element.id.startsWith(prefix)) {
         event.preventDefault();
         this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
@@ -224,7 +227,7 @@ export class CustomMenuSettingsUI {
    * @param replaceParent - Whether to replace the current hover text for the main button or not.
    */
   setHoverText(text: string, replaceParent = false) {
-    let hoverSpan = this.groups.get("hover");
+    const hoverSpan = this.groups.get("hover");
     if (!hoverSpan) return;
     if (replaceParent) this.parentHoverText = text;
     hoverSpan.innerText = text;
@@ -236,7 +239,7 @@ export class CustomMenuSettingsUI {
    * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
    */
   setProgress(progress: number) {
-    let bgDiv = this.groups.get("bg");
+    const bgDiv = this.groups.get("bg");
     if (!bgDiv) return;
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
   }
@@ -246,7 +249,7 @@ export class CustomMenuSettingsUI {
    * @param imageURL - The URL of the image to be used on the button.
    */
   setImage(imageURL: string) {
-    let btnImg = this.groups.get("img") as HTMLImageElement;
+    const btnImg = this.groups.get("img") as HTMLImageElement;
     btnImg.src = imageURL;
   }
 
@@ -256,7 +259,7 @@ export class CustomMenuSettingsUI {
    * @param listener - The function to be called when the event is triggered.
    */
   addEventListener(type: string, listener: (event: Event) => void) {
-    let div = this.groups.get("bg");
+    const div = this.groups.get("bg");
     div?.addEventListener(type, listener);
   }
 
@@ -264,7 +267,7 @@ export class CustomMenuSettingsUI {
    * Opens the context (right-click) menu.
    */
   openContextMenu() {
-    let contextMenu = this.groups.get("settings-parent");
+    const contextMenu = this.groups.get("settings-parent");
     if (!contextMenu) return;
     contextMenu.style.display = "flex";
     this.isSettingsMenuOpen = true;
@@ -274,14 +277,14 @@ export class CustomMenuSettingsUI {
    * Closes the context (right-click) menu.
    */
   closeContextMenu() {
-    let contextMenu = this.groups.get("settings-parent");
+    const contextMenu = this.groups.get("settings-parent");
     if (!contextMenu) return;
     contextMenu.style.display = "none";
     this.isSettingsMenuOpen = false;
 
     // Check if we have a CO selector and need to hide it
-    let overDiv = document.querySelector("#overDiv") as HTMLDivElement;
-    let hasCOSelector = this.groups.has("co-selector");
+    const overDiv = document.querySelector("#overDiv") as HTMLDivElement;
+    const hasCOSelector = this.groups.has("co-selector");
     if (overDiv && hasCOSelector) {
       overDiv.style.visibility = "hidden";
     }
@@ -302,11 +305,11 @@ export class CustomMenuSettingsUI {
     if (!container) return;
 
     // Slider label
-    let label = document.createElement("label");
+    const label = document.createElement("label");
     container?.appendChild(label);
 
     // Slider
-    let slider = document.createElement("input");
+    const slider = document.createElement("input");
     slider.id = `${this.prefix}-${sanitize(name)}`;
     slider.type = "range";
     slider.min = String(min);
@@ -315,7 +318,7 @@ export class CustomMenuSettingsUI {
     this.inputElements.push(slider);
 
     // Set the label to the current value of the slider
-    slider.addEventListener("input", (e) => {
+    slider.addEventListener("input", (_e) => {
       let displayValue = slider.value;
       if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
 
@@ -377,7 +380,7 @@ export class CustomMenuSettingsUI {
 
     // Container for input and label
     const inputBox = document.createElement("div");
-    let otherType = groupType === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
+    const otherType = groupType === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
     inputBox.classList.add(otherType);
     groupDiv.appendChild(inputBox);
 
@@ -429,8 +432,8 @@ export class CustomMenuSettingsUI {
    * @param version - The version to be displayed.
    */
   addVersion(version: string) {
-    let contextMenu = this.groups.get("settings-parent");
-    let versionDiv = document.createElement("label");
+    const contextMenu = this.groups.get("settings-parent");
+    const versionDiv = document.createElement("label");
     versionDiv.id = this.prefix + "-version";
     versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
     contextMenu?.appendChild(versionDiv);
@@ -556,7 +559,7 @@ export class CustomMenuSettingsUI {
     const location = "javascript:void(0)";
     const internalName = coName.toLowerCase().replaceAll(" ", "");
 
-    let imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+    const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
     const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
 
     return (

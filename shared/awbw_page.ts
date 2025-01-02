@@ -159,7 +159,7 @@ export function moveDivToOffset(
 ) {
   if (steps <= 1) {
     if (!followUpAnimations || followUpAnimations.length === 0) return;
-    let nextSet = followUpAnimations.shift()?.then;
+    const nextSet = followUpAnimations.shift()?.then;
     if (!nextSet) return;
     moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
     return;

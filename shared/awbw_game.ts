@@ -20,13 +20,13 @@ export enum COPowerEnum {
  * The amount of time between the silo launch animation and the hit animation in milliseconds.
  * Copied from game.js
  */
-export let siloDelayMS = areAnimationsEnabled() ? 3000 : 0;
+export const siloDelayMS = areAnimationsEnabled() ? 3000 : 0;
 
 /**
  * The amount of time between an attack animation starting and the attack finishing in milliseconds.
  * Copied from game.js
  */
-export let attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
+export const attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
 
 /**
  * Gets the username of the person logged in to the website.
@@ -94,7 +94,7 @@ export function isPlayerSpectator(pid: number) {
  * @returns - True if the player can activate a regular CO Power.
  */
 export function canPlayerActivateCOPower(pid: number) {
-  let info = getPlayerInfo(pid);
+  const info = getPlayerInfo(pid);
   if (!info) return false;
   return info.players_co_power >= info.players_co_max_power;
 }
@@ -105,7 +105,7 @@ export function canPlayerActivateCOPower(pid: number) {
  * @returns - True if the player can activate a Super CO Power.
  */
 export function canPlayerActivateSuperCOPower(pid: number) {
-  let info = getPlayerInfo(pid);
+  const info = getPlayerInfo(pid);
   if (!info) return false;
   return info.players_co_power >= info.players_co_max_spower;
 }
@@ -145,10 +145,10 @@ export function getCurrentClickData() {
  * @returns - True if we are in replay mode.
  */
 export function isReplayActive() {
-  if (getIsMaintenance()) return false;
+  if (getIsMaintenance() || getIsMapEditor()) return false;
   // Check if replay mode is open by checking if the replay section is set to display
   const replayControls = getReplayControls();
-  let replayOpen = replayControls.style.display !== "none";
+  const replayOpen = replayControls.style.display !== "none";
   return replayOpen;
 }
 
@@ -157,23 +157,24 @@ export function isReplayActive() {
  * @returns - True if the game has ended.
  */
 export function hasGameEnded() {
-  if (getIsMaintenance()) return false;
+  if (getIsMaintenance() || getIsMapEditor()) return false;
   // Count how many players are still in the game
-  let numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
+  const numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
   return numberOfRemainingPlayers === 1;
 }
 
 /**
  * Gets the current day in the game, also works properly in replay mode.
+ * In the map editor, we consider it to be day 1.
  * @returns - The current day in the game.
  */
 export function getCurrentGameDay() {
-  if (getIsMaintenance()) return -1;
+  if (getIsMaintenance() || getIsMapEditor()) return 1;
   if (!isReplayActive()) return gameDay;
-  let replayData = Object.values(replay);
+  const replayData = Object.values(replay);
   if (replayData.length === 0) return gameDay;
 
-  let lastData = replayData[replayData.length - 1];
+  const lastData = replayData[replayData.length - 1];
   if (typeof lastData === "undefined") return gameDay;
   if (typeof lastData.day === "undefined") return gameDay;
 
@@ -226,9 +227,9 @@ export abstract class currentPlayer {
     if (getIsMapEditor()) return "map-editor";
 
     // Check if we are eliminated even if the game has not ended
-    let myID = getMyID();
-    let myInfo = getPlayerInfo(myID);
-    let myLoss = myInfo?.players_eliminated === "Y";
+    const myID = getMyID();
+    const myInfo = getPlayerInfo(myID);
+    const myLoss = myInfo?.players_eliminated === "Y";
     if (myLoss) return "defeat";
 
     // Play victory/defeat themes after the game ends for everyone
@@ -247,8 +248,8 @@ export abstract class currentPlayer {
  */
 export function getAllPlayingCONames(): Set<string> {
   if (getIsMapEditor()) return new Set(["map-editor"]);
-  let allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
-  let allTagPlayers = getAllTagCONames();
+  const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
+  const allTagPlayers = getAllTagCONames();
   return new Set([...allPlayers, ...allTagPlayers]);
 }
 
@@ -314,6 +315,6 @@ export function isValidUnit(unitId: number) {
  * @param unitId - ID of the unit we want to check.
  * @returns - True if the unit is valid and it has moved this turn.
  */
-export function hasUnitMovedThisTurn(unitId: any) {
+export function hasUnitMovedThisTurn(unitId: number) {
   return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
 }

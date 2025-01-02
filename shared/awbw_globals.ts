@@ -2,6 +2,8 @@
  * @file Global variables exposed by Advance Wars By Web's JS code and other useful constants.
  */
 
+import { getIsMapEditor } from "./awbw_page";
+
 // ============================== Advance Wars Stuff ==============================
 
 /**
@@ -56,7 +58,7 @@ export const AW_DS_ONLY_COs = new Set([
 export function getAllCONames(properCase = false) {
   if (!properCase)
     return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
-  let allCOs = [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
+  const allCOs = [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
   allCOs[allCOs.indexOf("vonbolt")] = "Von Bolt";
   return allCOs.map((co) => co[0].toUpperCase() + co.slice(1));
 }
@@ -66,6 +68,7 @@ export function getAllCONames(properCase = false) {
  * The number of columns of this map.
  */
 export function getMapColumns() {
+  if (getIsMapEditor()) return designMapEditor.map.maxX;
   return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
 }
 
@@ -73,6 +76,7 @@ export function getMapColumns() {
  * The number of rows of this map.
  */
 export function getMapRows() {
+  if (getIsMapEditor()) return designMapEditor.map.maxY;
   return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
 }
 

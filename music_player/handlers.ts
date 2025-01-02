@@ -8,14 +8,11 @@ import {
   isPlayerSpectator,
   siloDelayMS,
   attackDelayMS,
-  isValidBuilding,
   getBuildingInfo,
   isValidUnit,
   getUnitName,
   getUnitInfoFromCoords,
   COPowerEnum,
-  currentPlayer,
-  hasGameEnded,
   isReplayActive,
   getUnitInfo,
   hasUnitMovedThisTurn,
@@ -24,7 +21,6 @@ import {
   addUpdateCursorObserver,
   getAllDamageSquares,
   getBuildMenu,
-  getCoordsDiv,
   getIsMaintenance,
   getIsMapEditor,
   getIsMovePlanner,
@@ -40,14 +36,7 @@ import {
 import { getBuildingDiv } from "../shared/awbw_page";
 
 import { areAnimationsEnabled, getRandomCO } from "../shared/awbw_globals";
-import {
-  playThemeSong,
-  playSFX,
-  stopMovementSound,
-  playMovementSound,
-  stopThemeSong,
-  stopAllMovementSounds,
-} from "./music";
+import { playThemeSong, playSFX, stopMovementSound, playMovementSound, stopThemeSong } from "./music";
 import { getCurrentThemeType, musicPlayerSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
@@ -59,11 +48,8 @@ import {
   getCaptFn,
   getCloseMenuFn,
   getCreateDamageSquaresFn,
-  getCursorMoveFn,
-  getEliminationFn,
   getFireFn,
   getFogFn,
-  getGameOverFn,
   getHideFn,
   getJoinFn,
   getLaunchFn,
@@ -74,10 +60,8 @@ import {
   getPowerFn,
   getQueryTurnFn,
   getRepairFn,
-  getResetAttackFn,
   getShowEventScreenFn,
   getSupplyFn,
-  getSwapCosDisplayFn,
   getUnhideFn,
   getUnitClickFn,
   getUnloadFn,
@@ -118,45 +102,44 @@ let currentMenuType = MenuOpenType.None;
 /**
  * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.
  */
-let visibilityMap: Map<number, boolean> = new Map();
+const visibilityMap: Map<number, boolean> = new Map();
 
 /**
  * Map of unit IDs to their movement responses. Used to check if a unit got trapped.
  */
-let movementResponseMap: Map<number, MoveResponse> = new Map();
+const movementResponseMap: Map<number, MoveResponse> = new Map();
 
-let clickedDamageSquaresMap: Map<HTMLSpanElement, boolean> = new Map();
+const clickedDamageSquaresMap: Map<HTMLSpanElement, boolean> = new Map();
 
 // Store a copy of all the original functions we are going to override
-let ahCursorMove = getCursorMoveFn();
-let ahQueryTurn = getQueryTurnFn();
-let ahShowEventScreen = getShowEventScreenFn();
+const ahQueryTurn = getQueryTurnFn();
+const ahShowEventScreen = getShowEventScreenFn();
 // let ahSwapCosDisplay = getSwapCosDisplayFn();
-let ahOpenMenu = getOpenMenuFn();
-let ahCloseMenu = getCloseMenuFn();
-let ahCreateDamageSquares = getCreateDamageSquaresFn();
+const ahOpenMenu = getOpenMenuFn();
+const ahCloseMenu = getCloseMenuFn();
+const ahCreateDamageSquares = getCreateDamageSquaresFn();
 // let ahResetAttack = getResetAttackFn();
-let ahUnitClick = getUnitClickFn();
-let ahWait = getWaitFn();
-let ahAnimUnit = getAnimUnitFn();
-let ahAnimExplosion = getAnimExplosionFn();
-let ahFog = getFogFn();
-let ahFire = getFireFn();
-let ahAttackSeam = getAttackSeamFn();
-let ahMove = getMoveFn();
-let ahCapt = getCaptFn();
-let ahBuild = getBuildFn();
-let ahLoad = getLoadFn();
-let ahUnload = getUnloadFn();
-let ahSupply = getSupplyFn();
-let ahRepair = getRepairFn();
-let ahHide = getHideFn();
-let ahUnhide = getUnhideFn();
-let ahJoin = getJoinFn();
-let ahLaunch = getLaunchFn();
-let ahNextTurn = getNextTurnFn();
+const ahUnitClick = getUnitClickFn();
+const ahWait = getWaitFn();
+const ahAnimUnit = getAnimUnitFn();
+const ahAnimExplosion = getAnimExplosionFn();
+const ahFog = getFogFn();
+const ahFire = getFireFn();
+const ahAttackSeam = getAttackSeamFn();
+const ahMove = getMoveFn();
+const ahCapt = getCaptFn();
+const ahBuild = getBuildFn();
+const ahLoad = getLoadFn();
+const ahUnload = getUnloadFn();
+const ahSupply = getSupplyFn();
+const ahRepair = getRepairFn();
+const ahHide = getHideFn();
+const ahUnhide = getUnhideFn();
+const ahJoin = getJoinFn();
+const ahLaunch = getLaunchFn();
+const ahNextTurn = getNextTurnFn();
 // let ahElimination = getEliminationFn();
-let ahPower = getPowerFn();
+const ahPower = getPowerFn();
 // let ahGameOver = getGameOverFn();
 
 /**
@@ -187,9 +170,7 @@ export function addHandlers() {
 /**
  * Add all handlers that will intercept clicks and functions on the map editor.
  */
-function addMapEditorHandlers() {
-  
-}
+function addMapEditorHandlers() {}
 
 function addMovePlannerHandlers() {
   getBuildMenu().addEventListener("click", (event) => {
@@ -279,10 +260,10 @@ function onCursorMove(cursorX: number, cursorY: number) {
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Cursor Move", cursorX, cursorY);
 
-  let dx = Math.abs(cursorX - lastCursorX);
-  let dy = Math.abs(cursorY - lastCursorY);
-  let cursorMoved = dx >= 1 || dy >= 1;
-  let timeSinceLastCursorCall = Date.now() - lastCursorCall;
+  const dx = Math.abs(cursorX - lastCursorX);
+  const dy = Math.abs(cursorY - lastCursorY);
+  const cursorMoved = dx >= 1 || dy >= 1;
+  const timeSinceLastCursorCall = Date.now() - lastCursorCall;
 
   // Don't play the sound if we moved the cursor too quickly
   if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
@@ -303,7 +284,7 @@ function onQueryTurn(
   replay: ReplayObject[],
   initial: boolean,
 ) {
-  let result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
+  const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
   if (!musicPlayerSettings.isPlaying) return result;
   // console.log("[MP] Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
 
@@ -326,8 +307,8 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
   currentMenuType = MenuOpenType.Regular;
   playSFX(GameSFX.uiMenuOpen);
 
-  let menuOptions = document.getElementsByClassName("menu-option");
-  for (var i = 0; i < menuOptions.length; i++) {
+  const menuOptions = document.getElementsByClassName("menu-option");
+  for (let i = 0; i < menuOptions.length; i++) {
     menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
     menuOptions[i].addEventListener("click", (event) => {
       const target = event.target as HTMLDivElement;
@@ -357,7 +338,12 @@ function onCloseMenu() {
   }
 }
 
-function onCreateDamageSquares(attackerUnit: UnitInfo, unitsInRange: UnitInfo[], movementInfo: any, movingUnit: any) {
+function onCreateDamageSquares(
+  attackerUnit: UnitInfo,
+  unitsInRange: UnitInfo[],
+  movementInfo: object,
+  movingUnit: object,
+) {
   ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
@@ -407,7 +393,7 @@ function onUnitWait(unitId: number) {
 
   // Check if we stopped because we got trapped
   if (movementResponseMap.has(unitId)) {
-    let response = movementResponseMap.get(unitId);
+    const response = movementResponseMap.get(unitId);
     if (response?.trapped) {
       playSFX(GameSFX.unitTrap);
     }
@@ -437,7 +423,7 @@ function onAnimUnit(
   // The unit disappeared already, no need to stop its sound again
   if (visibilityMap.has(unitId)) return;
   // A visible unit just disappeared
-  let unitVisible = path[i].unit_visible;
+  const unitVisible = path[i].unit_visible;
   if (!unitVisible) {
     visibilityMap.set(unitId, unitVisible);
     // Stop the sound after a little delay, giving more time to react to it
@@ -450,8 +436,8 @@ function onAnimExplosion(unit: UnitInfo) {
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("Exploded", unit);
 
-  let unitId = unit.units_id;
-  let unitFuel = unit.units_fuel;
+  const unitId = unit.units_id;
+  const unitFuel = unit.units_fuel;
   let sfx = GameSFX.unitExplode;
   if (getUnitName(unitId) === "Black Bomb" && unitFuel > 0) {
     sfx = GameSFX.unitMissileHit;
@@ -463,8 +449,8 @@ function onAnimExplosion(unit: UnitInfo) {
 function onFogUpdate(
   x: number,
   y: number,
-  mType: any,
-  neighbours: any[],
+  mType: object,
+  neighbours: object[],
   unitVisible: boolean,
   change: string,
   delay: number,
@@ -473,7 +459,7 @@ function onFogUpdate(
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
 
-  let unitInfo = getUnitInfoFromCoords(x, y);
+  const unitInfo = getUnitInfoFromCoords(x, y);
   if (!unitInfo) return;
   if (change === "Add") {
     setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
@@ -487,8 +473,8 @@ function onFire(response: FireResponse) {
   }
   // console.debug("[MP] Fire", response);
 
-  let attackerID = response.copValues.attacker.playerId;
-  let defenderID = response.copValues.defender.playerId;
+  const attackerID = response.copValues.attacker.playerId;
+  const defenderID = response.copValues.defender.playerId;
   // stopMovementSound(response.attacker.units_id, false);
   // stopMovementSound(response.defender.units_id, false);
 
@@ -498,25 +484,25 @@ function onFire(response: FireResponse) {
   // }
 
   // Calculate charge before attack
-  let couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
-  let couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
-  let couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
-  let couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
+  const couldAttackerActivateSCOPBefore = canPlayerActivateSuperCOPower(attackerID);
+  const couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
+  const couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
+  const couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
 
   // Let the attack proceed normally
   ahFire?.apply(actionHandlers.Fire, [response]);
 
   // Check if the attack gave enough charge for a power to either side
   // Give it a little bit of time for the animation if needed
-  var delay = areAnimationsEnabled() ? 750 : 0;
-  let canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
-  let canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
-  let canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
-  let canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
-  let madeSCOPAvailable =
+  const delay = areAnimationsEnabled() ? 750 : 0;
+  const canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
+  const canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
+  const canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
+  const canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
+  const madeSCOPAvailable =
     (!couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter) ||
     (!couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter);
-  let madeCOPAvailable =
+  const madeCOPAvailable =
     (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
     (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
 
@@ -532,11 +518,11 @@ function onFire(response: FireResponse) {
  * @param startDelay - The delay in milliseconds before the wiggle starts.
  */
 function wiggleTile(div: HTMLDivElement, startDelay = 0) {
-  let stepsX = 12;
-  let stepsY = 4;
-  let deltaX = 0.2;
-  let deltaY = 0.05;
-  let wiggleAnimation = () => {
+  const stepsX = 12;
+  const stepsY = 4;
+  const deltaX = 0.2;
+  const deltaY = 0.05;
+  const wiggleAnimation = () => {
     moveDivToOffset(
       div,
       deltaX,
@@ -561,17 +547,17 @@ function onAttackSeam(response: SeamResponse) {
   ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] AttackSeam", response);
-  let seamWasDestroyed = response.seamHp <= 0;
+  const seamWasDestroyed = response.seamHp <= 0;
 
   // Pipe wiggle animation
   if (areAnimationsEnabled()) {
-    let x = response.seamX;
-    let y = response.seamY;
-    let pipeSeamInfo = getBuildingInfo(x, y);
-    let pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
+    const x = response.seamX;
+    const y = response.seamY;
+    const pipeSeamInfo = getBuildingInfo(x, y);
+    const pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
 
     // Subtract how long the wiggle takes so it matches the sound a bit better
-    let wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
+    const wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
     wiggleTile(pipeSeamDiv, wiggleDelay);
   }
   if (seamWasDestroyed) {
@@ -582,14 +568,14 @@ function onAttackSeam(response: SeamResponse) {
   setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
 }
 
-function onMove(response: MoveResponse, loadFlag: any) {
+function onMove(response: MoveResponse, loadFlag: object) {
   ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Move", response, loadFlag);
 
-  let unitId = response.unit.units_id;
+  const unitId = response.unit.units_id;
   movementResponseMap.set(unitId, response);
-  var movementDist = response.path.length;
+  const movementDist = response.path.length;
   stopMovementSound(unitId, false);
 
   if (movementDist > 1) {
@@ -603,19 +589,19 @@ function onCapture(data: CaptureData) {
   // console.debug("[MP] Capt", data);
 
   // They didn't finish the capture
-  let finishedCapture = data.newIncome != null;
+  const finishedCapture = data.newIncome != null;
   if (!finishedCapture) {
     playSFX(GameSFX.unitCaptureProgress);
     return;
   }
   // The unit is done capping this property
-  let myID = getMyID();
-  let isSpectator = isPlayerSpectator(myID);
+  const myID = getMyID();
+  const isSpectator = isPlayerSpectator(myID);
 
   // Don't use triple equals blindly here because the types are different
   // buildings_team (string) == id (number)
-  let isMyCapture = data.buildingInfo.buildings_team === myID.toString() || isSpectator;
-  let sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
+  const isMyCapture = data.buildingInfo.buildings_team === myID.toString() || isSpectator;
+  const sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
   playSFX(sfx);
 }
 
@@ -624,9 +610,9 @@ function onBuild(data: BuildData) {
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Build", data);
 
-  let myID = getMyID();
-  let isMyBuild = data.newUnit.units_players_id == myID;
-  let isReplay = isReplayActive();
+  const myID = getMyID();
+  const isMyBuild = data.newUnit.units_players_id == myID;
+  const isReplay = isReplayActive();
   if (!isMyBuild || isReplay) playSFX(GameSFX.unitSupply);
 }
 
@@ -718,9 +704,9 @@ function onPower(data: PowerData) {
   // console.debug("[MP] Power", data);
 
   // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
-  let coName = data.coName;
-  let isBH = isBlackHoleCO(coName);
-  let isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
+  const coName = data.coName;
+  const isBH = isBlackHoleCO(coName);
+  const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
   // Update the theme type
   musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
@@ -732,21 +718,22 @@ function onPower(data: PowerData) {
       return;
     case SettingsGameType.AW2:
     case SettingsGameType.DS:
-    case SettingsGameType.RBC:
+    case SettingsGameType.RBC: {
       // Super CO Power
       if (isSuperCOPower) {
-        let sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-        let delay = isBH ? 1916 : 1100;
+        const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+        const delay = isBH ? 1916 : 1100;
         playSFX(sfx);
         stopThemeSong(delay);
         break;
       }
       // Regular CO Power
-      let sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-      let delay = isBH ? 1019 : 881;
+      const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+      const delay = isBH ? 1019 : 881;
       playSFX(sfx);
       stopThemeSong(delay);
       break;
+    }
   }
   // Colin's gold rush SFX for AW2, DS, and RBC
   if (coName === "Colin" && !isSuperCOPower) {

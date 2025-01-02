@@ -6,12 +6,13 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "build": "rollup -c --configInputDir music_player && npm run prettier",
-    "package": "rollup -c && npm run prettier",
+    "build:dev": "rollup -c --configInputDir music_player && npm run prettier",
+    "build:all": "rollup -c && npm run prettier",
+    "build:package": "npm run build:all && npm run lint",
     "netlify": "cd ../JS-Website && netlify deploy --prod --dir=./public",
     "prettier": "prettier --write \"**/*.{js,ts,css}\"",
     "clean": "rm dist/*.js",
-    "lint": "eslint */main.js",
+    "lint": "eslint",
     "depcheck": "depcheck"
   },
   "repository": {
@@ -36,6 +37,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-userscript-metablock": "^0.4.2",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0"
   }
 }

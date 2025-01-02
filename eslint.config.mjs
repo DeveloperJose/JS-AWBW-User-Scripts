@@ -1,21 +1,15 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
+// import globals from "globals";
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
 
-/** @type {import('eslint').Linter.Config[]} */
 export default [
-  { files: ["**/*.js"], languageOptions: { sourceType: "module" } },
-  {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
-    },
-  },
-  {
+  // https://github.com/eslint/eslint/discussions/18304
+  { ignores: ["tmp/*", "dist/*", "**/*.d.ts", "**/*.user.js"] },
+  ...tseslint.config({
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      // "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
-  },
-  pluginJs.configs.recommended,
+    extends: [eslint.configs.recommended, tseslint.configs.recommended],
+  }),
 ];

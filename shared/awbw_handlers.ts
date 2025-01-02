@@ -2,14 +2,12 @@
  * @file Functions used by Advance Wars By Web to handle game actions.
  */
 
-import { getIsMapEditor } from "./awbw_page";
-
-export function getCursorMoveFn() {
-  if (getIsMapEditor()) {
-    return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
-  }
-  return typeof updateCursor !== "undefined" ? updateCursor : null;
-}
+// export function getCursorMoveFn() {
+//   if (getIsMapEditor()) {
+//     return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
+//   }
+//   return typeof updateCursor !== "undefined" ? updateCursor : null;
+// }
 
 export function getQueryTurnFn() {
   return typeof queryTurn !== "undefined" ? queryTurn : null;
@@ -125,4 +123,8 @@ export function getPowerFn() {
 
 export function getGameOverFn() {
   return typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
+}
+
+export function getResizeMapFn() {
+  return typeof designMapEditor !== "undefined" ? designMapEditor.resizeMap : null;
 }
