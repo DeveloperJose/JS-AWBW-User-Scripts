@@ -3,8 +3,8 @@
 // @description Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
 // @namespace   https://awbw.amarriner.com/
 // @author      DeveloperJose
-// @match       https://awbw.amarriner.com/*?games_id=*
-// @match       https://awbw.amarriner.com/*?replays_id=*
+// @match       https://awbw.amarriner.com/game.php*
+// @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
 // @version     2.0.0
