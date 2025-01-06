@@ -61,7 +61,7 @@ function setRandomThemeTimeout(nextTheme: HTMLAudioElement) {
 
   // Set a new timeout for the next theme
   const songDurationMS = nextTheme.duration * 1000;
-  randomThemeTimeout = setTimeout(() => {
+  randomThemeTimeout = window.setTimeout(() => {
     musicPlayerSettings.currentRandomCO = getRandomCO();
     randomThemeTimeout = null;
     playThemeSong(true);

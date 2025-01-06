@@ -3,7 +3,8 @@
 // @description An improved version of the comprehensive audio player that attempts to recreate the cart experience with more sound effects, more music, and more customizability.
 // @namespace   https://awbw.amarriner.com/
 // @author      DeveloperJose, _twiggy
-// @match       https://awbw.amarriner.com/*?games_id=*
+// @match       https://awbw.amarriner.com/game.php*
+// @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @version     3.0.0
@@ -93,14 +94,6 @@ var awbw_music_player = (function (exports) {
   }
   function getReplayDaySelectorCheckBox() {
     return document.querySelector(".replay-day-selector");
-  }
-  /**
-   * The HTML node for the unit build menu.
-   * Specifically works in the Move Planner.
-   * @returns The HTML node for the unit build menu.
-   */
-  function getBuildMenu() {
-    return document.querySelector("#build-menu");
   }
   // ============================== Useful Page Utilities ==============================
   /**
@@ -1919,7 +1912,7 @@ var awbw_music_player = (function (exports) {
     if (randomThemeTimeout) clearTimeout(randomThemeTimeout);
     // Set a new timeout for the next theme
     const songDurationMS = nextTheme.duration * 1000;
-    randomThemeTimeout = setTimeout(() => {
+    randomThemeTimeout = window.setTimeout(() => {
       musicPlayerSettings.currentRandomCO = getRandomCO();
       randomThemeTimeout = null;
       playThemeSong(true);
@@ -2460,18 +2453,11 @@ var awbw_music_player = (function (exports) {
       return;
     }
     if (getIsMovePlanner()) {
-      addMovePlannerHandlers();
       return;
     }
     // game.php handlers
     addReplayHandlers();
     addGameHandlers();
-  }
-  function addMovePlannerHandlers() {
-    getBuildMenu().addEventListener("click", (event) => {
-      onOpenMenu(event.target, 0, 0);
-    });
-    closeMenu = onCloseMenu;
   }
   /**
    * Syncs the music with the game state. Also randomizes the COs if needed.

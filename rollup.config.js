@@ -37,5 +37,9 @@ function createUserscriptRollUpConfig(inputDir, outputDir = "./dist") {
 
 export default (commandLineArgs) => {
   if (commandLineArgs.configInputDir) return createUserscriptRollUpConfig(commandLineArgs.configInputDir);
-  return [createUserscriptRollUpConfig("music_player"), createUserscriptRollUpConfig("highlight_cursor_coordinates")];
+  return [
+    createUserscriptRollUpConfig("music_player"),
+    createUserscriptRollUpConfig("highlight_cursor_coordinates"),
+    createUserscriptRollUpConfig("emotes"),
+  ];
 };

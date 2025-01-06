@@ -3,6 +3,11 @@
  */
 
 /**
+ * The ID of the current game.
+ */
+declare const gameId: number;
+
+/**
  * All the player information for the current game.
  */
 declare const playersInfo: PlayerInfo[];
@@ -249,8 +254,8 @@ declare let animExplosion: (unit: UnitInfo) => void;
 declare let updateAirUnitFogOnMove: (
   x: number,
   y: number,
-  mType: any, // TODO
-  neighbours: any[], // TODO
+  mType: object,
+  neighbours: object[],
   unitVisible: boolean,
   change: string,
   delay: number,

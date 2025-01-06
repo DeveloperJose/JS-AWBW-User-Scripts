@@ -20,7 +20,6 @@ import {
 import {
   addUpdateCursorObserver,
   getAllDamageSquares,
-  getBuildMenu,
   getIsMaintenance,
   getIsMapEditor,
   getIsMovePlanner,
@@ -173,10 +172,10 @@ export function addHandlers() {
 function addMapEditorHandlers() {}
 
 function addMovePlannerHandlers() {
-  getBuildMenu().addEventListener("click", (event) => {
-    onOpenMenu(event.target as HTMLDivElement, 0, 0);
-  });
-  closeMenu = onCloseMenu;
+  // getBuildMenu().addEventListener("click", (event) => {
+  //   onOpenMenu(event.target as HTMLDivElement, 0, 0);
+  // });
+  // closeMenu = onCloseMenu;
 }
 
 /**
