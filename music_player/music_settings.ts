@@ -29,7 +29,7 @@ export enum SettingsThemeType {
 
 /**
  * Gets the theme type enum corresponding to the CO Power state for the current CO.
- * @returns {SettingsThemeType} The SettingsThemeType enum for the current CO Power state.
+ * @returns - The SettingsThemeType enum for the current CO Power state.
  */
 export function getCurrentThemeType() {
   const currentPowerState = currentPlayer?.coPowerState;
@@ -39,6 +39,10 @@ export function getCurrentThemeType() {
   return SettingsThemeType.REGULAR;
 }
 
+/**
+ * Gets a random game type from the SettingsGameType enum.
+ * @returns - A random game type from the SettingsGameType enum.
+ */
 export function getRandomGameType() {
   return Object.values(SettingsGameType)[Math.floor(Math.random() * Object.keys(SettingsGameType).length)];
 }

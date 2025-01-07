@@ -99,6 +99,10 @@ let lastCursorX = -1;
  */
 let lastCursorY = -1;
 
+/**
+ * Enum representing the type of menu that is currently open, if any.
+ * @enum {string}
+ */
 enum MenuOpenType {
   None = "None",
   DamageSquare = "DamageSquare",
@@ -106,6 +110,9 @@ enum MenuOpenType {
   UnitSelect = "UnitSelect",
 }
 
+/**
+ * The current type of menu that is open, if any.
+ */
 let currentMenuType = MenuOpenType.None;
 
 /**
@@ -118,9 +125,13 @@ const visibilityMap: Map<number, boolean> = new Map();
  */
 const movementResponseMap: Map<number, MoveResponse> = new Map();
 
+/**
+ * Map of damage squares that have been clicked.
+ * Used to check if the user clicked on a damage square twice to finalize an attack.
+ */
 const clickedDamageSquaresMap: Map<HTMLSpanElement, boolean> = new Map();
 
-// Store a copy of all the original functions we are going to override
+/* **Store a copy of all the original functions we are going to override** */
 const ahQueryTurn = getQueryTurnFn();
 const ahShowEventScreen = getShowEventScreenFn();
 // let ahSwapCosDisplay = getSwapCosDisplayFn();
@@ -182,6 +193,9 @@ export function addHandlers() {
  */
 function addMapEditorHandlers() {}
 
+/**
+ * Add all handlers that will intercept clicks and functions when using the move planner.
+ */
 function addMovePlannerHandlers() {
   // getBuildMenu().addEventListener("click", (event) => {
   //   onOpenMenu(event.target as HTMLDivElement, 0, 0);
@@ -189,6 +203,9 @@ function addMovePlannerHandlers() {
   // closeMenu = onCloseMenu;
 }
 
+/**
+ * Syncs the music with the game state. Does not randomize the COs.
+ */
 function syncMusic() {
   musicPlayerSettings.themeType = getCurrentThemeType();
   playThemeSong();
@@ -196,7 +213,7 @@ function syncMusic() {
 }
 
 /**
- * Syncs the music with the game state. Also randomizes the COs if needed.
+ * Refreshes everything needed for the music when finishing a turn. Also randomizes the COs if needed.
  * @param playDelayMS - The delay in milliseconds before the theme song starts playing.
  */
 function refreshMusicForNextTurn(playDelayMS = 0) {

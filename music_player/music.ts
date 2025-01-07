@@ -50,6 +50,16 @@ let currentlyDelaying = false;
  */
 let randomThemeTimeout: number | null;
 
+/**
+ * If set to true, all themes have been pre-loaded so we do not need to load them again.
+ */
+// let allThemesPreloaded = false;
+
+/**
+ * When changing themes, this function sets a timeout to switch to a new random theme after the current one ends.
+ * @param nextTheme - The audio element of the current theme that is playing.
+ * @returns - The timeout ID for the timer that switches the current theme when it ends for a new random one.
+ */
 function setRandomThemeTimeout(nextTheme: HTMLAudioElement) {
   if (!nextTheme.duration) {
     console.error("[AWBW Music Player] Duration is 0, can't set timeout! Please report this bug!", nextTheme);
@@ -88,6 +98,11 @@ function whenAudioLoadsPlayIt(event: Event) {
   playThemeSong();
 }
 
+/**
+ * Creates a new audio player for the given URL and sets up the special loop if it has one.
+ * @param srcURL - URL of the audio to create a player for.
+ * @returns - The new audio player.
+ */
 function createNewThemeAudio(srcURL: string) {
   const audio = new Audio(srcURL);
   if (hasSpecialLoop(srcURL)) {
@@ -186,10 +201,9 @@ export function playThemeSong(startFromBeginning = false) {
   // Ignore all calls to play() while delaying, we are guaranteed to play eventually
   if (currentlyDelaying) return;
 
+  let gameType = undefined;
   let coName = currentPlayer.coName;
   if (!coName) coName = "map-editor";
-
-  let gameType = undefined;
 
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
@@ -445,7 +459,6 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
   });
 }
 
-// const allThemesPreloaded = false;
 /**
  * Updates the internal audio components to match the current music player settings when the settings change.
  * @param key - Key of the setting which has been changed.

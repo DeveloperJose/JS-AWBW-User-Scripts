@@ -33,11 +33,8 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   // Only do this once, when the settings are first loaded, otherwise it's infinite recursion.
   if (isFirstLoad) {
     if (volumeSlider) volumeSlider.value = musicPlayerSettings.volume.toString();
-
     if (sfxVolumeSlider) sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
-
     if (uiVolumeSlider) uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
-
     if (daySlider) daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
 
     const radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
@@ -90,6 +87,10 @@ const parseInputFloat = (event: Event): number => parseFloat((event.target as HT
 const parseInputInt = (event: Event): number => parseInt((event.target as HTMLInputElement).value);
 
 /************************************ Create the music player UI *************************************/
+
+/**
+ * The music player UI for the settings.
+ */
 export const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
 
 // Determine who will catch when the user clicks the play/stop button

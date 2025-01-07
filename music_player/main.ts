@@ -2,7 +2,6 @@
  * @file Main script that loads everything for the AWBW Improved Music Player userscript.
  *
  * @TODO - More map editor sound effects
- * @TODO - Add unwrap to rollup
  */
 // Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";
@@ -29,6 +28,7 @@ function getMenu() {
 /******************************************************************
  * MODULE EXPORTS
  ******************************************************************/
+// Exporting this function is necessary for the CO Selector to work
 export { notifyCOSelectorListeners as notifyCOSelectorListeners };
 
 /******************************************************************

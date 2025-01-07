@@ -527,7 +527,7 @@ var awbw_music_player = (function (exports) {
   })(SettingsThemeType || (SettingsThemeType = {}));
   /**
    * Gets the theme type enum corresponding to the CO Power state for the current CO.
-   * @returns {SettingsThemeType} The SettingsThemeType enum for the current CO Power state.
+   * @returns - The SettingsThemeType enum for the current CO Power state.
    */
   function getCurrentThemeType() {
     const currentPowerState = currentPlayer?.coPowerState;
@@ -535,6 +535,10 @@ var awbw_music_player = (function (exports) {
     if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
     return SettingsThemeType.REGULAR;
   }
+  /**
+   * Gets a random game type from the SettingsGameType enum.
+   * @returns - A random game type from the SettingsGameType enum.
+   */
   function getRandomGameType() {
     return Object.values(SettingsGameType)[Math.floor(Math.random() * Object.keys(SettingsGameType).length)];
   }
@@ -1751,6 +1755,9 @@ var awbw_music_player = (function (exports) {
    */
   const parseInputInt = (event) => parseInt(event.target.value);
   /************************************ Create the music player UI *************************************/
+  /**
+   * The music player UI for the settings.
+   */
   const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
   // Determine who will catch when the user clicks the play/stop button
   musicPlayerUI.addEventListener("click", onMusicBtnClick);
@@ -1914,6 +1921,15 @@ var awbw_music_player = (function (exports) {
    * Timeout ID for the timer that switches the current theme when it ends for a new random one.
    */
   let randomThemeTimeout;
+  /**
+   * If set to true, all themes have been pre-loaded so we do not need to load them again.
+   */
+  // let allThemesPreloaded = false;
+  /**
+   * When changing themes, this function sets a timeout to switch to a new random theme after the current one ends.
+   * @param nextTheme - The audio element of the current theme that is playing.
+   * @returns - The timeout ID for the timer that switches the current theme when it ends for a new random one.
+   */
   function setRandomThemeTimeout(nextTheme) {
     if (!nextTheme.duration) {
       console.error("[AWBW Music Player] Duration is 0, can't set timeout! Please report this bug!", nextTheme);
@@ -1947,6 +1963,11 @@ var awbw_music_player = (function (exports) {
     // if (audio.src === currentThemeKey) audio.play();
     playThemeSong();
   }
+  /**
+   * Creates a new audio player for the given URL and sets up the special loop if it has one.
+   * @param srcURL - URL of the audio to create a player for.
+   * @returns - The new audio player.
+   */
   function createNewThemeAudio(srcURL) {
     const audio = new Audio(srcURL);
     if (hasSpecialLoop(srcURL)) {
@@ -2029,9 +2050,9 @@ var awbw_music_player = (function (exports) {
     // Someone wants us to delay playing the theme, so wait a little bit then play
     // Ignore all calls to play() while delaying, we are guaranteed to play eventually
     if (currentlyDelaying) return;
+    let gameType = undefined;
     let coName = currentPlayer.coName;
     if (!coName) coName = "map-editor";
-    let gameType = undefined;
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
     if (musicPlayerSettings.randomThemes && !isEndTheme) {
@@ -2244,7 +2265,6 @@ var awbw_music_player = (function (exports) {
       audio.addEventListener("error", onAudioPreload, { once: true });
     });
   }
-  // const allThemesPreloaded = false;
   /**
    * Updates the internal audio components to match the current music player settings when the settings change.
    * @param key - Key of the setting which has been changed.
@@ -2416,6 +2436,10 @@ var awbw_music_player = (function (exports) {
    * The last known Y coordinate of the cursor.
    */
   let lastCursorY = -1;
+  /**
+   * Enum representing the type of menu that is currently open, if any.
+   * @enum {string}
+   */
   var MenuOpenType;
   (function (MenuOpenType) {
     MenuOpenType["None"] = "None";
@@ -2423,6 +2447,9 @@ var awbw_music_player = (function (exports) {
     MenuOpenType["Regular"] = "Regular";
     MenuOpenType["UnitSelect"] = "UnitSelect";
   })(MenuOpenType || (MenuOpenType = {}));
+  /**
+   * The current type of menu that is open, if any.
+   */
   let currentMenuType = MenuOpenType.None;
   /**
    * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.
@@ -2432,8 +2459,12 @@ var awbw_music_player = (function (exports) {
    * Map of unit IDs to their movement responses. Used to check if a unit got trapped.
    */
   const movementResponseMap = new Map();
+  /**
+   * Map of damage squares that have been clicked.
+   * Used to check if the user clicked on a damage square twice to finalize an attack.
+   */
   const clickedDamageSquaresMap = new Map();
-  // Store a copy of all the original functions we are going to override
+  /* **Store a copy of all the original functions we are going to override** */
   const ahQueryTurn = getQueryTurnFn();
   const ahShowEventScreen = getShowEventScreenFn();
   // let ahSwapCosDisplay = getSwapCosDisplayFn();
@@ -2482,13 +2513,16 @@ var awbw_music_player = (function (exports) {
     addReplayHandlers();
     addGameHandlers();
   }
+  /**
+   * Syncs the music with the game state. Does not randomize the COs.
+   */
   function syncMusic() {
     musicPlayerSettings.themeType = getCurrentThemeType();
     playThemeSong();
     setTimeout(playThemeSong, 1000);
   }
   /**
-   * Syncs the music with the game state. Also randomizes the COs if needed.
+   * Refreshes everything needed for the music when finishing a turn. Also randomizes the COs if needed.
    * @param playDelayMS - The delay in milliseconds before the theme song starts playing.
    */
   function refreshMusicForNextTurn(playDelayMS = 0) {
@@ -2976,7 +3010,6 @@ var awbw_music_player = (function (exports) {
    * @file Main script that loads everything for the AWBW Improved Music Player userscript.
    *
    * @TODO - More map editor sound effects
-   * @TODO - Add unwrap to rollup
    */
   // Add our CSS to the page using rollup-plugin-postcss
   /**
