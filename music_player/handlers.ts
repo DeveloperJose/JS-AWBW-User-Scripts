@@ -417,7 +417,8 @@ function onUnitClick(clicked: UnitClickData) {
   const myID = getMyID();
   const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
   const isMyUnit = unitInfo.units_players_id === myID;
-  const canActionsBeTaken = !isUnitWaited && isMyUnit && !isReplayActive();
+  const isMyTurn = currentTurn === myID;
+  const canActionsBeTaken = !isUnitWaited && isMyUnit && isMyTurn && !isReplayActive();
 
   // If action can be taken, then we can cancel out of that action
   currentMenuType = canActionsBeTaken ? MenuOpenType.UnitSelect : MenuOpenType.None;

@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
-// @version     3.0.3
+// @version     3.0.4
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1681,7 +1681,7 @@ var awbw_music_player = (function (exports) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "3.0.3",
+    music_player: "3.0.4",
     highlight_cursor_coordinates: "2.0.1",
   };
 
@@ -2690,7 +2690,8 @@ var awbw_music_player = (function (exports) {
     const myID = getMyID();
     const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
     const isMyUnit = unitInfo.units_players_id === myID;
-    const canActionsBeTaken = !isUnitWaited && isMyUnit && !isReplayActive();
+    const isMyTurn = currentTurn === myID;
+    const canActionsBeTaken = !isUnitWaited && isMyUnit && isMyTurn && !isReplayActive();
     // If action can be taken, then we can cancel out of that action
     currentMenuType = canActionsBeTaken ? MenuOpenType.UnitSelect : MenuOpenType.None;
     playSFX(GameSFX.uiUnitSelect);
