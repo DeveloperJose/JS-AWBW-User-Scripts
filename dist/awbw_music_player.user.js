@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
-// @version     3.0.2
+// @version     3.0.3
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1677,7 +1677,7 @@ var awbw_music_player = (function (exports) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "3.0.2",
+    music_player: "3.0.3",
     highlight_cursor_coordinates: "2.0.1",
   };
 
@@ -2600,7 +2600,12 @@ var awbw_music_player = (function (exports) {
         const target = event.target;
         if (!target) return;
         // Check if we clicked on a unit we cannot buy
-        if (target.classList.contains("forbidden")) {
+        if (
+          target.classList.contains("forbidden") ||
+          target.parentElement?.classList.contains("forbidden") ||
+          target.parentElement?.parentElement?.classList.contains("forbidden") ||
+          target.parentElement?.parentElement?.parentElement?.classList.contains("forbidden")
+        ) {
           playSFX(GameSFX.uiInvalid);
           return;
         }

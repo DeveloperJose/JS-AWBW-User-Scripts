@@ -332,7 +332,12 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
       if (!target) return;
 
       // Check if we clicked on a unit we cannot buy
-      if (target.classList.contains("forbidden")) {
+      if (
+        target.classList.contains("forbidden") ||
+        target.parentElement?.classList.contains("forbidden") ||
+        target.parentElement?.parentElement?.classList.contains("forbidden") ||
+        target.parentElement?.parentElement?.parentElement?.classList.contains("forbidden")
+      ) {
         playSFX(GameSFX.uiInvalid);
         return;
       }
