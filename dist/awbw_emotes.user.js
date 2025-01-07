@@ -5,6 +5,7 @@
 // @match      https://awbw.amarriner.com/game.php*
 // @supportURL https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license    MIT
+// @unwrap
 // @grant      none
 // ==/UserScript==
 

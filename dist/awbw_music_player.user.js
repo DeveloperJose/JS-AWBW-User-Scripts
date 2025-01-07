@@ -7,9 +7,10 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
-// @version     3.0.0
+// @version     3.0.1
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
+// @unwrap
 // @grant       none
 // ==/UserScript==
 
@@ -534,6 +535,9 @@ var awbw_music_player = (function (exports) {
     if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
     return SettingsThemeType.REGULAR;
   }
+  function getRandomGameType() {
+    return Object.values(SettingsGameType)[Math.floor(Math.random() * Object.keys(SettingsGameType).length)];
+  }
   /**
    * String used as the key for storing settings in LocalStorage
    * @constant
@@ -569,6 +573,7 @@ var awbw_music_player = (function (exports) {
     // Non-user configurable settings
     static __themeType = SettingsThemeType.REGULAR;
     static __currentRandomCO = getRandomCO();
+    static __currentRandomGameType = SettingsGameType.DS;
     static __isLoaded = false;
     static toJSON() {
       return JSON.stringify({
@@ -713,10 +718,14 @@ var awbw_music_player = (function (exports) {
         val = getRandomCO();
       }
       this.__currentRandomCO = val;
+      this.__currentRandomGameType = getRandomGameType();
       this.onSettingChangeEvent("currentRandomCO");
     }
     static onSettingChangeEvent(key) {
       onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
+    }
+    static get currentRandomGameType() {
+      return this.__currentRandomGameType;
     }
   }
   /**
@@ -1666,8 +1675,8 @@ var awbw_music_player = (function (exports) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "3.0.0",
-    highlight_cursor_coordinates: "2.0.0",
+    music_player: "3.0.1",
+    highlight_cursor_coordinates: "2.0.1",
   };
 
   /**
@@ -2020,12 +2029,14 @@ var awbw_music_player = (function (exports) {
     if (currentlyDelaying) return;
     let coName = currentPlayer.coName;
     if (!coName) coName = "map-editor";
+    let gameType = undefined;
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
     if (musicPlayerSettings.randomThemes && !isEndTheme) {
       coName = musicPlayerSettings.currentRandomCO;
+      gameType = musicPlayerSettings.currentRandomGameType;
     }
-    playMusicURL(getMusicURL(coName), startFromBeginning);
+    playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
   }
   /**
    * Stops the current music if there's any playing.
@@ -2369,8 +2380,17 @@ var awbw_music_player = (function (exports) {
   function getNextTurnFn() {
     return typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
   }
+  function getEliminationFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
+  }
   function getPowerFn() {
     return typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
+  }
+  function getGameOverFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
+  }
+  function getResignFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Resign : null;
   }
 
   /**
@@ -2438,9 +2458,10 @@ var awbw_music_player = (function (exports) {
   const ahJoin = getJoinFn();
   const ahLaunch = getLaunchFn();
   const ahNextTurn = getNextTurnFn();
-  // let ahElimination = getEliminationFn();
+  const ahElimination = getEliminationFn();
   const ahPower = getPowerFn();
-  // let ahGameOver = getGameOverFn();
+  const ahGameOver = getGameOverFn();
+  const ahResign = getResignFn();
   /**
    * Intercept functions and add our own handlers to the website.
    */
@@ -2494,7 +2515,7 @@ var awbw_music_player = (function (exports) {
     replayBackwardBtn.addEventListener("click", replayChangeTurn);
     replayOpenBtn.addEventListener("click", replayChangeTurn);
     replayCloseBtn.addEventListener("click", replayChangeTurn);
-    replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
+    replayDaySelectorCheckBox.addEventListener("change", replayChangeTurn);
   }
   /**
    * Add all handlers that will intercept clicks and functions during a game.
@@ -2525,9 +2546,10 @@ var awbw_music_player = (function (exports) {
     actionHandlers.Join = onJoin;
     actionHandlers.Launch = onLaunch;
     actionHandlers.NextTurn = onNextTurn;
-    // actionHandlers.Elimination = onElimination;
+    actionHandlers.Elimination = onElimination;
     actionHandlers.Power = onPower;
-    // actionHandlers.GameOver = onGameOver;
+    actionHandlers.GameOver = onGameOver;
+    actionHandlers.Resign = onResign;
   }
   function onCursorMove(cursorX, cursorY) {
     // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
@@ -2558,6 +2580,7 @@ var awbw_music_player = (function (exports) {
     if (!musicPlayerSettings.isPlaying) return;
     // console.debug("[MP] Show Event Screen", event);
     playThemeSong();
+    setTimeout(playThemeSong, 500);
   }
   function onOpenMenu(menu, x, y) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
@@ -2623,7 +2646,7 @@ var awbw_music_player = (function (exports) {
     const myID = getMyID();
     const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
     const isMyUnit = unitInfo.units_players_id === myID;
-    const canActionsBeTaken = !isUnitWaited && isMyUnit;
+    const canActionsBeTaken = !isUnitWaited && isMyUnit && !isReplayActive();
     // If action can be taken, then we can cancel out of that action
     currentMenuType = canActionsBeTaken ? MenuOpenType.UnitSelect : MenuOpenType.None;
     playSFX(GameSFX.uiUnitSelect);
@@ -2877,6 +2900,25 @@ var awbw_music_player = (function (exports) {
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
     }
+    refreshMusicForNextTurn();
+  }
+  function onElimination(data) {
+    ahElimination?.apply(actionHandlers.Elimination, [data]);
+    if (!musicPlayerSettings.isPlaying) return;
+    // console.debug("[MP] Elimination", data);
+    // Play the elimination sound
+    refreshMusicForNextTurn();
+  }
+  function onGameOver() {
+    ahGameOver?.apply(actionHandlers.GameOver, []);
+    if (!musicPlayerSettings.isPlaying) return;
+    // console.debug("[MP] GameOver");
+    refreshMusicForNextTurn();
+  }
+  function onResign(data) {
+    ahResign?.apply(actionHandlers.Resign, [data]);
+    if (!musicPlayerSettings.isPlaying) return;
+    // console.debug("[MP] Resign", data);
     refreshMusicForNextTurn();
   }
   function onPower(data) {

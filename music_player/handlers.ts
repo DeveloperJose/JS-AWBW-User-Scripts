@@ -47,8 +47,10 @@ import {
   getCaptFn,
   getCloseMenuFn,
   getCreateDamageSquaresFn,
+  getEliminationFn,
   getFireFn,
   getFogFn,
+  getGameOverFn,
   getHideFn,
   getJoinFn,
   getLaunchFn,
@@ -59,6 +61,7 @@ import {
   getPowerFn,
   getQueryTurnFn,
   getRepairFn,
+  getResignFn,
   getShowEventScreenFn,
   getSupplyFn,
   getUnhideFn,
@@ -137,9 +140,10 @@ const ahUnhide = getUnhideFn();
 const ahJoin = getJoinFn();
 const ahLaunch = getLaunchFn();
 const ahNextTurn = getNextTurnFn();
-// let ahElimination = getEliminationFn();
+const ahElimination = getEliminationFn();
 const ahPower = getPowerFn();
-// let ahGameOver = getGameOverFn();
+const ahGameOver = getGameOverFn();
+const ahResign = getResignFn();
 
 /**
  * Intercept functions and add our own handlers to the website.
@@ -216,7 +220,7 @@ function addReplayHandlers() {
   replayBackwardBtn.addEventListener("click", replayChangeTurn);
   replayOpenBtn.addEventListener("click", replayChangeTurn);
   replayCloseBtn.addEventListener("click", replayChangeTurn);
-  replayDaySelectorCheckBox.addEventListener("click", replayChangeTurn);
+  replayDaySelectorCheckBox.addEventListener("change", replayChangeTurn);
 }
 
 /**
@@ -249,9 +253,10 @@ function addGameHandlers() {
   actionHandlers.Join = onJoin;
   actionHandlers.Launch = onLaunch;
   actionHandlers.NextTurn = onNextTurn;
-  // actionHandlers.Elimination = onElimination;
+  actionHandlers.Elimination = onElimination;
   actionHandlers.Power = onPower;
-  // actionHandlers.GameOver = onGameOver;
+  actionHandlers.GameOver = onGameOver;
+  actionHandlers.Resign = onResign;
 }
 
 function onCursorMove(cursorX: number, cursorY: number) {
@@ -296,6 +301,7 @@ function onShowEventScreen(event: ShowEventScreenData) {
   if (!musicPlayerSettings.isPlaying) return;
   // console.debug("[MP] Show Event Screen", event);
   playThemeSong();
+  setTimeout(playThemeSong, 500);
 }
 
 function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
@@ -377,7 +383,7 @@ function onUnitClick(clicked: UnitClickData) {
   const myID = getMyID();
   const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
   const isMyUnit = unitInfo.units_players_id === myID;
-  const canActionsBeTaken = !isUnitWaited && isMyUnit;
+  const canActionsBeTaken = !isUnitWaited && isMyUnit && !isReplayActive();
 
   // If action can be taken, then we can cancel out of that action
   currentMenuType = canActionsBeTaken ? MenuOpenType.UnitSelect : MenuOpenType.None;
@@ -693,6 +699,31 @@ function onNextTurn(data: NextTurnData) {
   if (data.swapCos) {
     playSFX(GameSFX.tagSwap);
   }
+
+  refreshMusicForNextTurn();
+}
+
+function onElimination(data: EliminationData) {
+  ahElimination?.apply(actionHandlers.Elimination, [data]);
+  if (!musicPlayerSettings.isPlaying) return;
+  // console.debug("[MP] Elimination", data);
+
+  // Play the elimination sound
+  refreshMusicForNextTurn();
+}
+
+function onGameOver() {
+  ahGameOver?.apply(actionHandlers.GameOver, []);
+  if (!musicPlayerSettings.isPlaying) return;
+  // console.debug("[MP] GameOver");
+
+  refreshMusicForNextTurn();
+}
+
+function onResign(data: ResignData) {
+  ahResign?.apply(actionHandlers.Resign, [data]);
+  if (!musicPlayerSettings.isPlaying) return;
+  // console.debug("[MP] Resign", data);
 
   refreshMusicForNextTurn();
 }

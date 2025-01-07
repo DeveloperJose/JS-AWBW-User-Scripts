@@ -39,6 +39,10 @@ export function getCurrentThemeType() {
   return SettingsThemeType.REGULAR;
 }
 
+export function getRandomGameType() {
+  return Object.values(SettingsGameType)[Math.floor(Math.random() * Object.keys(SettingsGameType).length)];
+}
+
 /**
  * String used as the key for storing settings in LocalStorage
  * @constant
@@ -83,6 +87,7 @@ export abstract class musicPlayerSettings {
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
   private static __currentRandomCO = getRandomCO();
+  private static __currentRandomGameType = SettingsGameType.DS;
   private static __isLoaded = false;
 
   static toJSON() {
@@ -256,11 +261,16 @@ export abstract class musicPlayerSettings {
       val = getRandomCO();
     }
     this.__currentRandomCO = val;
+    this.__currentRandomGameType = getRandomGameType();
     this.onSettingChangeEvent("currentRandomCO");
   }
 
   static onSettingChangeEvent(key: string) {
     onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
+  }
+
+  static get currentRandomGameType() {
+    return this.__currentRandomGameType;
   }
 }
 

@@ -4,6 +4,5 @@
   "author": "DeveloperJose, _twiggy",
   "match": ["https://awbw.amarriner.com/game.php*", "https://awbw.amarriner.com/moveplanner.php*", "https://awbw.amarriner.com/*editmap*"],
   "icon": "https://developerjose.netlify.app/img/music-player-icon.png",
-  "namespace": "https://awbw.amarriner.com/",
-  "@unwrap": ""
+  "namespace": "https://awbw.amarriner.com/"
 }

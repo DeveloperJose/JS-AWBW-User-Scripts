@@ -125,6 +125,10 @@ export function getGameOverFn() {
   return typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
 }
 
+export function getResignFn() {
+  return typeof actionHandlers !== "undefined" ? actionHandlers.Resign : null;
+}
+
 export function getResizeMapFn() {
   return typeof designMapEditor !== "undefined" ? designMapEditor.resizeMap : null;
 }

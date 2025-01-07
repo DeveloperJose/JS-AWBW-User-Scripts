@@ -189,12 +189,15 @@ export function playThemeSong(startFromBeginning = false) {
   let coName = currentPlayer.coName;
   if (!coName) coName = "map-editor";
 
+  let gameType = undefined;
+
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
   if (musicPlayerSettings.randomThemes && !isEndTheme) {
     coName = musicPlayerSettings.currentRandomCO;
+    gameType = musicPlayerSettings.currentRandomGameType;
   }
-  playMusicURL(getMusicURL(coName), startFromBeginning);
+  playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
 }
 
 /**
