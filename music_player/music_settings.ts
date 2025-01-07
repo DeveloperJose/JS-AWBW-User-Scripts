@@ -168,6 +168,8 @@ export abstract class musicPlayerSettings {
   static set gameType(val: SettingsGameType) {
     if (this.__gameType === val) return;
     this.__gameType = val;
+    // The user wants this game type, so override whatever random game type we had before
+    this.__currentRandomGameType = val;
     this.onSettingChangeEvent("gameType");
   }
   static get gameType() {

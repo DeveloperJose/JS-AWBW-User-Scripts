@@ -35,7 +35,14 @@ import {
 import { getBuildingDiv } from "../shared/awbw_page";
 
 import { areAnimationsEnabled, getRandomCO } from "../shared/awbw_globals";
-import { playThemeSong, playSFX, stopMovementSound, playMovementSound, stopThemeSong } from "./music";
+import {
+  playThemeSong,
+  playSFX,
+  stopMovementSound,
+  playMovementSound,
+  stopThemeSong,
+  stopAllMovementSounds,
+} from "./music";
 import { getCurrentThemeType, musicPlayerSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
@@ -182,6 +189,12 @@ function addMovePlannerHandlers() {
   // closeMenu = onCloseMenu;
 }
 
+function syncMusic() {
+  musicPlayerSettings.themeType = getCurrentThemeType();
+  playThemeSong();
+  setTimeout(playThemeSong, 1000);
+}
+
 /**
  * Syncs the music with the game state. Also randomizes the COs if needed.
  * @param playDelayMS - The delay in milliseconds before the theme song starts playing.
@@ -190,10 +203,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
   // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
   visibilityMap.clear();
   musicPlayerSettings.currentRandomCO = getRandomCO();
-  setTimeout(() => {
-    musicPlayerSettings.themeType = getCurrentThemeType();
-    playThemeSong();
-  }, playDelayMS);
+  setTimeout(syncMusic, playDelayMS);
 }
 
 /**
@@ -209,9 +219,11 @@ function addReplayHandlers() {
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
   // Keep the music in sync
-  const syncMusic = () => setTimeout(playThemeSong, 500);
   replayBackwardActionBtn.addEventListener("click", syncMusic);
   replayForwardActionBtn.addEventListener("click", syncMusic);
+
+  // Stop all movement sounds when we go backwards on action
+  replayBackwardActionBtn.addEventListener("click", () => stopAllMovementSounds());
 
   // Stop all movement sounds when we are going fast
   // Randomize COs when we move a full turn

@@ -41,6 +41,6 @@ export default (commandLineArgs) => {
   return [
     createUserscriptRollUpConfig("music_player"),
     createUserscriptRollUpConfig("highlight_cursor_coordinates"),
-    createUserscriptRollUpConfig("emotes"),
+    // createUserscriptRollUpConfig("emotes"),
   ];
 };

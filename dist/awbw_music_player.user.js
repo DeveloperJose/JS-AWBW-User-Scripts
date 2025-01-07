@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
-// @version     3.0.1
+// @version     3.0.2
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -643,6 +643,8 @@ var awbw_music_player = (function (exports) {
     static set gameType(val) {
       if (this.__gameType === val) return;
       this.__gameType = val;
+      // The user wants this game type, so override whatever random game type we had before
+      this.__currentRandomGameType = val;
       this.onSettingChangeEvent("gameType");
     }
     static get gameType() {
@@ -1675,7 +1677,7 @@ var awbw_music_player = (function (exports) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "3.0.1",
+    music_player: "3.0.2",
     highlight_cursor_coordinates: "2.0.1",
   };
 
@@ -2480,6 +2482,11 @@ var awbw_music_player = (function (exports) {
     addReplayHandlers();
     addGameHandlers();
   }
+  function syncMusic() {
+    musicPlayerSettings.themeType = getCurrentThemeType();
+    playThemeSong();
+    setTimeout(playThemeSong, 1000);
+  }
   /**
    * Syncs the music with the game state. Also randomizes the COs if needed.
    * @param playDelayMS - The delay in milliseconds before the theme song starts playing.
@@ -2488,10 +2495,7 @@ var awbw_music_player = (function (exports) {
     // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
     visibilityMap.clear();
     musicPlayerSettings.currentRandomCO = getRandomCO();
-    setTimeout(() => {
-      musicPlayerSettings.themeType = getCurrentThemeType();
-      playThemeSong();
-    }, playDelayMS);
+    setTimeout(syncMusic, playDelayMS);
   }
   /**
    * Add all handlers that will intercept clicks and functions when watching a replay.
@@ -2505,9 +2509,10 @@ var awbw_music_player = (function (exports) {
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
     // Keep the music in sync
-    const syncMusic = () => setTimeout(playThemeSong, 500);
     replayBackwardActionBtn.addEventListener("click", syncMusic);
     replayForwardActionBtn.addEventListener("click", syncMusic);
+    // Stop all movement sounds when we go backwards on action
+    replayBackwardActionBtn.addEventListener("click", () => stopAllMovementSounds());
     // Stop all movement sounds when we are going fast
     // Randomize COs when we move a full turn
     const replayChangeTurn = () => refreshMusicForNextTurn(500);
