@@ -41,7 +41,7 @@ Below are the changes from the original script:
 * Each song will continue where it left off the last time it played instead of always starting at the beginning. This means when a turn change happens, if the next CO is the same as the previous CO the music won't restart. Note that this feature is disabled when using the random theme setting.
 * Fixed issues where some replay controls weren't updating the music properly.
 * Added cursor moving sound effects to design map page. 
-* Added music to maintenance and your games page. You can disable the autoplay for these songs in the settings (Autoplay Music On Other Pages).
+* Added music to maintenance, your games, and live queue pages. You can disable the autoplay for these songs in the settings (Autoplay Music On Other Pages).
 * Music will stop in the current game page if you disconnect from it and connect to another game.
 
 ![Picture of the music player icon on the page](./Improved_Music_Player_Icon.png)

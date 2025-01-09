@@ -14,6 +14,7 @@ import {
   playThemeSong,
   preloadAllCommonAudio,
   preloadAllExtraAudio,
+  stopThemeSong,
 } from "./music";
 import {
   allowSettingsToBeSaved,
@@ -41,7 +42,7 @@ function getMenu() {
   if (isMaintenance()) return document.querySelector("#main");
   if (isMapEditor()) return document.querySelector("#replay-misc-controls");
   if (isMovePlanner()) return document.querySelector("#map-controls-container");
-  if (isYourGames()) return document.querySelector("#main");
+  if (isYourGames()) return document.querySelector("#nav-options");
   return document.querySelector("#game-map-menu")?.parentNode;
 }
 
@@ -65,31 +66,47 @@ export function main() {
   if (isLiveQueue()) {
     console.log("[AWBW Improved Music Player] Live Queue detected...");
 
-    const intervalID = setInterval(() => {
+    const addMusicFn = () => {
       // Check if the parent popup is created and visible
       const blockerPopup = getLiveQueueBlockerPopup();
-      console.log("blockerPopup", blockerPopup);
-      if (!blockerPopup) return;
-      if (blockerPopup.style.display === "none") return;
+      if (!blockerPopup) return false;
+      if (blockerPopup.style.display === "none") return false;
 
       // Now make sure the internal popup is created
       const popup = getLiveQueueSelectPopup();
-      console.log("popup", popup);
-      if (!popup) return;
+      if (!popup) return false;
 
       // Get the div with "Match starts in ...."
       const box = popup.querySelector(".flex.row.hv-center");
-      console.log("box", box);
-      if (!box) return;
+      if (!box) return false;
 
       // Prepend the music player UI to the box
       musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
       playMusicURL(SpecialTheme.COSelect);
       allowSettingsToBeSaved();
       playOrPauseWhenWindowFocusChanges();
+      return true;
+    };
 
-      // No need to keep checking
-      clearInterval(intervalID);
+    const checkStillActiveFn = () => {
+      const blockerPopup = getLiveQueueBlockerPopup();
+      return blockerPopup?.style.display !== "none";
+    };
+
+    const addPlayerIntervalID = window.setInterval(() => {
+      if (!addMusicFn()) return;
+
+      // We don't need to add the music player anymore
+      clearInterval(addPlayerIntervalID);
+
+      // Now we need to check if we need to pause/resume the music because the player left/rejoined
+      // We will do this indefinitely until eventually the player accepts a match or leaves the page
+      window.setInterval(() => {
+        // We are still in the CO select, play the music
+        if (checkStillActiveFn()) playThemeSong();
+        // We are not in the CO select, stop the music
+        else stopThemeSong();
+      }, 500);
     }, 500);
     return;
   }
@@ -117,7 +134,10 @@ export function main() {
 
   if (isYourGames()) {
     console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
-    musicPlayerUI.parent.style.borderRight = "";
+    musicPlayerUI.parent.style.border = "none";
+    musicPlayerUI.parent.style.backgroundColor = "#0000";
+    musicPlayerUI.setProgress(-1);
+    console.log(musicPlayerUI.parent);
     playMusicURL(SpecialTheme.ModeSelect);
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();

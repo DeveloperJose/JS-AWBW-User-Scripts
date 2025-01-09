@@ -244,6 +244,10 @@ export class CustomMenuSettingsUI {
   setProgress(progress: number) {
     const bgDiv = this.groups.get("bg");
     if (!bgDiv) return;
+    if (progress < 0) {
+      bgDiv.style.backgroundImage = "";
+      return;
+    }
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
   }
 
