@@ -21,7 +21,7 @@ import {
 import {
   addUpdateCursorObserver,
   getAllDamageSquares,
-  isGamePage,
+  isGamePageAndActive,
   isMaintenance,
   isMapEditor,
   isMovePlanner,
@@ -185,7 +185,7 @@ export function addHandlers() {
     return;
   }
 
-  if (isGamePage()) {
+  if (isGamePageAndActive()) {
     addReplayHandlers();
     addGameHandlers();
     return;

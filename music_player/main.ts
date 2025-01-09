@@ -22,7 +22,15 @@ import {
   musicSettings,
 } from "./music_settings";
 import { addHandlers } from "./handlers";
-import { isMaintenance, isMapEditor, isMovePlanner, isYourGames } from "../shared/awbw_page";
+import {
+  getLiveQueueBlockerPopup,
+  getLiveQueueSelectPopup,
+  isLiveQueue,
+  isMaintenance,
+  isMapEditor,
+  isMovePlanner,
+  isYourGames,
+} from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 
@@ -48,19 +56,53 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
  ******************************************************************/
 export function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
-  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
-  addHandlers();
+  musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+  musicPlayerUI.setProgress(100);
 
   // Load settings from local storage but don't allow saving yet
   loadSettingsFromLocalStorage();
 
+  if (isLiveQueue()) {
+    console.log("[AWBW Improved Music Player] Live Queue detected...");
+
+    const intervalID = setInterval(() => {
+      // Check if the parent popup is created and visible
+      const blockerPopup = getLiveQueueBlockerPopup();
+      console.log("blockerPopup", blockerPopup);
+      if (!blockerPopup) return;
+      if (blockerPopup.style.display === "none") return;
+
+      // Now make sure the internal popup is created
+      const popup = getLiveQueueSelectPopup();
+      console.log("popup", popup);
+      if (!popup) return;
+
+      // Get the div with "Match starts in ...."
+      const box = popup.querySelector(".flex.row.hv-center");
+      console.log("box", box);
+      if (!box) return;
+
+      // Prepend the music player UI to the box
+      musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
+      playMusicURL(SpecialTheme.COSelect);
+      allowSettingsToBeSaved();
+      playOrPauseWhenWindowFocusChanges();
+
+      // No need to keep checking
+      clearInterval(intervalID);
+    }, 500);
+    return;
+  }
+
+  // Add the music player UI to the page and the necessary event handlers
+  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
+  addHandlers();
+
   if (isMaintenance()) {
     console.log("[AWBW Improved Music Player] Maintenance mode detected, playing music...");
-    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
-    musicPlayerUI.setProgress(100);
+    musicPlayerUI.parent.style.borderLeft = "";
     musicPlayerUI.openContextMenu();
     playMusicURL(SpecialTheme.Maintenance);
-    playThemeSong();
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();
     return;
@@ -69,18 +111,14 @@ export function main() {
   if (isMovePlanner()) {
     console.log("[AWBW Improved Music Player] Move Planner detected");
     musicSettings.isPlaying = true;
-    musicPlayerUI.setProgress(100);
     allowSettingsToBeSaved();
     return;
   }
 
   if (isYourGames()) {
     console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
-    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
     musicPlayerUI.parent.style.borderRight = "";
-    musicPlayerUI.setProgress(100);
     playMusicURL(SpecialTheme.ModeSelect);
-    playThemeSong();
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();
     return;

@@ -4,7 +4,7 @@
  */
 
 import { areAnimationsEnabled } from "./awbw_globals";
-import { isGamePage, isMapEditor, getReplayControls, getConnectionErrorDiv } from "./awbw_page";
+import { isGamePageAndActive, isMapEditor, getReplayControls, getConnectionErrorDiv } from "./awbw_page";
 
 /**
  * Enum for the different states a CO Power can be in.
@@ -49,7 +49,7 @@ let myID: number = -1;
  * @returns - The player ID of the person logged in to the website.
  */
 export function getMyID() {
-  if (!isGamePage()) return -1;
+  if (!isGamePageAndActive()) return -1;
   if (myID < 0) {
     getAllPlayersInfo().forEach((entry) => {
       if (entry.users_username === getMyUsername()) {
@@ -66,7 +66,7 @@ export function getMyID() {
  * @returns - The info for that given player or null if such ID is not present in the game.
  */
 export function getPlayerInfo(pid: number): PlayerInfo | null {
-  if (!isGamePage()) return null;
+  if (!isGamePageAndActive()) return null;
   return playersInfo[pid];
 }
 
@@ -75,7 +75,7 @@ export function getPlayerInfo(pid: number): PlayerInfo | null {
  * @returns - List of player info data for all players in the current game.
  */
 export function getAllPlayersInfo() {
-  if (!isGamePage()) return [];
+  if (!isGamePageAndActive()) return [];
   return Object.values(playersInfo);
 }
 
@@ -85,7 +85,7 @@ export function getAllPlayersInfo() {
  * @returns True if the player is a spectator, false if they are playing in this game.
  */
 export function isPlayerSpectator(pid: number) {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   return !playerKeys.includes(pid);
 }
 
@@ -95,7 +95,7 @@ export function isPlayerSpectator(pid: number) {
  * @returns - True if the player can activate a regular CO Power.
  */
 export function canPlayerActivateCOPower(pid: number) {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   const info = getPlayerInfo(pid);
   if (!info) return false;
   return info.players_co_power >= info.players_co_max_power;
@@ -107,7 +107,7 @@ export function canPlayerActivateCOPower(pid: number) {
  * @returns - True if the player can activate a Super CO Power.
  */
 export function canPlayerActivateSuperCOPower(pid: number) {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   const info = getPlayerInfo(pid);
   if (!info) return false;
   return info.players_co_power >= info.players_co_max_spower;
@@ -120,7 +120,7 @@ export function canPlayerActivateSuperCOPower(pid: number) {
  * @returns - True if there is a building at the given coordinates.
  */
 export function isValidBuilding(x: number, y: number) {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   return buildingsInfo[x] && buildingsInfo[x][y];
 }
 
@@ -131,7 +131,7 @@ export function isValidBuilding(x: number, y: number) {
  * @returns - The info for that building at its current state.
  */
 export function getBuildingInfo(x: number, y: number) {
-  if (!isGamePage()) return null;
+  if (!isGamePageAndActive()) return null;
   return buildingsInfo[x][y];
 }
 
@@ -140,7 +140,7 @@ export function getBuildingInfo(x: number, y: number) {
  * @returns - Data of the current building or unit clicked by the user.
  */
 export function getCurrentClickData() {
-  if (!isGamePage()) return null;
+  if (!isGamePageAndActive()) return null;
   if (typeof currentClick === "undefined") return null;
   if (!currentClick) return null;
   return currentClick;
@@ -151,7 +151,7 @@ export function getCurrentClickData() {
  * @returns - True if we are in replay mode.
  */
 export function isReplayActive() {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   // Check if replay mode is open by checking if the replay section is set to display
   const replayControls = getReplayControls();
   const replayOpen = replayControls.style.display !== "none";
@@ -163,7 +163,7 @@ export function isReplayActive() {
  * @returns - True if the game has ended.
  */
 export function hasGameEnded() {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   // Count how many players are still in the game
   const numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
   return numberOfRemainingPlayers === 1;
@@ -175,7 +175,7 @@ export function hasGameEnded() {
  * @returns - The current day in the game.
  */
 export function getCurrentGameDay() {
-  if (!isGamePage()) return 1;
+  if (!isGamePageAndActive()) return 1;
   if (!isReplayActive()) return gameDay;
   const replayData = Object.values(replay);
   if (replayData.length === 0) return gameDay;
@@ -195,7 +195,7 @@ export abstract class currentPlayer {
    * Get the internal info object containing the state of the current player.
    */
   static get info(): PlayerInfo | null {
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
     if (typeof currentTurn === "undefined") return null;
     return getPlayerInfo(currentTurn);
   }
@@ -205,7 +205,7 @@ export abstract class currentPlayer {
    * @returns - True if a regular CO power or a Super CO Power is activated.
    */
   static get isPowerActivated() {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     return this?.coPowerState !== COPowerEnum.NoPower;
   }
 
@@ -214,7 +214,7 @@ export abstract class currentPlayer {
    * @returns - The state of the CO Power for the current player.
    */
   static get coPowerState() {
-    if (!isGamePage()) return COPowerEnum.NoPower;
+    if (!isGamePageAndActive()) return COPowerEnum.NoPower;
     return this.info?.players_co_power_on;
   }
 
@@ -223,7 +223,7 @@ export abstract class currentPlayer {
    * @returns - True if the current player has been eliminated.
    */
   static get isEliminated() {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     return this.info?.players_eliminated === "Y";
   }
 
@@ -235,7 +235,7 @@ export abstract class currentPlayer {
    */
   static get coName() {
     if (isMapEditor()) return "map-editor";
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
 
     // Check if we are eliminated even if the game has not ended
     const myID = getMyID();
@@ -259,7 +259,7 @@ export abstract class currentPlayer {
  */
 export function getAllPlayingCONames(): Set<string> {
   if (isMapEditor()) return new Set(["map-editor"]);
-  if (!isGamePage()) return new Set();
+  if (!isGamePageAndActive()) return new Set();
   const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
   const allTagPlayers = getAllTagCONames();
   return new Set([...allPlayers, ...allTagPlayers]);
@@ -270,7 +270,7 @@ export function getAllPlayingCONames(): Set<string> {
  * @returns - True if the game is a tag game.
  */
 export function isTagGame() {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   return typeof tagsInfo !== "undefined" && tagsInfo;
 }
 
@@ -279,7 +279,7 @@ export function isTagGame() {
  * @returns - Set with the names of each secondary CO in the tag.
  */
 export function getAllTagCONames(): Set<string> {
-  if (!isGamePage() || !isTagGame()) return new Set();
+  if (!isGamePageAndActive() || !isTagGame()) return new Set();
   return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
 }
 
@@ -289,7 +289,7 @@ export function getAllTagCONames(): Set<string> {
  * @returns - The info for that unit at its current state.
  */
 export function getUnitInfo(unitId: number) {
-  if (!isGamePage()) return null;
+  if (!isGamePageAndActive()) return null;
   return unitsInfo[unitId];
 }
 
@@ -299,7 +299,7 @@ export function getUnitInfo(unitId: number) {
  * @returns - Name of the unit.
  */
 export function getUnitName(unitId: number) {
-  if (!isGamePage()) return null;
+  if (!isGamePageAndActive()) return null;
   return getUnitInfo(unitId)?.units_name;
 }
 
@@ -310,7 +310,7 @@ export function getUnitName(unitId: number) {
  * @returns - The info for the unit at the given coordinates or null if there is no unit there.
  */
 export function getUnitInfoFromCoords(x: number, y: number) {
-  if (!isGamePage()) return null;
+  if (!isGamePageAndActive()) return null;
   return Object.values(unitsInfo)
     .filter((info) => info.units_x == x && info.units_y == y)
     .pop();
@@ -323,7 +323,7 @@ export function getUnitInfoFromCoords(x: number, y: number) {
  * @returns - True if the given unit is valid.
  */
 export function isValidUnit(unitId: number) {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   return unitId !== undefined && unitsInfo[unitId] !== undefined;
 }
 
@@ -333,7 +333,7 @@ export function isValidUnit(unitId: number) {
  * @returns - True if the unit is valid and it has moved this turn.
  */
 export function hasUnitMovedThisTurn(unitId: number) {
-  if (!isGamePage()) return false;
+  if (!isGamePageAndActive()) return false;
   return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
 }
 

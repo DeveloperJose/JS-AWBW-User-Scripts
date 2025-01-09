@@ -6,7 +6,7 @@ import { addSettingsChangeListener, musicSettings as musicSettings, SettingsGame
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
-import { isGamePage, isMapEditor, isMovePlanner } from "../shared/awbw_page";
+import { isGamePageAndActive, isMaintenance, isMapEditor, isMovePlanner } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -63,7 +63,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   }
 
   // Update UI
-  const canUpdateDaySlider = daySlider?.parentElement && isGamePage();
+  const canUpdateDaySlider = daySlider?.parentElement && isGamePageAndActive();
   if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
   if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
 
@@ -217,7 +217,7 @@ let currentSelectedCO = "andy";
 function onCOSelectorClick(coName: string) {
   currentSelectedCO = coName;
 }
-if (isGamePage()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+if (isGamePageAndActive()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
 
 // Game type radio buttons
 const overrideGameTypeRadioMap = new Map<SettingsGameType, HTMLInputElement>();
@@ -274,7 +274,7 @@ function clearAndRepopulateOverrideList() {
 musicPlayerUI.addVersion(versions.music_player);
 
 /* ************************************ Disable or hide things in other pages ************************************ */
-if (!isGamePage()) {
+if (!isGamePageAndActive()) {
   const parent = musicPlayerUI.getGroup("settings-parent");
   if (parent) parent.style.width = "475px";
 

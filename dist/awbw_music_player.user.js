@@ -7,6 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @match       https://awbw.amarriner.com/yourgames.php*
+// @match       https://awbw.amarriner.com/live_queue.php*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @version     3.1.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
@@ -57,6 +58,10 @@ var awbw_music_player = (function (exports) {
 
   /**
    * @file Constants, variables, and functions that come from analyzing the web pages of AWBW.
+   *
+   * querySelector()
+   * . = class
+   * # = id
    */
   /**
    * Are we in the map editor?
@@ -73,8 +78,11 @@ var awbw_music_player = (function (exports) {
   function isYourGames() {
     return window.location.href.indexOf("yourgames.php") > -1;
   }
-  function isGamePage() {
-    return window.location.href.indexOf("game.php") > -1;
+  function isGamePageAndActive() {
+    return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
+  }
+  function isLiveQueue() {
+    return window.location.href.indexOf("live_queue.php") > -1;
   }
   function getCoordsDiv() {
     return document.querySelector("#coords");
@@ -105,6 +113,12 @@ var awbw_music_player = (function (exports) {
   }
   function getConnectionErrorDiv() {
     return document.querySelector(".connection-error-msg");
+  }
+  function getLiveQueueSelectPopup() {
+    return document.querySelector("#live-queue-select-popup");
+  }
+  function getLiveQueueBlockerPopup() {
+    return document.querySelector(".live-queue-blocker-popup");
   }
   // ============================== Useful Page Utilities ==============================
   /**
@@ -286,7 +300,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The player ID of the person logged in to the website.
    */
   function getMyID() {
-    if (!isGamePage()) return -1;
+    if (!isGamePageAndActive()) return -1;
     if (myID < 0) {
       getAllPlayersInfo().forEach((entry) => {
         if (entry.users_username === getMyUsername()) {
@@ -302,7 +316,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for that given player or null if such ID is not present in the game.
    */
   function getPlayerInfo(pid) {
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
     return playersInfo[pid];
   }
   /**
@@ -310,7 +324,7 @@ var awbw_music_player = (function (exports) {
    * @returns - List of player info data for all players in the current game.
    */
   function getAllPlayersInfo() {
-    if (!isGamePage()) return [];
+    if (!isGamePageAndActive()) return [];
     return Object.values(playersInfo);
   }
   /**
@@ -319,7 +333,7 @@ var awbw_music_player = (function (exports) {
    * @returns True if the player is a spectator, false if they are playing in this game.
    */
   function isPlayerSpectator(pid) {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     return !playerKeys.includes(pid);
   }
   /**
@@ -328,7 +342,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the player can activate a regular CO Power.
    */
   function canPlayerActivateCOPower(pid) {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_power;
@@ -339,7 +353,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the player can activate a Super CO Power.
    */
   function canPlayerActivateSuperCOPower(pid) {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_spower;
@@ -351,7 +365,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for that building at its current state.
    */
   function getBuildingInfo(x, y) {
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
     return buildingsInfo[x][y];
   }
   /**
@@ -359,7 +373,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if we are in replay mode.
    */
   function isReplayActive() {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     // Check if replay mode is open by checking if the replay section is set to display
     const replayControls = getReplayControls();
     const replayOpen = replayControls.style.display !== "none";
@@ -370,7 +384,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the game has ended.
    */
   function hasGameEnded() {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     // Count how many players are still in the game
     const numberOfRemainingPlayers = Object.values(playersInfo).filter(
       (info) => info.players_eliminated === "N",
@@ -383,7 +397,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The current day in the game.
    */
   function getCurrentGameDay() {
-    if (!isGamePage()) return 1;
+    if (!isGamePageAndActive()) return 1;
     if (!isReplayActive()) return gameDay;
     const replayData = Object.values(replay);
     if (replayData.length === 0) return gameDay;
@@ -400,7 +414,7 @@ var awbw_music_player = (function (exports) {
      * Get the internal info object containing the state of the current player.
      */
     static get info() {
-      if (!isGamePage()) return null;
+      if (!isGamePageAndActive()) return null;
       if (typeof currentTurn === "undefined") return null;
       return getPlayerInfo(currentTurn);
     }
@@ -409,7 +423,7 @@ var awbw_music_player = (function (exports) {
      * @returns - True if a regular CO power or a Super CO Power is activated.
      */
     static get isPowerActivated() {
-      if (!isGamePage()) return false;
+      if (!isGamePageAndActive()) return false;
       return this?.coPowerState !== COPowerEnum.NoPower;
     }
     /**
@@ -417,7 +431,7 @@ var awbw_music_player = (function (exports) {
      * @returns - The state of the CO Power for the current player.
      */
     static get coPowerState() {
-      if (!isGamePage()) return COPowerEnum.NoPower;
+      if (!isGamePageAndActive()) return COPowerEnum.NoPower;
       return this.info?.players_co_power_on;
     }
     /**
@@ -425,7 +439,7 @@ var awbw_music_player = (function (exports) {
      * @returns - True if the current player has been eliminated.
      */
     static get isEliminated() {
-      if (!isGamePage()) return false;
+      if (!isGamePageAndActive()) return false;
       return this.info?.players_eliminated === "Y";
     }
     /**
@@ -436,7 +450,7 @@ var awbw_music_player = (function (exports) {
      */
     static get coName() {
       if (isMapEditor()) return "map-editor";
-      if (!isGamePage()) return null;
+      if (!isGamePageAndActive()) return null;
       // Check if we are eliminated even if the game has not ended
       const myID = getMyID();
       const myInfo = getPlayerInfo(myID);
@@ -456,7 +470,7 @@ var awbw_music_player = (function (exports) {
    */
   function getAllPlayingCONames() {
     if (isMapEditor()) return new Set(["map-editor"]);
-    if (!isGamePage()) return new Set();
+    if (!isGamePageAndActive()) return new Set();
     const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
     const allTagPlayers = getAllTagCONames();
     return new Set([...allPlayers, ...allTagPlayers]);
@@ -466,7 +480,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the game is a tag game.
    */
   function isTagGame() {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     return typeof tagsInfo !== "undefined" && tagsInfo;
   }
   /**
@@ -474,7 +488,7 @@ var awbw_music_player = (function (exports) {
    * @returns - Set with the names of each secondary CO in the tag.
    */
   function getAllTagCONames() {
-    if (!isGamePage() || !isTagGame()) return new Set();
+    if (!isGamePageAndActive() || !isTagGame()) return new Set();
     return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
   }
   /**
@@ -483,7 +497,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for that unit at its current state.
    */
   function getUnitInfo(unitId) {
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
     return unitsInfo[unitId];
   }
   /**
@@ -492,7 +506,7 @@ var awbw_music_player = (function (exports) {
    * @returns - Name of the unit.
    */
   function getUnitName(unitId) {
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
     return getUnitInfo(unitId)?.units_name;
   }
   /**
@@ -502,7 +516,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for the unit at the given coordinates or null if there is no unit there.
    */
   function getUnitInfoFromCoords(x, y) {
-    if (!isGamePage()) return null;
+    if (!isGamePageAndActive()) return null;
     return Object.values(unitsInfo)
       .filter((info) => info.units_x == x && info.units_y == y)
       .pop();
@@ -514,7 +528,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the given unit is valid.
    */
   function isValidUnit(unitId) {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     return unitId !== undefined && unitsInfo[unitId] !== undefined;
   }
   /**
@@ -523,7 +537,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the unit is valid and it has moved this turn.
    */
   function hasUnitMovedThisTurn(unitId) {
-    if (!isGamePage()) return false;
+    if (!isGamePageAndActive()) return false;
     return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
   }
   function addConnectionErrorObserver(onConnectionError) {
@@ -1826,7 +1840,7 @@ var awbw_music_player = (function (exports) {
       }
     }
     // Update UI
-    const canUpdateDaySlider = daySlider?.parentElement && isGamePage();
+    const canUpdateDaySlider = daySlider?.parentElement && isGamePageAndActive();
     if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
     // Update player image and hover text
@@ -1961,7 +1975,7 @@ var awbw_music_player = (function (exports) {
   function onCOSelectorClick(coName) {
     currentSelectedCO = coName;
   }
-  if (isGamePage()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+  if (isGamePageAndActive()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
   // Game type radio buttons
   const overrideGameTypeRadioMap = new Map();
   for (const gameType of Object.values(SettingsGameType)) {
@@ -2008,7 +2022,7 @@ var awbw_music_player = (function (exports) {
   /* ************************************ Version ************************************ */
   musicPlayerUI.addVersion(versions.music_player);
   /* ************************************ Disable or hide things in other pages ************************************ */
-  if (!isGamePage()) {
+  if (!isGamePageAndActive()) {
     const parent = musicPlayerUI.getGroup("settings-parent");
     if (parent) parent.style.width = "475px";
     const rightGroup = musicPlayerUI.getGroup(RIGHT);
@@ -2661,7 +2675,7 @@ var awbw_music_player = (function (exports) {
     if (isMovePlanner()) {
       return;
     }
-    if (isGamePage()) {
+    if (isGamePageAndActive()) {
       addReplayHandlers();
       addGameHandlers();
       return;
@@ -3192,17 +3206,44 @@ var awbw_music_player = (function (exports) {
    ******************************************************************/
   function main() {
     console.debug("[AWBW Improved Music Player] Script starting...");
-    musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
-    addHandlers();
+    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+    musicPlayerUI.setProgress(100);
     // Load settings from local storage but don't allow saving yet
     loadSettingsFromLocalStorage();
+    if (isLiveQueue()) {
+      console.log("[AWBW Improved Music Player] Live Queue detected...");
+      const intervalID = setInterval(() => {
+        // Check if the parent popup is created and visible
+        const blockerPopup = getLiveQueueBlockerPopup();
+        console.log("blockerPopup", blockerPopup);
+        if (!blockerPopup) return;
+        if (blockerPopup.style.display === "none") return;
+        // Now make sure the internal popup is created
+        const popup = getLiveQueueSelectPopup();
+        console.log("popup", popup);
+        if (!popup) return;
+        // Get the div with "Match starts in ...."
+        const box = popup.querySelector(".flex.row.hv-center");
+        console.log("box", box);
+        if (!box) return;
+        // Prepend the music player UI to the box
+        musicPlayerUI.addToAWBWPage(box, true);
+        playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
+        allowSettingsToBeSaved();
+        playOrPauseWhenWindowFocusChanges();
+        // No need to keep checking
+        clearInterval(intervalID);
+      }, 500);
+      return;
+    }
+    // Add the music player UI to the page and the necessary event handlers
+    musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
+    addHandlers();
     if (isMaintenance()) {
       console.log("[AWBW Improved Music Player] Maintenance mode detected, playing music...");
-      musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
-      musicPlayerUI.setProgress(100);
+      musicPlayerUI.parent.style.borderLeft = "";
       musicPlayerUI.openContextMenu();
       playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
-      playThemeSong();
       allowSettingsToBeSaved();
       playOrPauseWhenWindowFocusChanges();
       return;
@@ -3210,17 +3251,13 @@ var awbw_music_player = (function (exports) {
     if (isMovePlanner()) {
       console.log("[AWBW Improved Music Player] Move Planner detected");
       musicSettings.isPlaying = true;
-      musicPlayerUI.setProgress(100);
       allowSettingsToBeSaved();
       return;
     }
     if (isYourGames()) {
       console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
-      musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
       musicPlayerUI.parent.style.borderRight = "";
-      musicPlayerUI.setProgress(100);
       playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
-      playThemeSong();
       allowSettingsToBeSaved();
       playOrPauseWhenWindowFocusChanges();
       return;

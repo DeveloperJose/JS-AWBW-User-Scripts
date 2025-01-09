@@ -1,5 +1,9 @@
 /**
  * @file Constants, variables, and functions that come from analyzing the web pages of AWBW.
+ *
+ * querySelector()
+ * . = class
+ * # = id
  */
 
 /**
@@ -21,8 +25,12 @@ export function isYourGames() {
   return window.location.href.indexOf("yourgames.php") > -1;
 }
 
-export function isGamePage() {
-  return window.location.href.indexOf("game.php") > -1;
+export function isGamePageAndActive() {
+  return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
+}
+
+export function isLiveQueue() {
+  return window.location.href.indexOf("live_queue.php") > -1;
 }
 
 // ============================== AWBW Page Elements ==============================
@@ -100,7 +108,15 @@ export function getReplayDaySelectorCheckBox() {
 }
 
 export function getConnectionErrorDiv() {
-  return document.querySelector(".connection-error-msg");
+  return document.querySelector(".connection-error-msg") as HTMLElement;
+}
+
+export function getLiveQueueSelectPopup() {
+  return document.querySelector("#live-queue-select-popup") as HTMLElement;
+}
+
+export function getLiveQueueBlockerPopup() {
+  return document.querySelector(".live-queue-blocker-popup") as HTMLElement;
 }
 
 /**
