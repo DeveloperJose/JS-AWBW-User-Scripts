@@ -8,7 +8,7 @@
 // @match       https://awbw.amarriner.com/*editmap*
 // @match       https://awbw.amarriner.com/yourgames.php*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
-// @version     3.0.4
+// @version     3.1.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -48,7 +48,7 @@ var awbw_music_player = (function (exports) {
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu label,\n.cls-settings-menu .cls-slider-box label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 50%;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -102,6 +102,9 @@ var awbw_music_player = (function (exports) {
   }
   function getReplayDaySelectorCheckBox() {
     return document.querySelector(".replay-day-selector");
+  }
+  function getConnectionErrorDiv() {
+    return document.querySelector(".connection-error-msg");
   }
   // ============================== Useful Page Utilities ==============================
   /**
@@ -523,6 +526,20 @@ var awbw_music_player = (function (exports) {
     if (!isGamePage()) return false;
     return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
   }
+  function addConnectionErrorObserver(onConnectionError) {
+    const connectionErrorDiv = getConnectionErrorDiv();
+    if (!connectionErrorDiv) return;
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type !== "childList") return;
+        if (!mutation.target) return;
+        if (!mutation.target.textContent) return;
+        const closeMsg = mutation.target.textContent;
+        onConnectionError(closeMsg);
+      }
+    });
+    observer.observe(connectionErrorDiv, { childList: true });
+  }
 
   /**
    * @file This file contains the state of the music player settings and the saving/loading functionality, no UI functionality.
@@ -600,6 +617,7 @@ var awbw_music_player = (function (exports) {
     static __pipeSeamSFX = true;
     static __overrideList = new Map();
     static __restartThemes = false;
+    static __autoplayOnOtherPages = true;
     // Non-user configurable settings
     static __themeType = SettingsThemeType.REGULAR;
     static __currentRandomCO = getRandomCO();
@@ -619,6 +637,7 @@ var awbw_music_player = (function (exports) {
         pipeSeamSFX: this.__pipeSeamSFX,
         overrideList: Array.from(this.__overrideList.entries()),
         restartThemes: this.__restartThemes,
+        autoplayOnOtherPages: this.__autoplayOnOtherPages,
       });
     }
     static fromJSON(json) {
@@ -742,6 +761,14 @@ var awbw_music_player = (function (exports) {
       this.__restartThemes = val;
       this.onSettingChangeEvent("restartThemes");
     }
+    static get autoplayOnOtherPages() {
+      return this.__autoplayOnOtherPages;
+    }
+    static set autoplayOnOtherPages(val) {
+      if (this.__autoplayOnOtherPages === val) return;
+      this.__autoplayOnOtherPages = val;
+      this.onSettingChangeEvent("autoplayOnOtherPages");
+    }
     // ************* Non-user configurable settings from here on
     static set themeType(val) {
       if (this.__themeType === val) return;
@@ -791,9 +818,11 @@ var awbw_music_player = (function (exports) {
     musicSettings.fromJSON(storageData);
     // Tell everyone we just loaded the settings
     onSettingsChangeListeners.forEach((fn) => fn("all", true));
+    console.debug("[Music Player] Settings loaded from storage:", storageData);
+  }
+  function allowSettingsToBeSaved() {
     // From now on, any setting changes will be saved and any listeners will be called
     addSettingsChangeListener(onSettingsChange$2);
-    console.debug("[Music Player] Settings loaded from storage:", storageData);
   }
   function onSettingsChange$2(_key, _isFirstLoad) {
     // We can't save the non-configurable settings
@@ -1455,7 +1484,7 @@ var awbw_music_player = (function (exports) {
       // Container for the slider and label
       const sliderBox = document.createElement("div");
       sliderBox.classList.add("cls-vertical-box");
-      sliderBox.classList.add("cls-slider-box");
+      sliderBox.classList.add("cls-group-box");
       contextMenu?.appendChild(sliderBox);
       // Slider label
       const label = document.createElement("label");
@@ -1484,15 +1513,20 @@ var awbw_music_player = (function (exports) {
     addGroup(groupName, type = GroupType.Horizontal, position = MenuPosition.Center) {
       const contextMenu = this.getGroup(position);
       if (!contextMenu) return;
+      // Container for the label and group inner container
+      const groupBox = document.createElement("div");
+      groupBox.classList.add("cls-vertical-box");
+      groupBox.classList.add("cls-group-box");
+      contextMenu?.appendChild(groupBox);
       // Label for the group
       const groupLabel = document.createElement("label");
       groupLabel.innerText = groupName;
-      contextMenu?.appendChild(groupLabel);
+      groupBox?.appendChild(groupLabel);
       // Group container
       const group = document.createElement("div");
       group.id = `${this.prefix}-${sanitize(groupName)}`;
       group.classList.add(type);
-      contextMenu?.appendChild(group);
+      groupBox?.appendChild(group);
       this.groups.set(groupName, group);
       this.groupTypes.set(groupName, type);
       return group;
@@ -1738,8 +1772,8 @@ var awbw_music_player = (function (exports) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "3.0.4",
-    highlight_cursor_coordinates: "2.0.1",
+    music_player: "3.1.0",
+    highlight_cursor_coordinates: "2.0.2",
   };
 
   /**
@@ -1778,6 +1812,7 @@ var awbw_music_player = (function (exports) {
       captProgressBox.checked = musicSettings.captureProgressSFX;
       pipeSeamBox.checked = musicSettings.pipeSeamSFX;
       restartThemesBox.checked = musicSettings.restartThemes;
+      autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
       alternateThemesBox.checked = musicSettings.alternateThemes;
       // Update all labels
       musicPlayerUI.updateAllInputLabels();
@@ -1791,7 +1826,8 @@ var awbw_music_player = (function (exports) {
       }
     }
     // Update UI
-    if (daySlider?.parentElement) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
+    const canUpdateDaySlider = daySlider?.parentElement && isGamePage();
+    if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
     // Update player image and hover text
     const currentSounds = isMovePlanner() ? "Sound Effects" : "Tunes";
@@ -1831,6 +1867,7 @@ var awbw_music_player = (function (exports) {
     Name["Capture_Progress"] = "Capture Progress SFX";
     Name["Pipe_Seam_SFX"] = "Pipe Seam Attack SFX";
     Name["Restart_Themes"] = "Restart Themes Every Turn";
+    Name["Autoplay_Pages"] = "Autoplay Music On Other Pages";
     Name["Alternate_Themes"] = "Alternate Themes";
     Name["Alternate_Day"] = "Alternate Themes Start On Day";
     Name["Add_Override"] = "Add";
@@ -1854,6 +1891,7 @@ var awbw_music_player = (function (exports) {
     Description["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
     Description["Restart_Themes"] =
       "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.";
+    Description["Autoplay_Pages"] = "Autoplay music on other pages like your games or during maintenance.";
     Description["Alternate_Themes"] =
       "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.";
     Description["Alternate_Day"] =
@@ -1872,7 +1910,7 @@ var awbw_music_player = (function (exports) {
   uiVolumeSlider?.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
   /* **** Group: Soundtrack radio buttons (AW1, AW2, DS, RBC) AKA GameType **** */
   const soundtrackGroup = "Soundtrack";
-  musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
+  const soundtrackGroupDiv = musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
   // Radio buttons
   const gameTypeRadioMap = new Map();
   for (const gameType of Object.values(SettingsGameType)) {
@@ -1883,7 +1921,7 @@ var awbw_music_player = (function (exports) {
   }
   /* **** Group: Random themes radio buttons **** */
   const randomGroup = "Random Themes";
-  musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
+  const randomGroupDiv = musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
   // Radio buttons
   const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
   const radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
@@ -1899,6 +1937,7 @@ var awbw_music_player = (function (exports) {
   const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
   const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
   const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, toggleGroup, Description.Restart_Themes);
+  const autoplayPagesBox = musicPlayerUI.addCheckbox(Name.Autoplay_Pages, toggleGroup, Description.Autoplay_Pages);
   const alternateThemesBox = musicPlayerUI.addCheckbox(
     Name.Alternate_Themes,
     toggleGroup,
@@ -1907,6 +1946,7 @@ var awbw_music_player = (function (exports) {
   captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
   pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
   restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
+  autoplayPagesBox.addEventListener("click", (_e) => (musicSettings.autoplayOnOtherPages = autoplayPagesBox.checked));
   alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
   /* **** Group: Day slider **** */
   const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
@@ -1967,6 +2007,22 @@ var awbw_music_player = (function (exports) {
   }
   /* ************************************ Version ************************************ */
   musicPlayerUI.addVersion(versions.music_player);
+  /* ************************************ Disable or hide things in other pages ************************************ */
+  if (!isGamePage()) {
+    const parent = musicPlayerUI.getGroup("settings-parent");
+    if (parent) parent.style.width = "475px";
+    const rightGroup = musicPlayerUI.getGroup(RIGHT);
+    if (rightGroup) rightGroup.style.display = "none";
+    if (captProgressBox?.parentElement) captProgressBox.parentElement.style.display = "none";
+    if (pipeSeamBox?.parentElement) pipeSeamBox.parentElement.style.display = "none";
+    if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
+    if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
+    if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
+    if (!isMapEditor()) {
+      if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
+      if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
+    }
+  }
 
   /**
    * The URL of the current theme that is playing.
@@ -2133,7 +2189,11 @@ var awbw_music_player = (function (exports) {
     if (currentlyDelaying) return;
     let gameType = undefined;
     let coName = currentPlayer.coName;
-    if (!coName) return;
+    if (!coName) {
+      if (!currentThemeKey || currentThemeKey === "") return;
+      playMusicURL(currentThemeKey, startFromBeginning);
+      return;
+    }
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
     if (musicSettings.randomThemes && !isEndTheme) {
@@ -2345,6 +2405,14 @@ var awbw_music_player = (function (exports) {
       const audio = createNewThemeAudio(url);
       audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
       audio.addEventListener("error", onAudioPreload, { once: true });
+    });
+  }
+  function playOrPauseWhenWindowFocusChanges() {
+    window.addEventListener("blur", () => {
+      if (musicSettings.isPlaying) stopAllSounds();
+    });
+    window.addEventListener("focus", () => {
+      if (musicSettings.isPlaying) playThemeSong();
     });
   }
   /**
@@ -2678,6 +2746,7 @@ var awbw_music_player = (function (exports) {
     actionHandlers.Power = onPower;
     actionHandlers.GameOver = onGameOver;
     actionHandlers.Resign = onResign;
+    addConnectionErrorObserver(onConnectionError);
   }
   function onCursorMove(cursorX, cursorY) {
     // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
@@ -3097,6 +3166,10 @@ var awbw_music_player = (function (exports) {
       setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
     }
   }
+  function onConnectionError(closeMsg) {
+    closeMsg = closeMsg.toLowerCase();
+    if (closeMsg.includes("connected to another game")) stopThemeSong();
+  }
 
   /**
    * @file Main script that loads everything for the AWBW Improved Music Player userscript.
@@ -3111,7 +3184,7 @@ var awbw_music_player = (function (exports) {
     if (isMaintenance()) return document.querySelector("#main");
     if (isMapEditor()) return document.querySelector("#replay-misc-controls");
     if (isMovePlanner()) return document.querySelector("#map-controls-container");
-    if (isYourGames()) return document.querySelector("#left-side-menu-container");
+    if (isYourGames()) return document.querySelector("#main");
     return document.querySelector("#game-map-menu")?.parentNode;
   }
   /******************************************************************
@@ -3119,30 +3192,45 @@ var awbw_music_player = (function (exports) {
    ******************************************************************/
   function main() {
     console.debug("[AWBW Improved Music Player] Script starting...");
-    musicPlayerUI.addToAWBWPage(getMenu());
+    musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
     addHandlers();
+    // Load settings from local storage but don't allow saving yet
+    loadSettingsFromLocalStorage();
+    if (isMaintenance()) {
+      console.log("[AWBW Improved Music Player] Maintenance mode detected, playing music...");
+      musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+      musicPlayerUI.setProgress(100);
+      musicPlayerUI.openContextMenu();
+      playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
+      playThemeSong();
+      allowSettingsToBeSaved();
+      playOrPauseWhenWindowFocusChanges();
+      return;
+    }
     if (isMovePlanner()) {
       console.log("[AWBW Improved Music Player] Move Planner detected");
       musicSettings.isPlaying = true;
       musicPlayerUI.setProgress(100);
+      allowSettingsToBeSaved();
       return;
     }
-    if (isMaintenance() || isYourGames()) {
-      console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
-      musicSettings.isPlaying = true;
+    if (isYourGames()) {
+      console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
+      musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+      musicPlayerUI.parent.style.borderRight = "";
       musicPlayerUI.setProgress(100);
-      musicPlayerUI.openContextMenu();
-      const theme = isMaintenance()
-        ? "https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */
-        : "https://developerjose.netlify.app/music/t-mode-select.ogg"; /* SpecialTheme.ModeSelect */
-      playMusicURL(theme);
+      playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
+      playThemeSong();
+      allowSettingsToBeSaved();
+      playOrPauseWhenWindowFocusChanges();
       return;
     }
     if (isMapEditor()) {
       musicPlayerUI.parent.style.borderTop = "none";
+      playOrPauseWhenWindowFocusChanges();
     }
-    // Map editor and game.php pages so allow settings to be saved
-    loadSettingsFromLocalStorage();
+    // game.php or designmap.php from now on
+    allowSettingsToBeSaved();
     preloadAllCommonAudio(() => {
       console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
       // Set dynamic settings based on the current game state

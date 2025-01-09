@@ -89,6 +89,7 @@ export abstract class musicSettings {
   private static __pipeSeamSFX = true;
   private static __overrideList = new Map<string, SettingsGameType>();
   private static __restartThemes = false;
+  private static __autoplayOnOtherPages = true;
 
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
@@ -110,6 +111,7 @@ export abstract class musicSettings {
       pipeSeamSFX: this.__pipeSeamSFX,
       overrideList: Array.from(this.__overrideList.entries()),
       restartThemes: this.__restartThemes,
+      autoplayOnOtherPages: this.__autoplayOnOtherPages,
     });
   }
 
@@ -259,6 +261,16 @@ export abstract class musicSettings {
     this.onSettingChangeEvent("restartThemes");
   }
 
+  static get autoplayOnOtherPages() {
+    return this.__autoplayOnOtherPages;
+  }
+
+  static set autoplayOnOtherPages(val: boolean) {
+    if (this.__autoplayOnOtherPages === val) return;
+    this.__autoplayOnOtherPages = val;
+    this.onSettingChangeEvent("autoplayOnOtherPages");
+  }
+
   // ************* Non-user configurable settings from here on
 
   static set themeType(val: SettingsThemeType) {
@@ -319,10 +331,12 @@ export function loadSettingsFromLocalStorage() {
 
   // Tell everyone we just loaded the settings
   onSettingsChangeListeners.forEach((fn) => fn("all", true));
+  console.debug("[Music Player] Settings loaded from storage:", storageData);
+}
 
+export function allowSettingsToBeSaved() {
   // From now on, any setting changes will be saved and any listeners will be called
   addSettingsChangeListener(onSettingsChange);
-  console.debug("[Music Player] Settings loaded from storage:", storageData);
 }
 
 function onSettingsChange(_key: string, _isFirstLoad: boolean) {

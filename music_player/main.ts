@@ -8,8 +8,19 @@ import "./style.css";
 import "./style_sliders.css";
 
 import { musicPlayerUI } from "./music_ui";
-import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
-import { getCurrentThemeType, loadSettingsFromLocalStorage, musicSettings } from "./music_settings";
+import {
+  playMusicURL,
+  playOrPauseWhenWindowFocusChanges,
+  playThemeSong,
+  preloadAllCommonAudio,
+  preloadAllExtraAudio,
+} from "./music";
+import {
+  allowSettingsToBeSaved,
+  getCurrentThemeType,
+  loadSettingsFromLocalStorage,
+  musicSettings,
+} from "./music_settings";
 import { addHandlers } from "./handlers";
 import { isMaintenance, isMapEditor, isMovePlanner, isYourGames } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
@@ -22,7 +33,7 @@ function getMenu() {
   if (isMaintenance()) return document.querySelector("#main");
   if (isMapEditor()) return document.querySelector("#replay-misc-controls");
   if (isMovePlanner()) return document.querySelector("#map-controls-container");
-  if (isYourGames()) return document.querySelector("#left-side-menu-container");
+  if (isYourGames()) return document.querySelector("#main");
   return document.querySelector("#game-map-menu")?.parentNode;
 }
 
@@ -37,32 +48,51 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
  ******************************************************************/
 export function main() {
   console.debug("[AWBW Improved Music Player] Script starting...");
-  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement);
+  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
   addHandlers();
+
+  // Load settings from local storage but don't allow saving yet
+  loadSettingsFromLocalStorage();
+
+  if (isMaintenance()) {
+    console.log("[AWBW Improved Music Player] Maintenance mode detected, playing music...");
+    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+    musicPlayerUI.setProgress(100);
+    musicPlayerUI.openContextMenu();
+    playMusicURL(SpecialTheme.Maintenance);
+    playThemeSong();
+    allowSettingsToBeSaved();
+    playOrPauseWhenWindowFocusChanges();
+    return;
+  }
 
   if (isMovePlanner()) {
     console.log("[AWBW Improved Music Player] Move Planner detected");
     musicSettings.isPlaying = true;
     musicPlayerUI.setProgress(100);
+    allowSettingsToBeSaved();
     return;
   }
 
-  if (isMaintenance() || isYourGames()) {
-    console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
-    musicSettings.isPlaying = true;
+  if (isYourGames()) {
+    console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
+    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+    musicPlayerUI.parent.style.borderRight = "";
     musicPlayerUI.setProgress(100);
-    musicPlayerUI.openContextMenu();
-    const theme = isMaintenance() ? SpecialTheme.Maintenance : SpecialTheme.ModeSelect;
-    playMusicURL(theme);
+    playMusicURL(SpecialTheme.ModeSelect);
+    playThemeSong();
+    allowSettingsToBeSaved();
+    playOrPauseWhenWindowFocusChanges();
     return;
   }
 
   if (isMapEditor()) {
     musicPlayerUI.parent.style.borderTop = "none";
+    playOrPauseWhenWindowFocusChanges();
   }
 
-  // Map editor and game.php pages so allow settings to be saved
-  loadSettingsFromLocalStorage();
+  // game.php or designmap.php from now on
+  allowSettingsToBeSaved();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 

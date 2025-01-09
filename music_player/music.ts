@@ -212,7 +212,11 @@ export function playThemeSong(startFromBeginning = false) {
 
   let gameType = undefined;
   let coName = currentPlayer.coName;
-  if (!coName) return;
+  if (!coName) {
+    if (!currentThemeKey || currentThemeKey === "") return;
+    playMusicURL(currentThemeKey, startFromBeginning);
+    return;
+  }
 
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
@@ -467,6 +471,15 @@ function preloadAudios(audioURLs: Set<string>, afterPreloadFunction = () => {}) 
     const audio = createNewThemeAudio(url);
     audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
     audio.addEventListener("error", onAudioPreload, { once: true });
+  });
+}
+
+export function playOrPauseWhenWindowFocusChanges() {
+  window.addEventListener("blur", () => {
+    if (musicSettings.isPlaying) stopAllSounds();
+  });
+  window.addEventListener("focus", () => {
+    if (musicSettings.isPlaying) playThemeSong();
   });
 }
 

@@ -316,7 +316,7 @@ export class CustomMenuSettingsUI {
     // Container for the slider and label
     const sliderBox = document.createElement("div");
     sliderBox.classList.add("cls-vertical-box");
-    sliderBox.classList.add("cls-slider-box");
+    sliderBox.classList.add("cls-group-box");
     contextMenu?.appendChild(sliderBox);
 
     // Slider label
@@ -352,16 +352,22 @@ export class CustomMenuSettingsUI {
     const contextMenu = this.getGroup(position);
     if (!contextMenu) return;
 
+    // Container for the label and group inner container
+    const groupBox = document.createElement("div");
+    groupBox.classList.add("cls-vertical-box");
+    groupBox.classList.add("cls-group-box");
+    contextMenu?.appendChild(groupBox);
+
     // Label for the group
     const groupLabel = document.createElement("label");
     groupLabel.innerText = groupName;
-    contextMenu?.appendChild(groupLabel);
+    groupBox?.appendChild(groupLabel);
 
     // Group container
     const group = document.createElement("div");
     group.id = `${this.prefix}-${sanitize(groupName)}`;
     group.classList.add(type);
-    contextMenu?.appendChild(group);
+    groupBox?.appendChild(group);
 
     this.groups.set(groupName, group);
     this.groupTypes.set(groupName, type);

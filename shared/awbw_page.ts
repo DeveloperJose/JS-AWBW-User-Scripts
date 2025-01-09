@@ -99,6 +99,10 @@ export function getReplayDaySelectorCheckBox() {
   return document.querySelector(".replay-day-selector") as HTMLElement;
 }
 
+export function getConnectionErrorDiv() {
+  return document.querySelector(".connection-error-msg");
+}
+
 /**
  * The HTML node for the unit build menu.
  * Specifically works in the Move Planner.

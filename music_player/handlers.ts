@@ -16,6 +16,7 @@ import {
   isReplayActive,
   getUnitInfo,
   hasUnitMovedThisTurn,
+  addConnectionErrorObserver,
 } from "../shared/awbw_game";
 import {
   addUpdateCursorObserver,
@@ -293,6 +294,8 @@ function addGameHandlers() {
   actionHandlers.Power = onPower;
   actionHandlers.GameOver = onGameOver;
   actionHandlers.Resign = onResign;
+
+  addConnectionErrorObserver(onConnectionError);
 }
 
 function onCursorMove(cursorX: number, cursorY: number) {
@@ -814,4 +817,9 @@ function onPower(data: PowerData) {
   if (coName === "Colin" && !isSuperCOPower) {
     setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
   }
+}
+
+function onConnectionError(closeMsg: string) {
+  closeMsg = closeMsg.toLowerCase();
+  if (closeMsg.includes("connected to another game")) stopThemeSong();
 }

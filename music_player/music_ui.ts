@@ -6,7 +6,7 @@ import { addSettingsChangeListener, musicSettings as musicSettings, SettingsGame
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
-import { isMovePlanner } from "../shared/awbw_page";
+import { isGamePage, isMapEditor, isMovePlanner } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -46,6 +46,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     captProgressBox.checked = musicSettings.captureProgressSFX;
     pipeSeamBox.checked = musicSettings.pipeSeamSFX;
     restartThemesBox.checked = musicSettings.restartThemes;
+    autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
     alternateThemesBox.checked = musicSettings.alternateThemes;
 
     // Update all labels
@@ -62,7 +63,8 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   }
 
   // Update UI
-  if (daySlider?.parentElement) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
+  const canUpdateDaySlider = daySlider?.parentElement && isGamePage();
+  if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
   if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
 
   // Update player image and hover text
@@ -110,6 +112,7 @@ enum Name {
   Capture_Progress = "Capture Progress SFX",
   Pipe_Seam_SFX = "Pipe Seam Attack SFX",
   Restart_Themes = "Restart Themes Every Turn",
+  Autoplay_Pages = "Autoplay Music On Other Pages",
   Alternate_Themes = "Alternate Themes",
 
   Alternate_Day = "Alternate Themes Start On Day",
@@ -135,6 +138,7 @@ enum Description {
   Capture_Progress = "Play a sound effect when a unit makes progress capturing a property.",
   Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
   Restart_Themes = "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.",
+  Autoplay_Pages = "Autoplay music on other pages like your games or during maintenance.",
   Alternate_Themes = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
 
   Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
@@ -156,7 +160,7 @@ uiVolumeSlider?.addEventListener("input", (event) => (musicSettings.uiVolume = p
 
 /* **** Group: Soundtrack radio buttons (AW1, AW2, DS, RBC) AKA GameType **** */
 const soundtrackGroup = "Soundtrack";
-musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
+const soundtrackGroupDiv = musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
 
 // Radio buttons
 const gameTypeRadioMap: Map<SettingsGameType, HTMLInputElement> = new Map();
@@ -169,7 +173,7 @@ for (const gameType of Object.values(SettingsGameType)) {
 
 /* **** Group: Random themes radio buttons **** */
 const randomGroup = "Random Themes";
-musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
+const randomGroupDiv = musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
 
 // Radio buttons
 const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
@@ -189,10 +193,12 @@ musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
 const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
 const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
 const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, toggleGroup, Description.Restart_Themes);
+const autoplayPagesBox = musicPlayerUI.addCheckbox(Name.Autoplay_Pages, toggleGroup, Description.Autoplay_Pages);
 const alternateThemesBox = musicPlayerUI.addCheckbox(Name.Alternate_Themes, toggleGroup, Description.Alternate_Themes);
 captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
 pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
 restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
+autoplayPagesBox.addEventListener("click", (_e) => (musicSettings.autoplayOnOtherPages = autoplayPagesBox.checked));
 alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
 
 /* **** Group: Day slider **** */
@@ -266,3 +272,23 @@ function clearAndRepopulateOverrideList() {
 
 /* ************************************ Version ************************************ */
 musicPlayerUI.addVersion(versions.music_player);
+
+/* ************************************ Disable or hide things in other pages ************************************ */
+if (!isGamePage()) {
+  const parent = musicPlayerUI.getGroup("settings-parent");
+  if (parent) parent.style.width = "475px";
+
+  const rightGroup = musicPlayerUI.getGroup(RIGHT);
+  if (rightGroup) rightGroup.style.display = "none";
+
+  if (captProgressBox?.parentElement) captProgressBox.parentElement.style.display = "none";
+  if (pipeSeamBox?.parentElement) pipeSeamBox.parentElement.style.display = "none";
+  if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
+  if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
+  if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
+
+  if (!isMapEditor()) {
+    if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
+    if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
+  }
+}

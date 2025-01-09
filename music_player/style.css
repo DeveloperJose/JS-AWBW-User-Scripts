@@ -9,13 +9,12 @@
   border: black 1px solid;
 }
 
-.cls-settings-menu .cls-vertical-box label {
+.cls-settings-menu label {
   background-color: white;
   font-size: 12px;
 }
 
-.cls-settings-menu label,
-.cls-settings-menu .cls-slider-box label {
+.cls-settings-menu .cls-group-box > label {
   width: 100%;
   font-size: 13px;
   background-color: #d6e0ed;
@@ -56,7 +55,8 @@
 }
 
 .cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {
-  width: 50%;
+  width: 100%;
+  justify-content: center;
 }
 
 .cls-settings-menu .cls-horizontal-box[id$="random-themes"],

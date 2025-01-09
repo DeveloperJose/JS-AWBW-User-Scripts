@@ -4,7 +4,7 @@
  */
 
 import { areAnimationsEnabled } from "./awbw_globals";
-import { isGamePage, isMapEditor, getReplayControls } from "./awbw_page";
+import { isGamePage, isMapEditor, getReplayControls, getConnectionErrorDiv } from "./awbw_page";
 
 /**
  * Enum for the different states a CO Power can be in.
@@ -335,4 +335,21 @@ export function isValidUnit(unitId: number) {
 export function hasUnitMovedThisTurn(unitId: number) {
   if (!isGamePage()) return false;
   return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
+}
+
+export function addConnectionErrorObserver(onConnectionError: (closeMsg: string) => void) {
+  const connectionErrorDiv = getConnectionErrorDiv();
+  if (!connectionErrorDiv) return;
+
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type !== "childList") return;
+      if (!mutation.target) return;
+      if (!mutation.target.textContent) return;
+
+      const closeMsg = mutation.target.textContent;
+      onConnectionError(closeMsg);
+    }
+  });
+  observer.observe(connectionErrorDiv, { childList: true });
 }
