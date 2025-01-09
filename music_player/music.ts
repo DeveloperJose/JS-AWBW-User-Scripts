@@ -11,10 +11,11 @@ import {
   getCurrentThemeURLs,
   hasSpecialLoop,
   getAllCurrentThemesExtraAudioURLs,
+  getCONameFromURL,
 } from "./resources";
 import { musicSettings, addSettingsChangeListener, SettingsThemeType } from "./music_settings";
-import { getRandomCO } from "../shared/awbw_globals";
-import { getIsMapEditor } from "../shared/awbw_page";
+import { getAllCONames, getRandomCO } from "../shared/awbw_globals";
+import { isMapEditor } from "../shared/awbw_page";
 
 /**
  * The URL of the current theme that is playing.
@@ -94,8 +95,16 @@ function whenAudioLoadsPauseIt(event: Event) {
 function whenAudioLoadsPlayIt(event: Event) {
   const audio = event.target as HTMLAudioElement;
   audio.volume = musicSettings.volume;
-  // if (audio.src === currentThemeKey) audio.play();
-  playThemeSong();
+
+  const coName = getCONameFromURL(audio.src);
+  if (getAllCONames().includes(coName)) {
+    playThemeSong();
+    return;
+  }
+
+  stopThemeSong();
+  currentThemeKey = audio.src;
+  audio.play();
 }
 
 /**
@@ -203,7 +212,7 @@ export function playThemeSong(startFromBeginning = false) {
 
   let gameType = undefined;
   let coName = currentPlayer.coName;
-  if (!coName) coName = "map-editor";
+  if (!coName) return;
 
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
@@ -265,6 +274,7 @@ export function playMovementSound(unitId: number) {
   // The audio hasn't been preloaded for this unit
   if (!unitIDAudioMap.has(unitId)) {
     const unitName = getUnitName(unitId);
+    if (!unitName) return;
     const movementSoundURL = getMovementSoundURL(unitName);
     unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
   }
@@ -305,8 +315,9 @@ export function stopMovementSound(unitId: number, rolloff = true) {
   movementAudio.currentTime = 0;
 
   // If unit has rolloff, play it
-  if (!rolloff) return;
   const unitName = getUnitName(unitId);
+  if (!rolloff || !unitName) return;
+
   if (hasMovementRollOff(unitName)) {
     const audioURL = getMovementRollOffURL(unitName);
     playOneShotURL(audioURL, musicSettings.sfxVolume);
@@ -396,7 +407,7 @@ export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
  * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
  */
 export function preloadAllExtraAudio(afterPreloadFunction: () => void) {
-  if (getIsMapEditor()) return;
+  if (isMapEditor()) return;
 
   // Preload ALL sound effects
   let audioList = getAllSoundEffectURLs();

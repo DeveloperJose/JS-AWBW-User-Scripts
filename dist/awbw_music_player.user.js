@@ -61,17 +61,20 @@ var awbw_music_player = (function (exports) {
   /**
    * Are we in the map editor?
    */
-  function getIsMapEditor() {
+  function isMapEditor() {
     return window.location.href.indexOf("editmap.php?") > -1;
   }
-  function getIsMaintenance() {
+  function isMaintenance() {
     return document.querySelector("#server-maintenance-alert") !== null;
   }
-  function getIsMovePlanner() {
+  function isMovePlanner() {
     return window.location.href.indexOf("moveplanner.php") > -1;
   }
-  function getIsYourGames() {
+  function isYourGames() {
     return window.location.href.indexOf("yourgames.php") > -1;
+  }
+  function isGamePage() {
+    return window.location.href.indexOf("game.php") > -1;
   }
   function getCoordsDiv() {
     return document.querySelector("#coords");
@@ -149,6 +152,7 @@ var awbw_music_player = (function (exports) {
   function addUpdateCursorObserver(onCursorMove) {
     // We want to catch when div textContent is changed
     const coordsDiv = getCoordsDiv();
+    if (!coordsDiv) return;
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type !== "childList") return;
@@ -279,6 +283,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The player ID of the person logged in to the website.
    */
   function getMyID() {
+    if (!isGamePage()) return -1;
     if (myID < 0) {
       getAllPlayersInfo().forEach((entry) => {
         if (entry.users_username === getMyUsername()) {
@@ -294,7 +299,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for that given player or null if such ID is not present in the game.
    */
   function getPlayerInfo(pid) {
-    if (getIsMaintenance()) return null;
+    if (!isGamePage()) return null;
     return playersInfo[pid];
   }
   /**
@@ -302,7 +307,7 @@ var awbw_music_player = (function (exports) {
    * @returns - List of player info data for all players in the current game.
    */
   function getAllPlayersInfo() {
-    if (getIsMaintenance()) return [];
+    if (!isGamePage()) return [];
     return Object.values(playersInfo);
   }
   /**
@@ -311,7 +316,7 @@ var awbw_music_player = (function (exports) {
    * @returns True if the player is a spectator, false if they are playing in this game.
    */
   function isPlayerSpectator(pid) {
-    if (getIsMaintenance()) return false;
+    if (!isGamePage()) return false;
     return !playerKeys.includes(pid);
   }
   /**
@@ -320,6 +325,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the player can activate a regular CO Power.
    */
   function canPlayerActivateCOPower(pid) {
+    if (!isGamePage()) return false;
     const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_power;
@@ -330,6 +336,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the player can activate a Super CO Power.
    */
   function canPlayerActivateSuperCOPower(pid) {
+    if (!isGamePage()) return false;
     const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_spower;
@@ -341,6 +348,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for that building at its current state.
    */
   function getBuildingInfo(x, y) {
+    if (!isGamePage()) return null;
     return buildingsInfo[x][y];
   }
   /**
@@ -348,7 +356,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if we are in replay mode.
    */
   function isReplayActive() {
-    if (getIsMaintenance() || getIsMapEditor()) return false;
+    if (!isGamePage()) return false;
     // Check if replay mode is open by checking if the replay section is set to display
     const replayControls = getReplayControls();
     const replayOpen = replayControls.style.display !== "none";
@@ -359,7 +367,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the game has ended.
    */
   function hasGameEnded() {
-    if (getIsMaintenance() || getIsMapEditor()) return false;
+    if (!isGamePage()) return false;
     // Count how many players are still in the game
     const numberOfRemainingPlayers = Object.values(playersInfo).filter(
       (info) => info.players_eliminated === "N",
@@ -372,7 +380,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The current day in the game.
    */
   function getCurrentGameDay() {
-    if (getIsMaintenance() || getIsMapEditor()) return 1;
+    if (!isGamePage()) return 1;
     if (!isReplayActive()) return gameDay;
     const replayData = Object.values(replay);
     if (replayData.length === 0) return gameDay;
@@ -389,6 +397,7 @@ var awbw_music_player = (function (exports) {
      * Get the internal info object containing the state of the current player.
      */
     static get info() {
+      if (!isGamePage()) return null;
       if (typeof currentTurn === "undefined") return null;
       return getPlayerInfo(currentTurn);
     }
@@ -397,6 +406,7 @@ var awbw_music_player = (function (exports) {
      * @returns - True if a regular CO power or a Super CO Power is activated.
      */
     static get isPowerActivated() {
+      if (!isGamePage()) return false;
       return this?.coPowerState !== COPowerEnum.NoPower;
     }
     /**
@@ -404,6 +414,7 @@ var awbw_music_player = (function (exports) {
      * @returns - The state of the CO Power for the current player.
      */
     static get coPowerState() {
+      if (!isGamePage()) return COPowerEnum.NoPower;
       return this.info?.players_co_power_on;
     }
     /**
@@ -411,6 +422,7 @@ var awbw_music_player = (function (exports) {
      * @returns - True if the current player has been eliminated.
      */
     static get isEliminated() {
+      if (!isGamePage()) return false;
       return this.info?.players_eliminated === "Y";
     }
     /**
@@ -420,7 +432,8 @@ var awbw_music_player = (function (exports) {
      * @returns - The name of the CO for the current player.
      */
     static get coName() {
-      if (getIsMapEditor()) return "map-editor";
+      if (isMapEditor()) return "map-editor";
+      if (!isGamePage()) return null;
       // Check if we are eliminated even if the game has not ended
       const myID = getMyID();
       const myInfo = getPlayerInfo(myID);
@@ -428,7 +441,7 @@ var awbw_music_player = (function (exports) {
       if (myLoss) return "defeat";
       // Play victory/defeat themes after the game ends for everyone
       if (hasGameEnded()) {
-        if (isPlayerSpectator(myID)) return "victory";
+        if (isPlayerSpectator(myID)) return "co-select";
         return myLoss ? "defeat" : "victory";
       }
       return this.info?.co_name;
@@ -439,7 +452,8 @@ var awbw_music_player = (function (exports) {
    * @returns - List with the names of each CO in the game.
    */
   function getAllPlayingCONames() {
-    if (getIsMapEditor()) return new Set(["map-editor"]);
+    if (isMapEditor()) return new Set(["map-editor"]);
+    if (!isGamePage()) return new Set();
     const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
     const allTagPlayers = getAllTagCONames();
     return new Set([...allPlayers, ...allTagPlayers]);
@@ -449,6 +463,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the game is a tag game.
    */
   function isTagGame() {
+    if (!isGamePage()) return false;
     return typeof tagsInfo !== "undefined" && tagsInfo;
   }
   /**
@@ -456,7 +471,7 @@ var awbw_music_player = (function (exports) {
    * @returns - Set with the names of each secondary CO in the tag.
    */
   function getAllTagCONames() {
-    if (!isTagGame()) return new Set();
+    if (!isGamePage() || !isTagGame()) return new Set();
     return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
   }
   /**
@@ -465,6 +480,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for that unit at its current state.
    */
   function getUnitInfo(unitId) {
+    if (!isGamePage()) return null;
     return unitsInfo[unitId];
   }
   /**
@@ -473,6 +489,7 @@ var awbw_music_player = (function (exports) {
    * @returns - Name of the unit.
    */
   function getUnitName(unitId) {
+    if (!isGamePage()) return null;
     return getUnitInfo(unitId)?.units_name;
   }
   /**
@@ -482,6 +499,7 @@ var awbw_music_player = (function (exports) {
    * @returns - The info for the unit at the given coordinates or null if there is no unit there.
    */
   function getUnitInfoFromCoords(x, y) {
+    if (!isGamePage()) return null;
     return Object.values(unitsInfo)
       .filter((info) => info.units_x == x && info.units_y == y)
       .pop();
@@ -493,6 +511,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the given unit is valid.
    */
   function isValidUnit(unitId) {
+    if (!isGamePage()) return false;
     return unitId !== undefined && unitsInfo[unitId] !== undefined;
   }
   /**
@@ -501,6 +520,7 @@ var awbw_music_player = (function (exports) {
    * @returns - True if the unit is valid and it has moved this turn.
    */
   function hasUnitMovedThisTurn(unitId) {
+    if (!isGamePage()) return false;
     return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
   }
 
@@ -1774,7 +1794,7 @@ var awbw_music_player = (function (exports) {
     if (daySlider?.parentElement) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
     // Update player image and hover text
-    const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
+    const currentSounds = isMovePlanner() ? "Sound Effects" : "Tunes";
     if (musicSettings.isPlaying) {
       musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -2015,8 +2035,14 @@ var awbw_music_player = (function (exports) {
   function whenAudioLoadsPlayIt(event) {
     const audio = event.target;
     audio.volume = musicSettings.volume;
-    // if (audio.src === currentThemeKey) audio.play();
-    playThemeSong();
+    const coName = getCONameFromURL(audio.src);
+    if (getAllCONames().includes(coName)) {
+      playThemeSong();
+      return;
+    }
+    stopThemeSong();
+    currentThemeKey = audio.src;
+    audio.play();
   }
   /**
    * Creates a new audio player for the given URL and sets up the special loop if it has one.
@@ -2107,7 +2133,7 @@ var awbw_music_player = (function (exports) {
     if (currentlyDelaying) return;
     let gameType = undefined;
     let coName = currentPlayer.coName;
-    if (!coName) coName = "map-editor";
+    if (!coName) return;
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
     if (musicSettings.randomThemes && !isEndTheme) {
@@ -2159,6 +2185,7 @@ var awbw_music_player = (function (exports) {
     // The audio hasn't been preloaded for this unit
     if (!unitIDAudioMap.has(unitId)) {
       const unitName = getUnitName(unitId);
+      if (!unitName) return;
       const movementSoundURL = getMovementSoundURL(unitName);
       unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
     }
@@ -2192,8 +2219,8 @@ var awbw_music_player = (function (exports) {
     movementAudio.pause();
     movementAudio.currentTime = 0;
     // If unit has rolloff, play it
-    if (!rolloff) return;
     const unitName = getUnitName(unitId);
+    if (!rolloff || !unitName) return;
     if (hasMovementRollOff(unitName)) {
       const audioURL = getMovementRollOffURL(unitName);
       playOneShotURL(audioURL, musicSettings.sfxVolume);
@@ -2268,7 +2295,7 @@ var awbw_music_player = (function (exports) {
    * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
    */
   function preloadAllExtraAudio(afterPreloadFunction) {
-    if (getIsMapEditor()) return;
+    if (isMapEditor()) return;
     // Preload ALL sound effects
     let audioList = getAllSoundEffectURLs();
     // Preload all the current COs themes for all game versions
@@ -2556,19 +2583,21 @@ var awbw_music_player = (function (exports) {
    * Intercept functions and add our own handlers to the website.
    */
   function addHandlers() {
-    if (getIsMaintenance()) return;
+    if (isMaintenance()) return;
     // Global handlers
     addUpdateCursorObserver(onCursorMove);
     // Specific page handlers
-    if (getIsMapEditor()) {
+    if (isMapEditor()) {
       return;
     }
-    if (getIsMovePlanner()) {
+    if (isMovePlanner()) {
       return;
     }
-    // game.php handlers
-    addReplayHandlers();
-    addGameHandlers();
+    if (isGamePage()) {
+      addReplayHandlers();
+      addGameHandlers();
+      return;
+    }
   }
   /**
    * Syncs the music with the game state. Does not randomize the COs.
@@ -2747,9 +2776,10 @@ var awbw_music_player = (function (exports) {
     // console.debug("[MP] Unit Click", clicked);
     // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
     const unitInfo = getUnitInfo(Number(clicked.id));
+    if (!unitInfo) return;
     const myID = getMyID();
     const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
-    const isMyUnit = unitInfo.units_players_id === myID;
+    const isMyUnit = unitInfo?.units_players_id === myID;
     const isMyTurn = currentTurn === myID;
     const canActionsBeTaken = !isUnitWaited && isMyUnit && isMyTurn && !isReplayActive();
     // If action can be taken, then we can cancel out of that action
@@ -2892,6 +2922,7 @@ var awbw_music_player = (function (exports) {
       const x = response.seamX;
       const y = response.seamY;
       const pipeSeamInfo = getBuildingInfo(x, y);
+      if (!pipeSeamInfo) return;
       const pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
       // Subtract how long the wiggle takes so it matches the sound a bit better
       const wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
@@ -3077,10 +3108,10 @@ var awbw_music_player = (function (exports) {
    * Where should we place the music player UI?
    */
   function getMenu() {
-    if (getIsMaintenance()) return document.querySelector("#main");
-    if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
-    if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
-    if (getIsYourGames()) return document.querySelector("#left-side-menu-container");
+    if (isMaintenance()) return document.querySelector("#main");
+    if (isMapEditor()) return document.querySelector("#replay-misc-controls");
+    if (isMovePlanner()) return document.querySelector("#map-controls-container");
+    if (isYourGames()) return document.querySelector("#left-side-menu-container");
     return document.querySelector("#game-map-menu")?.parentNode;
   }
   /******************************************************************
@@ -3090,24 +3121,24 @@ var awbw_music_player = (function (exports) {
     console.debug("[AWBW Improved Music Player] Script starting...");
     musicPlayerUI.addToAWBWPage(getMenu());
     addHandlers();
-    if (getIsMovePlanner()) {
+    if (isMovePlanner()) {
       console.log("[AWBW Improved Music Player] Move Planner detected");
       musicSettings.isPlaying = true;
       musicPlayerUI.setProgress(100);
       return;
     }
-    if (getIsMaintenance() || getIsYourGames()) {
+    if (isMaintenance() || isYourGames()) {
       console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
       musicSettings.isPlaying = true;
       musicPlayerUI.setProgress(100);
       musicPlayerUI.openContextMenu();
-      const theme = getIsMaintenance()
+      const theme = isMaintenance()
         ? "https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */
         : "https://developerjose.netlify.app/music/t-mode-select.ogg"; /* SpecialTheme.ModeSelect */
       playMusicURL(theme);
       return;
     }
-    if (getIsMapEditor()) {
+    if (isMapEditor()) {
       musicPlayerUI.parent.style.borderTop = "none";
     }
     // Map editor and game.php pages so allow settings to be saved

@@ -11,7 +11,7 @@ import { musicPlayerUI } from "./music_ui";
 import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
-import { getIsMaintenance, getIsMapEditor, getIsMovePlanner, getIsYourGames } from "../shared/awbw_page";
+import { isMaintenance, isMapEditor, isMovePlanner, isYourGames } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 
@@ -19,10 +19,10 @@ import { notifyCOSelectorListeners } from "../shared/custom_ui";
  * Where should we place the music player UI?
  */
 function getMenu() {
-  if (getIsMaintenance()) return document.querySelector("#main");
-  if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
-  if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
-  if (getIsYourGames()) return document.querySelector("#left-side-menu-container");
+  if (isMaintenance()) return document.querySelector("#main");
+  if (isMapEditor()) return document.querySelector("#replay-misc-controls");
+  if (isMovePlanner()) return document.querySelector("#map-controls-container");
+  if (isYourGames()) return document.querySelector("#left-side-menu-container");
   return document.querySelector("#game-map-menu")?.parentNode;
 }
 
@@ -40,24 +40,24 @@ export function main() {
   musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement);
   addHandlers();
 
-  if (getIsMovePlanner()) {
+  if (isMovePlanner()) {
     console.log("[AWBW Improved Music Player] Move Planner detected");
     musicSettings.isPlaying = true;
     musicPlayerUI.setProgress(100);
     return;
   }
 
-  if (getIsMaintenance() || getIsYourGames()) {
+  if (isMaintenance() || isYourGames()) {
     console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
     musicSettings.isPlaying = true;
     musicPlayerUI.setProgress(100);
     musicPlayerUI.openContextMenu();
-    const theme = getIsMaintenance() ? SpecialTheme.Maintenance : SpecialTheme.ModeSelect;
+    const theme = isMaintenance() ? SpecialTheme.Maintenance : SpecialTheme.ModeSelect;
     playMusicURL(theme);
     return;
   }
 
-  if (getIsMapEditor()) {
+  if (isMapEditor()) {
     musicPlayerUI.parent.style.borderTop = "none";
   }
 

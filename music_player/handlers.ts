@@ -20,9 +20,10 @@ import {
 import {
   addUpdateCursorObserver,
   getAllDamageSquares,
-  getIsMaintenance,
-  getIsMapEditor,
-  getIsMovePlanner,
+  isGamePage,
+  isMaintenance,
+  isMapEditor,
+  isMovePlanner,
   getReplayBackwardActionBtn,
   getReplayBackwardBtn,
   getReplayCloseBtn,
@@ -167,25 +168,27 @@ const ahResign = getResignFn();
  * Intercept functions and add our own handlers to the website.
  */
 export function addHandlers() {
-  if (getIsMaintenance()) return;
+  if (isMaintenance()) return;
 
   // Global handlers
   addUpdateCursorObserver(onCursorMove);
 
   // Specific page handlers
-  if (getIsMapEditor()) {
+  if (isMapEditor()) {
     addMapEditorHandlers();
     return;
   }
 
-  if (getIsMovePlanner()) {
+  if (isMovePlanner()) {
     addMovePlannerHandlers();
     return;
   }
 
-  // game.php handlers
-  addReplayHandlers();
-  addGameHandlers();
+  if (isGamePage()) {
+    addReplayHandlers();
+    addGameHandlers();
+    return;
+  }
 }
 
 /**
@@ -418,9 +421,11 @@ function onUnitClick(clicked: UnitClickData) {
 
   // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
   const unitInfo = getUnitInfo(Number(clicked.id));
+  if (!unitInfo) return;
+
   const myID = getMyID();
   const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
-  const isMyUnit = unitInfo.units_players_id === myID;
+  const isMyUnit = unitInfo?.units_players_id === myID;
   const isMyTurn = currentTurn === myID;
   const canActionsBeTaken = !isUnitWaited && isMyUnit && isMyTurn && !isReplayActive();
 
@@ -598,6 +603,7 @@ function onAttackSeam(response: SeamResponse) {
     const x = response.seamX;
     const y = response.seamY;
     const pipeSeamInfo = getBuildingInfo(x, y);
+    if (!pipeSeamInfo) return;
     const pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
 
     // Subtract how long the wiggle takes so it matches the sound a bit better

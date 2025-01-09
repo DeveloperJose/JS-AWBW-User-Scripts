@@ -5,20 +5,24 @@
 /**
  * Are we in the map editor?
  */
-export function getIsMapEditor() {
+export function isMapEditor() {
   return window.location.href.indexOf("editmap.php?") > -1;
 }
 
-export function getIsMaintenance() {
+export function isMaintenance() {
   return document.querySelector("#server-maintenance-alert") !== null;
 }
 
-export function getIsMovePlanner() {
+export function isMovePlanner() {
   return window.location.href.indexOf("moveplanner.php") > -1;
 }
 
-export function getIsYourGames() {
+export function isYourGames() {
   return window.location.href.indexOf("yourgames.php") > -1;
+}
+
+export function isGamePage() {
+  return window.location.href.indexOf("game.php") > -1;
 }
 
 // ============================== AWBW Page Elements ==============================
@@ -176,6 +180,8 @@ export function moveDivToOffset(
 export function addUpdateCursorObserver(onCursorMove: (cursorX: number, cursorY: number) => void) {
   // We want to catch when div textContent is changed
   const coordsDiv = getCoordsDiv();
+  if (!coordsDiv) return;
+
   const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
       if (mutation.type !== "childList") return;

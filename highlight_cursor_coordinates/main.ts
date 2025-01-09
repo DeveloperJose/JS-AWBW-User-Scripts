@@ -9,11 +9,12 @@ import {
   getCurrentZoomLevel,
   getGamemap,
   getGamemapContainer,
-  getIsMaintenance,
-  getIsMapEditor,
-  getIsMovePlanner,
+  isMaintenance,
+  isMapEditor,
+  isMovePlanner,
   getZoomInBtn,
   getZoomOutBtn,
+  getCoordsDiv,
 } from "../shared/awbw_page";
 import { CustomMenuSettingsUI } from "../shared/custom_ui";
 import { getMaximizeBtn } from "../shared/other_userscripts";
@@ -44,10 +45,11 @@ const currentSquares = new Array<HTMLElement>();
  * Where should we place the highlight cursor coordinates UI?
  */
 function getMenu() {
-  if (getIsMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
-  if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
+  if (isMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
+  if (isMovePlanner()) return document.querySelector("#map-controls-container");
 
-  return document.querySelector("#game-menu-controls")?.children[0];
+  const coordsDiv = getCoordsDiv();
+  return coordsDiv.parentElement;
 }
 
 function setHighlight(node: HTMLElement, highlight: boolean) {
@@ -179,18 +181,18 @@ function addHighlightBoxesAroundMapEdges() {
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
 function main() {
-  if (getIsMaintenance()) {
+  if (isMaintenance()) {
     console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
     return;
   }
 
   // Hide by default on map editor and move planner
-  if (getIsMapEditor() || getIsMovePlanner()) {
+  if (isMapEditor() || isMovePlanner()) {
     isEnabled = false;
   }
 
   // designmap.php, wait until designerMapEditor is loaded to run script
-  const isMapEditorAndNotLoaded = getIsMapEditor() && !designMapEditor?.loaded;
+  const isMapEditorAndNotLoaded = isMapEditor() && !designMapEditor?.loaded;
   if (isMapEditorAndNotLoaded) {
     const interval = setInterval(() => {
       if (designMapEditor.loaded) {
@@ -206,7 +208,7 @@ function main() {
   addUpdateCursorObserver(onCursorMove);
 
   // Intercept designmap functions
-  if (getIsMapEditor()) {
+  if (isMapEditor()) {
     designMapEditor.resizeMap = onResizeMap;
   }
 
@@ -242,7 +244,7 @@ function main() {
   customUI.addToAWBWPage(getMenu() as HTMLElement, true);
   customUI.setProgress(100);
 
-  if (getIsMapEditor() || getIsMovePlanner()) {
+  if (isMapEditor() || isMovePlanner()) {
     customUI.parent.style.height = "31px";
   }
 

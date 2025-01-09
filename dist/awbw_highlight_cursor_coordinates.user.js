@@ -23,13 +23,13 @@
   /**
    * Are we in the map editor?
    */
-  function getIsMapEditor() {
+  function isMapEditor() {
     return window.location.href.indexOf("editmap.php?") > -1;
   }
-  function getIsMaintenance() {
+  function isMaintenance() {
     return document.querySelector("#server-maintenance-alert") !== null;
   }
-  function getIsMovePlanner() {
+  function isMovePlanner() {
     return window.location.href.indexOf("moveplanner.php") > -1;
   }
   // ============================== AWBW Page Elements ==============================
@@ -62,6 +62,7 @@
   function addUpdateCursorObserver(onCursorMove) {
     // We want to catch when div textContent is changed
     const coordsDiv = getCoordsDiv();
+    if (!coordsDiv) return;
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type !== "childList") return;
@@ -120,14 +121,14 @@
    * The number of columns of this map.
    */
   function getMapColumns() {
-    if (getIsMapEditor()) return designMapEditor.map.maxX;
+    if (isMapEditor()) return designMapEditor.map.maxX;
     return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
   }
   /**
    * The number of rows of this map.
    */
   function getMapRows() {
-    if (getIsMapEditor()) return designMapEditor.map.maxY;
+    if (isMapEditor()) return designMapEditor.map.maxY;
     return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
   }
 
@@ -252,6 +253,7 @@
       const contextMenu = document.createElement("div");
       contextMenu.id = `${prefix}-settings`;
       contextMenu.classList.add("cls-settings-menu");
+      contextMenu.style.zIndex = "20";
       this.parent.appendChild(contextMenu);
       this.groups.set("settings-parent", contextMenu);
       const contextMenuBoxesContainer = document.createElement("div");
@@ -408,11 +410,16 @@
      * @returns - The slider element.
      */
     addSlider(name, min, max, step, hoverText = "", position = MenuPosition.Center) {
-      const container = this.getGroup(position);
-      if (!container) return;
+      const contextMenu = this.getGroup(position);
+      if (!contextMenu) return;
+      // Container for the slider and label
+      const sliderBox = document.createElement("div");
+      sliderBox.classList.add("cls-vertical-box");
+      sliderBox.classList.add("cls-slider-box");
+      contextMenu?.appendChild(sliderBox);
       // Slider label
       const label = document.createElement("label");
-      container?.appendChild(label);
+      sliderBox?.appendChild(label);
       // Slider
       const slider = document.createElement("input");
       slider.id = `${this.prefix}-${sanitize(name)}`;
@@ -427,8 +434,9 @@
         if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
         label.innerText = `${name}: ${displayValue}`;
       });
-      container?.appendChild(slider);
+      sliderBox?.appendChild(slider);
       // Hover text
+      slider.title = hoverText;
       slider.addEventListener("mouseover", () => this.setHoverText(hoverText));
       slider.addEventListener("mouseout", () => this.setHoverText(""));
       return slider;
@@ -477,6 +485,7 @@
       inputBox.classList.add(otherType);
       groupDiv.appendChild(inputBox);
       // Hover text
+      inputBox.title = hoverText;
       inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
       inputBox.addEventListener("mouseout", () => this.setHoverText(""));
       // Create button or a different type of input
@@ -530,6 +539,7 @@
       table.classList.add("cls-settings-table");
       groupDiv.appendChild(table);
       // Hover text
+      table.title = hoverText;
       table.addEventListener("mouseover", () => this.setHoverText(hoverText));
       table.addEventListener("mouseout", () => this.setHoverText(""));
       const tableData = {
@@ -589,6 +599,7 @@
       coSelector.appendChild(imgCaret);
       coSelector.appendChild(imgCO);
       // Hover text
+      coSelector.title = hoverText;
       coSelector.addEventListener("mouseover", () => this.setHoverText(hoverText));
       coSelector.addEventListener("mouseout", () => this.setHoverText(""));
       // Update UI
@@ -704,9 +715,10 @@
    * Where should we place the highlight cursor coordinates UI?
    */
   function getMenu() {
-    if (getIsMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
-    if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
-    return document.querySelector("#game-menu-controls")?.children[0];
+    if (isMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
+    if (isMovePlanner()) return document.querySelector("#map-controls-container");
+    const coordsDiv = getCoordsDiv();
+    return coordsDiv.parentElement;
   }
   function setHighlight(node, highlight) {
     if (!isEnabled) return;
@@ -818,16 +830,16 @@
    * SCRIPT ENTRY (MAIN FUNCTION)
    ******************************************************************/
   function main() {
-    if (getIsMaintenance()) {
+    if (isMaintenance()) {
       console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
       return;
     }
     // Hide by default on map editor and move planner
-    if (getIsMapEditor() || getIsMovePlanner()) {
+    if (isMapEditor() || isMovePlanner()) {
       isEnabled = false;
     }
     // designmap.php, wait until designerMapEditor is loaded to run script
-    const isMapEditorAndNotLoaded = getIsMapEditor() && !designMapEditor?.loaded;
+    const isMapEditorAndNotLoaded = isMapEditor() && !designMapEditor?.loaded;
     if (isMapEditorAndNotLoaded) {
       const interval = setInterval(() => {
         if (designMapEditor.loaded) {
@@ -841,7 +853,7 @@
     // Intercept AWBW functions (global)
     addUpdateCursorObserver(onCursorMove);
     // Intercept designmap functions
-    if (getIsMapEditor()) {
+    if (isMapEditor()) {
       designMapEditor.resizeMap = onResizeMap;
     }
     if (zoomInBtn != null) zoomInBtn.addEventListener("click", onZoomChangeEvent);
@@ -870,7 +882,7 @@
     });
     customUI.addToAWBWPage(getMenu(), true);
     customUI.setProgress(100);
-    if (getIsMapEditor() || getIsMovePlanner()) {
+    if (isMapEditor() || isMovePlanner()) {
       customUI.parent.style.height = "31px";
     }
     console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
