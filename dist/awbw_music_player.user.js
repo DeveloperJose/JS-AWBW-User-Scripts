@@ -1961,7 +1961,7 @@ var awbw_music_player = (function (exports) {
   function onCOSelectorClick(coName) {
     currentSelectedCO = coName;
   }
-  musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+  if (isGamePage()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
   // Game type radio buttons
   const overrideGameTypeRadioMap = new Map();
   for (const gameType of Object.values(SettingsGameType)) {

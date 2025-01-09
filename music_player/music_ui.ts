@@ -217,7 +217,7 @@ let currentSelectedCO = "andy";
 function onCOSelectorClick(coName: string) {
   currentSelectedCO = coName;
 }
-musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+if (isGamePage()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
 
 // Game type radio buttons
 const overrideGameTypeRadioMap = new Map<SettingsGameType, HTMLInputElement>();
