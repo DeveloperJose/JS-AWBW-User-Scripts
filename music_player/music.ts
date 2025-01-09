@@ -474,6 +474,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     case "overrideList":
     case "currentRandomCO":
     case "isPlaying":
+      // case "restartThemes":
       if (musicPlayerSettings.isPlaying) {
         playThemeSong();
       } else {

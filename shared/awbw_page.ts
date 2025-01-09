@@ -17,6 +17,10 @@ export function getIsMovePlanner() {
   return window.location.href.indexOf("moveplanner.php") > -1;
 }
 
+export function getIsYourGames() {
+  return window.location.href.indexOf("yourgames.php") > -1;
+}
+
 // ============================== AWBW Page Elements ==============================
 export function getGamemap() {
   return document.querySelector("#gamemap") as HTMLElement;

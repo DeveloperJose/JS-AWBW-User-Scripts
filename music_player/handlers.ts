@@ -209,7 +209,7 @@ function addMovePlannerHandlers() {
 function syncMusic() {
   musicPlayerSettings.themeType = getCurrentThemeType();
   playThemeSong();
-  setTimeout(playThemeSong, 1000);
+  setTimeout(playThemeSong, 500);
 }
 
 /**
@@ -220,7 +220,13 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
   // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
   visibilityMap.clear();
   musicPlayerSettings.currentRandomCO = getRandomCO();
-  setTimeout(syncMusic, playDelayMS);
+  musicPlayerSettings.themeType = getCurrentThemeType();
+
+  setTimeout(() => {
+    musicPlayerSettings.themeType = getCurrentThemeType();
+    playThemeSong(musicPlayerSettings.restartThemes && !isReplayActive());
+    setTimeout(playThemeSong, 250);
+  }, playDelayMS);
 }
 
 /**
@@ -235,21 +241,19 @@ function addReplayHandlers() {
   const replayCloseBtn = getReplayCloseBtn();
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
-  // Keep the music in sync
+  // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
   replayBackwardActionBtn.addEventListener("click", syncMusic);
   replayForwardActionBtn.addEventListener("click", syncMusic);
+  replayForwardBtn.addEventListener("click", syncMusic);
+  replayBackwardBtn.addEventListener("click", syncMusic);
+  replayDaySelectorCheckBox.addEventListener("change", syncMusic);
+  replayCloseBtn.addEventListener("click", syncMusic);
 
   // Stop all movement sounds when we go backwards on action
-  replayBackwardActionBtn.addEventListener("click", () => stopAllMovementSounds());
+  replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
 
-  // Stop all movement sounds when we are going fast
-  // Randomize COs when we move a full turn
-  const replayChangeTurn = () => refreshMusicForNextTurn(500);
-  replayForwardBtn.addEventListener("click", replayChangeTurn);
-  replayBackwardBtn.addEventListener("click", replayChangeTurn);
-  replayOpenBtn.addEventListener("click", replayChangeTurn);
-  replayCloseBtn.addEventListener("click", replayChangeTurn);
-  replayDaySelectorCheckBox.addEventListener("change", replayChangeTurn);
+  // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
+  replayOpenBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
 }
 
 /**

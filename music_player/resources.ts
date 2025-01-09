@@ -36,22 +36,16 @@ export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
 export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
 
 /**
- * URL for the victory theme music.
- * @constant {string}
+ * URLs for the special themes that are not related to specific COs.
+ * @enum {string}
  */
-export const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
-
-/**
- * URL for the defeat theme music.
- * @constant {string}
- */
-export const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
-
-/**
- * URL for the maintenance theme music.
- * @constant {string}
- */
-export const MAINTENANCE_THEME_URL = BASE_MUSIC_URL + "/t-maintenance.ogg";
+export const enum SpecialTheme {
+  Victory = BASE_MUSIC_URL + "/t-victory.ogg",
+  Defeat = BASE_MUSIC_URL + "/t-defeat.ogg",
+  Maintenance = BASE_MUSIC_URL + "/t-maintenance.ogg",
+  COSelect = BASE_MUSIC_URL + "/t-co-select.ogg",
+  ModeSelect = BASE_MUSIC_URL + "/t-mode-select.ogg",
+}
 
 /**
  * Enumeration of all game sound effects. The values are the filenames for the sounds.
@@ -287,9 +281,12 @@ export function getMusicURL(
   // Convert name to internal format
   coName = coName.toLowerCase().replaceAll(" ", "");
 
-  // Check if we want to play the victory or defeat theme
-  if (coName === "victory") return VICTORY_THEME_URL;
-  if (coName === "defeat") return DEFEAT_THEME_URL;
+  // Check if we want to play a special theme;
+  if (coName === "victory") return SpecialTheme.Victory;
+  if (coName === "defeat") return SpecialTheme.Defeat;
+  if (coName === "co-select") return SpecialTheme.COSelect;
+  if (coName === "mode-select") return SpecialTheme.ModeSelect;
+  if (coName === "maintenance") return SpecialTheme.Maintenance;
 
   // First apply player overrides, that way we can override their overrides later...
   const overrideType = musicPlayerSettings.getOverride(coName);

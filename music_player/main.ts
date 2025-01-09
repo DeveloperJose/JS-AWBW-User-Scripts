@@ -11,8 +11,8 @@ import { musicPlayerUI } from "./music_ui";
 import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
 import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
-import { getIsMaintenance, getIsMapEditor, getIsMovePlanner } from "../shared/awbw_page";
-import { MAINTENANCE_THEME_URL } from "./resources";
+import { getIsMaintenance, getIsMapEditor, getIsMovePlanner, getIsYourGames } from "../shared/awbw_page";
+import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 
 /**
@@ -22,6 +22,7 @@ function getMenu() {
   if (getIsMaintenance()) return document.querySelector("#main");
   if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
   if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
+  if (getIsYourGames()) return document.querySelector("#left-side-menu-container");
   return document.querySelector("#game-map-menu")?.parentNode;
 }
 
@@ -46,12 +47,13 @@ export function main() {
     return;
   }
 
-  if (getIsMaintenance()) {
-    console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
+  if (getIsMaintenance() || getIsYourGames()) {
+    console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
     musicPlayerSettings.isPlaying = true;
     musicPlayerUI.setProgress(100);
     musicPlayerUI.openContextMenu();
-    playMusicURL(MAINTENANCE_THEME_URL);
+    const theme = getIsMaintenance() ? SpecialTheme.Maintenance : SpecialTheme.ModeSelect;
+    playMusicURL(theme);
     return;
   }
 
@@ -59,6 +61,7 @@ export function main() {
     musicPlayerUI.parent.style.borderTop = "none";
   }
 
+  // Map editor and game.php pages so allow settings to be saved
   loadSettingsFromLocalStorage();
   preloadAllCommonAudio(() => {
     console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");

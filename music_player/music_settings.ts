@@ -87,6 +87,7 @@ export abstract class musicPlayerSettings {
   private static __captureProgressSFX = true;
   private static __pipeSeamSFX = true;
   private static __overrideList = new Map<string, SettingsGameType>();
+  private static __restartThemes = false;
 
   // Non-user configurable settings
   private static __themeType = SettingsThemeType.REGULAR;
@@ -106,6 +107,7 @@ export abstract class musicPlayerSettings {
       captureProgressSFX: this.__captureProgressSFX,
       pipeSeamSFX: this.__pipeSeamSFX,
       overrideList: Array.from(this.__overrideList.entries()),
+      restartThemes: this.__restartThemes,
     });
   }
 
@@ -233,6 +235,16 @@ export abstract class musicPlayerSettings {
 
   static getOverride(coName: string) {
     return this.__overrideList.get(coName);
+  }
+
+  static get restartThemes() {
+    return this.__restartThemes;
+  }
+
+  static set restartThemes(val: boolean) {
+    if (this.__restartThemes === val) return;
+    this.__restartThemes = val;
+    this.onSettingChangeEvent("restartThemes");
   }
 
   // ************* Non-user configurable settings from here on

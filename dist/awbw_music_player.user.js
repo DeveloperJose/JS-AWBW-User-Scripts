@@ -6,6 +6,7 @@
 // @match       https://awbw.amarriner.com/game.php*
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
+// @match       https://awbw.amarriner.com/yourgames.php*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @version     3.0.4
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
@@ -68,6 +69,9 @@ var awbw_music_player = (function (exports) {
   }
   function getIsMovePlanner() {
     return window.location.href.indexOf("moveplanner.php") > -1;
+  }
+  function getIsYourGames() {
+    return window.location.href.indexOf("yourgames.php") > -1;
   }
   function getCoordsDiv() {
     return document.querySelector("#coords");
@@ -574,6 +578,7 @@ var awbw_music_player = (function (exports) {
     static __captureProgressSFX = true;
     static __pipeSeamSFX = true;
     static __overrideList = new Map();
+    static __restartThemes = false;
     // Non-user configurable settings
     static __themeType = SettingsThemeType.REGULAR;
     static __currentRandomCO = getRandomCO();
@@ -591,6 +596,7 @@ var awbw_music_player = (function (exports) {
         captureProgressSFX: this.__captureProgressSFX,
         pipeSeamSFX: this.__pipeSeamSFX,
         overrideList: Array.from(this.__overrideList.entries()),
+        restartThemes: this.__restartThemes,
       });
     }
     static fromJSON(json) {
@@ -698,6 +704,14 @@ var awbw_music_player = (function (exports) {
     static getOverride(coName) {
       return this.__overrideList.get(coName);
     }
+    static get restartThemes() {
+      return this.__restartThemes;
+    }
+    static set restartThemes(val) {
+      if (this.__restartThemes === val) return;
+      this.__restartThemes = val;
+      this.onSettingChangeEvent("restartThemes");
+    }
     // ************* Non-user configurable settings from here on
     static set themeType(val) {
       if (this.__themeType === val) return;
@@ -796,20 +810,17 @@ var awbw_music_player = (function (exports) {
    */
   const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
   /**
-   * URL for the victory theme music.
-   * @constant {string}
+   * URLs for the special themes that are not related to specific COs.
+   * @enum {string}
    */
-  const VICTORY_THEME_URL = BASE_MUSIC_URL + "/t-victory.ogg";
-  /**
-   * URL for the defeat theme music.
-   * @constant {string}
-   */
-  const DEFEAT_THEME_URL = BASE_MUSIC_URL + "/t-defeat.ogg";
-  /**
-   * URL for the maintenance theme music.
-   * @constant {string}
-   */
-  const MAINTENANCE_THEME_URL = BASE_MUSIC_URL + "/t-maintenance.ogg";
+  var SpecialTheme;
+  (function (SpecialTheme) {
+    SpecialTheme["Victory"] = "https://developerjose.netlify.app/music/t-victory.ogg";
+    SpecialTheme["Defeat"] = "https://developerjose.netlify.app/music/t-defeat.ogg";
+    SpecialTheme["Maintenance"] = "https://developerjose.netlify.app/music/t-maintenance.ogg";
+    SpecialTheme["COSelect"] = "https://developerjose.netlify.app/music/t-co-select.ogg";
+    SpecialTheme["ModeSelect"] = "https://developerjose.netlify.app/music/t-mode-select.ogg";
+  })(SpecialTheme || (SpecialTheme = {}));
   /**
    * Enumeration of all game sound effects. The values are the filenames for the sounds.
    * @enum {string}
@@ -1013,9 +1024,15 @@ var awbw_music_player = (function (exports) {
     }
     // Convert name to internal format
     coName = coName.toLowerCase().replaceAll(" ", "");
-    // Check if we want to play the victory or defeat theme
-    if (coName === "victory") return VICTORY_THEME_URL;
-    if (coName === "defeat") return DEFEAT_THEME_URL;
+    // Check if we want to play a special theme;
+    if (coName === "victory") return "https://developerjose.netlify.app/music/t-victory.ogg" /* SpecialTheme.Victory */;
+    if (coName === "defeat") return "https://developerjose.netlify.app/music/t-defeat.ogg" /* SpecialTheme.Defeat */;
+    if (coName === "co-select")
+      return "https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */;
+    if (coName === "mode-select")
+      return "https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */;
+    if (coName === "maintenance")
+      return "https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */;
     // First apply player overrides, that way we can override their overrides later...
     const overrideType = musicPlayerSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
@@ -1720,6 +1737,7 @@ var awbw_music_player = (function (exports) {
       radioRandom.checked = musicPlayerSettings.randomThemes;
       captProgressBox.checked = musicPlayerSettings.captureProgressSFX;
       pipeSeamBox.checked = musicPlayerSettings.pipeSeamSFX;
+      restartThemesBox.checked = musicPlayerSettings.restartThemes;
       // Update all labels
       musicPlayerUI.updateAllInputLabels();
     }
@@ -1770,6 +1788,7 @@ var awbw_music_player = (function (exports) {
     Name["Shuffle"] = "Shuffle";
     Name["Capture_Progress"] = "Capture Progress SFX";
     Name["Pipe_Seam_SFX"] = "Pipe Seam Attack SFX";
+    Name["Restart_Themes"] = "Restart Themes Every Turn";
     Name["Add_Override"] = "Add";
     Name["Override_Table"] = "Overrides";
   })(Name || (Name = {}));
@@ -1791,6 +1810,8 @@ var awbw_music_player = (function (exports) {
     Description["Shuffle"] = "Changes the current theme to a new random one.";
     Description["Capture_Progress"] = "Play a sound effect when a unit makes progress capturing a property.";
     Description["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
+    Description["Restart_Themes"] =
+      "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.";
     Description["Add_Override"] = "Adds an override for a specific CO so it always plays a specific soundtrack.";
     Description["Remove_Override"] = "Removes the override for this specific CO.";
   })(Description || (Description = {}));
@@ -1826,13 +1847,15 @@ var awbw_music_player = (function (exports) {
   const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
   shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
   /* **** Group: Sound effect toggle checkboxes **** */
-  const toggleGroup = "Sound Effects";
+  const toggleGroup = "Extra Options";
   musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
   // Checkboxes
   const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
   const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+  const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, toggleGroup, Description.Restart_Themes);
   captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
   pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
+  restartThemesBox.addEventListener("click", (_e) => (musicPlayerSettings.restartThemes = restartThemesBox.checked));
   /* **** Group: Day slider **** */
   const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
   daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
@@ -2279,6 +2302,7 @@ var awbw_music_player = (function (exports) {
       case "overrideList":
       case "currentRandomCO":
       case "isPlaying":
+        // case "restartThemes":
         if (musicPlayerSettings.isPlaying) {
           playThemeSong();
         } else {
@@ -2519,7 +2543,7 @@ var awbw_music_player = (function (exports) {
   function syncMusic() {
     musicPlayerSettings.themeType = getCurrentThemeType();
     playThemeSong();
-    setTimeout(playThemeSong, 1000);
+    setTimeout(playThemeSong, 500);
   }
   /**
    * Refreshes everything needed for the music when finishing a turn. Also randomizes the COs if needed.
@@ -2529,7 +2553,12 @@ var awbw_music_player = (function (exports) {
     // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
     visibilityMap.clear();
     musicPlayerSettings.currentRandomCO = getRandomCO();
-    setTimeout(syncMusic, playDelayMS);
+    musicPlayerSettings.themeType = getCurrentThemeType();
+    setTimeout(() => {
+      musicPlayerSettings.themeType = getCurrentThemeType();
+      playThemeSong(musicPlayerSettings.restartThemes && !isReplayActive());
+      setTimeout(playThemeSong, 250);
+    }, playDelayMS);
   }
   /**
    * Add all handlers that will intercept clicks and functions when watching a replay.
@@ -2542,19 +2571,17 @@ var awbw_music_player = (function (exports) {
     const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
-    // Keep the music in sync
+    // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
     replayBackwardActionBtn.addEventListener("click", syncMusic);
     replayForwardActionBtn.addEventListener("click", syncMusic);
+    replayForwardBtn.addEventListener("click", syncMusic);
+    replayBackwardBtn.addEventListener("click", syncMusic);
+    replayDaySelectorCheckBox.addEventListener("change", syncMusic);
+    replayCloseBtn.addEventListener("click", syncMusic);
     // Stop all movement sounds when we go backwards on action
-    replayBackwardActionBtn.addEventListener("click", () => stopAllMovementSounds());
-    // Stop all movement sounds when we are going fast
-    // Randomize COs when we move a full turn
-    const replayChangeTurn = () => refreshMusicForNextTurn(500);
-    replayForwardBtn.addEventListener("click", replayChangeTurn);
-    replayBackwardBtn.addEventListener("click", replayChangeTurn);
-    replayOpenBtn.addEventListener("click", replayChangeTurn);
-    replayCloseBtn.addEventListener("click", replayChangeTurn);
-    replayDaySelectorCheckBox.addEventListener("change", replayChangeTurn);
+    replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
+    // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
+    replayOpenBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
   }
   /**
    * Add all handlers that will intercept clicks and functions during a game.
@@ -3020,6 +3047,7 @@ var awbw_music_player = (function (exports) {
     if (getIsMaintenance()) return document.querySelector("#main");
     if (getIsMapEditor()) return document.querySelector("#replay-misc-controls");
     if (getIsMovePlanner()) return document.querySelector("#map-controls-container");
+    if (getIsYourGames()) return document.querySelector("#left-side-menu-container");
     return document.querySelector("#game-map-menu")?.parentNode;
   }
   /******************************************************************
@@ -3035,17 +3063,21 @@ var awbw_music_player = (function (exports) {
       musicPlayerUI.setProgress(100);
       return;
     }
-    if (getIsMaintenance()) {
-      console.log("[AWBW Improved Music Player] Maintenance mode is active, playing relaxing music...");
+    if (getIsMaintenance() || getIsYourGames()) {
+      console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
       musicPlayerSettings.isPlaying = true;
       musicPlayerUI.setProgress(100);
       musicPlayerUI.openContextMenu();
-      playMusicURL(MAINTENANCE_THEME_URL);
+      const theme = getIsMaintenance()
+        ? "https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */
+        : "https://developerjose.netlify.app/music/t-mode-select.ogg"; /* SpecialTheme.ModeSelect */
+      playMusicURL(theme);
       return;
     }
     if (getIsMapEditor()) {
       musicPlayerUI.parent.style.borderTop = "none";
     }
+    // Map editor and game.php pages so allow settings to be saved
     loadSettingsFromLocalStorage();
     preloadAllCommonAudio(() => {
       console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");

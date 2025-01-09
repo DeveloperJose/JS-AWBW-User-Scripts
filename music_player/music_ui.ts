@@ -45,6 +45,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
 
     captProgressBox.checked = musicPlayerSettings.captureProgressSFX;
     pipeSeamBox.checked = musicPlayerSettings.pipeSeamSFX;
+    restartThemesBox.checked = musicPlayerSettings.restartThemes;
 
     // Update all labels
     musicPlayerUI.updateAllInputLabels();
@@ -101,9 +102,13 @@ enum Name {
   SFX_Volume = "SFX Volume",
   UI_Volume = "UI Volume",
   Alternate_Day = "Alternate Themes Start On Day",
+
   Shuffle = "Shuffle",
+
   Capture_Progress = "Capture Progress SFX",
   Pipe_Seam_SFX = "Pipe Seam Attack SFX",
+  Restart_Themes = "Restart Themes Every Turn",
+
   Add_Override = "Add",
   Override_Table = "Overrides",
 }
@@ -113,15 +118,20 @@ enum Description {
   SFX_Volume = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
   UI_Volume = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
   Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
+
   AW1 = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!",
   AW2 = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.",
   DS = "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.",
   RBC = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!",
+
   Normal_Themes = "Play the music depending on who the current CO is.",
   Random_Themes = "Play random music every turn.",
   Shuffle = "Changes the current theme to a new random one.",
+
   Capture_Progress = "Play a sound effect when a unit makes progress capturing a property.",
   Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
+  Restart_Themes = "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.",
+
   Add_Override = "Adds an override for a specific CO so it always plays a specific soundtrack.",
   Remove_Override = "Removes the override for this specific CO.",
 }
@@ -165,14 +175,16 @@ const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Descriptio
 shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
 
 /* **** Group: Sound effect toggle checkboxes **** */
-const toggleGroup = "Sound Effects";
+const toggleGroup = "Extra Options";
 musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
 
 // Checkboxes
 const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
 const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
+const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, toggleGroup, Description.Restart_Themes);
 captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
 pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
+restartThemesBox.addEventListener("click", (_e) => (musicPlayerSettings.restartThemes = restartThemesBox.checked));
 
 /* **** Group: Day slider **** */
 const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
