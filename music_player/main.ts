@@ -9,7 +9,7 @@ import "./style_sliders.css";
 
 import { musicPlayerUI } from "./music_ui";
 import { playMusicURL, playThemeSong, preloadAllCommonAudio, preloadAllExtraAudio } from "./music";
-import { getCurrentThemeType, loadSettingsFromLocalStorage, musicPlayerSettings } from "./music_settings";
+import { getCurrentThemeType, loadSettingsFromLocalStorage, musicSettings } from "./music_settings";
 import { addHandlers } from "./handlers";
 import { getIsMaintenance, getIsMapEditor, getIsMovePlanner, getIsYourGames } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
@@ -42,14 +42,14 @@ export function main() {
 
   if (getIsMovePlanner()) {
     console.log("[AWBW Improved Music Player] Move Planner detected");
-    musicPlayerSettings.isPlaying = true;
+    musicSettings.isPlaying = true;
     musicPlayerUI.setProgress(100);
     return;
   }
 
   if (getIsMaintenance() || getIsYourGames()) {
     console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
-    musicPlayerSettings.isPlaying = true;
+    musicSettings.isPlaying = true;
     musicPlayerUI.setProgress(100);
     musicPlayerUI.openContextMenu();
     const theme = getIsMaintenance() ? SpecialTheme.Maintenance : SpecialTheme.ModeSelect;
@@ -68,7 +68,7 @@ export function main() {
 
     // Set dynamic settings based on the current game state
     // Lastly, update the UI to reflect the current settings
-    musicPlayerSettings.themeType = getCurrentThemeType();
+    musicSettings.themeType = getCurrentThemeType();
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
 

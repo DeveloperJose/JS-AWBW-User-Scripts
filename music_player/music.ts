@@ -12,7 +12,7 @@ import {
   hasSpecialLoop,
   getAllCurrentThemesExtraAudioURLs,
 } from "./resources";
-import { musicPlayerSettings, addSettingsChangeListener, SettingsThemeType } from "./music_settings";
+import { musicSettings, addSettingsChangeListener, SettingsThemeType } from "./music_settings";
 import { getRandomCO } from "../shared/awbw_globals";
 import { getIsMapEditor } from "../shared/awbw_page";
 
@@ -72,7 +72,7 @@ function setRandomThemeTimeout(nextTheme: HTMLAudioElement) {
   // Set a new timeout for the next theme
   const songDurationMS = nextTheme.duration * 1000;
   randomThemeTimeout = window.setTimeout(() => {
-    musicPlayerSettings.currentRandomCO = getRandomCO();
+    musicSettings.currentRandomCO = getRandomCO();
     randomThemeTimeout = null;
     playThemeSong(true);
   }, songDurationMS);
@@ -93,7 +93,7 @@ function whenAudioLoadsPauseIt(event: Event) {
  */
 function whenAudioLoadsPlayIt(event: Event) {
   const audio = event.target as HTMLAudioElement;
-  audio.volume = musicPlayerSettings.volume;
+  audio.volume = musicSettings.volume;
   // if (audio.src === currentThemeKey) audio.play();
   playThemeSong();
 }
@@ -129,7 +129,7 @@ addSettingsChangeListener(onSettingsChange);
  * @param startFromBeginning - Whether to start from the beginning.
  */
 export function playMusicURL(srcURL: string, startFromBeginning: boolean = false) {
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   // This song has a special loop, and it's time to play it
   const specialLoopURL = specialLoopMap.get(srcURL);
@@ -158,11 +158,11 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
   nextSong.loop = !hasSpecialLoop(srcURL);
 
   // Play the song.
-  nextSong.volume = musicPlayerSettings.volume;
+  nextSong.volume = musicSettings.volume;
   nextSong.play();
 
   // We aren't playing random themes, and if we are, we are already waiting for the next song to start
-  if (!musicPlayerSettings.randomThemes || randomThemeTimeout) return;
+  if (!musicSettings.randomThemes || randomThemeTimeout) return;
 
   // We are playing random themes, and there is no timer to switch to the next song yet so set one if possible
   if (nextSong.duration > 0) {
@@ -181,7 +181,7 @@ export function playMusicURL(srcURL: string, startFromBeginning: boolean = false
  * @param volume - Volume at which to play this sound.
  */
 function playOneShotURL(srcURL: string, volume: number) {
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   const soundInstance = new Audio(srcURL);
   soundInstance.currentTime = 0;
@@ -195,7 +195,7 @@ function playOneShotURL(srcURL: string, volume: number) {
  * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
  */
 export function playThemeSong(startFromBeginning = false) {
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
   // Ignore all calls to play() while delaying, we are guaranteed to play eventually
@@ -207,9 +207,9 @@ export function playThemeSong(startFromBeginning = false) {
 
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
-  if (musicPlayerSettings.randomThemes && !isEndTheme) {
-    coName = musicPlayerSettings.currentRandomCO;
-    gameType = musicPlayerSettings.currentRandomGameType;
+  if (musicSettings.randomThemes && !isEndTheme) {
+    coName = musicSettings.currentRandomCO;
+    gameType = musicSettings.currentRandomGameType;
   }
   playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
 }
@@ -260,7 +260,7 @@ export function stopThemeSong(delayMS: number = 0) {
  * @param unitId - The ID of the unit who is moving.
  */
 export function playMovementSound(unitId: number) {
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   // The audio hasn't been preloaded for this unit
   if (!unitIDAudioMap.has(unitId)) {
@@ -274,7 +274,7 @@ export function playMovementSound(unitId: number) {
   if (!movementAudio) return;
   movementAudio.currentTime = 0;
   movementAudio.loop = false;
-  movementAudio.volume = musicPlayerSettings.sfxVolume;
+  movementAudio.volume = musicSettings.sfxVolume;
   movementAudio.play();
 }
 
@@ -285,7 +285,7 @@ export function playMovementSound(unitId: number) {
  */
 export function stopMovementSound(unitId: number, rolloff = true) {
   // Can't stop if there's nothing playing
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   // Can't stop if the unit doesn't have any sounds
   if (!unitIDAudioMap.has(unitId)) return;
@@ -309,7 +309,7 @@ export function stopMovementSound(unitId: number, rolloff = true) {
   const unitName = getUnitName(unitId);
   if (hasMovementRollOff(unitName)) {
     const audioURL = getMovementRollOffURL(unitName);
-    playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
+    playOneShotURL(audioURL, musicSettings.sfxVolume);
   }
 }
 
@@ -318,21 +318,21 @@ export function stopMovementSound(unitId: number, rolloff = true) {
  * @param sfx - Specific {@link GameSFX} to play.
  */
 export function playSFX(sfx: GameSFX) {
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   // Check the user settings to see if we should play this sound effect
-  if (!musicPlayerSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
-  if (!musicPlayerSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
+  if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
+  if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
 
   const sfxURL = getSoundEffectURL(sfx);
 
   // Figure out which volume to use
-  let vol = musicPlayerSettings.sfxVolume;
+  let vol = musicSettings.sfxVolume;
 
   if (sfx.startsWith("ui")) {
-    vol = musicPlayerSettings.uiVolume;
+    vol = musicSettings.uiVolume;
   } else if (sfx.startsWith("power")) {
-    vol = musicPlayerSettings.volume;
+    vol = musicSettings.volume;
   }
 
   // This sound effect hasn't been loaded yet
@@ -475,7 +475,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     case "currentRandomCO":
     case "isPlaying":
       // case "restartThemes":
-      if (musicPlayerSettings.isPlaying) {
+      if (musicSettings.isPlaying) {
         playThemeSong();
       } else {
         stopAllSounds();
@@ -483,22 +483,23 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
       break;
     case "gameType":
     case "alternateThemeDay":
+    case "alternateThemes":
       setTimeout(() => playThemeSong(), 500);
       break;
     case "themeType": {
-      const restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
+      const restartMusic = musicSettings.themeType !== SettingsThemeType.REGULAR;
       playThemeSong(restartMusic);
       break;
     }
     case "randomThemes":
       // Back to normal themes
-      if (!musicPlayerSettings.randomThemes) {
+      if (!musicSettings.randomThemes) {
         playThemeSong();
         return;
       }
 
       // We want a new random theme
-      musicPlayerSettings.currentRandomCO = getRandomCO();
+      musicSettings.currentRandomCO = getRandomCO();
       playThemeSong(true);
 
       // Preload all themes if we are going to play random themes
@@ -513,7 +514,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     case "volume": {
       // Adjust the volume of the current theme
       const currentTheme = urlAudioMap.get(currentThemeKey);
-      if (currentTheme) currentTheme.volume = musicPlayerSettings.volume;
+      if (currentTheme) currentTheme.volume = musicSettings.volume;
       break;
     }
   }

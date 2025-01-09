@@ -2,7 +2,7 @@
  * @file This file contains all the functions and variables relevant to the creation and behavior of the music player UI.
  */
 import { NEUTRAL_IMG_URL, PLAYING_IMG_URL } from "./resources";
-import { addSettingsChangeListener, musicPlayerSettings, SettingsGameType } from "./music_settings";
+import { addSettingsChangeListener, musicSettings as musicSettings, SettingsGameType } from "./music_settings";
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
@@ -16,7 +16,7 @@ addSettingsChangeListener(onSettingsChange);
  * @param _event - Click event handler, not used.
  */
 function onMusicBtnClick(_event: Event) {
-  musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
+  musicSettings.isPlaying = !musicSettings.isPlaying;
 }
 
 /**
@@ -25,27 +25,28 @@ function onMusicBtnClick(_event: Event) {
  *
  * The context menu is the menu that appears when you right-click the player that shows you options.
  * This function ensures that the internal settings are reflected properly on the UI.
- * @param key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
+ * @param key - Name of the setting that changed, matches the name of the property in {@link musicSettings}.
  * @param isFirstLoad - Whether this is the first time the settings are being loaded.
  */
 function onSettingsChange(key: string, isFirstLoad: boolean) {
   // We are loading settings stored in LocalStorage, so set the initial values of all inputs.
   // Only do this once, when the settings are first loaded, otherwise it's infinite recursion.
   if (isFirstLoad) {
-    if (volumeSlider) volumeSlider.value = musicPlayerSettings.volume.toString();
-    if (sfxVolumeSlider) sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
-    if (uiVolumeSlider) uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
-    if (daySlider) daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
+    if (volumeSlider) volumeSlider.value = musicSettings.volume.toString();
+    if (sfxVolumeSlider) sfxVolumeSlider.value = musicSettings.sfxVolume.toString();
+    if (uiVolumeSlider) uiVolumeSlider.value = musicSettings.uiVolume.toString();
+    if (daySlider) daySlider.value = musicSettings.alternateThemeDay.toString();
 
-    const radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
+    const radio = gameTypeRadioMap.get(musicSettings.gameType);
     if (radio) radio.checked = true;
 
-    radioNormal.checked = !musicPlayerSettings.randomThemes;
-    radioRandom.checked = musicPlayerSettings.randomThemes;
+    radioNormal.checked = !musicSettings.randomThemes;
+    radioRandom.checked = musicSettings.randomThemes;
 
-    captProgressBox.checked = musicPlayerSettings.captureProgressSFX;
-    pipeSeamBox.checked = musicPlayerSettings.pipeSeamSFX;
-    restartThemesBox.checked = musicPlayerSettings.restartThemes;
+    captProgressBox.checked = musicSettings.captureProgressSFX;
+    pipeSeamBox.checked = musicSettings.pipeSeamSFX;
+    restartThemesBox.checked = musicSettings.restartThemes;
+    alternateThemesBox.checked = musicSettings.alternateThemes;
 
     // Update all labels
     musicPlayerUI.updateAllInputLabels();
@@ -54,17 +55,19 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
   // Sort overrides again if we are loading the settings for the first time, or if the override list changed
   if (key === "all" || key === "addOverride" || key === "removeOverride") {
     clearAndRepopulateOverrideList();
-    if (musicPlayerSettings.overrideList.size === 0) {
+    if (musicSettings.overrideList.size === 0) {
       const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
       musicPlayerUI.addItemToTable(Name.Override_Table, noOverrides);
     }
   }
 
-  shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
-
-  const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
   // Update UI
-  if (musicPlayerSettings.isPlaying) {
+  if (daySlider?.parentElement) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
+  if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
+
+  // Update player image and hover text
+  const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
+  if (musicSettings.isPlaying) {
     musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
     musicPlayerUI.setImage(PLAYING_IMG_URL);
   } else {
@@ -101,13 +104,15 @@ enum Name {
   Volume = "Music Volume",
   SFX_Volume = "SFX Volume",
   UI_Volume = "UI Volume",
-  Alternate_Day = "Alternate Themes Start On Day",
 
   Shuffle = "Shuffle",
 
   Capture_Progress = "Capture Progress SFX",
   Pipe_Seam_SFX = "Pipe Seam Attack SFX",
   Restart_Themes = "Restart Themes Every Turn",
+  Alternate_Themes = "Alternate Themes",
+
+  Alternate_Day = "Alternate Themes Start On Day",
 
   Add_Override = "Add",
   Override_Table = "Overrides",
@@ -117,7 +122,6 @@ enum Description {
   Volume = "Adjust the volume of the CO theme music, power activations, and power themes.",
   SFX_Volume = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
   UI_Volume = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
-  Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
 
   AW1 = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!",
   AW2 = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.",
@@ -131,6 +135,9 @@ enum Description {
   Capture_Progress = "Play a sound effect when a unit makes progress capturing a property.",
   Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
   Restart_Themes = "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.",
+  Alternate_Themes = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
+
+  Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
 
   Add_Override = "Adds an override for a specific CO so it always plays a specific soundtrack.",
   Remove_Override = "Removes the override for this specific CO.",
@@ -143,9 +150,9 @@ const LEFT = MenuPosition.Left;
 const volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, LEFT);
 const sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, LEFT);
 const uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, LEFT);
-volumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
-sfxVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
-uiVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
+volumeSlider?.addEventListener("input", (event) => (musicSettings.volume = parseInputFloat(event)));
+sfxVolumeSlider?.addEventListener("input", (event) => (musicSettings.sfxVolume = parseInputFloat(event)));
+uiVolumeSlider?.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
 
 /* **** Group: Soundtrack radio buttons (AW1, AW2, DS, RBC) AKA GameType **** */
 const soundtrackGroup = "Soundtrack";
@@ -157,7 +164,7 @@ for (const gameType of Object.values(SettingsGameType)) {
   const description = Description[gameType as keyof typeof Description];
   const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
   gameTypeRadioMap.set(gameType, radio);
-  radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
+  radio.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
 }
 
 /* **** Group: Random themes radio buttons **** */
@@ -167,12 +174,12 @@ musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
 // Radio buttons
 const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
 const radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
-radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
-radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
+radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemes = false));
+radioRandom.addEventListener("click", (_e) => (musicSettings.randomThemes = true));
 
 // Random theme shuffle button
 const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
-shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
+shuffleBtn.addEventListener("click", (_e) => (musicSettings.currentRandomCO = getRandomCO()));
 
 /* **** Group: Sound effect toggle checkboxes **** */
 const toggleGroup = "Extra Options";
@@ -182,13 +189,15 @@ musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
 const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
 const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
 const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, toggleGroup, Description.Restart_Themes);
-captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
-pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
-restartThemesBox.addEventListener("click", (_e) => (musicPlayerSettings.restartThemes = restartThemesBox.checked));
+const alternateThemesBox = musicPlayerUI.addCheckbox(Name.Alternate_Themes, toggleGroup, Description.Alternate_Themes);
+captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
+pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
+restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
+alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
 
 /* **** Group: Day slider **** */
 const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
-daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
+daySlider?.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
 
 /* ************************************ Right Menu ************************************ */
 const RIGHT = MenuPosition.Right;
@@ -222,7 +231,7 @@ overrideBtn.addEventListener("click", (_e) => {
   }
   // Add the override
   if (!currentGameType) return;
-  musicPlayerSettings.addOverride(currentSelectedCO, currentGameType);
+  musicSettings.addOverride(currentSelectedCO, currentGameType);
 });
 
 /* **** Group: Override List **** */
@@ -238,7 +247,7 @@ function addOverrideDisplayDiv(coName: string, gameType: SettingsGameType) {
   const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, gameType);
 
   displayDiv.addEventListener("click", () => {
-    musicPlayerSettings.removeOverride(coName);
+    musicSettings.removeOverride(coName);
   });
 
   overrideDivMap.set(coName, displayDiv);
@@ -250,7 +259,7 @@ function clearAndRepopulateOverrideList() {
   overrideDivMap.forEach((div) => div.remove());
   overrideDivMap.clear();
   musicPlayerUI.clearTable(Name.Override_Table);
-  for (const [coName, gameType] of musicPlayerSettings.overrideList) {
+  for (const [coName, gameType] of musicSettings.overrideList) {
     addOverrideDisplayDiv(coName, gameType);
   }
 }

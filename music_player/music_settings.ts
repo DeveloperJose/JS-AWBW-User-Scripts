@@ -75,13 +75,14 @@ export function addSettingsChangeListener(fn: SettingsChangeListener) {
  * The music player settings' current internal state.
  * DO NOT EDIT __ prefix variables, use the properties!
  */
-export abstract class musicPlayerSettings {
+export abstract class musicSettings {
   // User configurable settings
   private static __isPlaying = false;
   private static __volume = 0.5;
   private static __sfxVolume = 0.5;
   private static __uiVolume = 0.5;
   private static __gameType = SettingsGameType.DS;
+  private static __alternateThemes = true;
   private static __alternateThemeDay = 15;
   private static __randomThemes = false;
   private static __captureProgressSFX = true;
@@ -102,6 +103,7 @@ export abstract class musicPlayerSettings {
       sfxVolume: this.__sfxVolume,
       uiVolume: this.__uiVolume,
       gameType: this.__gameType,
+      alternateThemes: this.__alternateThemes,
       alternateThemeDay: this.__alternateThemeDay,
       randomThemes: this.__randomThemes,
       captureProgressSFX: this.__captureProgressSFX,
@@ -180,6 +182,16 @@ export abstract class musicPlayerSettings {
   }
   static get gameType() {
     return this.__gameType;
+  }
+
+  static set alternateThemes(val: boolean) {
+    if (this.__alternateThemes === val) return;
+    this.__alternateThemes = val;
+    this.onSettingChangeEvent("alternateThemes");
+  }
+
+  static get alternateThemes() {
+    return this.__alternateThemes;
   }
 
   static set alternateThemeDay(val: number) {
@@ -303,7 +315,7 @@ export function loadSettingsFromLocalStorage() {
     console.log("[AWBW Music Player] No saved settings found, storing defaults");
     storageData = updateSettingsInLocalStorage();
   }
-  musicPlayerSettings.fromJSON(storageData);
+  musicSettings.fromJSON(storageData);
 
   // Tell everyone we just loaded the settings
   onSettingsChangeListeners.forEach((fn) => fn("all", true));
@@ -325,7 +337,7 @@ function onSettingsChange(_key: string, _isFirstLoad: boolean) {
  * Saves the current music player settings in the local storage.
  */
 function updateSettingsInLocalStorage() {
-  const jsonSettings = musicPlayerSettings.toJSON();
+  const jsonSettings = musicSettings.toJSON();
   localStorage.setItem(STORAGE_KEY, jsonSettings);
   console.debug("[Music Player] Saving settings...", jsonSettings);
   return jsonSettings;

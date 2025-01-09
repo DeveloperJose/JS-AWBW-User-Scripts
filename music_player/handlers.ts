@@ -43,7 +43,7 @@ import {
   stopThemeSong,
   stopAllMovementSounds,
 } from "./music";
-import { getCurrentThemeType, musicPlayerSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
+import { getCurrentThemeType, musicSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
 import {
@@ -207,7 +207,7 @@ function addMovePlannerHandlers() {
  * Syncs the music with the game state. Does not randomize the COs.
  */
 function syncMusic() {
-  musicPlayerSettings.themeType = getCurrentThemeType();
+  musicSettings.themeType = getCurrentThemeType();
   playThemeSong();
   setTimeout(playThemeSong, 500);
 }
@@ -219,12 +219,12 @@ function syncMusic() {
 function refreshMusicForNextTurn(playDelayMS = 0) {
   // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
   visibilityMap.clear();
-  musicPlayerSettings.currentRandomCO = getRandomCO();
-  musicPlayerSettings.themeType = getCurrentThemeType();
+  musicSettings.currentRandomCO = getRandomCO();
+  musicSettings.themeType = getCurrentThemeType();
 
   setTimeout(() => {
-    musicPlayerSettings.themeType = getCurrentThemeType();
-    playThemeSong(musicPlayerSettings.restartThemes && !isReplayActive());
+    musicSettings.themeType = getCurrentThemeType();
+    playThemeSong(musicSettings.restartThemes && !isReplayActive());
     setTimeout(playThemeSong, 250);
   }, playDelayMS);
 }
@@ -294,7 +294,7 @@ function addGameHandlers() {
 
 function onCursorMove(cursorX: number, cursorY: number) {
   // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Cursor Move", cursorX, cursorY);
 
   const dx = Math.abs(cursorX - lastCursorX);
@@ -322,7 +322,7 @@ function onQueryTurn(
   initial: boolean,
 ) {
   const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
-  if (!musicPlayerSettings.isPlaying) return result;
+  if (!musicSettings.isPlaying) return result;
   // console.log("[MP] Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
 
   refreshMusicForNextTurn();
@@ -331,7 +331,7 @@ function onQueryTurn(
 
 function onShowEventScreen(event: ShowEventScreenData) {
   ahShowEventScreen?.apply(ahShowEventScreen, [event]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Show Event Screen", event);
   playThemeSong();
   setTimeout(playThemeSong, 500);
@@ -339,7 +339,7 @@ function onShowEventScreen(event: ShowEventScreenData) {
 
 function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
   ahOpenMenu?.apply(openMenu, [menu, x, y]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Open Menu", menu, x, y);
 
   currentMenuType = MenuOpenType.Regular;
@@ -370,7 +370,7 @@ function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {
 
 function onCloseMenu() {
   ahCloseMenu?.apply(closeMenu, []);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
 
   const isMenuOpen = currentMenuType !== MenuOpenType.None;
   // console.debug("[MP] CloseMenu", currentMenuType, isMenuOpen);
@@ -388,7 +388,7 @@ function onCreateDamageSquares(
   movingUnit: object,
 ) {
   ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
 
   // Hook up to all new damage squares
@@ -413,7 +413,7 @@ function onCreateDamageSquares(
 
 function onUnitClick(clicked: UnitClickData) {
   ahUnitClick?.apply(unitClickHandler, [clicked]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Unit Click", clicked);
 
   // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
@@ -432,7 +432,7 @@ function onUnitClick(clicked: UnitClickData) {
 
 function onUnitWait(unitId: number) {
   ahWait?.apply(waitUnit, [unitId]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Wait", unitId, getUnitName(unitId));
 
   // Check if we stopped because we got trapped
@@ -457,7 +457,7 @@ function onAnimUnit(
   i: number,
 ) {
   ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
 
   // Only check if valid
@@ -477,7 +477,7 @@ function onAnimUnit(
 
 function onAnimExplosion(unit: UnitInfo) {
   ahAnimExplosion?.apply(animExplosion, [unit]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("Exploded", unit);
 
   const unitId = unit.units_id;
@@ -500,7 +500,7 @@ function onFogUpdate(
   delay: number,
 ) {
   ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
 
   const unitInfo = getUnitInfoFromCoords(x, y);
@@ -511,7 +511,7 @@ function onFogUpdate(
 }
 
 function onFire(response: FireResponse) {
-  if (!musicPlayerSettings.isPlaying) {
+  if (!musicSettings.isPlaying) {
     ahFire?.apply(actionHandlers.Fire, [response]);
     return;
   }
@@ -589,7 +589,7 @@ function wiggleTile(div: HTMLDivElement, startDelay = 0) {
 
 function onAttackSeam(response: SeamResponse) {
   ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] AttackSeam", response);
   const seamWasDestroyed = response.seamHp <= 0;
 
@@ -614,7 +614,7 @@ function onAttackSeam(response: SeamResponse) {
 
 function onMove(response: MoveResponse, loadFlag: object) {
   ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Move", response, loadFlag);
 
   const unitId = response.unit.units_id;
@@ -629,7 +629,7 @@ function onMove(response: MoveResponse, loadFlag: object) {
 
 function onCapture(data: CaptureData) {
   ahCapt?.apply(actionHandlers.Capt, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Capt", data);
 
   // They didn't finish the capture
@@ -651,7 +651,7 @@ function onCapture(data: CaptureData) {
 
 function onBuild(data: BuildData) {
   ahBuild?.apply(actionHandlers.Build, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Build", data);
 
   const myID = getMyID();
@@ -662,7 +662,7 @@ function onBuild(data: BuildData) {
 
 function onLoad(data: LoadData) {
   ahLoad?.apply(actionHandlers.Load, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Load", data);
 
   playSFX(GameSFX.unitLoad);
@@ -670,7 +670,7 @@ function onLoad(data: LoadData) {
 
 function onUnload(data: UnloadData) {
   ahUnload?.apply(actionHandlers.Unload, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Unload", data);
 
   playSFX(GameSFX.unitUnload);
@@ -678,7 +678,7 @@ function onUnload(data: UnloadData) {
 
 function onSupply(data: SupplyData) {
   ahSupply?.apply(actionHandlers.Supply, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Supply", data);
 
   // We could play the sfx for each supplied unit in the list
@@ -688,7 +688,7 @@ function onSupply(data: SupplyData) {
 
 function onRepair(data: RepairData) {
   ahRepair?.apply(actionHandlers.Repair, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Repair", data);
 
   playSFX(GameSFX.unitSupply);
@@ -696,7 +696,7 @@ function onRepair(data: RepairData) {
 
 function onHide(data: HideData) {
   ahHide?.apply(actionHandlers.Hide, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Hide", data);
   playSFX(GameSFX.unitHide);
 
@@ -705,7 +705,7 @@ function onHide(data: HideData) {
 
 function onUnhide(data: UnhideData) {
   ahUnhide?.apply(actionHandlers.Unhide, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Unhide", data);
 
   playSFX(GameSFX.unitUnhide);
@@ -714,7 +714,7 @@ function onUnhide(data: UnhideData) {
 
 function onJoin(data: JoinData) {
   ahJoin?.apply(actionHandlers.Join, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Join", data);
 
   stopMovementSound(data.joinID);
@@ -723,7 +723,7 @@ function onJoin(data: JoinData) {
 
 function onLaunch(data: LaunchData) {
   ahLaunch?.apply(actionHandlers.Launch, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Launch", data);
 
   playSFX(GameSFX.unitMissileSend);
@@ -732,7 +732,7 @@ function onLaunch(data: LaunchData) {
 
 function onNextTurn(data: NextTurnData) {
   ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] NextTurn", data);
 
   if (data.swapCos) {
@@ -744,7 +744,7 @@ function onNextTurn(data: NextTurnData) {
 
 function onElimination(data: EliminationData) {
   ahElimination?.apply(actionHandlers.Elimination, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Elimination", data);
 
   // Play the elimination sound
@@ -753,7 +753,7 @@ function onElimination(data: EliminationData) {
 
 function onGameOver() {
   ahGameOver?.apply(actionHandlers.GameOver, []);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] GameOver");
 
   refreshMusicForNextTurn();
@@ -761,7 +761,7 @@ function onGameOver() {
 
 function onResign(data: ResignData) {
   ahResign?.apply(actionHandlers.Resign, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Resign", data);
 
   refreshMusicForNextTurn();
@@ -769,7 +769,7 @@ function onResign(data: ResignData) {
 
 function onPower(data: PowerData) {
   ahPower?.apply(actionHandlers.Power, [data]);
-  if (!musicPlayerSettings.isPlaying) return;
+  if (!musicSettings.isPlaying) return;
   // console.debug("[MP] Power", data);
 
   // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
@@ -778,8 +778,8 @@ function onPower(data: PowerData) {
   const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
   // Update the theme type
-  musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
-  switch (musicPlayerSettings.gameType) {
+  musicSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
+  switch (musicSettings.gameType) {
     case SettingsGameType.AW1:
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);

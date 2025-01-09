@@ -3,7 +3,7 @@
  */
 import { getAllPlayingCONames, getCurrentGameDay } from "../shared/awbw_game";
 import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO, AW2_ONLY_COs } from "../shared/awbw_globals";
-import { SettingsGameType, SettingsThemeType, musicPlayerSettings } from "./music_settings";
+import { SettingsGameType, SettingsThemeType, musicSettings } from "./music_settings";
 
 /**
  * Base URL where all the files needed for this script are located.
@@ -272,10 +272,10 @@ export function getMusicURL(
   useAlternateTheme?: boolean,
 ) {
   // Override optional parameters with current settings if not provided
-  if (gameType === null || gameType === undefined) gameType = musicPlayerSettings.gameType;
-  if (themeType === null || themeType === undefined) themeType = musicPlayerSettings.themeType;
+  if (gameType === null || gameType === undefined) gameType = musicSettings.gameType;
+  if (themeType === null || themeType === undefined) themeType = musicSettings.themeType;
   if (useAlternateTheme === null || useAlternateTheme === undefined) {
-    useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
+    useAlternateTheme = getCurrentGameDay() >= musicSettings.alternateThemeDay && musicSettings.alternateThemes;
   }
 
   // Convert name to internal format
@@ -289,7 +289,7 @@ export function getMusicURL(
   if (coName === "maintenance") return SpecialTheme.Maintenance;
 
   // First apply player overrides, that way we can override their overrides later...
-  const overrideType = musicPlayerSettings.getOverride(coName);
+  const overrideType = musicSettings.getOverride(coName);
   if (overrideType) gameType = overrideType;
 
   // Override the game type to a higher game if the CO is not available in the current game.
@@ -374,10 +374,10 @@ export function getCurrentThemeURLs(): Set<string> {
   const audioList = new Set<string>();
 
   coNames.forEach((name) => {
-    const regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
-    const powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
-    const superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
-    const alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
+    const regularURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.REGULAR, false);
+    const powerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.CO_POWER, false);
+    const superPowerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+    const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
     audioList.add(regularURL);
     audioList.add(alternateURL);
     audioList.add(powerURL);

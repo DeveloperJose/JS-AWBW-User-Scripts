@@ -132,6 +132,7 @@ export class CustomMenuSettingsUI {
     const contextMenu = document.createElement("div");
     contextMenu.id = `${prefix}-settings`;
     contextMenu.classList.add("cls-settings-menu");
+    contextMenu.style.zIndex = "20";
     this.parent.appendChild(contextMenu);
     this.groups.set("settings-parent", contextMenu);
 
@@ -309,12 +310,18 @@ export class CustomMenuSettingsUI {
    * @returns - The slider element.
    */
   addSlider(name: string, min: number, max: number, step: number, hoverText = "", position = MenuPosition.Center) {
-    const container = this.getGroup(position);
-    if (!container) return;
+    const contextMenu = this.getGroup(position);
+    if (!contextMenu) return;
+
+    // Container for the slider and label
+    const sliderBox = document.createElement("div");
+    sliderBox.classList.add("cls-vertical-box");
+    sliderBox.classList.add("cls-slider-box");
+    contextMenu?.appendChild(sliderBox);
 
     // Slider label
     const label = document.createElement("label");
-    container?.appendChild(label);
+    sliderBox?.appendChild(label);
 
     // Slider
     const slider = document.createElement("input");
@@ -332,9 +339,10 @@ export class CustomMenuSettingsUI {
 
       label.innerText = `${name}: ${displayValue}`;
     });
-    container?.appendChild(slider);
+    sliderBox?.appendChild(slider);
 
     // Hover text
+    slider.title = hoverText;
     slider.addEventListener("mouseover", () => this.setHoverText(hoverText));
     slider.addEventListener("mouseout", () => this.setHoverText(""));
     return slider;
@@ -393,6 +401,7 @@ export class CustomMenuSettingsUI {
     groupDiv.appendChild(inputBox);
 
     // Hover text
+    inputBox.title = hoverText;
     inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
     inputBox.addEventListener("mouseout", () => this.setHoverText(""));
 
@@ -456,6 +465,7 @@ export class CustomMenuSettingsUI {
     groupDiv.appendChild(table);
 
     // Hover text
+    table.title = hoverText;
     table.addEventListener("mouseover", () => this.setHoverText(hoverText));
     table.addEventListener("mouseout", () => this.setHoverText(""));
 
@@ -529,6 +539,7 @@ export class CustomMenuSettingsUI {
     coSelector.appendChild(imgCO);
 
     // Hover text
+    coSelector.title = hoverText;
     coSelector.addEventListener("mouseover", () => this.setHoverText(hoverText));
     coSelector.addEventListener("mouseout", () => this.setHoverText(""));
 

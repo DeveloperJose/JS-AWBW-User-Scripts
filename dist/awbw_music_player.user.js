@@ -48,11 +48,11 @@ var awbw_music_player = (function (exports) {
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  /* width: 100%; */\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="effects"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu .cls-vertical-box label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu label,\n.cls-settings-menu .cls-slider-box label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 50%;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
-    '/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  /* width: 100%; */\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n';
+    '/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n';
   styleInject(css_248z);
 
   /**
@@ -566,13 +566,14 @@ var awbw_music_player = (function (exports) {
    * The music player settings' current internal state.
    * DO NOT EDIT __ prefix variables, use the properties!
    */
-  class musicPlayerSettings {
+  class musicSettings {
     // User configurable settings
     static __isPlaying = false;
     static __volume = 0.5;
     static __sfxVolume = 0.5;
     static __uiVolume = 0.5;
     static __gameType = SettingsGameType.DS;
+    static __alternateThemes = true;
     static __alternateThemeDay = 15;
     static __randomThemes = false;
     static __captureProgressSFX = true;
@@ -591,6 +592,7 @@ var awbw_music_player = (function (exports) {
         sfxVolume: this.__sfxVolume,
         uiVolume: this.__uiVolume,
         gameType: this.__gameType,
+        alternateThemes: this.__alternateThemes,
         alternateThemeDay: this.__alternateThemeDay,
         randomThemes: this.__randomThemes,
         captureProgressSFX: this.__captureProgressSFX,
@@ -659,6 +661,14 @@ var awbw_music_player = (function (exports) {
     }
     static get gameType() {
       return this.__gameType;
+    }
+    static set alternateThemes(val) {
+      if (this.__alternateThemes === val) return;
+      this.__alternateThemes = val;
+      this.onSettingChangeEvent("alternateThemes");
+    }
+    static get alternateThemes() {
+      return this.__alternateThemes;
     }
     static set alternateThemeDay(val) {
       if (this.__alternateThemeDay === val) return;
@@ -758,7 +768,7 @@ var awbw_music_player = (function (exports) {
       console.log("[AWBW Music Player] No saved settings found, storing defaults");
       storageData = updateSettingsInLocalStorage();
     }
-    musicPlayerSettings.fromJSON(storageData);
+    musicSettings.fromJSON(storageData);
     // Tell everyone we just loaded the settings
     onSettingsChangeListeners.forEach((fn) => fn("all", true));
     // From now on, any setting changes will be saved and any listeners will be called
@@ -775,7 +785,7 @@ var awbw_music_player = (function (exports) {
    * Saves the current music player settings in the local storage.
    */
   function updateSettingsInLocalStorage() {
-    const jsonSettings = musicPlayerSettings.toJSON();
+    const jsonSettings = musicSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
     console.debug("[Music Player] Saving settings...", jsonSettings);
     return jsonSettings;
@@ -1017,10 +1027,10 @@ var awbw_music_player = (function (exports) {
    */
   function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
     // Override optional parameters with current settings if not provided
-    if (gameType === null || gameType === undefined) gameType = musicPlayerSettings.gameType;
-    if (themeType === null || themeType === undefined) themeType = musicPlayerSettings.themeType;
+    if (gameType === null || gameType === undefined) gameType = musicSettings.gameType;
+    if (themeType === null || themeType === undefined) themeType = musicSettings.themeType;
     if (useAlternateTheme === null || useAlternateTheme === undefined) {
-      useAlternateTheme = getCurrentGameDay() >= musicPlayerSettings.alternateThemeDay;
+      useAlternateTheme = getCurrentGameDay() >= musicSettings.alternateThemeDay && musicSettings.alternateThemes;
     }
     // Convert name to internal format
     coName = coName.toLowerCase().replaceAll(" ", "");
@@ -1034,7 +1044,7 @@ var awbw_music_player = (function (exports) {
     if (coName === "maintenance")
       return "https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */;
     // First apply player overrides, that way we can override their overrides later...
-    const overrideType = musicPlayerSettings.getOverride(coName);
+    const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
     // Override the game type to a higher game if the CO is not available in the current game.
     if (gameType !== SettingsGameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = SettingsGameType.DS;
@@ -1107,10 +1117,10 @@ var awbw_music_player = (function (exports) {
     const coNames = getAllPlayingCONames();
     const audioList = new Set();
     coNames.forEach((name) => {
-      const regularURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.REGULAR, false);
-      const powerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.CO_POWER, false);
-      const superPowerURL = getMusicURL(name, musicPlayerSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
-      const alternateURL = getMusicURL(name, musicPlayerSettings.gameType, musicPlayerSettings.themeType, true);
+      const regularURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.REGULAR, false);
+      const powerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.CO_POWER, false);
+      const superPowerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+      const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
       audioList.add(regularURL);
       audioList.add(alternateURL);
       audioList.add(powerURL);
@@ -1263,6 +1273,7 @@ var awbw_music_player = (function (exports) {
       const contextMenu = document.createElement("div");
       contextMenu.id = `${prefix}-settings`;
       contextMenu.classList.add("cls-settings-menu");
+      contextMenu.style.zIndex = "20";
       this.parent.appendChild(contextMenu);
       this.groups.set("settings-parent", contextMenu);
       const contextMenuBoxesContainer = document.createElement("div");
@@ -1419,11 +1430,16 @@ var awbw_music_player = (function (exports) {
      * @returns - The slider element.
      */
     addSlider(name, min, max, step, hoverText = "", position = MenuPosition.Center) {
-      const container = this.getGroup(position);
-      if (!container) return;
+      const contextMenu = this.getGroup(position);
+      if (!contextMenu) return;
+      // Container for the slider and label
+      const sliderBox = document.createElement("div");
+      sliderBox.classList.add("cls-vertical-box");
+      sliderBox.classList.add("cls-slider-box");
+      contextMenu?.appendChild(sliderBox);
       // Slider label
       const label = document.createElement("label");
-      container?.appendChild(label);
+      sliderBox?.appendChild(label);
       // Slider
       const slider = document.createElement("input");
       slider.id = `${this.prefix}-${sanitize(name)}`;
@@ -1438,8 +1454,9 @@ var awbw_music_player = (function (exports) {
         if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
         label.innerText = `${name}: ${displayValue}`;
       });
-      container?.appendChild(slider);
+      sliderBox?.appendChild(slider);
       // Hover text
+      slider.title = hoverText;
       slider.addEventListener("mouseover", () => this.setHoverText(hoverText));
       slider.addEventListener("mouseout", () => this.setHoverText(""));
       return slider;
@@ -1488,6 +1505,7 @@ var awbw_music_player = (function (exports) {
       inputBox.classList.add(otherType);
       groupDiv.appendChild(inputBox);
       // Hover text
+      inputBox.title = hoverText;
       inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
       inputBox.addEventListener("mouseout", () => this.setHoverText(""));
       // Create button or a different type of input
@@ -1541,6 +1559,7 @@ var awbw_music_player = (function (exports) {
       table.classList.add("cls-settings-table");
       groupDiv.appendChild(table);
       // Hover text
+      table.title = hoverText;
       table.addEventListener("mouseover", () => this.setHoverText(hoverText));
       table.addEventListener("mouseout", () => this.setHoverText(""));
       const tableData = {
@@ -1600,6 +1619,7 @@ var awbw_music_player = (function (exports) {
       coSelector.appendChild(imgCaret);
       coSelector.appendChild(imgCO);
       // Hover text
+      coSelector.title = hoverText;
       coSelector.addEventListener("mouseover", () => this.setHoverText(hoverText));
       coSelector.addEventListener("mouseout", () => this.setHoverText(""));
       // Update UI
@@ -1712,7 +1732,7 @@ var awbw_music_player = (function (exports) {
    * @param _event - Click event handler, not used.
    */
   function onMusicBtnClick(_event) {
-    musicPlayerSettings.isPlaying = !musicPlayerSettings.isPlaying;
+    musicSettings.isPlaying = !musicSettings.isPlaying;
   }
   /**
    * Event handler that is triggered whenever the settings of the music player are changed.
@@ -1720,39 +1740,42 @@ var awbw_music_player = (function (exports) {
    *
    * The context menu is the menu that appears when you right-click the player that shows you options.
    * This function ensures that the internal settings are reflected properly on the UI.
-   * @param key - Name of the setting that changed, matches the name of the property in {@link musicPlayerSettings}.
+   * @param key - Name of the setting that changed, matches the name of the property in {@link musicSettings}.
    * @param isFirstLoad - Whether this is the first time the settings are being loaded.
    */
   function onSettingsChange$1(key, isFirstLoad) {
     // We are loading settings stored in LocalStorage, so set the initial values of all inputs.
     // Only do this once, when the settings are first loaded, otherwise it's infinite recursion.
     if (isFirstLoad) {
-      if (volumeSlider) volumeSlider.value = musicPlayerSettings.volume.toString();
-      if (sfxVolumeSlider) sfxVolumeSlider.value = musicPlayerSettings.sfxVolume.toString();
-      if (uiVolumeSlider) uiVolumeSlider.value = musicPlayerSettings.uiVolume.toString();
-      if (daySlider) daySlider.value = musicPlayerSettings.alternateThemeDay.toString();
-      const radio = gameTypeRadioMap.get(musicPlayerSettings.gameType);
+      if (volumeSlider) volumeSlider.value = musicSettings.volume.toString();
+      if (sfxVolumeSlider) sfxVolumeSlider.value = musicSettings.sfxVolume.toString();
+      if (uiVolumeSlider) uiVolumeSlider.value = musicSettings.uiVolume.toString();
+      if (daySlider) daySlider.value = musicSettings.alternateThemeDay.toString();
+      const radio = gameTypeRadioMap.get(musicSettings.gameType);
       if (radio) radio.checked = true;
-      radioNormal.checked = !musicPlayerSettings.randomThemes;
-      radioRandom.checked = musicPlayerSettings.randomThemes;
-      captProgressBox.checked = musicPlayerSettings.captureProgressSFX;
-      pipeSeamBox.checked = musicPlayerSettings.pipeSeamSFX;
-      restartThemesBox.checked = musicPlayerSettings.restartThemes;
+      radioNormal.checked = !musicSettings.randomThemes;
+      radioRandom.checked = musicSettings.randomThemes;
+      captProgressBox.checked = musicSettings.captureProgressSFX;
+      pipeSeamBox.checked = musicSettings.pipeSeamSFX;
+      restartThemesBox.checked = musicSettings.restartThemes;
+      alternateThemesBox.checked = musicSettings.alternateThemes;
       // Update all labels
       musicPlayerUI.updateAllInputLabels();
     }
     // Sort overrides again if we are loading the settings for the first time, or if the override list changed
     if (key === "all" || key === "addOverride" || key === "removeOverride") {
       clearAndRepopulateOverrideList();
-      if (musicPlayerSettings.overrideList.size === 0) {
+      if (musicSettings.overrideList.size === 0) {
         const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
         musicPlayerUI.addItemToTable(Name.Override_Table, noOverrides);
       }
     }
-    shuffleBtn.disabled = !musicPlayerSettings.randomThemes;
-    const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
     // Update UI
-    if (musicPlayerSettings.isPlaying) {
+    if (daySlider?.parentElement) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
+    if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
+    // Update player image and hover text
+    const currentSounds = getIsMovePlanner() ? "Sound Effects" : "Tunes";
+    if (musicSettings.isPlaying) {
       musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
     } else {
@@ -1784,11 +1807,12 @@ var awbw_music_player = (function (exports) {
     Name["Volume"] = "Music Volume";
     Name["SFX_Volume"] = "SFX Volume";
     Name["UI_Volume"] = "UI Volume";
-    Name["Alternate_Day"] = "Alternate Themes Start On Day";
     Name["Shuffle"] = "Shuffle";
     Name["Capture_Progress"] = "Capture Progress SFX";
     Name["Pipe_Seam_SFX"] = "Pipe Seam Attack SFX";
     Name["Restart_Themes"] = "Restart Themes Every Turn";
+    Name["Alternate_Themes"] = "Alternate Themes";
+    Name["Alternate_Day"] = "Alternate Themes Start On Day";
     Name["Add_Override"] = "Add";
     Name["Override_Table"] = "Overrides";
   })(Name || (Name = {}));
@@ -1798,8 +1822,6 @@ var awbw_music_player = (function (exports) {
     Description["SFX_Volume"] = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.";
     Description["UI_Volume"] =
       "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.";
-    Description["Alternate_Day"] =
-      "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
     Description["AW1"] = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!";
     Description["AW2"] = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.";
     Description["DS"] =
@@ -1812,6 +1834,10 @@ var awbw_music_player = (function (exports) {
     Description["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
     Description["Restart_Themes"] =
       "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.";
+    Description["Alternate_Themes"] =
+      "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.";
+    Description["Alternate_Day"] =
+      "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
     Description["Add_Override"] = "Adds an override for a specific CO so it always plays a specific soundtrack.";
     Description["Remove_Override"] = "Removes the override for this specific CO.";
   })(Description || (Description = {}));
@@ -1821,9 +1847,9 @@ var awbw_music_player = (function (exports) {
   const volumeSlider = musicPlayerUI.addSlider(Name.Volume, 0, 1, 0.005, Description.Volume, LEFT);
   const sfxVolumeSlider = musicPlayerUI.addSlider(Name.SFX_Volume, 0, 1, 0.005, Description.SFX_Volume, LEFT);
   const uiVolumeSlider = musicPlayerUI.addSlider(Name.UI_Volume, 0, 1, 0.005, Description.UI_Volume, LEFT);
-  volumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.volume = parseInputFloat(event)));
-  sfxVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.sfxVolume = parseInputFloat(event)));
-  uiVolumeSlider?.addEventListener("input", (event) => (musicPlayerSettings.uiVolume = parseInputFloat(event)));
+  volumeSlider?.addEventListener("input", (event) => (musicSettings.volume = parseInputFloat(event)));
+  sfxVolumeSlider?.addEventListener("input", (event) => (musicSettings.sfxVolume = parseInputFloat(event)));
+  uiVolumeSlider?.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
   /* **** Group: Soundtrack radio buttons (AW1, AW2, DS, RBC) AKA GameType **** */
   const soundtrackGroup = "Soundtrack";
   musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
@@ -1833,7 +1859,7 @@ var awbw_music_player = (function (exports) {
     const description = Description[gameType];
     const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
     gameTypeRadioMap.set(gameType, radio);
-    radio.addEventListener("click", (_e) => (musicPlayerSettings.gameType = gameType));
+    radio.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
   }
   /* **** Group: Random themes radio buttons **** */
   const randomGroup = "Random Themes";
@@ -1841,11 +1867,11 @@ var awbw_music_player = (function (exports) {
   // Radio buttons
   const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
   const radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
-  radioNormal.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = false));
-  radioRandom.addEventListener("click", (_e) => (musicPlayerSettings.randomThemes = true));
+  radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemes = false));
+  radioRandom.addEventListener("click", (_e) => (musicSettings.randomThemes = true));
   // Random theme shuffle button
   const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
-  shuffleBtn.addEventListener("click", (_e) => (musicPlayerSettings.currentRandomCO = getRandomCO()));
+  shuffleBtn.addEventListener("click", (_e) => (musicSettings.currentRandomCO = getRandomCO()));
   /* **** Group: Sound effect toggle checkboxes **** */
   const toggleGroup = "Extra Options";
   musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
@@ -1853,12 +1879,18 @@ var awbw_music_player = (function (exports) {
   const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, toggleGroup, Description.Capture_Progress);
   const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, toggleGroup, Description.Pipe_Seam_SFX);
   const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, toggleGroup, Description.Restart_Themes);
-  captProgressBox.addEventListener("click", (_e) => (musicPlayerSettings.captureProgressSFX = captProgressBox.checked));
-  pipeSeamBox.addEventListener("click", (_e) => (musicPlayerSettings.pipeSeamSFX = pipeSeamBox.checked));
-  restartThemesBox.addEventListener("click", (_e) => (musicPlayerSettings.restartThemes = restartThemesBox.checked));
+  const alternateThemesBox = musicPlayerUI.addCheckbox(
+    Name.Alternate_Themes,
+    toggleGroup,
+    Description.Alternate_Themes,
+  );
+  captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
+  pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
+  restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
+  alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
   /* **** Group: Day slider **** */
   const daySlider = musicPlayerUI.addSlider(Name.Alternate_Day, 0, 30, 1, Description.Alternate_Day, LEFT);
-  daySlider?.addEventListener("input", (event) => (musicPlayerSettings.alternateThemeDay = parseInputInt(event)));
+  daySlider?.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
   /* ************************************ Right Menu ************************************ */
   const RIGHT = MenuPosition.Right;
   /* **** Group: Override Themes **** */
@@ -1887,7 +1919,7 @@ var awbw_music_player = (function (exports) {
     }
     // Add the override
     if (!currentGameType) return;
-    musicPlayerSettings.addOverride(currentSelectedCO, currentGameType);
+    musicSettings.addOverride(currentSelectedCO, currentGameType);
   });
   /* **** Group: Override List **** */
   const overrideListGroup = "Current Overrides (Click to Remove)";
@@ -1899,7 +1931,7 @@ var awbw_music_player = (function (exports) {
   function addOverrideDisplayDiv(coName, gameType) {
     const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, gameType);
     displayDiv.addEventListener("click", () => {
-      musicPlayerSettings.removeOverride(coName);
+      musicSettings.removeOverride(coName);
     });
     overrideDivMap.set(coName, displayDiv);
     musicPlayerUI.addItemToTable(Name.Override_Table, displayDiv);
@@ -1909,7 +1941,7 @@ var awbw_music_player = (function (exports) {
     overrideDivMap.forEach((div) => div.remove());
     overrideDivMap.clear();
     musicPlayerUI.clearTable(Name.Override_Table);
-    for (const [coName, gameType] of musicPlayerSettings.overrideList) {
+    for (const [coName, gameType] of musicSettings.overrideList) {
       addOverrideDisplayDiv(coName, gameType);
     }
   }
@@ -1963,7 +1995,7 @@ var awbw_music_player = (function (exports) {
     // Set a new timeout for the next theme
     const songDurationMS = nextTheme.duration * 1000;
     randomThemeTimeout = window.setTimeout(() => {
-      musicPlayerSettings.currentRandomCO = getRandomCO();
+      musicSettings.currentRandomCO = getRandomCO();
       randomThemeTimeout = null;
       playThemeSong(true);
     }, songDurationMS);
@@ -1982,7 +2014,7 @@ var awbw_music_player = (function (exports) {
    */
   function whenAudioLoadsPlayIt(event) {
     const audio = event.target;
-    audio.volume = musicPlayerSettings.volume;
+    audio.volume = musicSettings.volume;
     // if (audio.src === currentThemeKey) audio.play();
     playThemeSong();
   }
@@ -2015,7 +2047,7 @@ var awbw_music_player = (function (exports) {
    * @param startFromBeginning - Whether to start from the beginning.
    */
   function playMusicURL(srcURL, startFromBeginning = false) {
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // This song has a special loop, and it's time to play it
     const specialLoopURL = specialLoopMap.get(srcURL);
     if (specialLoopURL) srcURL = specialLoopURL;
@@ -2038,10 +2070,10 @@ var awbw_music_player = (function (exports) {
     // Loop all themes except for the special ones
     nextSong.loop = !hasSpecialLoop(srcURL);
     // Play the song.
-    nextSong.volume = musicPlayerSettings.volume;
+    nextSong.volume = musicSettings.volume;
     nextSong.play();
     // We aren't playing random themes, and if we are, we are already waiting for the next song to start
-    if (!musicPlayerSettings.randomThemes || randomThemeTimeout) return;
+    if (!musicSettings.randomThemes || randomThemeTimeout) return;
     // We are playing random themes, and there is no timer to switch to the next song yet so set one if possible
     if (nextSong.duration > 0) {
       setRandomThemeTimeout(nextSong);
@@ -2057,7 +2089,7 @@ var awbw_music_player = (function (exports) {
    * @param volume - Volume at which to play this sound.
    */
   function playOneShotURL(srcURL, volume) {
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     const soundInstance = new Audio(srcURL);
     soundInstance.currentTime = 0;
     soundInstance.volume = volume;
@@ -2069,7 +2101,7 @@ var awbw_music_player = (function (exports) {
    * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
    */
   function playThemeSong(startFromBeginning = false) {
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // Someone wants us to delay playing the theme, so wait a little bit then play
     // Ignore all calls to play() while delaying, we are guaranteed to play eventually
     if (currentlyDelaying) return;
@@ -2078,9 +2110,9 @@ var awbw_music_player = (function (exports) {
     if (!coName) coName = "map-editor";
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
-    if (musicPlayerSettings.randomThemes && !isEndTheme) {
-      coName = musicPlayerSettings.currentRandomCO;
-      gameType = musicPlayerSettings.currentRandomGameType;
+    if (musicSettings.randomThemes && !isEndTheme) {
+      coName = musicSettings.currentRandomCO;
+      gameType = musicSettings.currentRandomGameType;
     }
     playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
   }
@@ -2123,7 +2155,7 @@ var awbw_music_player = (function (exports) {
    * @param unitId - The ID of the unit who is moving.
    */
   function playMovementSound(unitId) {
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // The audio hasn't been preloaded for this unit
     if (!unitIDAudioMap.has(unitId)) {
       const unitName = getUnitName(unitId);
@@ -2135,7 +2167,7 @@ var awbw_music_player = (function (exports) {
     if (!movementAudio) return;
     movementAudio.currentTime = 0;
     movementAudio.loop = false;
-    movementAudio.volume = musicPlayerSettings.sfxVolume;
+    movementAudio.volume = musicSettings.sfxVolume;
     movementAudio.play();
   }
   /**
@@ -2145,7 +2177,7 @@ var awbw_music_player = (function (exports) {
    */
   function stopMovementSound(unitId, rolloff = true) {
     // Can't stop if there's nothing playing
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // Can't stop if the unit doesn't have any sounds
     if (!unitIDAudioMap.has(unitId)) return;
     // Can't stop if the sound is already stopped
@@ -2164,7 +2196,7 @@ var awbw_music_player = (function (exports) {
     const unitName = getUnitName(unitId);
     if (hasMovementRollOff(unitName)) {
       const audioURL = getMovementRollOffURL(unitName);
-      playOneShotURL(audioURL, musicPlayerSettings.sfxVolume);
+      playOneShotURL(audioURL, musicSettings.sfxVolume);
     }
   }
   /**
@@ -2172,17 +2204,17 @@ var awbw_music_player = (function (exports) {
    * @param sfx - Specific {@link GameSFX} to play.
    */
   function playSFX(sfx) {
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // Check the user settings to see if we should play this sound effect
-    if (!musicPlayerSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
-    if (!musicPlayerSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
+    if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
+    if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
     const sfxURL = getSoundEffectURL(sfx);
     // Figure out which volume to use
-    let vol = musicPlayerSettings.sfxVolume;
+    let vol = musicSettings.sfxVolume;
     if (sfx.startsWith("ui")) {
-      vol = musicPlayerSettings.uiVolume;
+      vol = musicSettings.uiVolume;
     } else if (sfx.startsWith("power")) {
-      vol = musicPlayerSettings.volume;
+      vol = musicSettings.volume;
     }
     // This sound effect hasn't been loaded yet
     if (!urlAudioMap.has(sfxURL)) {
@@ -2303,7 +2335,7 @@ var awbw_music_player = (function (exports) {
       case "currentRandomCO":
       case "isPlaying":
         // case "restartThemes":
-        if (musicPlayerSettings.isPlaying) {
+        if (musicSettings.isPlaying) {
           playThemeSong();
         } else {
           stopAllSounds();
@@ -2311,21 +2343,22 @@ var awbw_music_player = (function (exports) {
         break;
       case "gameType":
       case "alternateThemeDay":
+      case "alternateThemes":
         setTimeout(() => playThemeSong(), 500);
         break;
       case "themeType": {
-        const restartMusic = musicPlayerSettings.themeType !== SettingsThemeType.REGULAR;
+        const restartMusic = musicSettings.themeType !== SettingsThemeType.REGULAR;
         playThemeSong(restartMusic);
         break;
       }
       case "randomThemes":
         // Back to normal themes
-        if (!musicPlayerSettings.randomThemes) {
+        if (!musicSettings.randomThemes) {
           playThemeSong();
           return;
         }
         // We want a new random theme
-        musicPlayerSettings.currentRandomCO = getRandomCO();
+        musicSettings.currentRandomCO = getRandomCO();
         playThemeSong(true);
         // Preload all themes if we are going to play random themes
         // TODO:
@@ -2339,7 +2372,7 @@ var awbw_music_player = (function (exports) {
       case "volume": {
         // Adjust the volume of the current theme
         const currentTheme = urlAudioMap.get(currentThemeKey);
-        if (currentTheme) currentTheme.volume = musicPlayerSettings.volume;
+        if (currentTheme) currentTheme.volume = musicSettings.volume;
         break;
       }
     }
@@ -2541,7 +2574,7 @@ var awbw_music_player = (function (exports) {
    * Syncs the music with the game state. Does not randomize the COs.
    */
   function syncMusic() {
-    musicPlayerSettings.themeType = getCurrentThemeType();
+    musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
     setTimeout(playThemeSong, 500);
   }
@@ -2552,11 +2585,11 @@ var awbw_music_player = (function (exports) {
   function refreshMusicForNextTurn(playDelayMS = 0) {
     // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
     visibilityMap.clear();
-    musicPlayerSettings.currentRandomCO = getRandomCO();
-    musicPlayerSettings.themeType = getCurrentThemeType();
+    musicSettings.currentRandomCO = getRandomCO();
+    musicSettings.themeType = getCurrentThemeType();
     setTimeout(() => {
-      musicPlayerSettings.themeType = getCurrentThemeType();
-      playThemeSong(musicPlayerSettings.restartThemes && !isReplayActive());
+      musicSettings.themeType = getCurrentThemeType();
+      playThemeSong(musicSettings.restartThemes && !isReplayActive());
       setTimeout(playThemeSong, 250);
     }, playDelayMS);
   }
@@ -2619,7 +2652,7 @@ var awbw_music_player = (function (exports) {
   }
   function onCursorMove(cursorX, cursorY) {
     // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Cursor Move", cursorX, cursorY);
     const dx = Math.abs(cursorX - lastCursorX);
     const dy = Math.abs(cursorY - lastCursorY);
@@ -2636,21 +2669,21 @@ var awbw_music_player = (function (exports) {
   }
   function onQueryTurn(gameId, turn, turnPId, turnDay, replay, initial) {
     const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
-    if (!musicPlayerSettings.isPlaying) return result;
+    if (!musicSettings.isPlaying) return result;
     // console.log("[MP] Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
     refreshMusicForNextTurn();
     return result;
   }
   function onShowEventScreen(event) {
     ahShowEventScreen?.apply(ahShowEventScreen, [event]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Show Event Screen", event);
     playThemeSong();
     setTimeout(playThemeSong, 500);
   }
   function onOpenMenu(menu, x, y) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Open Menu", menu, x, y);
     currentMenuType = MenuOpenType.Regular;
     playSFX(GameSFX.uiMenuOpen);
@@ -2677,7 +2710,7 @@ var awbw_music_player = (function (exports) {
   }
   function onCloseMenu() {
     ahCloseMenu?.apply(closeMenu, []);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     const isMenuOpen = currentMenuType !== MenuOpenType.None;
     // console.debug("[MP] CloseMenu", currentMenuType, isMenuOpen);
     if (isMenuOpen) {
@@ -2688,7 +2721,7 @@ var awbw_music_player = (function (exports) {
   }
   function onCreateDamageSquares(attackerUnit, unitsInRange, movementInfo, movingUnit) {
     ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
     // Hook up to all new damage squares
     for (const damageSquare of getAllDamageSquares()) {
@@ -2710,7 +2743,7 @@ var awbw_music_player = (function (exports) {
   }
   function onUnitClick(clicked) {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Unit Click", clicked);
     // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
     const unitInfo = getUnitInfo(Number(clicked.id));
@@ -2725,7 +2758,7 @@ var awbw_music_player = (function (exports) {
   }
   function onUnitWait(unitId) {
     ahWait?.apply(waitUnit, [unitId]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Wait", unitId, getUnitName(unitId));
     // Check if we stopped because we got trapped
     if (movementResponseMap.has(unitId)) {
@@ -2741,7 +2774,7 @@ var awbw_music_player = (function (exports) {
   }
   function onAnimUnit(path, unitId, unitSpan, unitTeam, viewerTeam, i) {
     ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
     // Only check if valid
     if (!isValidUnit(unitId) || !path || !i) return;
@@ -2759,7 +2792,7 @@ var awbw_music_player = (function (exports) {
   }
   function onAnimExplosion(unit) {
     ahAnimExplosion?.apply(animExplosion, [unit]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("Exploded", unit);
     const unitId = unit.units_id;
     const unitFuel = unit.units_fuel;
@@ -2772,7 +2805,7 @@ var awbw_music_player = (function (exports) {
   }
   function onFogUpdate(x, y, mType, neighbours, unitVisible, change, delay) {
     ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
     const unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
@@ -2781,7 +2814,7 @@ var awbw_music_player = (function (exports) {
     }
   }
   function onFire(response) {
-    if (!musicPlayerSettings.isPlaying) {
+    if (!musicSettings.isPlaying) {
       ahFire?.apply(actionHandlers.Fire, [response]);
       return;
     }
@@ -2851,7 +2884,7 @@ var awbw_music_player = (function (exports) {
   }
   function onAttackSeam(response) {
     ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] AttackSeam", response);
     const seamWasDestroyed = response.seamHp <= 0;
     // Pipe wiggle animation
@@ -2873,7 +2906,7 @@ var awbw_music_player = (function (exports) {
   }
   function onMove(response, loadFlag) {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Move", response, loadFlag);
     const unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
@@ -2885,7 +2918,7 @@ var awbw_music_player = (function (exports) {
   }
   function onCapture(data) {
     ahCapt?.apply(actionHandlers.Capt, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Capt", data);
     // They didn't finish the capture
     const finishedCapture = data.newIncome != null;
@@ -2904,7 +2937,7 @@ var awbw_music_player = (function (exports) {
   }
   function onBuild(data) {
     ahBuild?.apply(actionHandlers.Build, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Build", data);
     const myID = getMyID();
     const isMyBuild = data.newUnit.units_players_id == myID;
@@ -2913,19 +2946,19 @@ var awbw_music_player = (function (exports) {
   }
   function onLoad(data) {
     ahLoad?.apply(actionHandlers.Load, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Load", data);
     playSFX(GameSFX.unitLoad);
   }
   function onUnload(data) {
     ahUnload?.apply(actionHandlers.Unload, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Unload", data);
     playSFX(GameSFX.unitUnload);
   }
   function onSupply(data) {
     ahSupply?.apply(actionHandlers.Supply, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Supply", data);
     // We could play the sfx for each supplied unit in the list
     // but instead we decided to play the supply sound once.
@@ -2933,41 +2966,41 @@ var awbw_music_player = (function (exports) {
   }
   function onRepair(data) {
     ahRepair?.apply(actionHandlers.Repair, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Repair", data);
     playSFX(GameSFX.unitSupply);
   }
   function onHide(data) {
     ahHide?.apply(actionHandlers.Hide, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Hide", data);
     playSFX(GameSFX.unitHide);
     stopMovementSound(data.unitId);
   }
   function onUnhide(data) {
     ahUnhide?.apply(actionHandlers.Unhide, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Unhide", data);
     playSFX(GameSFX.unitUnhide);
     stopMovementSound(data.unitId);
   }
   function onJoin(data) {
     ahJoin?.apply(actionHandlers.Join, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Join", data);
     stopMovementSound(data.joinID);
     stopMovementSound(data.joinedUnit.units_id);
   }
   function onLaunch(data) {
     ahLaunch?.apply(actionHandlers.Launch, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Launch", data);
     playSFX(GameSFX.unitMissileSend);
     setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
   }
   function onNextTurn(data) {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] NextTurn", data);
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
@@ -2976,34 +3009,34 @@ var awbw_music_player = (function (exports) {
   }
   function onElimination(data) {
     ahElimination?.apply(actionHandlers.Elimination, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Elimination", data);
     // Play the elimination sound
     refreshMusicForNextTurn();
   }
   function onGameOver() {
     ahGameOver?.apply(actionHandlers.GameOver, []);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] GameOver");
     refreshMusicForNextTurn();
   }
   function onResign(data) {
     ahResign?.apply(actionHandlers.Resign, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Resign", data);
     refreshMusicForNextTurn();
   }
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
-    if (!musicPlayerSettings.isPlaying) return;
+    if (!musicSettings.isPlaying) return;
     // console.debug("[MP] Power", data);
     // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
     const coName = data.coName;
     const isBH = isBlackHoleCO(coName);
     const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     // Update the theme type
-    musicPlayerSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
-    switch (musicPlayerSettings.gameType) {
+    musicSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
+    switch (musicSettings.gameType) {
       case SettingsGameType.AW1:
         // Advance Wars 1 will use the same sound for both CO and Super CO power activations
         playSFX(GameSFX.powerActivateAW1COP);
@@ -3059,13 +3092,13 @@ var awbw_music_player = (function (exports) {
     addHandlers();
     if (getIsMovePlanner()) {
       console.log("[AWBW Improved Music Player] Move Planner detected");
-      musicPlayerSettings.isPlaying = true;
+      musicSettings.isPlaying = true;
       musicPlayerUI.setProgress(100);
       return;
     }
     if (getIsMaintenance() || getIsYourGames()) {
       console.log("[AWBW Improved Music Player] Maintenance mode or Your Games detected, playing music...");
-      musicPlayerSettings.isPlaying = true;
+      musicSettings.isPlaying = true;
       musicPlayerUI.setProgress(100);
       musicPlayerUI.openContextMenu();
       const theme = getIsMaintenance()
@@ -3083,7 +3116,7 @@ var awbw_music_player = (function (exports) {
       console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
       // Set dynamic settings based on the current game state
       // Lastly, update the UI to reflect the current settings
-      musicPlayerSettings.themeType = getCurrentThemeType();
+      musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
       preloadAllExtraAudio(() => {

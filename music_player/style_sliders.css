@@ -9,7 +9,7 @@
   --h: 30px; /* thumb height */
   --w: 15px; /* thumb width */
 
-  /* width: 100%; */
+  width: 100%;
   height: var(--h); /* needed for Firefox*/
   --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));
   -webkit-appearance: none;
