@@ -1482,7 +1482,7 @@ var awbw_music_player = (function (exports) {
       // Check if we have a CO selector and need to hide it
       const overDiv = document.querySelector("#overDiv");
       const hasCOSelector = this.groups.has("co-selector");
-      if (overDiv && hasCOSelector) {
+      if (overDiv && hasCOSelector && isGamePageAndActive()) {
         overDiv.style.visibility = "hidden";
       }
     }

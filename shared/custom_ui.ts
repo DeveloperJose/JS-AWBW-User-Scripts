@@ -3,6 +3,7 @@
  */
 
 import { getAllCONames } from "./awbw_globals";
+import { isGamePageAndActive } from "./awbw_page";
 
 export enum CustomInputType {
   Radio = "radio",
@@ -298,7 +299,7 @@ export class CustomMenuSettingsUI {
     // Check if we have a CO selector and need to hide it
     const overDiv = document.querySelector("#overDiv") as HTMLDivElement;
     const hasCOSelector = this.groups.has("co-selector");
-    if (overDiv && hasCOSelector) {
+    if (overDiv && hasCOSelector && isGamePageAndActive()) {
       overDiv.style.visibility = "hidden";
     }
   }

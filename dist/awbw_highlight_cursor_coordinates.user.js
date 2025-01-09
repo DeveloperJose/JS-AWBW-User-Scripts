@@ -19,6 +19,10 @@
 
   /**
    * @file Constants, variables, and functions that come from analyzing the web pages of AWBW.
+   *
+   * querySelector()
+   * . = class
+   * # = id
    */
   /**
    * Are we in the map editor?
@@ -31,6 +35,9 @@
   }
   function isMovePlanner() {
     return window.location.href.indexOf("moveplanner.php") > -1;
+  }
+  function isGamePageAndActive() {
+    return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
   }
   // ============================== AWBW Page Elements ==============================
   function getGamemap() {
@@ -351,6 +358,10 @@
     setProgress(progress) {
       const bgDiv = this.groups.get("bg");
       if (!bgDiv) return;
+      if (progress < 0) {
+        bgDiv.style.backgroundImage = "";
+        return;
+      }
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
     }
     /**
@@ -395,7 +406,7 @@
       // Check if we have a CO selector and need to hide it
       const overDiv = document.querySelector("#overDiv");
       const hasCOSelector = this.groups.has("co-selector");
-      if (overDiv && hasCOSelector) {
+      if (overDiv && hasCOSelector && isGamePageAndActive()) {
         overDiv.style.visibility = "hidden";
       }
     }
@@ -415,7 +426,7 @@
       // Container for the slider and label
       const sliderBox = document.createElement("div");
       sliderBox.classList.add("cls-vertical-box");
-      sliderBox.classList.add("cls-slider-box");
+      sliderBox.classList.add("cls-group-box");
       contextMenu?.appendChild(sliderBox);
       // Slider label
       const label = document.createElement("label");
@@ -444,15 +455,20 @@
     addGroup(groupName, type = GroupType.Horizontal, position = MenuPosition.Center) {
       const contextMenu = this.getGroup(position);
       if (!contextMenu) return;
+      // Container for the label and group inner container
+      const groupBox = document.createElement("div");
+      groupBox.classList.add("cls-vertical-box");
+      groupBox.classList.add("cls-group-box");
+      contextMenu?.appendChild(groupBox);
       // Label for the group
       const groupLabel = document.createElement("label");
       groupLabel.innerText = groupName;
-      contextMenu?.appendChild(groupLabel);
+      groupBox?.appendChild(groupLabel);
       // Group container
       const group = document.createElement("div");
       group.id = `${this.prefix}-${sanitize(groupName)}`;
       group.classList.add(type);
-      contextMenu?.appendChild(group);
+      groupBox?.appendChild(group);
       this.groups.set(groupName, group);
       this.groupTypes.set(groupName, type);
       return group;
