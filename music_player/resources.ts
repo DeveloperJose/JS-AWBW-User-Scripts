@@ -444,5 +444,10 @@ export function getAllThemeURLs() {
       }
     }
   }
+  allSoundURLs.add(SpecialTheme.COSelect);
+  // allSoundURLs.add(SpecialTheme.ModeSelect);
+  // allSoundURLs.add(SpecialTheme.Maintenance);
+  allSoundURLs.add(SpecialTheme.Victory);
+  allSoundURLs.add(SpecialTheme.Defeat);
   return allSoundURLs;
 }

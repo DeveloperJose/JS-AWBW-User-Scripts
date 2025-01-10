@@ -467,6 +467,33 @@ var awbw_music_player = (function (exports, Howl) {
     }
   }
   /**
+   * Determine who all the COs of the game are and return a list of their names.
+   * @returns - List with the names of each CO in the game.
+   */
+  function getAllPlayingCONames() {
+    if (isMapEditor()) return new Set(["map-editor"]);
+    if (!isGamePageAndActive()) return new Set();
+    const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
+    const allTagPlayers = getAllTagCONames();
+    return new Set([...allPlayers, ...allTagPlayers]);
+  }
+  /**
+   * Checks if the game is a tag game with 2 COs per team.
+   * @returns - True if the game is a tag game.
+   */
+  function isTagGame() {
+    if (!isGamePageAndActive()) return false;
+    return typeof tagsInfo !== "undefined" && tagsInfo;
+  }
+  /**
+   * If the game is a tag game, get the names of all secondary COs that are part of the tags.
+   * @returns - Set with the names of each secondary CO in the tag.
+   */
+  function getAllTagCONames() {
+    if (!isGamePageAndActive() || !isTagGame()) return new Set();
+    return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
+  }
+  /**
    * Gets the internal info object for the given unit.
    * @param unitId - ID of the unit for whom we want to get the current info state.
    * @returns - The info for that unit at its current state.
@@ -1145,6 +1172,83 @@ var awbw_music_player = (function (exports, Howl) {
   function hasSpecialLoop(srcURL) {
     const coName = getCONameFromURL(srcURL);
     return specialLoops.has(coName);
+  }
+  /**
+   * Gets all the URLs for the music of all currently playing COs for the current game settings.
+   * Includes the regular and alternate themes for each CO (if any).
+   * @returns - Set with all the URLs for current music of all currently playing COs.
+   */
+  function getCurrentThemeURLs() {
+    const coNames = getAllPlayingCONames();
+    const audioList = new Set();
+    coNames.forEach((name) => {
+      const regularURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.REGULAR, false);
+      const powerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.CO_POWER, false);
+      const superPowerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+      const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
+      audioList.add(regularURL);
+      audioList.add(alternateURL);
+      audioList.add(powerURL);
+      audioList.add(superPowerURL);
+      if (specialLoops.has(name)) audioList.add(regularURL.replace(".ogg", "-loop.ogg"));
+    });
+    return audioList;
+  }
+  /**
+   * Gets all the URLs for the music of all currently playing COs for ALL possible game settings.
+   * Includes the regular and alternate themes for each CO (if any).
+   * @returns - Set with all the URLs for all the music of all currently playing COs.
+   */
+  function getAllCurrentThemesExtraAudioURLs() {
+    const audioURLs = new Set();
+    const coNames = getAllPlayingCONames();
+    for (const gameType in SettingsGameType) {
+      for (const themeType in SettingsThemeType) {
+        const gameTypeEnum = gameType;
+        const themeTypeEnum = themeType;
+        coNames?.forEach((name) => audioURLs.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
+      }
+    }
+    return audioURLs;
+  }
+  /**
+   * Gets a list of the URLs for all sound effects the music player might ever use.
+   * These include game effects, UI effects, and unit movement sounds.
+   * @returns - Set with all the URLs for all the music player sound effects.
+   */
+  function getAllSoundEffectURLs() {
+    const allSoundURLs = new Set();
+    for (const sfx of Object.values(GameSFX)) {
+      allSoundURLs.add(getSoundEffectURL(sfx));
+    }
+    for (const unitName of onMovementStartMap.keys()) {
+      allSoundURLs.add(getMovementSoundURL(unitName));
+    }
+    for (const unitName of onMovementRolloffMap.keys()) {
+      allSoundURLs.add(getMovementRollOffURL(unitName));
+    }
+    return allSoundURLs;
+  }
+  /**
+   * Gets a list of the URLs for all the music themes the music player might ever use.
+   * @returns - Set with all the URLs for all the music player themes.
+   */
+  function getAllThemeURLs() {
+    const allSoundURLs = new Set();
+    for (const coName of getAllCONames()) {
+      for (const gameType of Object.values(SettingsGameType)) {
+        for (const themeType of Object.values(SettingsThemeType)) {
+          const url = getMusicURL(coName, gameType, themeType, false);
+          if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
+            allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
+          }
+          const alternateURL = getMusicURL(coName, gameType, themeType, true);
+          allSoundURLs.add(url);
+          allSoundURLs.add(alternateURL);
+        }
+      }
+    }
+    return allSoundURLs;
   }
 
   /**
@@ -1986,6 +2090,7 @@ var awbw_music_player = (function (exports, Howl) {
    */
   let currentlyDelaying = false;
   let lastTimeWeRestarted = 0;
+  let allThemesPreloaded = false;
   // Listen for setting changes to update the internal variables accordingly
   addSettingsChangeListener(onSettingsChange);
   /**
@@ -2064,7 +2169,7 @@ var awbw_music_player = (function (exports, Howl) {
   }
   function createNewSFXAudio(sfxURL, vol) {
     if (audioMap.has(sfxURL)) {
-      console.error("[AWBW Music Player] SFX Race Condition! Please report this bug!", sfxURL);
+      // console.error("[AWBW Music Player] SFX Race Condition! Please report this bug!", sfxURL);
       return audioMap.get(sfxURL);
     }
     const audio = new Howl({
@@ -2133,7 +2238,6 @@ var awbw_music_player = (function (exports, Howl) {
    */
   function playThemeSong(startFromBeginning = false) {
     if (!musicSettings.isPlaying) return;
-    // console.log("PlayThemeSong", startFromBeginning, currentlyDelaying, currentPlayer.coName);
     // Someone wants us to delay playing the theme, so wait a little bit then play
     // Ignore all calls to play() while delaying, we are guaranteed to play eventually
     if (currentlyDelaying) return;
@@ -2247,7 +2351,7 @@ var awbw_music_player = (function (exports, Howl) {
     if (!audioMap.has(sfxURL)) {
       createNewSFXAudio(sfxURL, vol);
     }
-    // // The sound is loaded, so play it
+    // The sound is loaded, so play it
     const audio = audioMap.get(sfxURL);
     if (!audio) return;
     audio.volume(vol);
@@ -2276,49 +2380,84 @@ var awbw_music_player = (function (exports, Howl) {
     }
   }
   /**
+   * Preloads the current game COs' themes and common sound effect audios.
+   * Run this first so we can start the player almost immediately!
+   * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
+   */
+  function preloadAllCommonAudio(afterPreloadFunction) {
+    // Preload the themes of the COs in this match
+    const audioList = getCurrentThemeURLs();
+    // Preload the most common UI sounds that might play right after the page loads
+    createNewSFXAudio(getSoundEffectURL(GameSFX.uiCursorMove), musicSettings.uiVolume);
+    createNewSFXAudio(getSoundEffectURL(GameSFX.uiUnitSelect), musicSettings.uiVolume);
+    preloadThemeAudios(audioList, afterPreloadFunction);
+    console.debug("[AWBW Music Player] Pre-loading common audio", audioList);
+  }
+  /**
+   * Preloads the current game CO's themes for ALL game versions and ALL sound effect audios.
+   * Run this after the common audios since we have more time to get things ready for these.
+   * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
+   */
+  function preloadAllExtraAudio(afterPreloadFunction) {
+    if (isMapEditor()) return;
+    // Preload ALL sound effects
+    const allSoundEffects = getAllSoundEffectURLs();
+    musicPlayerUI.setProgress(0);
+    let currentIDX = 0;
+    console.debug("[AWBW Music Player] Pre-loading sound effects", allSoundEffects);
+    for (const sfxURL of allSoundEffects) {
+      createNewSFXAudio(sfxURL, musicSettings.sfxVolume);
+      currentIDX++;
+      musicPlayerUI.setProgress((currentIDX / allSoundEffects.size) * 100);
+    }
+    // Preload all the current COs themes for all game versions
+    const audioList = getAllCurrentThemesExtraAudioURLs();
+    console.debug("[AWBW Music Player] Pre-loading extra audio", audioList);
+    preloadThemeAudios(audioList, afterPreloadFunction);
+  }
+  /**
    * Preloads the given list of songs and adds them to the {@link urlAudioMap}.
    * @param audioURLs - Set of URLs of songs to preload.
    * @param afterPreloadFunction - Function to call after all songs are preloaded.
    */
-  // function preloadAudios(audioURLs: Set<string>, _afterPreloadFunction = () => {}) {
-  // // Event handler for when an audio is loaded
-  // let numLoadedAudios = 0;
-  // const onAudioPreload = (event: Event) => {
-  //   const audio = event.target as HTMLAudioElement;
-  //   numLoadedAudios++;
-  //   // Update UI
-  //   const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
-  //   musicPlayerUI.setProgress(loadPercentage);
-  //   // All the audio from the list has been loaded
-  //   if (numLoadedAudios >= audioURLs.size) {
-  //     numLoadedAudios = 0;
-  //     if (afterPreloadFunction) afterPreloadFunction();
-  //   }
-  //   if (event.type === "error") {
-  //     let msg = `[AWBW Music Player] Could not pre-load: ${audio.src}, code=${audio.networkState}.`;
-  //     msg += "(This might not be a problem, the music and sound effects may still play normally.)";
-  //     console.error(msg);
-  //     urlAudioMap.delete(audio.src);
-  //     return;
-  //   }
-  //   // TODO: Debugging purposes
-  //   // if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
-  //   if (!urlAudioMap.has(audio.src)) {
-  //     console.error("[AWBW Music Player] Race condition on pre-load! Please report this bug!", audio.src);
-  //   }
-  // };
-  // // Pre-load all audios in the list
-  // audioURLs.forEach((url) => {
-  //   // This audio has already been loaded before, so skip it
-  //   if (urlAudioMap.has(url)) {
-  //     numLoadedAudios++;
-  //     return;
-  //   }
-  //   const audio = createNewThemeAudio(url);
-  //   audio.addEventListener("canplaythrough", onAudioPreload, { once: true });
-  //   audio.addEventListener("error", onAudioPreload, { once: true });
-  // });
-  // }
+  function preloadThemeAudios(audioURLs, afterPreloadFunction = () => {}) {
+    // Event handler for when an audio is loaded
+    let numLoadedAudios = 0;
+    const onAudioPreload = (action, url) => {
+      numLoadedAudios++;
+      // Update UI
+      const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
+      musicPlayerUI.setProgress(loadPercentage);
+      // All the audio from the list has been loaded
+      if (numLoadedAudios >= audioURLs.size) {
+        numLoadedAudios = 0;
+        if (afterPreloadFunction) afterPreloadFunction();
+      }
+      if (action === "error") {
+        let msg = `[AWBW Music Player] Could not pre-load: ${url}.`;
+        msg += "This might not be a problem, the music and sound effects may still play normally.";
+        console.log(msg);
+        audioMap.delete(url);
+        return;
+      }
+      // TODO: Debugging purposes
+      // if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
+      if (!audioMap.has(url)) {
+        console.error("[AWBW Music Player] Race condition on pre-load! Please report this bug!", url);
+      }
+    };
+    // Pre-load all audios in the list
+    audioURLs.forEach((url) => {
+      // This audio has already been loaded before, so skip it
+      if (audioMap.has(url)) {
+        numLoadedAudios++;
+        return;
+      }
+      const audio = createNewThemeAudio(url);
+      audio?.once("load", () => onAudioPreload("load", url));
+      audio?.once("loaderror", () => onAudioPreload("error", url));
+    });
+  }
   function playOrPauseWhenWindowFocusChanges() {
     window.addEventListener("blur", () => {
       if (musicSettings.isPlaying) stopAllSounds();
@@ -2367,6 +2506,14 @@ var awbw_music_player = (function (exports, Howl) {
         // We want a new random theme
         musicSettings.currentRandomCO = getRandomCO();
         playThemeSong();
+        // Maybe we should preload all the themes
+        if (!allThemesPreloaded) {
+          console.debug("[AWBW Music Player] Pre-loading all themes...");
+          preloadThemeAudios(getAllThemeURLs(), () => {
+            console.debug("[AWBW Music Player] All themes pre-loaded!");
+          });
+          allThemesPreloaded = true;
+        }
         break;
       case "volume": {
         // Adjust the volume of the current theme
@@ -3172,24 +3319,18 @@ var awbw_music_player = (function (exports, Howl) {
     }
     // game.php or designmap.php from now on
     allowSettingsToBeSaved();
-    // Set dynamic settings based on the current game state
-    // Lastly, update the UI to reflect the current settings
-    musicSettings.themeType = getCurrentThemeType();
-    musicPlayerUI.updateAllInputLabels();
-    playThemeSong();
-    console.log("[AWBW Improved Music Player] Finished starting up");
-    // preloadAllCommonAudio(() => {
-    //   console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
-    //   // Set dynamic settings based on the current game state
-    //   // Lastly, update the UI to reflect the current settings
-    //   musicSettings.themeType = getCurrentThemeType();
-    //   musicPlayerUI.updateAllInputLabels();
-    //   playThemeSong();
-    //   preloadAllExtraAudio(() => {
-    //     console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
-    //     playThemeSong();
-    //   });
-    // });
+    preloadAllCommonAudio(() => {
+      console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+      // Set dynamic settings based on the current game state
+      // Lastly, update the UI to reflect the current settings
+      musicSettings.themeType = getCurrentThemeType();
+      musicPlayerUI.updateAllInputLabels();
+      playThemeSong();
+      preloadAllExtraAudio(() => {
+        console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+        playThemeSong();
+      });
+    });
   }
   main();
 
