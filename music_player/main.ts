@@ -8,14 +8,7 @@ import "./style.css";
 import "./style_sliders.css";
 
 import { musicPlayerUI } from "./music_ui";
-import {
-  playMusicURL,
-  playOrPauseWhenWindowFocusChanges,
-  playThemeSong,
-  preloadAllCommonAudio,
-  preloadAllExtraAudio,
-  stopThemeSong,
-} from "./music";
+import { playMusicURL, playOrPauseWhenWindowFocusChanges, playThemeSong, stopThemeSong } from "./music";
 import {
   allowSettingsToBeSaved,
   getCurrentThemeType,
@@ -116,7 +109,7 @@ export function main() {
   addHandlers();
 
   if (isMaintenance()) {
-    console.log("[AWBW Improved Music Player] Maintenance mode detected, playing music...");
+    console.log("[AWBW Improved Music Player] Maintenance detected, playing music...");
     musicPlayerUI.parent.style.borderLeft = "";
     musicPlayerUI.openContextMenu();
     playMusicURL(SpecialTheme.Maintenance);
@@ -137,7 +130,6 @@ export function main() {
     musicPlayerUI.parent.style.border = "none";
     musicPlayerUI.parent.style.backgroundColor = "#0000";
     musicPlayerUI.setProgress(-1);
-    console.log(musicPlayerUI.parent);
     playMusicURL(SpecialTheme.ModeSelect);
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();
@@ -151,20 +143,28 @@ export function main() {
 
   // game.php or designmap.php from now on
   allowSettingsToBeSaved();
-  preloadAllCommonAudio(() => {
-    console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
 
-    // Set dynamic settings based on the current game state
-    // Lastly, update the UI to reflect the current settings
-    musicSettings.themeType = getCurrentThemeType();
-    musicPlayerUI.updateAllInputLabels();
-    playThemeSong();
+  // Set dynamic settings based on the current game state
+  // Lastly, update the UI to reflect the current settings
+  musicSettings.themeType = getCurrentThemeType();
+  musicPlayerUI.updateAllInputLabels();
+  playThemeSong();
 
-    preloadAllExtraAudio(() => {
-      console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
-      playThemeSong();
-    });
-  });
+  console.log("[AWBW Improved Music Player] Finished starting up");
+  // preloadAllCommonAudio(() => {
+  //   console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+
+  //   // Set dynamic settings based on the current game state
+  //   // Lastly, update the UI to reflect the current settings
+  //   musicSettings.themeType = getCurrentThemeType();
+  //   musicPlayerUI.updateAllInputLabels();
+  //   playThemeSong();
+
+  //   preloadAllExtraAudio(() => {
+  //     console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
+  //     playThemeSong();
+  //   });
+  // });
 }
 
 main();

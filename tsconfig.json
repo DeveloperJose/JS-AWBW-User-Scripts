@@ -14,8 +14,10 @@
     "strict": true,
     "declaration": false,
     "esModuleInterop": true,
+    "allowUmdGlobalAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+
     // "types": [
     //   "vite/client"
     // ],

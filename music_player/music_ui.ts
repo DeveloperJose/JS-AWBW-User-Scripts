@@ -137,7 +137,7 @@ enum Description {
 
   Capture_Progress = "Play a sound effect when a unit makes progress capturing a property.",
   Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
-  Restart_Themes = "Restart themes at the beginning of each turn (outside replays). If disabled, themes will continue from where they left off previously.",
+  Restart_Themes = "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
   Autoplay_Pages = "Autoplay music on other pages like your games or during maintenance.",
   Alternate_Themes = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
 

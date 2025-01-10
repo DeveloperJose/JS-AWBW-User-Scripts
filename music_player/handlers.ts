@@ -228,7 +228,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
 
   setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
-    playThemeSong(musicSettings.restartThemes && !isReplayActive());
+    playThemeSong();
     setTimeout(playThemeSong, 250);
   }, playDelayMS);
 }
