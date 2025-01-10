@@ -7,6 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @match       https://awbw.amarriner.com/yourgames.php*
+// @match       https://awbw.amarriner.com/yourturn.php*
 // @match       https://awbw.amarriner.com/live_queue.php*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
@@ -77,7 +78,7 @@ var awbw_music_player = (function (exports, Howl) {
     return window.location.href.indexOf("moveplanner.php") > -1;
   }
   function isYourGames() {
-    return window.location.href.indexOf("yourgames.php") > -1;
+    return window.location.href.indexOf("yourgames.php") > -1 || window.location.href.indexOf("yourturn.php") > -1;
   }
   function isGamePageAndActive() {
     return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
@@ -1984,6 +1985,7 @@ var awbw_music_player = (function (exports, Howl) {
    * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
    */
   let currentlyDelaying = false;
+  let lastTimeWeRestarted = 0;
   // Listen for setting changes to update the internal variables accordingly
   addSettingsChangeListener(onSettingsChange);
   /**
@@ -2079,7 +2081,7 @@ var awbw_music_player = (function (exports, Howl) {
    * @param srcURL - URL of song to play.
    * @param startFromBeginning - Whether to start from the beginning.
    */
-  function playMusicURL(srcURL) {
+  function playMusicURL(srcURL, startFromBeginning = false) {
     if (!musicSettings.isPlaying) return;
     // This song has a special loop, and it's time to play it
     const specialLoopURL = specialLoopMap.get(srcURL);
@@ -2100,6 +2102,12 @@ var awbw_music_player = (function (exports, Howl) {
     if (!nextSong) return;
     // Loop all themes except for the special ones
     nextSong.loop(!hasSpecialLoop(srcURL));
+    // Start from the beginning if needed, prevent repeated calls that are too close to each other
+    const timeSinceLastRestart = Date.now() - lastTimeWeRestarted;
+    if (startFromBeginning && timeSinceLastRestart > 250) {
+      nextSong.seek(0);
+      lastTimeWeRestarted = Date.now();
+    }
     // Play the song if it's not already playing
     if (!nextSong.playing()) {
       nextSong.volume(musicSettings.volume);
@@ -2123,7 +2131,7 @@ var awbw_music_player = (function (exports, Howl) {
    * Determines the music automatically so just call this anytime the game state changes.
    * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
    */
-  function playThemeSong() {
+  function playThemeSong(startFromBeginning = false) {
     if (!musicSettings.isPlaying) return;
     // console.log("PlayThemeSong", startFromBeginning, currentlyDelaying, currentPlayer.coName);
     // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -2142,7 +2150,7 @@ var awbw_music_player = (function (exports, Howl) {
       coName = musicSettings.currentRandomCO;
       gameType = musicSettings.currentRandomGameType;
     }
-    playMusicURL(getMusicURL(coName, gameType));
+    playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
   }
   /**
    * Stops the current music if there's any playing.
@@ -2582,7 +2590,7 @@ var awbw_music_player = (function (exports, Howl) {
     musicSettings.themeType = getCurrentThemeType();
     setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
-      playThemeSong();
+      playThemeSong(musicSettings.restartThemes);
       setTimeout(playThemeSong, 250);
     }, playDelayMS);
   }
@@ -3140,7 +3148,6 @@ var awbw_music_player = (function (exports, Howl) {
       musicPlayerUI.openContextMenu();
       playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
       allowSettingsToBeSaved();
-      playOrPauseWhenWindowFocusChanges();
       return;
     }
     if (isMovePlanner()) {

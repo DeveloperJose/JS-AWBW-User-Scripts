@@ -22,7 +22,7 @@ export function isMovePlanner() {
 }
 
 export function isYourGames() {
-  return window.location.href.indexOf("yourgames.php") > -1;
+  return window.location.href.indexOf("yourgames.php") > -1 || window.location.href.indexOf("yourturn.php") > -1;
 }
 
 export function isGamePageAndActive() {

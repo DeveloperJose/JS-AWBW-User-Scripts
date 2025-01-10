@@ -45,6 +45,8 @@ const specialLoopMap = new Map<string, string>();
  */
 let currentlyDelaying = false;
 
+let lastTimeWeRestarted = 0;
+
 // Listen for setting changes to update the internal variables accordingly
 addSettingsChangeListener(onSettingsChange);
 
@@ -156,7 +158,7 @@ function createNewSFXAudio(sfxURL: string, vol: number) {
  * @param srcURL - URL of song to play.
  * @param startFromBeginning - Whether to start from the beginning.
  */
-export function playMusicURL(srcURL: string) {
+export function playMusicURL(srcURL: string, startFromBeginning = false) {
   if (!musicSettings.isPlaying) return;
 
   // This song has a special loop, and it's time to play it
@@ -182,6 +184,13 @@ export function playMusicURL(srcURL: string) {
 
   // Loop all themes except for the special ones
   nextSong.loop(!hasSpecialLoop(srcURL));
+
+  // Start from the beginning if needed, prevent repeated calls that are too close to each other
+  const timeSinceLastRestart = Date.now() - lastTimeWeRestarted;
+  if (startFromBeginning && timeSinceLastRestart > 250) {
+    nextSong.seek(0);
+    lastTimeWeRestarted = Date.now();
+  }
 
   // Play the song if it's not already playing
   if (!nextSong.playing()) {
@@ -209,7 +218,7 @@ function playOneShotURL(srcURL: string, volume: number) {
  * Determines the music automatically so just call this anytime the game state changes.
  * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
  */
-export function playThemeSong() {
+export function playThemeSong(startFromBeginning = false) {
   if (!musicSettings.isPlaying) return;
 
   // console.log("PlayThemeSong", startFromBeginning, currentlyDelaying, currentPlayer.coName);
@@ -232,7 +241,7 @@ export function playThemeSong() {
     coName = musicSettings.currentRandomCO;
     gameType = musicSettings.currentRandomGameType;
   }
-  playMusicURL(getMusicURL(coName, gameType));
+  playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
 }
 
 /**

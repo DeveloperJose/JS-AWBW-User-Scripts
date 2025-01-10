@@ -114,7 +114,6 @@ export function main() {
     musicPlayerUI.openContextMenu();
     playMusicURL(SpecialTheme.Maintenance);
     allowSettingsToBeSaved();
-    playOrPauseWhenWindowFocusChanges();
     return;
   }
 
