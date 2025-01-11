@@ -44,6 +44,7 @@ Below are the changes from the original script:
 * Added music to maintenance, your games, and live queue pages. You can disable the autoplay for these songs in the settings (Autoplay Music On Other Pages).
 * Music will stop in the current game page if you disconnect from it and connect to another game.
 * Downloaded music will be stored [locally in your browser](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) for faster loading. The script will also check if new versions of the music have been uploaded to the server and update your local copy.
+* The music should be more seamless now on Chrome and other browsers as I have updated to a [more advanced sound API](https://howlerjs.com/).
 
 ![Picture of the music player icon on the page](./Improved_Music_Player_Icon.png)
 
