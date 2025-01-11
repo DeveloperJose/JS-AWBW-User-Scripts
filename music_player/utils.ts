@@ -31,3 +31,11 @@ export function logError(message: any, ...args: any[]): void {
 export function logDebug(message: any, ...args: any[]): void {
   console.debug("[AWBW Improved Music Player]", message, ...args);
 }
+
+/**
+ * Determines if the current browser is Firefox
+ * @returns - True if the current browser is Firefox, false otherwise
+ */
+export function isFirefox() {
+  return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+}
