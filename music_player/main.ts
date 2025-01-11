@@ -34,7 +34,7 @@ import {
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 import { logDebug, log } from "./utils";
-import { openDB } from "./db";
+import { checkHashesInDB, openDB } from "./db";
 
 /******************************************************************
  * MODULE EXPORTS
@@ -182,6 +182,8 @@ export function main() {
     musicSettings.themeType = getCurrentThemeType();
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
+
+    checkHashesInDB();
 
     // preloadAllAudio(() => {
     //   log("All other audio has been pre-loaded!");

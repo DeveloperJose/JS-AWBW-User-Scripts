@@ -13,6 +13,7 @@
   "icon": "https://developerjose.netlify.app/img/music-player-icon.png",
   "namespace": "https://awbw.amarriner.com/",
   "require": [
-    "https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"
+    "https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js",
+    "https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"
   ]
 }

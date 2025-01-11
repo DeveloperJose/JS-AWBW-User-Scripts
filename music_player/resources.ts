@@ -36,6 +36,12 @@ export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
 export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
 
 /**
+ * URL for the JSON file containing the hashes for all the music files.
+ * @constant {string}
+ */
+export const HASH_JSON_URL = BASE_MUSIC_URL + "/hashes.json";
+
+/**
  * URLs for the special themes that are not related to specific COs.
  * @enum {string}
  */

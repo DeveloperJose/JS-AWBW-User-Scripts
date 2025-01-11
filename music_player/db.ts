@@ -1,7 +1,8 @@
 /**
  * @file IndexedDB database for caching music files.
  */
-
+import SparkMD5 from "spark-md5";
+import { HASH_JSON_URL } from "./resources";
 import { log, logDebug, logError } from "./utils";
 
 /**
@@ -142,4 +143,84 @@ function storeURLInDB(url: string) {
     .then((response) => response.blob())
     .then((blob) => storeBlobInDB(url, blob))
     .catch((reason) => logError("Error fetching music file to store in database:", reason));
+}
+
+/**
+ * Compares the hashes of the music files stored in the database against the hashes stored on the server.
+ * If a hash is different, the music file is replaced in the database.
+ * @returns - A promise that resolves when the hashes have been compared
+ */
+export function checkHashesInDB() {
+  if (!db) return;
+
+  // Get the hashes stored in the server
+  // logDebug("Fetching hashes from server to compare against local music files.");
+  fetch(HASH_JSON_URL)
+    .then((response) => response.json())
+    .then((hashes) => compareHashesAndReplaceIfNeeded(hashes))
+    .catch((reason) => logError("Error fetching hashes from server:", reason));
+}
+
+/**
+ * Calculates the MD5 hash of the given blob.
+ * @param blob - The blob to calculate the hash of
+ * @returns - A promise that resolves with the MD5 hash of the blob
+ */
+function getBlobMD5(blob: Blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (!event?.target?.result) return reject("FileReader did not load the blob.");
+      const md5 = SparkMD5.ArrayBuffer.hash(event.target.result as ArrayBuffer);
+      resolve(md5);
+    };
+    reader.onerror = (event) => reject(event);
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
+/**
+ * Compares the hashes of the music files stored in the database against the json object of hashes provided.
+ * @param hashesJson - The JSON object of hashes to compare against.
+ */
+function compareHashesAndReplaceIfNeeded(hashesJson: { [key: string]: string }) {
+  if (!db) return;
+  if (!hashesJson) {
+    logError("No hashes found in server response.");
+    return;
+  }
+
+  // Get all the blobs stored in the database
+  const transaction = db.transaction("music", "readonly");
+  const store = transaction.objectStore("music");
+  const request = store.openCursor();
+
+  request.onerror = (event) => {
+    logError("Error checking hashes in database:", event);
+  };
+
+  request.onsuccess = (event) => {
+    const cursor = (event.target as IDBRequest).result;
+    if (!cursor) return;
+
+    const url = cursor.key;
+    const blob = cursor.value;
+    const serverHash = hashesJson[url] as string;
+    if (!serverHash) {
+      logDebug("No hash found in server for", url);
+      cursor.continue();
+      return;
+    }
+
+    getBlobMD5(blob)
+      .then((hash) => {
+        if (hash === serverHash) return;
+        // The hash is different, so we need to replace the song
+        log("A new version of", url, " is available. Replacing the old version.");
+        storeURLInDB(url);
+      })
+      .catch((reason) => logError("Error getting MD5 hash for blob:", reason));
+
+    cursor.continue();
+  };
 }

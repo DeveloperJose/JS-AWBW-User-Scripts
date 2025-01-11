@@ -11,6 +11,7 @@
 // @match       https://awbw.amarriner.com/live_queue.php*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
+// @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @version     4.0.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
@@ -18,7 +19,7 @@
 // @grant       none
 // ==/UserScript==
 
-var awbw_music_player = (function (exports, Howl) {
+var awbw_music_player = (function (exports, Howl, SparkMD5) {
   "use strict";
 
   function styleInject(css, ref) {
@@ -915,6 +916,11 @@ var awbw_music_player = (function (exports, Howl) {
    * @constant {string}
    */
   const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
+  /**
+   * URL for the JSON file containing the hashes for all the music files.
+   * @constant {string}
+   */
+  const HASH_JSON_URL = BASE_MUSIC_URL + "/hashes.json";
   /**
    * URLs for the special themes that are not related to specific COs.
    * @enum {string}
@@ -2150,6 +2156,76 @@ var awbw_music_player = (function (exports, Howl) {
       .then((response) => response.blob())
       .then((blob) => storeBlobInDB(url, blob))
       .catch((reason) => logError("Error fetching music file to store in database:", reason));
+  }
+  /**
+   * Compares the hashes of the music files stored in the database against the hashes stored on the server.
+   * If a hash is different, the music file is replaced in the database.
+   * @returns - A promise that resolves when the hashes have been compared
+   */
+  function checkHashesInDB() {
+    if (!db) return;
+    // Get the hashes stored in the server
+    // logDebug("Fetching hashes from server to compare against local music files.");
+    fetch(HASH_JSON_URL)
+      .then((response) => response.json())
+      .then((hashes) => compareHashesAndReplaceIfNeeded(hashes))
+      .catch((reason) => logError("Error fetching hashes from server:", reason));
+  }
+  /**
+   * Calculates the MD5 hash of the given blob.
+   * @param blob - The blob to calculate the hash of
+   * @returns - A promise that resolves with the MD5 hash of the blob
+   */
+  function getBlobMD5(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (!event?.target?.result) return reject("FileReader did not load the blob.");
+        const md5 = SparkMD5.ArrayBuffer.hash(event.target.result);
+        resolve(md5);
+      };
+      reader.onerror = (event) => reject(event);
+      reader.readAsArrayBuffer(blob);
+    });
+  }
+  /**
+   * Compares the hashes of the music files stored in the database against the json object of hashes provided.
+   * @param hashesJson - The JSON object of hashes to compare against.
+   */
+  function compareHashesAndReplaceIfNeeded(hashesJson) {
+    if (!db) return;
+    if (!hashesJson) {
+      logError("No hashes found in server response.");
+      return;
+    }
+    // Get all the blobs stored in the database
+    const transaction = db.transaction("music", "readonly");
+    const store = transaction.objectStore("music");
+    const request = store.openCursor();
+    request.onerror = (event) => {
+      logError("Error checking hashes in database:", event);
+    };
+    request.onsuccess = (event) => {
+      const cursor = event.target.result;
+      if (!cursor) return;
+      const url = cursor.key;
+      const blob = cursor.value;
+      const serverHash = hashesJson[url];
+      if (!serverHash) {
+        logDebug("No hash found in server for", url);
+        cursor.continue();
+        return;
+      }
+      getBlobMD5(blob)
+        .then((hash) => {
+          if (hash === serverHash) return;
+          // The hash is different, so we need to replace the song
+          log("A new version of", url, " is available. Replacing the old version.");
+          storeURLInDB(url);
+        })
+        .catch((reason) => logError("Error getting MD5 hash for blob:", reason));
+      cursor.continue();
+    };
   }
 
   /**
@@ -3438,6 +3514,7 @@ var awbw_music_player = (function (exports, Howl) {
       musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
+      checkHashesInDB();
       // preloadAllAudio(() => {
       //   log("All other audio has been pre-loaded!");
       // });
@@ -3455,4 +3532,4 @@ var awbw_music_player = (function (exports, Howl) {
   exports.notifyCOSelectorListeners = notifyCOSelectorListeners;
 
   return exports;
-})({}, Howl);
+})({}, Howl, SparkMD5);

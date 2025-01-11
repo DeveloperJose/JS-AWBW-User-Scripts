@@ -25,9 +25,10 @@ function createUserscriptRollUpConfig(inputDir, outputDir = "./dist") {
       name: "awbw_" + inputDir,
       globals: {
         [externalId]: "Howl",
+        "spark-md5": "SparkMD5",
       },
     },
-    external: ["../howler/howl"],
+    external: ["../howler/howl", "spark-md5"],
     plugins: [
       typescript(),
       postcss(),
