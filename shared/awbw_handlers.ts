@@ -17,6 +17,10 @@ export function getShowEventScreenFn() {
   return typeof showEventScreen !== "undefined" ? showEventScreen : null;
 }
 
+export function getShowEndGameScreenFn() {
+  return typeof showEndGameScreen !== "undefined" ? showEndGameScreen : null;
+}
+
 export function getSwapCosDisplayFn() {
   return typeof swapCosDisplay !== "undefined" ? swapCosDisplay : null;
 }

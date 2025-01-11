@@ -17,6 +17,7 @@ import {
   hasSpecialLoop,
   getCurrentThemeURLs,
   getAllAudioURLs,
+  SpecialTheme,
 } from "./resources";
 import { musicSettings, addSettingsChangeListener, SettingsThemeType } from "./music_settings";
 import { getRandomCO } from "../shared/awbw_globals";
@@ -57,6 +58,11 @@ const unitIDAudioMap: Map<number, HTMLAudioElement> = new Map();
 const specialLoopMap = new Map<string, string>();
 
 /**
+ * Number of loops that the current theme has done.
+ */
+let currentLoops = 0;
+
+/**
  * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
  */
 let currentlyDelaying = false;
@@ -77,6 +83,8 @@ function whenAudioLoadsPauseIt(event: Event) {
  * @param srcURL - URL of the theme that ended or looped.
  */
 function onThemeEndOrLoop(srcURL: string) {
+  currentLoops++;
+
   if (currentThemeKey !== srcURL) {
     logError("Playing more than one theme at a time! Please report this bug!", srcURL);
     return;
@@ -87,6 +95,10 @@ function onThemeEndOrLoop(srcURL: string) {
     const loopURL = srcURL.replace(".ogg", "-loop.ogg");
     specialLoopMap.set(srcURL, loopURL);
     playThemeSong();
+  }
+
+  if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
+    if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
   }
 
   // The song ended and we are playing random themes, so switch to the next random theme
@@ -102,6 +114,8 @@ function onThemeEndOrLoop(srcURL: string) {
  * @param srcURL - URL of the theme that started playing.
  */
 function onThemePlay(audio: Howl, srcURL: string) {
+  currentLoops = 0;
+
   // We start from the beginning if any of these conditions are met:
   // 1. The user wants to restart themes
   // 2. It's a power theme
@@ -253,11 +267,6 @@ export function playThemeSong() {
 
   let gameType = undefined;
   let coName = currentPlayer.coName;
-  if (!coName) {
-    if (!currentThemeKey || currentThemeKey === "") return;
-    playMusicURL(currentThemeKey);
-    return;
-  }
 
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
@@ -265,6 +274,13 @@ export function playThemeSong() {
     coName = musicSettings.currentRandomCO;
     gameType = musicSettings.currentRandomGameType;
   }
+
+  if (!coName) {
+    if (!currentThemeKey || currentThemeKey === "") return;
+    playMusicURL(currentThemeKey);
+    return;
+  }
+
   playMusicURL(getMusicURL(coName, gameType));
 }
 

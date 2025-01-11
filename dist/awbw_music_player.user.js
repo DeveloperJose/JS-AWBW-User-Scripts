@@ -93,9 +93,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
   function getReplayControls() {
     return document.querySelector(".replay-controls");
   }
-  function getReplayOpenBtn() {
-    return document.querySelector(".replay-open");
-  }
   function getReplayCloseBtn() {
     return document.querySelector(".replay-close");
   }
@@ -380,7 +377,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     // Check if replay mode is open by checking if the replay section is set to display
     const replayControls = getReplayControls();
     const replayOpen = replayControls.style.display !== "none";
-    return replayOpen;
+    return replayOpen && Object.keys(replay).length > 0;
   }
   /**
    * Checks if the game has ended.
@@ -453,17 +450,19 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
      */
     static get coName() {
       if (isMapEditor()) return "map-editor";
+      if (isMaintenance()) return "maintenance";
       if (!isGamePageAndActive()) return null;
-      // Check if we are eliminated even if the game has not ended
       const myID = getMyID();
       const myInfo = getPlayerInfo(myID);
       const myLoss = myInfo?.players_eliminated === "Y";
-      if (myLoss) return "defeat";
       // Play victory/defeat themes after the game ends for everyone
       if (hasGameEnded()) {
-        if (isPlayerSpectator(myID)) return "co-select";
+        if (!isReplayActive()) return "co-select";
+        if (isPlayerSpectator(myID)) return "victory";
         return myLoss ? "defeat" : "victory";
       }
+      // Check if we are eliminated even if the game has not ended
+      if (myLoss) return "defeat";
       return this.info?.co_name;
     }
   }
@@ -2040,7 +2039,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
     if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
     if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
-    if (!isMapEditor()) {
+    if (!isMapEditor() && !isMaintenance()) {
       if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
       if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
     }
@@ -2259,6 +2258,10 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    */
   const specialLoopMap = new Map();
   /**
+   * Number of loops that the current theme has done.
+   */
+  let currentLoops = 0;
+  /**
    * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
    */
   let currentlyDelaying = false;
@@ -2276,6 +2279,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * @param srcURL - URL of the theme that ended or looped.
    */
   function onThemeEndOrLoop(srcURL) {
+    currentLoops++;
     if (currentThemeKey !== srcURL) {
       logError("Playing more than one theme at a time! Please report this bug!", srcURL);
       return;
@@ -2285,6 +2289,13 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
       const loopURL = srcURL.replace(".ogg", "-loop.ogg");
       specialLoopMap.set(srcURL, loopURL);
       playThemeSong();
+    }
+    if (
+      srcURL === "https://developerjose.netlify.app/music/t-victory.ogg" /* SpecialTheme.Victory */ ||
+      srcURL === "https://developerjose.netlify.app/music/t-defeat.ogg" /* SpecialTheme.Defeat */
+    ) {
+      if (currentLoops >= 5)
+        playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
     }
     // The song ended and we are playing random themes, so switch to the next random theme
     if (musicSettings.randomThemes) {
@@ -2298,6 +2309,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * @param srcURL - URL of the theme that started playing.
    */
   function onThemePlay(audio, srcURL) {
+    currentLoops = 0;
     // We start from the beginning if any of these conditions are met:
     // 1. The user wants to restart themes
     // 2. It's a power theme
@@ -2427,16 +2439,16 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     if (currentlyDelaying) return;
     let gameType = undefined;
     let coName = currentPlayer.coName;
-    if (!coName) {
-      if (!currentThemeKey || currentThemeKey === "") return;
-      playMusicURL(currentThemeKey);
-      return;
-    }
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
     if (musicSettings.randomThemes && !isEndTheme) {
       coName = musicSettings.currentRandomCO;
       gameType = musicSettings.currentRandomGameType;
+    }
+    if (!coName) {
+      if (!currentThemeKey || currentThemeKey === "") return;
+      playMusicURL(currentThemeKey);
+      return;
     }
     playMusicURL(getMusicURL(coName, gameType));
   }
@@ -2707,6 +2719,9 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
   function getShowEventScreenFn() {
     return typeof showEventScreen !== "undefined" ? showEventScreen : null;
   }
+  function getShowEndGameScreenFn() {
+    return typeof showEndGameScreen !== "undefined" ? showEndGameScreen : null;
+  }
   function getOpenMenuFn() {
     return typeof openMenu !== "undefined" ? openMenu : null;
   }
@@ -2838,6 +2853,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
   /* **Store a copy of all the original functions we are going to override** */
   const ahQueryTurn = getQueryTurnFn();
   const ahShowEventScreen = getShowEventScreenFn();
+  const ahShowEndGameScreen = getShowEndGameScreenFn();
   // let ahSwapCosDisplay = getSwapCosDisplayFn();
   const ahOpenMenu = getOpenMenuFn();
   const ahCloseMenu = getCloseMenuFn();
@@ -2892,7 +2908,9 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
   function syncMusic() {
     musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
-    setTimeout(playThemeSong, 500);
+    setTimeout(() => {
+      playThemeSong();
+    }, 500);
   }
   /**
    * Refreshes everything needed for the music when finishing a turn. Also randomizes the COs if needed.
@@ -2917,7 +2935,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     const replayBackwardActionBtn = getReplayBackwardActionBtn();
     const replayForwardBtn = getReplayForwardBtn();
     const replayBackwardBtn = getReplayBackwardBtn();
-    const replayOpenBtn = getReplayOpenBtn();
+    // const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
     // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
@@ -2930,7 +2948,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     // Stop all movement sounds when we go backwards on action
     replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
     // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
-    replayOpenBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+    replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
   }
   /**
    * Add all handlers that will intercept clicks and functions during a game.
@@ -2939,6 +2957,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     // updateCursor = onCursorMove;
     queryTurn = onQueryTurn;
     showEventScreen = onShowEventScreen;
+    showEndGameScreen = onShowEndGameScreen;
     openMenu = onOpenMenu;
     closeMenu = onCloseMenu;
     createDamageSquares = onCreateDamageSquares;
@@ -2988,15 +3007,25 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
     if (!musicSettings.isPlaying) return result;
     // log("Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
-    refreshMusicForNextTurn();
+    refreshMusicForNextTurn(250);
     return result;
   }
   function onShowEventScreen(event) {
     ahShowEventScreen?.apply(ahShowEventScreen, [event]);
     if (!musicSettings.isPlaying) return;
     // debug("Show Event Screen", event);
+    if (hasGameEnded()) {
+      refreshMusicForNextTurn();
+      return;
+    }
     playThemeSong();
     setTimeout(playThemeSong, 500);
+  }
+  function onShowEndGameScreen(event) {
+    ahShowEndGameScreen?.apply(ahShowEndGameScreen, [event]);
+    if (!musicSettings.isPlaying) return;
+    // debug("Show End Game Screen", event);
+    refreshMusicForNextTurn();
   }
   function onOpenMenu(menu, x, y) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
@@ -3457,6 +3486,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     log("Maintenance detected, playing music...");
     musicPlayerUI.parent.style.borderLeft = "";
     musicPlayerUI.openContextMenu();
+    musicSettings.randomThemes = false;
     playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
     allowSettingsToBeSaved();
   }

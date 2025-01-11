@@ -6,7 +6,7 @@ import { addSettingsChangeListener, musicSettings as musicSettings, SettingsGame
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { versions } from "../shared/config";
 import { getRandomCO } from "../shared/awbw_globals";
-import { isGamePageAndActive, isMapEditor, isMovePlanner } from "../shared/awbw_page";
+import { isGamePageAndActive, isMaintenance, isMapEditor, isMovePlanner } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -287,7 +287,7 @@ if (!isGamePageAndActive()) {
   if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
   if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
 
-  if (!isMapEditor()) {
+  if (!isMapEditor() && !isMaintenance()) {
     if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
     if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
   }

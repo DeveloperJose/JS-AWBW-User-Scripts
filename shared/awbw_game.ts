@@ -4,7 +4,7 @@
  */
 
 import { areAnimationsEnabled } from "./awbw_globals";
-import { isGamePageAndActive, isMapEditor, getReplayControls, getConnectionErrorDiv } from "./awbw_page";
+import { isGamePageAndActive, isMapEditor, getReplayControls, getConnectionErrorDiv, isMaintenance } from "./awbw_page";
 
 /**
  * Enum for the different states a CO Power can be in.
@@ -155,7 +155,7 @@ export function isReplayActive() {
   // Check if replay mode is open by checking if the replay section is set to display
   const replayControls = getReplayControls();
   const replayOpen = replayControls.style.display !== "none";
-  return replayOpen;
+  return replayOpen && Object.keys(replay).length > 0;
 }
 
 /**
@@ -235,19 +235,22 @@ export abstract class currentPlayer {
    */
   static get coName() {
     if (isMapEditor()) return "map-editor";
+    if (isMaintenance()) return "maintenance";
     if (!isGamePageAndActive()) return null;
 
-    // Check if we are eliminated even if the game has not ended
     const myID = getMyID();
     const myInfo = getPlayerInfo(myID);
     const myLoss = myInfo?.players_eliminated === "Y";
-    if (myLoss) return "defeat";
 
     // Play victory/defeat themes after the game ends for everyone
     if (hasGameEnded()) {
-      if (isPlayerSpectator(myID)) return "co-select";
+      if (!isReplayActive()) return "co-select";
+      if (isPlayerSpectator(myID)) return "victory";
       return myLoss ? "defeat" : "victory";
     }
+
+    // Check if we are eliminated even if the game has not ended
+    if (myLoss) return "defeat";
 
     return this.info?.co_name;
   }

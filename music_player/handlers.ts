@@ -17,6 +17,7 @@ import {
   getUnitInfo,
   hasUnitMovedThisTurn,
   addConnectionErrorObserver,
+  hasGameEnded,
 } from "../shared/awbw_game";
 import {
   addUpdateCursorObserver,
@@ -31,7 +32,6 @@ import {
   getReplayDaySelectorCheckBox,
   getReplayForwardActionBtn,
   getReplayForwardBtn,
-  getReplayOpenBtn,
   moveDivToOffset,
 } from "../shared/awbw_page";
 import { getBuildingDiv } from "../shared/awbw_page";
@@ -71,6 +71,7 @@ import {
   getQueryTurnFn,
   getRepairFn,
   getResignFn,
+  getShowEndGameScreenFn,
   getShowEventScreenFn,
   getSupplyFn,
   getUnhideFn,
@@ -136,6 +137,7 @@ const clickedDamageSquaresMap: Map<HTMLSpanElement, boolean> = new Map();
 /* **Store a copy of all the original functions we are going to override** */
 const ahQueryTurn = getQueryTurnFn();
 const ahShowEventScreen = getShowEventScreenFn();
+const ahShowEndGameScreen = getShowEndGameScreenFn();
 // let ahSwapCosDisplay = getSwapCosDisplayFn();
 const ahOpenMenu = getOpenMenuFn();
 const ahCloseMenu = getCloseMenuFn();
@@ -212,8 +214,11 @@ function addMovePlannerHandlers() {
  */
 function syncMusic() {
   musicSettings.themeType = getCurrentThemeType();
+
   playThemeSong();
-  setTimeout(playThemeSong, 500);
+  setTimeout(() => {
+    playThemeSong();
+  }, 500);
 }
 
 /**
@@ -241,7 +246,7 @@ function addReplayHandlers() {
   const replayBackwardActionBtn = getReplayBackwardActionBtn();
   const replayForwardBtn = getReplayForwardBtn();
   const replayBackwardBtn = getReplayBackwardBtn();
-  const replayOpenBtn = getReplayOpenBtn();
+  // const replayOpenBtn = getReplayOpenBtn();
   const replayCloseBtn = getReplayCloseBtn();
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
@@ -257,7 +262,7 @@ function addReplayHandlers() {
   replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
-  replayOpenBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+  replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
 }
 
 /**
@@ -267,6 +272,7 @@ function addGameHandlers() {
   // updateCursor = onCursorMove;
   queryTurn = onQueryTurn;
   showEventScreen = onShowEventScreen;
+  showEndGameScreen = onShowEndGameScreen;
   openMenu = onOpenMenu;
   closeMenu = onCloseMenu;
   createDamageSquares = onCreateDamageSquares;
@@ -331,7 +337,7 @@ function onQueryTurn(
   if (!musicSettings.isPlaying) return result;
   // log("Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
 
-  refreshMusicForNextTurn();
+  refreshMusicForNextTurn(250);
   return result;
 }
 
@@ -339,8 +345,22 @@ function onShowEventScreen(event: ShowEventScreenData) {
   ahShowEventScreen?.apply(ahShowEventScreen, [event]);
   if (!musicSettings.isPlaying) return;
   // debug("Show Event Screen", event);
+
+  if (hasGameEnded()) {
+    refreshMusicForNextTurn();
+    return;
+  }
+
   playThemeSong();
   setTimeout(playThemeSong, 500);
+}
+
+function onShowEndGameScreen(event: ShowEndGameScreenData) {
+  ahShowEndGameScreen?.apply(ahShowEndGameScreen, [event]);
+  if (!musicSettings.isPlaying) return;
+
+  // debug("Show End Game Screen", event);
+  refreshMusicForNextTurn();
 }
 
 function onOpenMenu(menu: HTMLDivElement, x: number, y: number) {

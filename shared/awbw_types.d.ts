@@ -174,6 +174,10 @@ interface ShowEventScreenData {
 }
 declare let showEventScreen: (event: ShowEventScreenData) => void;
 
+interface ShowEndGameScreenData {}
+
+declare let showEndGameScreen: (event: ShowEndGameScreenData) => void;
+
 /**
  * Function called when the action menu is opened.
  * @param menu - The menu that was opened.

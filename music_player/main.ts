@@ -114,6 +114,7 @@ function onMaintenance() {
   log("Maintenance detected, playing music...");
   musicPlayerUI.parent.style.borderLeft = "";
   musicPlayerUI.openContextMenu();
+  musicSettings.randomThemes = false;
   playMusicURL(SpecialTheme.Maintenance);
   allowSettingsToBeSaved();
 }
