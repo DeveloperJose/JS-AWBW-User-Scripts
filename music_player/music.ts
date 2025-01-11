@@ -115,6 +115,7 @@ function onThemeEndOrLoop(srcURL: string) {
  */
 function onThemePlay(audio: Howl, srcURL: string) {
   currentLoops = 0;
+  audio.volume(musicSettings.volume);
 
   // We start from the beginning if any of these conditions are met:
   // 1. The user wants to restart themes
@@ -230,11 +231,11 @@ export function playMusicURL(srcURL: string) {
 
   // Loop all themes except for the special ones
   nextSong.loop(!hasSpecialLoop(srcURL));
+  nextSong.volume(musicSettings.volume);
 
   // Play the song if it's not already playing
   if (!nextSong.playing()) {
     log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
-    nextSong.volume(musicSettings.volume);
     nextSong.play();
   }
 }

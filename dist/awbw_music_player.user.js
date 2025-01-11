@@ -12,7 +12,7 @@
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
-// @version     4.0.0
+// @version     4.0.1
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1793,7 +1793,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.0.0",
+    music_player: "4.0.1",
     highlight_cursor_coordinates: "2.0.2",
   };
 
@@ -2310,6 +2310,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    */
   function onThemePlay(audio, srcURL) {
     currentLoops = 0;
+    audio.volume(musicSettings.volume);
     // We start from the beginning if any of these conditions are met:
     // 1. The user wants to restart themes
     // 2. It's a power theme
@@ -2408,10 +2409,10 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     if (!nextSong) return;
     // Loop all themes except for the special ones
     nextSong.loop(!hasSpecialLoop(srcURL));
+    nextSong.volume(musicSettings.volume);
     // Play the song if it's not already playing
     if (!nextSong.playing()) {
       log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
-      nextSong.volume(musicSettings.volume);
       nextSong.play();
     }
   }
