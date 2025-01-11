@@ -388,29 +388,11 @@ export function getCurrentThemeURLs(): Set<string> {
 }
 
 /**
- * Gets all the URLs for the music of all currently playing COs for ALL possible game settings.
- * Includes the regular and alternate themes for each CO (if any).
- * @returns - Set with all the URLs for all the music of all currently playing COs.
- */
-export function getAllCurrentThemesExtraAudioURLs(): Set<string> {
-  const audioURLs = new Set<string>();
-  const coNames = getAllPlayingCONames();
-  for (const gameType in SettingsGameType) {
-    for (const themeType in SettingsThemeType) {
-      const gameTypeEnum = gameType as SettingsGameType;
-      const themeTypeEnum = themeType as SettingsThemeType;
-      coNames?.forEach((name) => audioURLs.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
-    }
-  }
-  return audioURLs;
-}
-
-/**
  * Gets a list of the URLs for all sound effects the music player might ever use.
  * These include game effects, UI effects, and unit movement sounds.
  * @returns - Set with all the URLs for all the music player sound effects.
  */
-export function getAllSoundEffectURLs() {
+function getAllSoundEffectURLs() {
   const allSoundURLs = new Set<string>();
   for (const sfx of Object.values(GameSFX)) {
     allSoundURLs.add(getSoundEffectURL(sfx));
@@ -425,12 +407,14 @@ export function getAllSoundEffectURLs() {
 }
 
 /**
- * Gets a list of the URLs for all the music themes the music player might ever use.
- * @returns - Set with all the URLs for all the music player themes.
+ * Gets a list of the URLs for all the audio the music player might ever use.
+ * @returns - Set with all the URLs for all the audio.
  */
-export function getAllThemeURLs() {
-  const allSoundURLs = new Set<string>();
+export function getAllAudioURLs() {
+  // Sound effects
+  const allSoundURLs = getAllSoundEffectURLs();
 
+  // Themes
   for (const coName of getAllCONames()) {
     for (const gameType of Object.values(SettingsGameType)) {
       for (const themeType of Object.values(SettingsThemeType)) {
@@ -444,9 +428,11 @@ export function getAllThemeURLs() {
       }
     }
   }
+
+  // Special themes
   allSoundURLs.add(SpecialTheme.COSelect);
-  // allSoundURLs.add(SpecialTheme.ModeSelect);
-  // allSoundURLs.add(SpecialTheme.Maintenance);
+  allSoundURLs.add(SpecialTheme.ModeSelect);
+  allSoundURLs.add(SpecialTheme.Maintenance);
   allSoundURLs.add(SpecialTheme.Victory);
   allSoundURLs.add(SpecialTheme.Defeat);
   return allSoundURLs;

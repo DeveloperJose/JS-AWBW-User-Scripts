@@ -5,6 +5,7 @@
 
 import { currentPlayer } from "../shared/awbw_game";
 import { getRandomCO } from "../shared/awbw_globals";
+import { log, logDebug } from "./utils";
 
 /**
  * Enum that represents which game we want the music player to use for its music.
@@ -129,7 +130,7 @@ export abstract class musicSettings {
         // For all other settings, just set them with the setter function
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this as any)[key] = savedSettings[key];
-        // console.debug("[MP] Loading", key, "as", savedSettings[key]);
+        // debug("Loading", key, "as", savedSettings[key]);
       }
     }
     this.__isLoaded = true;
@@ -324,14 +325,14 @@ export function loadSettingsFromLocalStorage() {
 
   // Store defaults if nothing or undefined is stored
   if (!storageData || storageData === "undefined") {
-    console.log("[AWBW Music Player] No saved settings found, storing defaults");
+    log("No saved settings found, storing defaults");
     storageData = updateSettingsInLocalStorage();
   }
   musicSettings.fromJSON(storageData);
 
   // Tell everyone we just loaded the settings
   onSettingsChangeListeners.forEach((fn) => fn("all", true));
-  console.debug("[Music Player] Settings loaded from storage:", storageData);
+  logDebug("Settings loaded from storage:", storageData);
 }
 
 export function allowSettingsToBeSaved() {
@@ -353,6 +354,6 @@ function onSettingsChange(_key: string, _isFirstLoad: boolean) {
 function updateSettingsInLocalStorage() {
   const jsonSettings = musicSettings.toJSON();
   localStorage.setItem(STORAGE_KEY, jsonSettings);
-  console.debug("[Music Player] Saving settings...", jsonSettings);
+  logDebug("Saving settings...", jsonSettings);
   return jsonSettings;
 }

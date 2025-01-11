@@ -13,7 +13,6 @@ import {
   playOrPauseWhenWindowFocusChanges,
   playThemeSong,
   preloadAllCommonAudio,
-  preloadAllExtraAudio,
   stopThemeSong,
 } from "./music";
 import {
@@ -34,6 +33,18 @@ import {
 } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
+import { logDebug, log } from "./utils";
+import { openDB } from "./db";
+
+/******************************************************************
+ * MODULE EXPORTS
+ ******************************************************************/
+// Exporting this function is necessary for the CO Selector to work
+export { notifyCOSelectorListeners as notifyCOSelectorListeners };
+
+/******************************************************************
+ * Functions
+ ******************************************************************/
 
 /**
  * Where should we place the music player UI?
@@ -46,112 +57,125 @@ function getMenu() {
   return document.querySelector("#game-map-menu")?.parentNode;
 }
 
-/******************************************************************
- * MODULE EXPORTS
- ******************************************************************/
-// Exporting this function is necessary for the CO Selector to work
-export { notifyCOSelectorListeners as notifyCOSelectorListeners };
+/**
+ * Adjust the music player for the Live Queue page.
+ */
+function onLiveQueue() {
+  log("Live Queue detected...");
 
-/******************************************************************
- * SCRIPT ENTRY (MAIN FUNCTION)
- ******************************************************************/
+  const addMusicFn = () => {
+    // Check if the parent popup is created and visible
+    const blockerPopup = getLiveQueueBlockerPopup();
+    if (!blockerPopup) return false;
+    if (blockerPopup.style.display === "none") return false;
+
+    // Now make sure the internal popup is created
+    const popup = getLiveQueueSelectPopup();
+    if (!popup) return false;
+
+    // Get the div with "Match starts in ...."
+    const box = popup.querySelector(".flex.row.hv-center");
+    if (!box) return false;
+
+    // Prepend the music player UI to the box
+    musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
+    playMusicURL(SpecialTheme.COSelect);
+    allowSettingsToBeSaved();
+    playOrPauseWhenWindowFocusChanges();
+    return true;
+  };
+
+  const checkStillActiveFn = () => {
+    const blockerPopup = getLiveQueueBlockerPopup();
+    return blockerPopup?.style.display !== "none";
+  };
+
+  const addPlayerIntervalID = window.setInterval(() => {
+    if (!addMusicFn()) return;
+
+    // We don't need to add the music player anymore
+    clearInterval(addPlayerIntervalID);
+
+    // Now we need to check if we need to pause/resume the music because the player left/rejoined
+    // We will do this indefinitely until eventually the player accepts a match or leaves the page
+    window.setInterval(() => {
+      // We are still in the CO select, play the music
+      if (checkStillActiveFn()) playThemeSong();
+      // We are not in the CO select, stop the music
+      else stopThemeSong();
+    }, 500);
+  }, 500);
+}
+
+/**
+ * Adjust the music player for the maintenance page.
+ */
+function onMaintenance() {
+  log("Maintenance detected, playing music...");
+  musicPlayerUI.parent.style.borderLeft = "";
+  musicPlayerUI.openContextMenu();
+  playMusicURL(SpecialTheme.Maintenance);
+  allowSettingsToBeSaved();
+}
+
+/**
+ * Adjust the music player for the Move Planner page.
+ */
+function onMovePlanner() {
+  log("Move Planner detected");
+  musicSettings.isPlaying = true;
+  allowSettingsToBeSaved();
+}
+
+/**
+ * Adjust the music player for the Your Games and Your Turn pages.
+ */
+function onIsYourGames() {
+  log("Your Games detected, playing music...");
+  musicPlayerUI.parent.style.border = "none";
+  musicPlayerUI.parent.style.backgroundColor = "#0000";
+  musicPlayerUI.setProgress(-1);
+  playMusicURL(SpecialTheme.ModeSelect);
+  allowSettingsToBeSaved();
+  playOrPauseWhenWindowFocusChanges();
+}
+
+/**
+ * Adjust the music player for the map editor page.
+ */
+function onMapEditor() {
+  musicPlayerUI.parent.style.borderTop = "none";
+  playOrPauseWhenWindowFocusChanges();
+}
+
+/**
+ * Initializes the music player script by setting everything up.
+ */
 export function main() {
-  console.debug("[AWBW Improved Music Player] Script starting...");
   musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
   musicPlayerUI.setProgress(100);
 
   // Load settings from local storage but don't allow saving yet
   loadSettingsFromLocalStorage();
 
-  if (isLiveQueue()) {
-    console.log("[AWBW Improved Music Player] Live Queue detected...");
-
-    const addMusicFn = () => {
-      // Check if the parent popup is created and visible
-      const blockerPopup = getLiveQueueBlockerPopup();
-      if (!blockerPopup) return false;
-      if (blockerPopup.style.display === "none") return false;
-
-      // Now make sure the internal popup is created
-      const popup = getLiveQueueSelectPopup();
-      if (!popup) return false;
-
-      // Get the div with "Match starts in ...."
-      const box = popup.querySelector(".flex.row.hv-center");
-      if (!box) return false;
-
-      // Prepend the music player UI to the box
-      musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
-      playMusicURL(SpecialTheme.COSelect);
-      allowSettingsToBeSaved();
-      playOrPauseWhenWindowFocusChanges();
-      return true;
-    };
-
-    const checkStillActiveFn = () => {
-      const blockerPopup = getLiveQueueBlockerPopup();
-      return blockerPopup?.style.display !== "none";
-    };
-
-    const addPlayerIntervalID = window.setInterval(() => {
-      if (!addMusicFn()) return;
-
-      // We don't need to add the music player anymore
-      clearInterval(addPlayerIntervalID);
-
-      // Now we need to check if we need to pause/resume the music because the player left/rejoined
-      // We will do this indefinitely until eventually the player accepts a match or leaves the page
-      window.setInterval(() => {
-        // We are still in the CO select, play the music
-        if (checkStillActiveFn()) playThemeSong();
-        // We are not in the CO select, stop the music
-        else stopThemeSong();
-      }, 500);
-    }, 500);
-    return;
-  }
+  // Live queue has the music player hidden until the player is in the CO select, so stop here
+  if (isLiveQueue()) return onLiveQueue();
 
   // Add the music player UI to the page and the necessary event handlers
   musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
   addHandlers();
 
-  if (isMaintenance()) {
-    console.log("[AWBW Improved Music Player] Maintenance detected, playing music...");
-    musicPlayerUI.parent.style.borderLeft = "";
-    musicPlayerUI.openContextMenu();
-    playMusicURL(SpecialTheme.Maintenance);
-    allowSettingsToBeSaved();
-    return;
-  }
-
-  if (isMovePlanner()) {
-    console.log("[AWBW Improved Music Player] Move Planner detected");
-    musicSettings.isPlaying = true;
-    allowSettingsToBeSaved();
-    return;
-  }
-
-  if (isYourGames()) {
-    console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
-    musicPlayerUI.parent.style.border = "none";
-    musicPlayerUI.parent.style.backgroundColor = "#0000";
-    musicPlayerUI.setProgress(-1);
-    playMusicURL(SpecialTheme.ModeSelect);
-    allowSettingsToBeSaved();
-    playOrPauseWhenWindowFocusChanges();
-    return;
-  }
-
-  if (isMapEditor()) {
-    musicPlayerUI.parent.style.borderTop = "none";
-    playOrPauseWhenWindowFocusChanges();
-  }
+  // Handle pages that aren't the main game page or the map editor
+  if (isMaintenance()) return onMaintenance();
+  if (isMovePlanner()) return onMovePlanner();
+  if (isYourGames()) return onIsYourGames();
 
   // game.php or designmap.php from now on
+  if (isMapEditor()) onMapEditor();
   allowSettingsToBeSaved();
 
   preloadAllCommonAudio(() => {
-    console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+    log("All common audio has been pre-loaded!");
 
     // Set dynamic settings based on the current game state
     // Lastly, update the UI to reflect the current settings
@@ -159,11 +183,17 @@ export function main() {
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
 
-    preloadAllExtraAudio(() => {
-      console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
-      playThemeSong();
-    });
+    // preloadAllAudio(() => {
+    //   log("All other audio has been pre-loaded!");
+    // });
   });
 }
 
-main();
+/******************************************************************
+ * SCRIPT ENTRY (MAIN FUNCTION)
+ ******************************************************************/
+logDebug("Script starting...");
+
+// Open the database for caching music files first
+// No matter what happens, we will call main() after this
+openDB().then(main, main);

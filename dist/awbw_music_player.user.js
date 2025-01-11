@@ -558,6 +558,37 @@ var awbw_music_player = (function (exports, Howl) {
   }
 
   /**
+   * @file Utility functions for the music player that don't fit anywhere else specifically.
+   */
+  /**
+   * Logs a message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function log(message, ...args) {
+    console.log("[AWBW Improved Music Player]", message, ...args);
+  }
+  /**
+   * Logs a warning message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function logError(message, ...args) {
+    console.error("[AWBW Improved Music Player]", message, ...args);
+  }
+  /**
+   * Logs a debug message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function logDebug(message, ...args) {
+    console.debug("[AWBW Improved Music Player]", message, ...args);
+  }
+
+  /**
    * @file This file contains the state of the music player settings and the saving/loading functionality, no UI functionality.
    * Note: For Enums in pure JS we just have objects where the keys and values match, it's the easiest solution
    */
@@ -670,7 +701,7 @@ var awbw_music_player = (function (exports, Howl) {
           // For all other settings, just set them with the setter function
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           this[key] = savedSettings[key];
-          // console.debug("[MP] Loading", key, "as", savedSettings[key]);
+          // debug("Loading", key, "as", savedSettings[key]);
         }
       }
       this.__isLoaded = true;
@@ -828,13 +859,13 @@ var awbw_music_player = (function (exports, Howl) {
     let storageData = localStorage.getItem(STORAGE_KEY);
     // Store defaults if nothing or undefined is stored
     if (!storageData || storageData === "undefined") {
-      console.log("[AWBW Music Player] No saved settings found, storing defaults");
+      log("No saved settings found, storing defaults");
       storageData = updateSettingsInLocalStorage();
     }
     musicSettings.fromJSON(storageData);
     // Tell everyone we just loaded the settings
     onSettingsChangeListeners.forEach((fn) => fn("all", true));
-    console.debug("[Music Player] Settings loaded from storage:", storageData);
+    logDebug("Settings loaded from storage:", storageData);
   }
   function allowSettingsToBeSaved() {
     // From now on, any setting changes will be saved and any listeners will be called
@@ -852,7 +883,7 @@ var awbw_music_player = (function (exports, Howl) {
   function updateSettingsInLocalStorage() {
     const jsonSettings = musicSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
-    console.debug("[Music Player] Saving settings...", jsonSettings);
+    logDebug("Saving settings...", jsonSettings);
     return jsonSettings;
   }
 
@@ -1193,62 +1224,6 @@ var awbw_music_player = (function (exports, Howl) {
       if (specialLoops.has(name)) audioList.add(regularURL.replace(".ogg", "-loop.ogg"));
     });
     return audioList;
-  }
-  /**
-   * Gets all the URLs for the music of all currently playing COs for ALL possible game settings.
-   * Includes the regular and alternate themes for each CO (if any).
-   * @returns - Set with all the URLs for all the music of all currently playing COs.
-   */
-  function getAllCurrentThemesExtraAudioURLs() {
-    const audioURLs = new Set();
-    const coNames = getAllPlayingCONames();
-    for (const gameType in SettingsGameType) {
-      for (const themeType in SettingsThemeType) {
-        const gameTypeEnum = gameType;
-        const themeTypeEnum = themeType;
-        coNames?.forEach((name) => audioURLs.add(getMusicURL(name, gameTypeEnum, themeTypeEnum)));
-      }
-    }
-    return audioURLs;
-  }
-  /**
-   * Gets a list of the URLs for all sound effects the music player might ever use.
-   * These include game effects, UI effects, and unit movement sounds.
-   * @returns - Set with all the URLs for all the music player sound effects.
-   */
-  function getAllSoundEffectURLs() {
-    const allSoundURLs = new Set();
-    for (const sfx of Object.values(GameSFX)) {
-      allSoundURLs.add(getSoundEffectURL(sfx));
-    }
-    for (const unitName of onMovementStartMap.keys()) {
-      allSoundURLs.add(getMovementSoundURL(unitName));
-    }
-    for (const unitName of onMovementRolloffMap.keys()) {
-      allSoundURLs.add(getMovementRollOffURL(unitName));
-    }
-    return allSoundURLs;
-  }
-  /**
-   * Gets a list of the URLs for all the music themes the music player might ever use.
-   * @returns - Set with all the URLs for all the music player themes.
-   */
-  function getAllThemeURLs() {
-    const allSoundURLs = new Set();
-    for (const coName of getAllCONames()) {
-      for (const gameType of Object.values(SettingsGameType)) {
-        for (const themeType of Object.values(SettingsThemeType)) {
-          const url = getMusicURL(coName, gameType, themeType, false);
-          if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
-            allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
-          }
-          const alternateURL = getMusicURL(coName, gameType, themeType, true);
-          allSoundURLs.add(url);
-          allSoundURLs.add(alternateURL);
-        }
-      }
-    }
-    return allSoundURLs;
   }
 
   /**
@@ -2066,6 +2041,123 @@ var awbw_music_player = (function (exports, Howl) {
   }
 
   /**
+   * @file IndexedDB database for caching music files.
+   */
+  /**
+   * The IndexedDB database for caching music files.
+   */
+  let db = null;
+  /**
+   * The name of the database.
+   */
+  const dbName = "awbw_music_player";
+  /**
+   * The version of the database.
+   * This should be incremented whenever the database schema changes.
+   */
+  const dbVersion = 1.0;
+  /**
+   * A set of URLs that are queued to be stored in the database.
+   * This is used to prevent storing the same URL multiple times while waiting for promises.
+   */
+  const urlQueue$1 = new Set();
+  /**
+   * Opens the IndexedDB database for caching music files.
+   * @param onOpenOrError - Optional callback for when the database is opened or an error occurs when opening it.
+   */
+  function openDB() {
+    log("Opening database to cache music files.");
+    const request = indexedDB.open(dbName, dbVersion);
+    return new Promise((resolve, reject) => {
+      request.onerror = (event) => {
+        logError("Error opening database, will not be able to cache music files locally.", event);
+        reject();
+      };
+      request.onupgradeneeded = (event) => {
+        if (!event.target) return;
+        logDebug("Database upgrade needed. Creating object store.");
+        const newDB = event.target.result;
+        newDB.createObjectStore("music");
+      };
+      request.onsuccess = (event) => {
+        if (!event.target) return;
+        log("Database opened successfully. Ready to cache music files.");
+        db = event.target.result;
+        resolve();
+        db.onerror = (event) => {
+          logError("Error accessing database.", event);
+        };
+      };
+    });
+  }
+  /**
+   * Attempts to load the music file at the given URL from the database.
+   * @param srcURL - The URL of the music file to load
+   * @returns - A promise that resolves with the URL of the local music file, or rejects with a reason
+   */
+  function loadMusicFromDB(srcURL) {
+    if (!srcURL || srcURL === "") return Promise.reject("Invalid URL.");
+    if (urlQueue$1.has(srcURL)) return Promise.reject("URL is already queued for storage.");
+    urlQueue$1.add(srcURL);
+    return new Promise((resolve, reject) => {
+      // If the database is not open, just fallback to the original URL
+      if (!db) return reject("Database is not open.");
+      const transaction = db.transaction("music", "readonly");
+      const store = transaction.objectStore("music");
+      const request = store.get(srcURL);
+      request.onsuccess = (event) => {
+        urlQueue$1.delete(srcURL);
+        const blob = event.target.result;
+        // The music file is not in the database, tell the caller to fallback to the original URL
+        // We will save the file in the background for next time
+        if (!blob) {
+          storeURLInDB(srcURL);
+          return reject("Music file not found in database, downloading for next time.");
+        }
+        const url = URL.createObjectURL(blob);
+        resolve(url);
+      };
+      request.onerror = (event) => {
+        urlQueue$1.delete(srcURL);
+        reject(event.type);
+      };
+    });
+  }
+  /**
+   * Stores the given blob in the database with the given URL.
+   * @param url - The URL to store the blob under
+   * @param blob - The blob to store
+   */
+  function storeBlobInDB(url, blob) {
+    if (!db || !url || url === "") return;
+    const transaction = db.transaction("music", "readwrite");
+    const store = transaction.objectStore("music");
+    const request = store.put(blob, url);
+    // request.onsuccess = () => {
+    //   logDebug("Music file stored in database:", url);
+    // };
+    request.onerror = (event) => {
+      logError("Error storing music file in database:", event);
+    };
+  }
+  /**
+   * Stores the music file at the given URL in the database.
+   * @param url - The URL of the music file to store
+   */
+  function storeURLInDB(url) {
+    if (!db || !url || url === "") return;
+    fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => storeBlobInDB(url, blob))
+      .catch((reason) => logError("Error fetching music file to store in database:", reason));
+  }
+
+  /**
+   * @file All the music-related functions for the music player.
+   */
+  // Type definitions for Howler
+  // Until howler gets modernized (https://github.com/goldfire/howler.js/pull/1518)
+  /**
    * The URL of the current theme that is playing.
    */
   let currentThemeKey = "";
@@ -2074,6 +2166,11 @@ var awbw_music_player = (function (exports, Howl) {
    * The keys are the audio URLs.
    */
   const audioMap = new Map();
+  /**
+   * Set of URLs that are queued to be pre-loaded.
+   * This is used to prevent pre-loading the same URL multiple times while waiting for promises.
+   */
+  const urlQueue = new Set();
   /**
    * Map containing the audio players for all units.
    * The keys are the unit IDs.
@@ -2089,8 +2186,6 @@ var awbw_music_player = (function (exports, Howl) {
    * If set to true, calls to playMusic() will set a timer for {@link delayThemeMS} milliseconds after which the music will play again.
    */
   let currentlyDelaying = false;
-  let lastTimeWeRestarted = 0;
-  let allThemesPreloaded = false;
   // Listen for setting changes to update the internal variables accordingly
   addSettingsChangeListener(onSettingsChange);
   /**
@@ -2101,25 +2196,12 @@ var awbw_music_player = (function (exports, Howl) {
     event.target.pause();
   }
   /**
-   * Event handler that plays an audio as soon as it gets loaded.
-   * Only plays the audio if it's the current theme.
-   * @param event - The event that triggered this handler. Usually "canplaythrough".
+   * Event handler that gets called when a theme ends or loops.
+   * @param srcURL - URL of the theme that ended or looped.
    */
-  // function whenAudioLoadsPlayIt(event: Event) {
-  //   const audio = event.target as HTMLAudioElement;
-  //   audio.volume = musicSettings.volume;
-  //   const coName = getCONameFromURL(audio.src);
-  //   if (getAllCONames().includes(coName)) {
-  //     playThemeSong();
-  //     return;
-  //   }
-  //   stopThemeSong();
-  //   currentThemeKey = audio.src;
-  //   audio.play();
-  // }
   function onThemeEndOrLoop(srcURL) {
     if (currentThemeKey !== srcURL) {
-      console.error("[AWBW Music Player] Playing more than one theme at a time! Please report this bug!", srcURL);
+      logError("Playing more than one theme at a time! Please report this bug!", srcURL);
       return;
     }
     // The song has a special loop, so mark it in the special loop map as having done one loop
@@ -2135,58 +2217,90 @@ var awbw_music_player = (function (exports, Howl) {
     }
   }
   /**
-   * Creates a new audio player for the given URL.
-   * @param srcURL - URL of the audio to create a player for.
-   * @returns - The new audio player.
+   * Event handler that gets called when a theme starts playing.
+   * @param audio - The audio player that started playing.
+   * @param srcURL - URL of the theme that started playing.
    */
-  function createNewThemeAudio(srcURL) {
-    if (audioMap.has(srcURL)) {
-      console.error("[AWBW Music Player] Race Condition! Please report this bug!", srcURL);
-      return audioMap.get(srcURL);
+  function onThemePlay(audio, srcURL) {
+    // We start from the beginning if any of these conditions are met:
+    // 1. The user wants to restart themes
+    // 2. It's a power theme
+    // 3. We are starting a new random theme
+    // AND we are on the game page AND the song has played for a bit
+    const isPowerTheme = musicSettings.themeType !== SettingsThemeType.REGULAR;
+    const shouldRestart = musicSettings.restartThemes || isPowerTheme || musicSettings.randomThemes;
+    const currentPosition = audio.seek();
+    if (shouldRestart && isGamePageAndActive() && currentPosition > 0.1) {
+      // logDebug("Restart2", shouldRestart, currentPosition);
+      audio.seek(0);
     }
-    const audio = new Howl({
-      src: [srcURL],
-      volume: musicSettings.volume,
-      onplay: () => {
-        // We want to restart from the beginning (user) or it's a power or we are starting a new random theme
-        const shouldRestart =
-          musicSettings.restartThemes ||
-          musicSettings.themeType !== SettingsThemeType.REGULAR ||
-          musicSettings.randomThemes;
-        if (shouldRestart && isGamePageAndActive()) audio.seek(0);
-        // This check makes sure we aren't playing more than one song at the same time
-        if (currentThemeKey === srcURL) return;
-        if (audio.playing()) audio.pause();
-        playThemeSong();
-      },
-      onload: () => playThemeSong(),
-      onend: () => onThemeEndOrLoop(srcURL),
-      onloaderror: (_id, error) => console.error("[AWBW Music Player] Error loading audio:", srcURL, error),
-      onplayerror: (_id, error) => console.error("[AWBW Music Player] Error playing audio:", srcURL, error),
-    });
-    audioMap.set(srcURL, audio);
-    return audio;
+    // The current theme is not this one, so pause this one and let the other one play
+    // This check makes sure we aren't playing more than one song at the same time
+    if (currentThemeKey !== srcURL && audio.playing()) {
+      audio.pause();
+      playThemeSong();
+    }
   }
-  function createNewSFXAudio(sfxURL, vol) {
-    if (audioMap.has(sfxURL)) {
-      // console.error("[AWBW Music Player] SFX Race Condition! Please report this bug!", sfxURL);
-      return audioMap.get(sfxURL);
+  /**
+   * Pre-loads the audio from the given URL and returns a promise that resolves with an audio player.
+   * If the audio is not in the database, it will be loaded from the original URL.
+   * @param srcURL - URL of the audio to preload.
+   * @returns - Promise that resolves with the audio player of the audio in the database or the original URL.
+   */
+  function preloadURL(srcURL) {
+    // Someone already tried to preload this audio
+    if (urlQueue.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already queued for preloading.`);
+    urlQueue.add(srcURL);
+    // We already have this audio loaded
+    if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already preloaded.`);
+    // Preload the audio from the database if possible
+    // logDebug("Loading new song", srcURL);
+    return loadMusicFromDB(srcURL).then(
+      (localCacheURL) => createNewAudio(srcURL, localCacheURL),
+      (reason) => {
+        logDebug(reason, srcURL);
+        return createNewAudio(srcURL, srcURL);
+      },
+    );
+    /**
+     * Creates a new audio player for the given URL.
+     * @param srcURL - URL of the audio to create a player for.
+     * @returns - The new audio player.
+     */
+    function createNewAudio(srcURL, cacheURL) {
+      const audioInMap = audioMap.get(srcURL);
+      if (audioInMap !== undefined) {
+        logError("Race Condition! Please report this bug!", srcURL);
+        return audioInMap;
+      }
+      // logDebug("Creating new audio player for:", srcURL, cacheURL);
+      // Shared audio settings for all audio players
+      const audio = new Howl({
+        src: [cacheURL],
+        format: ["ogg"],
+        onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
+        onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
+      });
+      audioMap.set(srcURL, audio);
+      // Sound Effects
+      if (srcURL.includes("sfx")) {
+        audio.volume(srcURL.includes("ui") ? musicSettings.uiVolume : musicSettings.sfxVolume);
+        return audio;
+      }
+      // Themes
+      audio.volume(musicSettings.volume);
+      audio.on("play", () => onThemePlay(audio, srcURL));
+      audio.on("load", () => playThemeSong());
+      audio.on("end", () => onThemeEndOrLoop(srcURL));
+      return audio;
     }
-    const audio = new Howl({
-      src: [sfxURL],
-      volume: vol,
-      onloaderror: (_id, error) => console.error("[AWBW Music Player] Error loading audio:", sfxURL, error),
-      onplayerror: (_id, error) => console.error("[AWBW Music Player] Error playing audio:", sfxURL, error),
-    });
-    audioMap.set(sfxURL, audio);
-    return audio;
   }
   /**
    * Changes the current song to the given new song, stopping the old song if necessary.
    * @param srcURL - URL of song to play.
    * @param startFromBeginning - Whether to start from the beginning.
    */
-  function playMusicURL(srcURL, startFromBeginning = false) {
+  function playMusicURL(srcURL) {
     if (!musicSettings.isPlaying) return;
     // This song has a special loop, and it's time to play it
     const specialLoopURL = specialLoopMap.get(srcURL);
@@ -2195,26 +2309,20 @@ var awbw_music_player = (function (exports, Howl) {
     if (srcURL !== currentThemeKey) {
       stopThemeSong();
       currentThemeKey = srcURL;
-      console.log("[AWBW Music Player] Now Playing: ", srcURL);
     }
     // The song isn't loaded yet, so create a new audio player for it
     if (!audioMap.has(srcURL)) {
-      console.debug("[AWBW Music Player] Loading new song", srcURL);
-      createNewThemeAudio(srcURL);
+      // No one else is preloading this audio, so preload it
+      if (!urlQueue.has(srcURL)) preloadURL(srcURL).catch((reason) => logError(reason));
       return;
     }
     const nextSong = audioMap.get(srcURL);
     if (!nextSong) return;
     // Loop all themes except for the special ones
     nextSong.loop(!hasSpecialLoop(srcURL));
-    // Start from the beginning if needed, prevent repeated calls that are too close to each other
-    const timeSinceLastRestart = Date.now() - lastTimeWeRestarted;
-    if (startFromBeginning && timeSinceLastRestart > 250) {
-      nextSong.seek(0);
-      lastTimeWeRestarted = Date.now();
-    }
     // Play the song if it's not already playing
     if (!nextSong.playing()) {
+      log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
       nextSong.volume(musicSettings.volume);
       nextSong.play();
     }
@@ -2236,7 +2344,7 @@ var awbw_music_player = (function (exports, Howl) {
    * Determines the music automatically so just call this anytime the game state changes.
    * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
    */
-  function playThemeSong(startFromBeginning = false) {
+  function playThemeSong() {
     if (!musicSettings.isPlaying) return;
     // Someone wants us to delay playing the theme, so wait a little bit then play
     // Ignore all calls to play() while delaying, we are guaranteed to play eventually
@@ -2254,7 +2362,7 @@ var awbw_music_player = (function (exports, Howl) {
       coName = musicSettings.currentRandomCO;
       gameType = musicSettings.currentRandomGameType;
     }
-    playMusicURL(getMusicURL(coName, gameType), startFromBeginning);
+    playMusicURL(getMusicURL(coName, gameType));
   }
   /**
    * Stops the current music if there's any playing.
@@ -2277,7 +2385,7 @@ var awbw_music_player = (function (exports, Howl) {
     const currentTheme = audioMap.get(currentThemeKey);
     if (!currentTheme) return;
     // The song is loaded and playing, so pause it
-    console.debug("[AWBW Music Player] Pausing: ", currentThemeKey);
+    logDebug("Pausing: ", currentThemeKey);
     currentTheme.pause();
   }
   /**
@@ -2340,21 +2448,17 @@ var awbw_music_player = (function (exports, Howl) {
     if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
     if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
     const sfxURL = getSoundEffectURL(sfx);
-    // Figure out which volume to use
-    let vol = musicSettings.sfxVolume;
-    if (sfx.startsWith("ui")) {
-      vol = musicSettings.uiVolume;
-    } else if (sfx.startsWith("power")) {
-      vol = musicSettings.volume;
-    }
     // This sound effect hasn't been loaded yet
     if (!audioMap.has(sfxURL)) {
-      createNewSFXAudio(sfxURL, vol);
+      preloadURL(sfxURL)
+        .then(() => playSFX(sfx))
+        .catch((reason) => logError(reason));
+      return;
     }
     // The sound is loaded, so play it
     const audio = audioMap.get(sfxURL);
     if (!audio) return;
-    audio.volume(vol);
+    audio.volume(getVolumeForURL(sfxURL));
     audio.seek(0);
     audio.play();
   }
@@ -2388,39 +2492,17 @@ var awbw_music_player = (function (exports, Howl) {
     // Preload the themes of the COs in this match
     const audioList = getCurrentThemeURLs();
     // Preload the most common UI sounds that might play right after the page loads
-    createNewSFXAudio(getSoundEffectURL(GameSFX.uiCursorMove), musicSettings.uiVolume);
-    createNewSFXAudio(getSoundEffectURL(GameSFX.uiUnitSelect), musicSettings.uiVolume);
-    preloadThemeAudios(audioList, afterPreloadFunction);
-    console.debug("[AWBW Music Player] Pre-loading common audio", audioList);
-  }
-  /**
-   * Preloads the current game CO's themes for ALL game versions and ALL sound effect audios.
-   * Run this after the common audios since we have more time to get things ready for these.
-   * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
-   */
-  function preloadAllExtraAudio(afterPreloadFunction) {
-    if (isMapEditor()) return;
-    // Preload ALL sound effects
-    const allSoundEffects = getAllSoundEffectURLs();
-    musicPlayerUI.setProgress(0);
-    let currentIDX = 0;
-    console.debug("[AWBW Music Player] Pre-loading sound effects", allSoundEffects);
-    for (const sfxURL of allSoundEffects) {
-      createNewSFXAudio(sfxURL, musicSettings.sfxVolume);
-      currentIDX++;
-      musicPlayerUI.setProgress((currentIDX / allSoundEffects.size) * 100);
-    }
-    // Preload all the current COs themes for all game versions
-    const audioList = getAllCurrentThemesExtraAudioURLs();
-    console.debug("[AWBW Music Player] Pre-loading extra audio", audioList);
-    preloadThemeAudios(audioList, afterPreloadFunction);
+    audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
+    audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
+    logDebug("Pre-loading common audio", audioList);
+    preloadAudioList(audioList, afterPreloadFunction);
   }
   /**
    * Preloads the given list of songs and adds them to the {@link urlAudioMap}.
    * @param audioURLs - Set of URLs of songs to preload.
    * @param afterPreloadFunction - Function to call after all songs are preloaded.
    */
-  function preloadThemeAudios(audioURLs, afterPreloadFunction = () => {}) {
+  function preloadAudioList(audioURLs, afterPreloadFunction = () => {}) {
     // Event handler for when an audio is loaded
     let numLoadedAudios = 0;
     const onAudioPreload = (action, url) => {
@@ -2434,16 +2516,14 @@ var awbw_music_player = (function (exports, Howl) {
         if (afterPreloadFunction) afterPreloadFunction();
       }
       if (action === "error") {
-        let msg = `[AWBW Music Player] Could not pre-load: ${url}.`;
-        msg += "This might not be a problem, the music and sound effects may still play normally.";
-        console.log(msg);
+        log(`Could not pre-load: ${url}. This might not be a problem, the audio may still play normally later.`);
         audioMap.delete(url);
         return;
       }
       // TODO: Debugging purposes
       // if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
       if (!audioMap.has(url)) {
-        console.error("[AWBW Music Player] Race condition on pre-load! Please report this bug!", url);
+        logError("Race condition on pre-load! Please report this bug!", url);
       }
     };
     // Pre-load all audios in the list
@@ -2453,11 +2533,31 @@ var awbw_music_player = (function (exports, Howl) {
         numLoadedAudios++;
         return;
       }
-      const audio = createNewThemeAudio(url);
-      audio?.once("load", () => onAudioPreload("load", url));
-      audio?.once("loaderror", () => onAudioPreload("error", url));
+      // Try to get the audio from the cache, if not, load it from the original URL
+      preloadURL(url)
+        .then((audio) => {
+          audio.once("load", () => onAudioPreload("load", url));
+          audio.once("loaderror", () => onAudioPreload("error", url));
+        })
+        .catch((_reason) => onAudioPreload("error", url));
     });
   }
+  /**
+   * Gets the volume for the given URL based on the type of audio it is.
+   * @param url - URL of the audio to get the volume for.
+   * @returns - The volume to play the audio at.
+   */
+  function getVolumeForURL(url) {
+    if (url.includes("sfx")) {
+      if (url.includes("ui")) return musicSettings.uiVolume;
+      if (url.includes("power")) return musicSettings.volume;
+      return musicSettings.sfxVolume;
+    }
+    return musicSettings.volume;
+  }
+  /**
+   * Adds event listeners to play or pause the music when the window focus changes.
+   */
   function playOrPauseWhenWindowFocusChanges() {
     window.addEventListener("blur", () => {
       if (musicSettings.isPlaying) stopAllSounds();
@@ -2506,14 +2606,6 @@ var awbw_music_player = (function (exports, Howl) {
         // We want a new random theme
         musicSettings.currentRandomCO = getRandomCO();
         playThemeSong();
-        // Maybe we should preload all the themes
-        if (!allThemesPreloaded) {
-          console.debug("[AWBW Music Player] Pre-loading all themes...");
-          preloadThemeAudios(getAllThemeURLs(), () => {
-            console.debug("[AWBW Music Player] All themes pre-loaded!");
-          });
-          allThemesPreloaded = true;
-        }
         break;
       case "volume": {
         // Adjust the volume of the current theme
@@ -2737,7 +2829,7 @@ var awbw_music_player = (function (exports, Howl) {
     musicSettings.themeType = getCurrentThemeType();
     setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
-      playThemeSong(musicSettings.restartThemes);
+      playThemeSong();
       setTimeout(playThemeSong, 250);
     }, playDelayMS);
   }
@@ -2802,7 +2894,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onCursorMove(cursorX, cursorY) {
     // ahCursorMove?.apply(ahCursorMove, [cursorX, cursorY]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Cursor Move", cursorX, cursorY);
+    // debug("Cursor Move", cursorX, cursorY);
     const dx = Math.abs(cursorX - lastCursorX);
     const dy = Math.abs(cursorY - lastCursorY);
     const cursorMoved = dx >= 1 || dy >= 1;
@@ -2819,21 +2911,21 @@ var awbw_music_player = (function (exports, Howl) {
   function onQueryTurn(gameId, turn, turnPId, turnDay, replay, initial) {
     const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
     if (!musicSettings.isPlaying) return result;
-    // console.log("[MP] Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
+    // log("Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
     refreshMusicForNextTurn();
     return result;
   }
   function onShowEventScreen(event) {
     ahShowEventScreen?.apply(ahShowEventScreen, [event]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Show Event Screen", event);
+    // debug("Show Event Screen", event);
     playThemeSong();
     setTimeout(playThemeSong, 500);
   }
   function onOpenMenu(menu, x, y) {
     ahOpenMenu?.apply(openMenu, [menu, x, y]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Open Menu", menu, x, y);
+    // debug("Open Menu", menu, x, y);
     currentMenuType = MenuOpenType.Regular;
     playSFX(GameSFX.uiMenuOpen);
     const menuOptions = document.getElementsByClassName("menu-option");
@@ -2861,7 +2953,7 @@ var awbw_music_player = (function (exports, Howl) {
     ahCloseMenu?.apply(closeMenu, []);
     if (!musicSettings.isPlaying) return;
     const isMenuOpen = currentMenuType !== MenuOpenType.None;
-    // console.debug("[MP] CloseMenu", currentMenuType, isMenuOpen);
+    // debug("CloseMenu", currentMenuType, isMenuOpen);
     if (isMenuOpen) {
       playSFX(GameSFX.uiMenuClose);
       clickedDamageSquaresMap.clear();
@@ -2871,7 +2963,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onCreateDamageSquares(attackerUnit, unitsInRange, movementInfo, movingUnit) {
     ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
+    // debug("Create Damage Squares", attackerUnit, unitsInRange, movementInfo, movingUnit);
     // Hook up to all new damage squares
     for (const damageSquare of getAllDamageSquares()) {
       damageSquare.addEventListener("click", (event) => {
@@ -2893,7 +2985,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onUnitClick(clicked) {
     ahUnitClick?.apply(unitClickHandler, [clicked]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Unit Click", clicked);
+    // debug("Unit Click", clicked);
     // Check if we clicked on a waited unit or an enemy unit, if so, no more actions can be taken
     const unitInfo = getUnitInfo(Number(clicked.id));
     if (!unitInfo) return;
@@ -2909,7 +3001,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onUnitWait(unitId) {
     ahWait?.apply(waitUnit, [unitId]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Wait", unitId, getUnitName(unitId));
+    // debug("Wait", unitId, getUnitName(unitId));
     // Check if we stopped because we got trapped
     if (movementResponseMap.has(unitId)) {
       const response = movementResponseMap.get(unitId);
@@ -2925,7 +3017,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onAnimUnit(path, unitId, unitSpan, unitTeam, viewerTeam, i) {
     ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
+    // debug("AnimUnit", path, unitId, unitSpan, unitTeam, viewerTeam, i);
     // Only check if valid
     if (!isValidUnit(unitId) || !path || !i) return;
     // Don't go outside the bounds of the path
@@ -2943,7 +3035,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onAnimExplosion(unit) {
     ahAnimExplosion?.apply(animExplosion, [unit]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("Exploded", unit);
+    // debug("Exploded", unit);
     const unitId = unit.units_id;
     const unitFuel = unit.units_fuel;
     let sfx = GameSFX.unitExplode;
@@ -2956,7 +3048,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onFogUpdate(x, y, mType, neighbours, unitVisible, change, delay) {
     ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Fog", x, y, mType, neighbours, unitVisible, change, delay);
+    // debug("Fog", x, y, mType, neighbours, unitVisible, change, delay);
     const unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
     if (change === "Add") {
@@ -2968,7 +3060,7 @@ var awbw_music_player = (function (exports, Howl) {
       ahFire?.apply(actionHandlers.Fire, [response]);
       return;
     }
-    // console.debug("[MP] Fire", response);
+    // debug("Fire", response);
     const attackerID = response.copValues.attacker.playerId;
     const defenderID = response.copValues.defender.playerId;
     // stopMovementSound(response.attacker.units_id, false);
@@ -3035,7 +3127,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onAttackSeam(response) {
     ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] AttackSeam", response);
+    // debug("AttackSeam", response);
     const seamWasDestroyed = response.seamHp <= 0;
     // Pipe wiggle animation
     if (areAnimationsEnabled()) {
@@ -3058,7 +3150,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onMove(response, loadFlag) {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Move", response, loadFlag);
+    // debug("Move", response, loadFlag);
     const unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
     const movementDist = response.path.length;
@@ -3070,7 +3162,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onCapture(data) {
     ahCapt?.apply(actionHandlers.Capt, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Capt", data);
+    // debug("Capt", data);
     // They didn't finish the capture
     const finishedCapture = data.newIncome != null;
     if (!finishedCapture) {
@@ -3089,7 +3181,7 @@ var awbw_music_player = (function (exports, Howl) {
   function onBuild(data) {
     ahBuild?.apply(actionHandlers.Build, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Build", data);
+    // debug("Build", data);
     const myID = getMyID();
     const isMyBuild = data.newUnit.units_players_id == myID;
     const isReplay = isReplayActive();
@@ -3098,19 +3190,19 @@ var awbw_music_player = (function (exports, Howl) {
   function onLoad(data) {
     ahLoad?.apply(actionHandlers.Load, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Load", data);
+    // debug("Load", data);
     playSFX(GameSFX.unitLoad);
   }
   function onUnload(data) {
     ahUnload?.apply(actionHandlers.Unload, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Unload", data);
+    // debug("Unload", data);
     playSFX(GameSFX.unitUnload);
   }
   function onSupply(data) {
     ahSupply?.apply(actionHandlers.Supply, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Supply", data);
+    // debug("Supply", data);
     // We could play the sfx for each supplied unit in the list
     // but instead we decided to play the supply sound once.
     playSFX(GameSFX.unitSupply);
@@ -3118,41 +3210,41 @@ var awbw_music_player = (function (exports, Howl) {
   function onRepair(data) {
     ahRepair?.apply(actionHandlers.Repair, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Repair", data);
+    // debug("Repair", data);
     playSFX(GameSFX.unitSupply);
   }
   function onHide(data) {
     ahHide?.apply(actionHandlers.Hide, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Hide", data);
+    // debug("Hide", data);
     playSFX(GameSFX.unitHide);
     stopMovementSound(data.unitId);
   }
   function onUnhide(data) {
     ahUnhide?.apply(actionHandlers.Unhide, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Unhide", data);
+    // debug("Unhide", data);
     playSFX(GameSFX.unitUnhide);
     stopMovementSound(data.unitId);
   }
   function onJoin(data) {
     ahJoin?.apply(actionHandlers.Join, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Join", data);
+    // debug("Join", data);
     stopMovementSound(data.joinID);
     stopMovementSound(data.joinedUnit.units_id);
   }
   function onLaunch(data) {
     ahLaunch?.apply(actionHandlers.Launch, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Launch", data);
+    // debug("Launch", data);
     playSFX(GameSFX.unitMissileSend);
     setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
   }
   function onNextTurn(data) {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] NextTurn", data);
+    // debug("NextTurn", data);
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
     }
@@ -3161,26 +3253,26 @@ var awbw_music_player = (function (exports, Howl) {
   function onElimination(data) {
     ahElimination?.apply(actionHandlers.Elimination, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Elimination", data);
+    // debug("Elimination", data);
     // Play the elimination sound
     refreshMusicForNextTurn();
   }
   function onGameOver() {
     ahGameOver?.apply(actionHandlers.GameOver, []);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] GameOver");
+    // debug("GameOver");
     refreshMusicForNextTurn();
   }
   function onResign(data) {
     ahResign?.apply(actionHandlers.Resign, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Resign", data);
+    // debug("Resign", data);
     refreshMusicForNextTurn();
   }
   function onPower(data) {
     ahPower?.apply(actionHandlers.Power, [data]);
     if (!musicSettings.isPlaying) return;
-    // console.debug("[MP] Power", data);
+    // debug("Power", data);
     // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
     const coName = data.coName;
     const isBH = isBlackHoleCO(coName);
@@ -3228,6 +3320,9 @@ var awbw_music_player = (function (exports, Howl) {
    * @TODO - More map editor sound effects
    */
   // Add our CSS to the page using rollup-plugin-postcss
+  /******************************************************************
+   * Functions
+   ******************************************************************/
   /**
    * Where should we place the music player UI?
    */
@@ -3238,101 +3333,123 @@ var awbw_music_player = (function (exports, Howl) {
     if (isYourGames()) return document.querySelector("#nav-options");
     return document.querySelector("#game-map-menu")?.parentNode;
   }
-  /******************************************************************
-   * SCRIPT ENTRY (MAIN FUNCTION)
-   ******************************************************************/
+  /**
+   * Adjust the music player for the Live Queue page.
+   */
+  function onLiveQueue() {
+    log("Live Queue detected...");
+    const addMusicFn = () => {
+      // Check if the parent popup is created and visible
+      const blockerPopup = getLiveQueueBlockerPopup();
+      if (!blockerPopup) return false;
+      if (blockerPopup.style.display === "none") return false;
+      // Now make sure the internal popup is created
+      const popup = getLiveQueueSelectPopup();
+      if (!popup) return false;
+      // Get the div with "Match starts in ...."
+      const box = popup.querySelector(".flex.row.hv-center");
+      if (!box) return false;
+      // Prepend the music player UI to the box
+      musicPlayerUI.addToAWBWPage(box, true);
+      playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
+      allowSettingsToBeSaved();
+      playOrPauseWhenWindowFocusChanges();
+      return true;
+    };
+    const checkStillActiveFn = () => {
+      const blockerPopup = getLiveQueueBlockerPopup();
+      return blockerPopup?.style.display !== "none";
+    };
+    const addPlayerIntervalID = window.setInterval(() => {
+      if (!addMusicFn()) return;
+      // We don't need to add the music player anymore
+      clearInterval(addPlayerIntervalID);
+      // Now we need to check if we need to pause/resume the music because the player left/rejoined
+      // We will do this indefinitely until eventually the player accepts a match or leaves the page
+      window.setInterval(() => {
+        // We are still in the CO select, play the music
+        if (checkStillActiveFn()) playThemeSong();
+        // We are not in the CO select, stop the music
+        else stopThemeSong();
+      }, 500);
+    }, 500);
+  }
+  /**
+   * Adjust the music player for the maintenance page.
+   */
+  function onMaintenance() {
+    log("Maintenance detected, playing music...");
+    musicPlayerUI.parent.style.borderLeft = "";
+    musicPlayerUI.openContextMenu();
+    playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
+    allowSettingsToBeSaved();
+  }
+  /**
+   * Adjust the music player for the Move Planner page.
+   */
+  function onMovePlanner() {
+    log("Move Planner detected");
+    musicSettings.isPlaying = true;
+    allowSettingsToBeSaved();
+  }
+  /**
+   * Adjust the music player for the Your Games and Your Turn pages.
+   */
+  function onIsYourGames() {
+    log("Your Games detected, playing music...");
+    musicPlayerUI.parent.style.border = "none";
+    musicPlayerUI.parent.style.backgroundColor = "#0000";
+    musicPlayerUI.setProgress(-1);
+    playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
+    allowSettingsToBeSaved();
+    playOrPauseWhenWindowFocusChanges();
+  }
+  /**
+   * Adjust the music player for the map editor page.
+   */
+  function onMapEditor() {
+    musicPlayerUI.parent.style.borderTop = "none";
+    playOrPauseWhenWindowFocusChanges();
+  }
+  /**
+   * Initializes the music player script by setting everything up.
+   */
   function main() {
-    console.debug("[AWBW Improved Music Player] Script starting...");
     musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
     musicPlayerUI.setProgress(100);
     // Load settings from local storage but don't allow saving yet
     loadSettingsFromLocalStorage();
-    if (isLiveQueue()) {
-      console.log("[AWBW Improved Music Player] Live Queue detected...");
-      const addMusicFn = () => {
-        // Check if the parent popup is created and visible
-        const blockerPopup = getLiveQueueBlockerPopup();
-        if (!blockerPopup) return false;
-        if (blockerPopup.style.display === "none") return false;
-        // Now make sure the internal popup is created
-        const popup = getLiveQueueSelectPopup();
-        if (!popup) return false;
-        // Get the div with "Match starts in ...."
-        const box = popup.querySelector(".flex.row.hv-center");
-        if (!box) return false;
-        // Prepend the music player UI to the box
-        musicPlayerUI.addToAWBWPage(box, true);
-        playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
-        allowSettingsToBeSaved();
-        playOrPauseWhenWindowFocusChanges();
-        return true;
-      };
-      const checkStillActiveFn = () => {
-        const blockerPopup = getLiveQueueBlockerPopup();
-        return blockerPopup?.style.display !== "none";
-      };
-      const addPlayerIntervalID = window.setInterval(() => {
-        if (!addMusicFn()) return;
-        // We don't need to add the music player anymore
-        clearInterval(addPlayerIntervalID);
-        // Now we need to check if we need to pause/resume the music because the player left/rejoined
-        // We will do this indefinitely until eventually the player accepts a match or leaves the page
-        window.setInterval(() => {
-          // We are still in the CO select, play the music
-          if (checkStillActiveFn()) playThemeSong();
-          // We are not in the CO select, stop the music
-          else stopThemeSong();
-        }, 500);
-      }, 500);
-      return;
-    }
+    // Live queue has the music player hidden until the player is in the CO select, so stop here
+    if (isLiveQueue()) return onLiveQueue();
     // Add the music player UI to the page and the necessary event handlers
     musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
     addHandlers();
-    if (isMaintenance()) {
-      console.log("[AWBW Improved Music Player] Maintenance detected, playing music...");
-      musicPlayerUI.parent.style.borderLeft = "";
-      musicPlayerUI.openContextMenu();
-      playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
-      allowSettingsToBeSaved();
-      return;
-    }
-    if (isMovePlanner()) {
-      console.log("[AWBW Improved Music Player] Move Planner detected");
-      musicSettings.isPlaying = true;
-      allowSettingsToBeSaved();
-      return;
-    }
-    if (isYourGames()) {
-      console.log("[AWBW Improved Music Player] Your Games detected, playing music...");
-      musicPlayerUI.parent.style.border = "none";
-      musicPlayerUI.parent.style.backgroundColor = "#0000";
-      musicPlayerUI.setProgress(-1);
-      playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
-      allowSettingsToBeSaved();
-      playOrPauseWhenWindowFocusChanges();
-      return;
-    }
-    if (isMapEditor()) {
-      musicPlayerUI.parent.style.borderTop = "none";
-      playOrPauseWhenWindowFocusChanges();
-    }
+    // Handle pages that aren't the main game page or the map editor
+    if (isMaintenance()) return onMaintenance();
+    if (isMovePlanner()) return onMovePlanner();
+    if (isYourGames()) return onIsYourGames();
     // game.php or designmap.php from now on
+    if (isMapEditor()) onMapEditor();
     allowSettingsToBeSaved();
     preloadAllCommonAudio(() => {
-      console.log("[AWBW Improved Music Player] All common audio has been pre-loaded!");
+      log("All common audio has been pre-loaded!");
       // Set dynamic settings based on the current game state
       // Lastly, update the UI to reflect the current settings
       musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
-      preloadAllExtraAudio(() => {
-        console.log("[AWBW Improved Music Player] All extra audio has been pre-loaded!");
-        playThemeSong();
-      });
+      // preloadAllAudio(() => {
+      //   log("All other audio has been pre-loaded!");
+      // });
     });
   }
-  main();
+  /******************************************************************
+   * SCRIPT ENTRY (MAIN FUNCTION)
+   ******************************************************************/
+  logDebug("Script starting...");
+  // Open the database for caching music files first
+  // No matter what happens, we will call main() after this
+  openDB().then(main, main);
 
   exports.main = main;
   exports.notifyCOSelectorListeners = notifyCOSelectorListeners;

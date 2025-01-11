@@ -10,7 +10,7 @@
     "build:dev": "rollup -c --configInputDir music_player && npm run prettier",
     "build:all": "rollup -c && npm run prettier",
     "build:package": "npm run build:all && npm run lint",
-    "netlify": "cd ../JS-Website && netlify deploy --prod --dir=./public",
+    "netlify": "cd ../JS-Website && npm run netlify",
     "netlify:dev": "cd ../JS-Website && netlify deploy --dir=./public",
     "prettier": "prettier --write \"**/*.{js,ts,css}\"",
     "clean": "rm dist/*.js",
