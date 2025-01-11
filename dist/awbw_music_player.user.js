@@ -3545,22 +3545,28 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     // game.php or designmap.php from now on
     if (isMapEditor()) onMapEditor();
     allowSettingsToBeSaved();
-    preloadAllCommonAudio(() => {
-      log("All common audio has been pre-loaded!");
-      // Set dynamic settings based on the current game state
-      // Lastly, update the UI to reflect the current settings
-      musicSettings.themeType = getCurrentThemeType();
-      musicPlayerUI.updateAllInputLabels();
-      playThemeSong();
-      // Firefox doesn't support autoplay, so we need to pause the music
-      if (isFirefox()) {
-        musicSettings.isPlaying = false;
-      }
-      checkHashesInDB();
-      // preloadAllAudio(() => {
-      //   log("All other audio has been pre-loaded!");
-      // });
-    });
+    const startFn = () => {
+      preloadAllCommonAudio(() => {
+        log("All common audio has been pre-loaded!");
+        // Set dynamic settings based on the current game state
+        // Lastly, update the UI to reflect the current settings
+        musicSettings.themeType = getCurrentThemeType();
+        musicPlayerUI.updateAllInputLabels();
+        playThemeSong();
+        // Firefox doesn't support autoplay, so we need to pause the music
+        checkHashesInDB();
+        // preloadAllAudio(() => {
+        //   log("All other audio has been pre-loaded!");
+        // });
+      });
+    };
+    // Firefox doesn't support autoplay, so we need to pause the music and load it when the user clicks
+    if (isFirefox()) {
+      musicSettings.isPlaying = false;
+      musicPlayerUI.addEventListener("click", () => startFn());
+      return;
+    }
+    startFn();
   }
   /******************************************************************
    * SCRIPT ENTRY (MAIN FUNCTION)
