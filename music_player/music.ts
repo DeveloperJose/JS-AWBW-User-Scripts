@@ -24,7 +24,7 @@ import { getRandomCO } from "../shared/awbw_globals";
 
 import { isGamePageAndActive } from "../shared/awbw_page";
 import { musicPlayerUI } from "./music_ui";
-import { loadMusicFromDB } from "./db";
+import { addDatabaseReplacementListener, loadMusicFromDB } from "./db";
 import { logError, log, logDebug } from "./utils";
 
 /**
@@ -69,6 +69,22 @@ let currentlyDelaying = false;
 
 // Listen for setting changes to update the internal variables accordingly
 addSettingsChangeListener(onSettingsChange);
+
+// Listens for when the database downloads a new song
+addDatabaseReplacementListener((url) => {
+  const audio = audioMap.get(url);
+  if (!audio) return;
+
+  // Song update due to hash change
+  if (audio.playing()) audio.stop();
+
+  urlQueue.delete(url);
+  audioMap.delete(url);
+  preloadURL(url)
+    .then(playThemeSong)
+    .catch((reason) => logError(reason));
+  logDebug("Replaced song with new version", url);
+});
 
 /**
  * Event handler that pauses an audio as soon as it gets loaded.
@@ -146,17 +162,17 @@ function onThemePlay(audio: Howl, srcURL: string) {
  */
 function preloadURL(srcURL: string) {
   // Someone already tried to preload this audio
-  if (urlQueue.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already queued for preloading.`);
+  if (urlQueue.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already queued for pre-loading.`);
   urlQueue.add(srcURL);
 
   // We already have this audio loaded
-  if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already preloaded.`);
+  if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already pre-loaded.`);
 
   // Preload the audio from the database if possible
   // logDebug("Loading new song", srcURL);
   return loadMusicFromDB(srcURL).then(
     (localCacheURL: string) => createNewAudio(srcURL, localCacheURL),
-    (reason: string) => {
+    (reason) => {
       logDebug(reason, srcURL);
       return createNewAudio(srcURL, srcURL);
     },
@@ -180,6 +196,11 @@ function preloadURL(srcURL: string) {
     const audio = new Howl({
       src: [cacheURL],
       format: ["ogg"],
+      // Redundant event listeners to ensure the audio is always at the correct volume
+      onplay: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
+      onload: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
+      onseek: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
+      onpause: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
       onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
       onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
     });
@@ -292,7 +313,7 @@ export function stopThemeSong(delayMS: number = 0) {
   // Delay the next theme if needed
   if (delayMS > 0) {
     // Delay until I say so
-    setTimeout(() => {
+    window.setTimeout(() => {
       currentlyDelaying = false;
       playThemeSong();
     }, delayMS);
@@ -558,7 +579,7 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
     case "gameType":
     case "alternateThemeDay":
     case "alternateThemes":
-      setTimeout(() => playThemeSong(), 500);
+      window.setTimeout(() => playThemeSong(), 500);
       break;
     case "themeType": {
       // const restartMusic = musicSettings.themeType !== SettingsThemeType.REGULAR;

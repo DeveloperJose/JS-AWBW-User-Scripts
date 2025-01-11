@@ -216,7 +216,7 @@ function syncMusic() {
   musicSettings.themeType = getCurrentThemeType();
 
   playThemeSong();
-  setTimeout(() => {
+  window.setTimeout(() => {
     playThemeSong();
   }, 500);
 }
@@ -231,10 +231,10 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
   musicSettings.currentRandomCO = getRandomCO();
   musicSettings.themeType = getCurrentThemeType();
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
-    setTimeout(playThemeSong, 250);
+    window.setTimeout(playThemeSong, 250);
   }, playDelayMS);
 }
 
@@ -352,7 +352,7 @@ function onShowEventScreen(event: ShowEventScreenData) {
   }
 
   playThemeSong();
-  setTimeout(playThemeSong, 500);
+  window.setTimeout(playThemeSong, 500);
 }
 
 function onShowEndGameScreen(event: ShowEndGameScreenData) {
@@ -499,7 +499,7 @@ function onAnimUnit(
   if (!unitVisible) {
     visibilityMap.set(unitId, unitVisible);
     // Stop the sound after a little delay, giving more time to react to it
-    setTimeout(() => stopMovementSound(unitId, false), 1000);
+    window.setTimeout(() => stopMovementSound(unitId, false), 1000);
   }
 }
 
@@ -534,7 +534,7 @@ function onFogUpdate(
   const unitInfo = getUnitInfoFromCoords(x, y);
   if (!unitInfo) return;
   if (change === "Add") {
-    setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
+    window.setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
   }
 }
 
@@ -578,7 +578,7 @@ function onFire(response: FireResponse) {
     (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
     (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     if (madeSCOPAvailable) playSFX(GameSFX.powerSCOPAvailable);
     else if (madeCOPAvailable) playSFX(GameSFX.powerCOPAvailable);
   }, delay);
@@ -612,7 +612,7 @@ function wiggleTile(div: HTMLDivElement, startDelay = 0) {
       { then: [0, deltaY, stepsY] },
     );
   };
-  setTimeout(wiggleAnimation, startDelay);
+  window.setTimeout(wiggleAnimation, startDelay);
 }
 
 function onAttackSeam(response: SeamResponse) {
@@ -638,7 +638,7 @@ function onAttackSeam(response: SeamResponse) {
     playSFX(GameSFX.unitExplode);
     return;
   }
-  setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
+  window.setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
 }
 
 function onMove(response: MoveResponse, loadFlag: object) {
@@ -756,7 +756,7 @@ function onLaunch(data: LaunchData) {
   // debug("Launch", data);
 
   playSFX(GameSFX.unitMissileSend);
-  setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
+  window.setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
 }
 
 function onNextTurn(data: NextTurnData) {
@@ -835,7 +835,7 @@ function onPower(data: PowerData) {
   }
   // Colin's gold rush SFX for AW2, DS, and RBC
   if (coName === "Colin" && !isSuperCOPower) {
-    setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
+    window.setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
   }
 }
 

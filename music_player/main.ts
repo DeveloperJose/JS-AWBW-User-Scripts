@@ -37,7 +37,7 @@ import {
 } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
-import { logDebug, log } from "./utils";
+import { logDebug, log, logError } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
 
 /******************************************************************
@@ -187,7 +187,17 @@ export function initializeMusicPlayer() {
     musicSettings.themeType = getCurrentThemeType();
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
-    checkHashesInDB();
+
+    // Check for new music files every minute
+    const checkHashesMS = 1000 * 60 * 1;
+    const checkHashesFn = () => {
+      checkHashesInDB()
+        .then(() => log("All music files have been checked for updates."))
+        .catch((reason) => logError("Could not check for music file updates:", reason));
+
+      window.setTimeout(checkHashesFn, checkHashesMS);
+    };
+    checkHashesFn();
 
     // preloadAllAudio(() => {
     //   log("All other audio has been pre-loaded!");
@@ -245,8 +255,8 @@ export function main() {
       if (result) ifCanAutoplay();
       else ifCannotAutoplay();
     })
-    .catch((error: Error) => {
-      logDebug("Script starting, we could not check if we can autoplay so assuming no", error);
+    .catch((reason) => {
+      logDebug("Script starting, we could not check if we can autoplay so assuming no", reason);
       ifCannotAutoplay();
     });
 }
@@ -256,9 +266,8 @@ export function main() {
  ******************************************************************/
 // Open the database for caching music files first
 // No matter what happens, we will initialize the music player
+log("Opening database to cache music files.");
 openDB()
-  .then(main, main)
-  .catch((error: Error) => {
-    logDebug("Could not open the database, initializing music player anyway", error);
-    main();
-  });
+  .then(() => log("Database opened successfully. Ready to cache music files."))
+  .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
+  .finally(main);

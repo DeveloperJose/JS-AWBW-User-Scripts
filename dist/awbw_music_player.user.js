@@ -155,7 +155,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
       return;
     }
-    setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations), moveAnimationDelayMS);
+    window.setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations), moveAnimationDelayMS);
     let left = parseFloat(div.style.left);
     let top = parseFloat(div.style.top);
     left += dx;
@@ -2068,31 +2068,37 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    */
   const urlQueue$1 = new Set();
   /**
+   * A set of listeners that are called when a music file is replaced in the database.
+   */
+  const replacementListeners = new Set();
+  /**
+   * Adds a listener that is called when a music file is replaced in the database.
+   * @param fn - The listener to add
+   */
+  function addDatabaseReplacementListener(fn) {
+    replacementListeners.add(fn);
+  }
+  /**
    * Opens the IndexedDB database for caching music files.
    * @param onOpenOrError - Optional callback for when the database is opened or an error occurs when opening it.
    */
   function openDB() {
-    log("Opening database to cache music files.");
     const request = indexedDB.open(dbName, dbVersion);
     return new Promise((resolve, reject) => {
-      request.onerror = (event) => {
-        logError("Error opening database, will not be able to cache music files locally.", event);
-        reject();
-      };
+      request.onerror = (event) => reject(event);
       request.onupgradeneeded = (event) => {
-        if (!event.target) return;
-        logDebug("Database upgrade needed. Creating object store.");
+        if (!event.target) return reject("No target for database upgrade.");
+        // logDebug("Database upgrade needed. Creating object store.");
         const newDB = event.target.result;
         newDB.createObjectStore("music");
       };
       request.onsuccess = (event) => {
-        if (!event.target) return;
-        log("Database opened successfully. Ready to cache music files.");
+        if (!event.target) return reject("No target for database success.");
         db = event.target.result;
-        resolve();
         db.onerror = (event) => {
-          logError("Error accessing database.", event);
+          reject(`Error accessing database: ${event}`);
         };
+        resolve();
       };
     });
   }
@@ -2113,19 +2119,19 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const request = store.get(srcURL);
       request.onsuccess = (event) => {
         urlQueue$1.delete(srcURL);
+        // The music file is not in the database, wait for it to be stored and return the new blob URL
         const blob = event.target.result;
-        // The music file is not in the database, tell the caller to fallback to the original URL
-        // We will save the file in the background for next time
         if (!blob) {
-          storeURLInDB(srcURL);
-          return reject("Music file not found in database, downloading for next time.");
+          return storeURLInDB(srcURL)
+            .then((blob) => resolve(URL.createObjectURL(blob)))
+            .catch((reason) => reject(reason));
         }
         const url = URL.createObjectURL(blob);
         resolve(url);
       };
       request.onerror = (event) => {
         urlQueue$1.delete(srcURL);
-        reject(event.type);
+        reject(event);
       };
     });
   }
@@ -2135,27 +2141,30 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @param blob - The blob to store
    */
   function storeBlobInDB(url, blob) {
-    if (!db || !url || url === "") return;
-    const transaction = db.transaction("music", "readwrite");
-    const store = transaction.objectStore("music");
-    const request = store.put(blob, url);
-    // request.onsuccess = () => {
-    //   logDebug("Music file stored in database:", url);
-    // };
-    request.onerror = (event) => {
-      logError("Error storing music file in database:", event);
-    };
+    return new Promise((resolve, reject) => {
+      if (!db) return reject("Database not open.");
+      if (!url || url === "") return reject("Invalid URL.");
+      const transaction = db.transaction("music", "readwrite");
+      const store = transaction.objectStore("music");
+      const request = store.put(blob, url);
+      request.onsuccess = () => {
+        resolve(blob);
+        replacementListeners.forEach((fn) => fn(url));
+      };
+      request.onerror = (event) => reject(event);
+    });
   }
   /**
    * Stores the music file at the given URL in the database.
    * @param url - The URL of the music file to store
    */
   function storeURLInDB(url) {
-    if (!db || !url || url === "") return;
-    fetch(url)
+    if (!db) return Promise.reject("Database not open.");
+    if (!url || url === "") return Promise.reject("Invalid URL.");
+    return fetch(url)
       .then((response) => response.blob())
-      .then((blob) => storeBlobInDB(url, blob))
-      .catch((reason) => logError("Error fetching music file to store in database:", reason));
+      .then((blob) => storeBlobInDB(url, blob));
+    // .catch((reason) => logError("Error fetching music file to store in database:", reason));
   }
   /**
    * Compares the hashes of the music files stored in the database against the hashes stored on the server.
@@ -2163,13 +2172,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - A promise that resolves when the hashes have been compared
    */
   function checkHashesInDB() {
-    if (!db) return;
+    if (!db) return Promise.reject("Database not open.");
     // Get the hashes stored in the server
     // logDebug("Fetching hashes from server to compare against local music files.");
-    fetch(HASH_JSON_URL)
+    return fetch(HASH_JSON_URL)
       .then((response) => response.json())
-      .then((hashes) => compareHashesAndReplaceIfNeeded(hashes))
-      .catch((reason) => logError("Error fetching hashes from server:", reason));
+      .then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
+    // .catch((reason) => logError("Error fetching hashes from server:", reason));
   }
   /**
    * Calculates the MD5 hash of the given blob.
@@ -2193,39 +2202,37 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @param hashesJson - The JSON object of hashes to compare against.
    */
   function compareHashesAndReplaceIfNeeded(hashesJson) {
-    if (!db) return;
-    if (!hashesJson) {
-      logError("No hashes found in server response.");
-      return;
-    }
-    // Get all the blobs stored in the database
-    const transaction = db.transaction("music", "readonly");
-    const store = transaction.objectStore("music");
-    const request = store.openCursor();
-    request.onerror = (event) => {
-      logError("Error checking hashes in database:", event);
-    };
-    request.onsuccess = (event) => {
-      const cursor = event.target.result;
-      if (!cursor) return;
-      const url = cursor.key;
-      const blob = cursor.value;
-      const serverHash = hashesJson[url];
-      if (!serverHash) {
-        logDebug("No hash found in server for", url);
+    return new Promise((resolve, reject) => {
+      if (!db) return reject("Database not open.");
+      if (!hashesJson) return reject("No hashes found in server.");
+      // Get all the blobs stored in the database
+      const transaction = db.transaction("music", "readonly");
+      const store = transaction.objectStore("music");
+      const request = store.openCursor();
+      request.onerror = (event) => reject(event);
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        // All entries have been checked
+        if (!cursor) return resolve();
+        const url = cursor.key;
+        const blob = cursor.value;
+        const serverHash = hashesJson[url];
         cursor.continue();
-        return;
-      }
-      getBlobMD5(blob)
-        .then((hash) => {
-          if (hash === serverHash) return;
-          // The hash is different, so we need to replace the song
-          log("A new version of", url, " is available. Replacing the old version.");
-          storeURLInDB(url);
-        })
-        .catch((reason) => logError("Error getting MD5 hash for blob:", reason));
-      cursor.continue();
-    };
+        // logDebug("Checking hash for", url);
+        if (!serverHash) {
+          logDebug("No hash found in server for", url);
+          return;
+        }
+        getBlobMD5(blob)
+          .then((hash) => {
+            if (hash === serverHash) return;
+            // The hash is different, so we need to replace the song
+            log("A new version of", url, " is available. Replacing the old version.");
+            return storeURLInDB(url);
+          })
+          .catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));
+      };
+    });
   }
 
   /**
@@ -2268,6 +2275,19 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   let currentlyDelaying = false;
   // Listen for setting changes to update the internal variables accordingly
   addSettingsChangeListener(onSettingsChange);
+  // Listens for when the database downloads a new song
+  addDatabaseReplacementListener((url) => {
+    const audio = audioMap.get(url);
+    if (!audio) return;
+    // Song update due to hash change
+    if (audio.playing()) audio.stop();
+    urlQueue.delete(url);
+    audioMap.delete(url);
+    preloadURL(url)
+      .then(playThemeSong)
+      .catch((reason) => logError(reason));
+    logDebug("Replaced song with new version", url);
+  });
   /**
    * Event handler that pauses an audio as soon as it gets loaded.
    * @param event - The event that triggered this handler. Usually "canplaythrough".
@@ -2339,10 +2359,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    */
   function preloadURL(srcURL) {
     // Someone already tried to preload this audio
-    if (urlQueue.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already queued for preloading.`);
+    if (urlQueue.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already queued for pre-loading.`);
     urlQueue.add(srcURL);
     // We already have this audio loaded
-    if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already preloaded.`);
+    if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already pre-loaded.`);
     // Preload the audio from the database if possible
     // logDebug("Loading new song", srcURL);
     return loadMusicFromDB(srcURL).then(
@@ -2368,6 +2388,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const audio = new Howl({
         src: [cacheURL],
         format: ["ogg"],
+        // Redundant event listeners to ensure the audio is always at the correct volume
+        onplay: (_id) => audio.volume(getVolumeForURL(audio._src)),
+        onload: (_id) => audio.volume(getVolumeForURL(audio._src)),
+        onseek: (_id) => audio.volume(getVolumeForURL(audio._src)),
+        onpause: (_id) => audio.volume(getVolumeForURL(audio._src)),
         onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
         onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
       });
@@ -2462,7 +2487,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // Delay the next theme if needed
     if (delayMS > 0) {
       // Delay until I say so
-      setTimeout(() => {
+      window.setTimeout(() => {
         currentlyDelaying = false;
         playThemeSong();
       }, delayMS);
@@ -2679,7 +2704,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       case "gameType":
       case "alternateThemeDay":
       case "alternateThemes":
-        setTimeout(() => playThemeSong(), 500);
+        window.setTimeout(() => playThemeSong(), 500);
         break;
       case "themeType": {
         // const restartMusic = musicSettings.themeType !== SettingsThemeType.REGULAR;
@@ -2923,7 +2948,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   function syncMusic() {
     musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
-    setTimeout(() => {
+    window.setTimeout(() => {
       playThemeSong();
     }, 500);
   }
@@ -2936,10 +2961,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     visibilityMap.clear();
     musicSettings.currentRandomCO = getRandomCO();
     musicSettings.themeType = getCurrentThemeType();
-    setTimeout(() => {
+    window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
       playThemeSong();
-      setTimeout(playThemeSong, 250);
+      window.setTimeout(playThemeSong, 250);
     }, playDelayMS);
   }
   /**
@@ -3034,7 +3059,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       return;
     }
     playThemeSong();
-    setTimeout(playThemeSong, 500);
+    window.setTimeout(playThemeSong, 500);
   }
   function onShowEndGameScreen(event) {
     ahShowEndGameScreen?.apply(ahShowEndGameScreen, [event]);
@@ -3149,7 +3174,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (!unitVisible) {
       visibilityMap.set(unitId, unitVisible);
       // Stop the sound after a little delay, giving more time to react to it
-      setTimeout(() => stopMovementSound(unitId, false), 1000);
+      window.setTimeout(() => stopMovementSound(unitId, false), 1000);
     }
   }
   function onAnimExplosion(unit) {
@@ -3172,7 +3197,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
     if (change === "Add") {
-      setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
+      window.setTimeout(() => stopMovementSound(unitInfo.units_id, true), delay);
     }
   }
   function onFire(response) {
@@ -3209,7 +3234,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const madeCOPAvailable =
       (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
       (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (madeSCOPAvailable) playSFX(GameSFX.powerSCOPAvailable);
       else if (madeCOPAvailable) playSFX(GameSFX.powerCOPAvailable);
     }, delay);
@@ -3242,7 +3267,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         { then: [0, deltaY, stepsY] },
       );
     };
-    setTimeout(wiggleAnimation, startDelay);
+    window.setTimeout(wiggleAnimation, startDelay);
   }
   function onAttackSeam(response) {
     ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
@@ -3265,7 +3290,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       playSFX(GameSFX.unitExplode);
       return;
     }
-    setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
+    window.setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
   }
   function onMove(response, loadFlag) {
     ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
@@ -3359,7 +3384,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (!musicSettings.isPlaying) return;
     // debug("Launch", data);
     playSFX(GameSFX.unitMissileSend);
-    setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
+    window.setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
   }
   function onNextTurn(data) {
     ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
@@ -3426,7 +3451,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     }
     // Colin's gold rush SFX for AW2, DS, and RBC
     if (coName === "Colin" && !isSuperCOPower) {
-      setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
+      window.setTimeout(() => playSFX(GameSFX.coGoldRush), 800);
     }
   }
   function onConnectionError(closeMsg) {
@@ -3557,7 +3582,15 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
-      checkHashesInDB();
+      // Check for new music files every minute
+      const checkHashesMS = 1000 * 60 * 1;
+      const checkHashesFn = () => {
+        checkHashesInDB()
+          .then(() => log("All music files have been checked for updates."))
+          .catch((reason) => logError("Could not check for music file updates:", reason));
+        window.setTimeout(checkHashesFn, checkHashesMS);
+      };
+      checkHashesFn();
       // preloadAllAudio(() => {
       //   log("All other audio has been pre-loaded!");
       // });
@@ -3605,8 +3638,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         if (result) ifCanAutoplay();
         else ifCannotAutoplay();
       })
-      .catch((error) => {
-        logDebug("Script starting, we could not check if we can autoplay so assuming no", error);
+      .catch((reason) => {
+        logDebug("Script starting, we could not check if we can autoplay so assuming no", reason);
         ifCannotAutoplay();
       });
   }
@@ -3615,12 +3648,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    ******************************************************************/
   // Open the database for caching music files first
   // No matter what happens, we will initialize the music player
+  log("Opening database to cache music files.");
   openDB()
-    .then(main, main)
-    .catch((error) => {
-      logDebug("Could not open the database, initializing music player anyway", error);
-      main();
-    });
+    .then(() => log("Database opened successfully. Ready to cache music files."))
+    .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
+    .finally(main);
 
   exports.initializeMusicPlayer = initializeMusicPlayer;
   exports.initializeUI = initializeUI;
