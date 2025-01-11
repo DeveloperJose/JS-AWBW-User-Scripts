@@ -26,9 +26,10 @@ function createUserscriptRollUpConfig(inputDir, outputDir = "./dist") {
       globals: {
         [externalId]: "Howl",
         "spark-md5": "SparkMD5",
+        "can-autoplay": "canAutoplay",
       },
     },
-    external: ["../howler/howl", "spark-md5"],
+    external: ["../howler/howl", "spark-md5", "can-autoplay"],
     plugins: [
       typescript(),
       postcss(),

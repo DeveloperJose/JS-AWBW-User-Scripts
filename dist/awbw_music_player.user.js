@@ -12,14 +12,15 @@
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
-// @version     4.0.3
+// @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
+// @version     4.1.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
 // @grant       none
 // ==/UserScript==
 
-var awbw_music_player = (function (exports, Howl, SparkMD5) {
+var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   "use strict";
 
   function styleInject(css, ref) {
@@ -586,13 +587,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function logDebug(message, ...args) {
     console.debug("[AWBW Improved Music Player]", message, ...args);
-  }
-  /**
-   * Determines if the current browser is Firefox
-   * @returns - True if the current browser is Firefox, false otherwise
-   */
-  function isFirefox() {
-    return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
   }
 
   /**
@@ -1463,9 +1457,9 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
      * @param type - The type of event to listen for.
      * @param listener - The function to be called when the event is triggered.
      */
-    addEventListener(type, listener) {
+    addEventListener(type, listener, options = false) {
       const div = this.groups.get("bg");
-      div?.addEventListener(type, listener);
+      div?.addEventListener(type, listener, options);
     }
     /**
      * Opens the context (right-click) menu.
@@ -1800,7 +1794,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.0.3",
+    music_player: "4.1.0",
     highlight_cursor_coordinates: "2.0.2",
   };
 
@@ -2317,7 +2311,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    */
   function onThemePlay(audio, srcURL) {
     currentLoops = 0;
-    audio.volume(musicSettings.volume);
+    audio.volume(getVolumeForURL(srcURL));
     // We start from the beginning if any of these conditions are met:
     // 1. The user wants to restart themes
     // 2. It's a power theme
@@ -2384,7 +2378,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
         return audio;
       }
       // Themes
-      audio.volume(musicSettings.volume);
+      audio.volume(getVolumeForURL(srcURL));
       audio.on("play", () => onThemePlay(audio, srcURL));
       audio.on("load", () => playThemeSong());
       audio.on("end", () => onThemeEndOrLoop(srcURL));
@@ -2397,7 +2391,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * @param startFromBeginning - Whether to start from the beginning.
    */
   function playMusicURL(srcURL) {
-    if (!musicSettings.isPlaying) return;
     // This song has a special loop, and it's time to play it
     const specialLoopURL = specialLoopMap.get(srcURL);
     if (specialLoopURL) srcURL = specialLoopURL;
@@ -2416,9 +2409,9 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
     if (!nextSong) return;
     // Loop all themes except for the special ones
     nextSong.loop(!hasSpecialLoop(srcURL));
-    nextSong.volume(musicSettings.volume);
+    nextSong.volume(getVolumeForURL(srcURL));
     // Play the song if it's not already playing
-    if (!nextSong.playing()) {
+    if (!nextSong.playing() && musicSettings.isPlaying) {
       log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
       nextSong.play();
     }
@@ -2707,6 +2700,20 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
         // Adjust the volume of the current theme
         const currentTheme = audioMap.get(currentThemeKey);
         if (currentTheme) currentTheme.volume(musicSettings.volume);
+        // Adjust the volume once we can
+        if (!currentTheme) {
+          const intervalID = window.setInterval(() => {
+            const currentTheme = audioMap.get(currentThemeKey);
+            if (currentTheme) {
+              currentTheme.volume(musicSettings.volume);
+              clearInterval(intervalID);
+            }
+          });
+        }
+        // Adjust all theme volumes
+        for (const audio of audioMap.values()) {
+          audio.volume(getVolumeForURL(audio._src));
+        }
         break;
       }
     }
@@ -3432,7 +3439,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    *
    * @TODO - More map editor sound effects
    */
-  // Add our CSS to the page using rollup-plugin-postcss
   /******************************************************************
    * Functions
    ******************************************************************/
@@ -3464,6 +3470,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
       if (!box) return false;
       // Prepend the music player UI to the box
       musicPlayerUI.addToAWBWPage(box, true);
+      musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
       playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
       allowSettingsToBeSaved();
       playOrPauseWhenWindowFocusChanges();
@@ -3492,7 +3499,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    */
   function onMaintenance() {
     log("Maintenance detected, playing music...");
-    musicPlayerUI.parent.style.borderLeft = "";
     musicPlayerUI.openContextMenu();
     musicSettings.randomThemes = false;
     playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
@@ -3511,9 +3517,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    */
   function onIsYourGames() {
     log("Your Games detected, playing music...");
-    musicPlayerUI.parent.style.border = "none";
-    musicPlayerUI.parent.style.backgroundColor = "#0000";
-    musicPlayerUI.setProgress(-1);
     playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();
@@ -3522,62 +3525,107 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * Adjust the music player for the map editor page.
    */
   function onMapEditor() {
-    musicPlayerUI.parent.style.borderTop = "none";
     playOrPauseWhenWindowFocusChanges();
   }
   /**
+   * Whether the music player has been initialized or not.
+   */
+  let isMusicPlayerInitialized = false;
+  /**
    * Initializes the music player script by setting everything up.
    */
-  function main() {
-    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
-    musicPlayerUI.setProgress(100);
+  function initializeMusicPlayer() {
+    if (isMusicPlayerInitialized) return;
+    isMusicPlayerInitialized = true;
     // Load settings from local storage but don't allow saving yet
     loadSettingsFromLocalStorage();
-    // Live queue has the music player hidden until the player is in the CO select, so stop here
-    if (isLiveQueue()) return onLiveQueue();
-    // Add the music player UI to the page and the necessary event handlers
-    musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
-    addHandlers();
+    // Override the saved setting for autoplay if we are on a different page than the main game page
+    if (!isGamePageAndActive()) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
     // Handle pages that aren't the main game page or the map editor
+    addHandlers();
+    if (isLiveQueue()) return onLiveQueue();
     if (isMaintenance()) return onMaintenance();
     if (isMovePlanner()) return onMovePlanner();
     if (isYourGames()) return onIsYourGames();
     // game.php or designmap.php from now on
     if (isMapEditor()) onMapEditor();
     allowSettingsToBeSaved();
-    const startFn = () => {
-      preloadAllCommonAudio(() => {
-        log("All common audio has been pre-loaded!");
-        // Set dynamic settings based on the current game state
-        // Lastly, update the UI to reflect the current settings
-        musicSettings.themeType = getCurrentThemeType();
-        musicPlayerUI.updateAllInputLabels();
-        playThemeSong();
-        // Firefox doesn't support autoplay, so we need to pause the music
-        checkHashesInDB();
-        // preloadAllAudio(() => {
-        //   log("All other audio has been pre-loaded!");
-        // });
-      });
-    };
-    // Firefox doesn't support autoplay, so we need to pause the music and load it when the user clicks
-    if (isFirefox()) {
-      musicSettings.isPlaying = false;
-      musicPlayerUI.addEventListener("click", () => startFn());
-      return;
+    preloadAllCommonAudio(() => {
+      log("All common audio has been pre-loaded!");
+      // Set dynamic settings based on the current game state
+      // Lastly, update the UI to reflect the current settings
+      musicSettings.themeType = getCurrentThemeType();
+      musicPlayerUI.updateAllInputLabels();
+      playThemeSong();
+      checkHashesInDB();
+      // preloadAllAudio(() => {
+      //   log("All other audio has been pre-loaded!");
+      // });
+    });
+  }
+  /**
+   * Initializes and adds the music player UI to the page.
+   */
+  function initializeUI() {
+    // Add the music player UI to the page and the necessary event handlers
+    if (!isLiveQueue()) musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
+    musicPlayerUI.setProgress(100);
+    // Make adjustments to the UI based on the page we are on
+    if (isYourGames()) {
+      musicPlayerUI.parent.style.border = "none";
+      musicPlayerUI.parent.style.backgroundColor = "#0000";
+      musicPlayerUI.setProgress(-1);
     }
-    startFn();
+    if (isMapEditor()) {
+      musicPlayerUI.parent.style.borderTop = "none";
+    }
+    if (isMaintenance()) {
+      musicPlayerUI.parent.style.borderLeft = "";
+    }
+  }
+  /**
+   * Main function that initializes everything depending on the browser autoplay settings.
+   */
+  function main() {
+    initializeUI();
+    const ifCanAutoplay = () => {
+      initializeMusicPlayer();
+    };
+    const ifCannotAutoplay = () => {
+      // Listen for any clicks
+      musicPlayerUI.addEventListener("click", () => initializeMusicPlayer(), { once: true });
+      document.querySelector("body")?.addEventListener("click", () => initializeMusicPlayer(), { once: true });
+    };
+    // Check if we can autoplay
+    canAutoplay
+      .audio()
+      .then((response) => {
+        const result = response.result;
+        logDebug("Script starting, does your browser allow you to auto-play:", result);
+        if (result) ifCanAutoplay();
+        else ifCannotAutoplay();
+      })
+      .catch((error) => {
+        logDebug("Script starting, we could not check if we can autoplay so assuming no", error);
+        ifCannotAutoplay();
+      });
   }
   /******************************************************************
    * SCRIPT ENTRY (MAIN FUNCTION)
    ******************************************************************/
-  logDebug("Script starting...");
   // Open the database for caching music files first
-  // No matter what happens, we will call main() after this
-  openDB().then(main, main);
+  // No matter what happens, we will initialize the music player
+  openDB()
+    .then(main, main)
+    .catch((error) => {
+      logDebug("Could not open the database, initializing music player anyway", error);
+      main();
+    });
 
+  exports.initializeMusicPlayer = initializeMusicPlayer;
+  exports.initializeUI = initializeUI;
   exports.main = main;
   exports.notifyCOSelectorListeners = notifyCOSelectorListeners;
 
   return exports;
-})({}, Howl, SparkMD5);
+})({}, canAutoplay, Howl, SparkMD5);

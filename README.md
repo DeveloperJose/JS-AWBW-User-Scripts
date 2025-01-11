@@ -32,6 +32,8 @@ Adds a music player to Advance Wars by Web that comes with all the CO themes and
 
 This is a major code refactoring and update to twiggy_'s original AWBW Music Player 2.0.8 script (https://greasyfork.org/en/scripts/459630-awbw-music-player). I have rewritten the original code fully in Typescript with some improvements, split the code into modules, and documented everything more in depth.
 
+If you want music to auto-play whenever you open a page you can but you'll need add the AWBW site https://awbw.amarriner.com to your list of allowed sites that can auto-play media. You can find out how to do it [for Firefox here](https://support.mozilla.org/en-US/kb/block-autoplay). For Chrome you'll just need to use the website a lot for it to be automatically approved for auto-play. For other browsers you'll need to search online.
+
 Below are the changes from the original script:
 * Added the option to switch between AW1, AW2, AW:Dual Strike, and AW:Reboot Camp soundtracks. Note that in AW1 there are no special power themes, but the activation sound makes up for it! The Reboot Camp power themes for all COs were added as well.
 * You can also add overrides for themes of specific COs. For example, if you really like Sonja's Reboot Camp theme you can add an override for Sonja so that her Reboot Camp theme will play even when your selected soundtrack is AW1/AW2/AWDS.

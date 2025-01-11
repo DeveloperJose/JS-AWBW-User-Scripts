@@ -3,6 +3,9 @@
  *
  * @TODO - More map editor sound effects
  */
+
+import canAutoplay, { CheckResponse } from "can-autoplay";
+
 // Add our CSS to the page using rollup-plugin-postcss
 import "./style.css";
 import "./style_sliders.css";
@@ -25,6 +28,7 @@ import { addHandlers } from "./handlers";
 import {
   getLiveQueueBlockerPopup,
   getLiveQueueSelectPopup,
+  isGamePageAndActive,
   isLiveQueue,
   isMaintenance,
   isMapEditor,
@@ -33,7 +37,7 @@ import {
 } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
-import { logDebug, log, isFirefox } from "./utils";
+import { logDebug, log } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
 
 /******************************************************************
@@ -79,6 +83,7 @@ function onLiveQueue() {
 
     // Prepend the music player UI to the box
     musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
+    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
     playMusicURL(SpecialTheme.COSelect);
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();
@@ -112,7 +117,6 @@ function onLiveQueue() {
  */
 function onMaintenance() {
   log("Maintenance detected, playing music...");
-  musicPlayerUI.parent.style.borderLeft = "";
   musicPlayerUI.openContextMenu();
   musicSettings.randomThemes = false;
   playMusicURL(SpecialTheme.Maintenance);
@@ -133,9 +137,7 @@ function onMovePlanner() {
  */
 function onIsYourGames() {
   log("Your Games detected, playing music...");
-  musicPlayerUI.parent.style.border = "none";
-  musicPlayerUI.parent.style.backgroundColor = "#0000";
-  musicPlayerUI.setProgress(-1);
+
   playMusicURL(SpecialTheme.ModeSelect);
   allowSettingsToBeSaved();
   playOrPauseWhenWindowFocusChanges();
@@ -145,28 +147,30 @@ function onIsYourGames() {
  * Adjust the music player for the map editor page.
  */
 function onMapEditor() {
-  musicPlayerUI.parent.style.borderTop = "none";
   playOrPauseWhenWindowFocusChanges();
 }
 
 /**
+ * Whether the music player has been initialized or not.
+ */
+let isMusicPlayerInitialized = false;
+
+/**
  * Initializes the music player script by setting everything up.
  */
-export function main() {
-  musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
-  musicPlayerUI.setProgress(100);
+export function initializeMusicPlayer() {
+  if (isMusicPlayerInitialized) return;
+  isMusicPlayerInitialized = true;
 
   // Load settings from local storage but don't allow saving yet
   loadSettingsFromLocalStorage();
 
-  // Live queue has the music player hidden until the player is in the CO select, so stop here
-  if (isLiveQueue()) return onLiveQueue();
-
-  // Add the music player UI to the page and the necessary event handlers
-  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
-  addHandlers();
+  // Override the saved setting for autoplay if we are on a different page than the main game page
+  if (!isGamePageAndActive()) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
 
   // Handle pages that aren't the main game page or the map editor
+  addHandlers();
+  if (isLiveQueue()) return onLiveQueue();
   if (isMaintenance()) return onMaintenance();
   if (isMovePlanner()) return onMovePlanner();
   if (isYourGames()) return onIsYourGames();
@@ -175,40 +179,86 @@ export function main() {
   if (isMapEditor()) onMapEditor();
   allowSettingsToBeSaved();
 
-  const startFn = () => {
-    preloadAllCommonAudio(() => {
-      log("All common audio has been pre-loaded!");
+  preloadAllCommonAudio(() => {
+    log("All common audio has been pre-loaded!");
 
-      // Set dynamic settings based on the current game state
-      // Lastly, update the UI to reflect the current settings
-      musicSettings.themeType = getCurrentThemeType();
-      musicPlayerUI.updateAllInputLabels();
-      playThemeSong();
+    // Set dynamic settings based on the current game state
+    // Lastly, update the UI to reflect the current settings
+    musicSettings.themeType = getCurrentThemeType();
+    musicPlayerUI.updateAllInputLabels();
+    playThemeSong();
+    checkHashesInDB();
 
-      // Firefox doesn't support autoplay, so we need to pause the music
+    // preloadAllAudio(() => {
+    //   log("All other audio has been pre-loaded!");
+    // });
+  });
+}
 
-      checkHashesInDB();
+/**
+ * Initializes and adds the music player UI to the page.
+ */
+export function initializeUI() {
+  // Add the music player UI to the page and the necessary event handlers
+  if (!isLiveQueue()) musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
+  musicPlayerUI.setProgress(100);
 
-      // preloadAllAudio(() => {
-      //   log("All other audio has been pre-loaded!");
-      // });
-    });
+  // Make adjustments to the UI based on the page we are on
+  if (isYourGames()) {
+    musicPlayerUI.parent.style.border = "none";
+    musicPlayerUI.parent.style.backgroundColor = "#0000";
+    musicPlayerUI.setProgress(-1);
+  }
+
+  if (isMapEditor()) {
+    musicPlayerUI.parent.style.borderTop = "none";
+  }
+
+  if (isMaintenance()) {
+    musicPlayerUI.parent.style.borderLeft = "";
+  }
+}
+
+/**
+ * Main function that initializes everything depending on the browser autoplay settings.
+ */
+export function main() {
+  initializeUI();
+
+  const ifCanAutoplay = () => {
+    initializeMusicPlayer();
   };
 
-  // Firefox doesn't support autoplay, so we need to pause the music and load it when the user clicks
-  if (isFirefox()) {
-    musicSettings.isPlaying = false;
-    musicPlayerUI.addEventListener("click", () => startFn());
-    return;
-  }
-  startFn();
+  const ifCannotAutoplay = () => {
+    // Listen for any clicks
+    musicPlayerUI.addEventListener("click", () => initializeMusicPlayer(), { once: true });
+    document.querySelector("body")?.addEventListener("click", () => initializeMusicPlayer(), { once: true });
+  };
+
+  // Check if we can autoplay
+  canAutoplay
+    .audio()
+    .then((response: CheckResponse) => {
+      const result = response.result;
+      logDebug("Script starting, does your browser allow you to auto-play:", result);
+
+      if (result) ifCanAutoplay();
+      else ifCannotAutoplay();
+    })
+    .catch((error: Error) => {
+      logDebug("Script starting, we could not check if we can autoplay so assuming no", error);
+      ifCannotAutoplay();
+    });
 }
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-logDebug("Script starting...");
-
 // Open the database for caching music files first
-// No matter what happens, we will call main() after this
-openDB().then(main, main);
+// No matter what happens, we will initialize the music player
+openDB()
+  .then(main, main)
+  .catch((error: Error) => {
+    logDebug("Could not open the database, initializing music player anyway", error);
+    main();
+  });

@@ -266,9 +266,9 @@ export class CustomMenuSettingsUI {
    * @param type - The type of event to listen for.
    * @param listener - The function to be called when the event is triggered.
    */
-  addEventListener(type: string, listener: (event: Event) => void) {
+  addEventListener(type: string, listener: (event: Event) => void, options: boolean | AddEventListenerOptions = false) {
     const div = this.groups.get("bg");
-    div?.addEventListener(type, listener);
+    div?.addEventListener(type, listener, options);
   }
 
   /**

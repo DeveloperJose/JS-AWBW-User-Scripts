@@ -115,7 +115,7 @@ function onThemeEndOrLoop(srcURL: string) {
  */
 function onThemePlay(audio: Howl, srcURL: string) {
   currentLoops = 0;
-  audio.volume(musicSettings.volume);
+  audio.volume(getVolumeForURL(srcURL));
 
   // We start from the beginning if any of these conditions are met:
   // 1. The user wants to restart themes
@@ -192,7 +192,7 @@ function preloadURL(srcURL: string) {
     }
 
     // Themes
-    audio.volume(musicSettings.volume);
+    audio.volume(getVolumeForURL(srcURL));
     audio.on("play", () => onThemePlay(audio, srcURL));
     audio.on("load", () => playThemeSong());
     audio.on("end", () => onThemeEndOrLoop(srcURL));
@@ -207,8 +207,6 @@ function preloadURL(srcURL: string) {
  * @param startFromBeginning - Whether to start from the beginning.
  */
 export function playMusicURL(srcURL: string) {
-  if (!musicSettings.isPlaying) return;
-
   // This song has a special loop, and it's time to play it
   const specialLoopURL = specialLoopMap.get(srcURL);
   if (specialLoopURL) srcURL = specialLoopURL;
@@ -231,10 +229,10 @@ export function playMusicURL(srcURL: string) {
 
   // Loop all themes except for the special ones
   nextSong.loop(!hasSpecialLoop(srcURL));
-  nextSong.volume(musicSettings.volume);
+  nextSong.volume(getVolumeForURL(srcURL));
 
   // Play the song if it's not already playing
-  if (!nextSong.playing()) {
+  if (!nextSong.playing() && musicSettings.isPlaying) {
     log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
     nextSong.play();
   }
@@ -582,6 +580,22 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
       // Adjust the volume of the current theme
       const currentTheme = audioMap.get(currentThemeKey);
       if (currentTheme) currentTheme.volume(musicSettings.volume);
+
+      // Adjust the volume once we can
+      if (!currentTheme) {
+        const intervalID = window.setInterval(() => {
+          const currentTheme = audioMap.get(currentThemeKey);
+          if (currentTheme) {
+            currentTheme.volume(musicSettings.volume);
+            clearInterval(intervalID);
+          }
+        });
+      }
+
+      // Adjust all theme volumes
+      for (const audio of audioMap.values()) {
+        audio.volume(getVolumeForURL(audio._src as string));
+      }
       break;
     }
   }
