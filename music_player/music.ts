@@ -25,7 +25,7 @@ import { getRandomCO } from "../shared/awbw_globals";
 import { isGamePageAndActive } from "../shared/awbw_page";
 import { musicPlayerUI } from "./music_ui";
 import { loadMusicFromDB } from "./db";
-import { logError, log, logDebug, isFirefox } from "./utils";
+import { logError, log, logDebug } from "./utils";
 
 /**
  * The URL of the current theme that is playing.
@@ -180,7 +180,6 @@ function preloadURL(srcURL: string) {
     const audio = new Howl({
       src: [cacheURL],
       format: ["ogg"],
-      html5: isFirefox(),
       onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
       onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
     });

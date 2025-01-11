@@ -12,7 +12,7 @@
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
-// @version     4.0.2
+// @version     4.0.3
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1800,7 +1800,7 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.0.2",
+    music_player: "4.0.3",
     highlight_cursor_coordinates: "2.0.2",
   };
 
@@ -2374,7 +2374,6 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
       const audio = new Howl({
         src: [cacheURL],
         format: ["ogg"],
-        html5: isFirefox(),
         onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
         onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
       });
@@ -3553,6 +3552,10 @@ var awbw_music_player = (function (exports, Howl, SparkMD5) {
       musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
+      // Firefox doesn't support autoplay, so we need to pause the music
+      if (isFirefox()) {
+        musicSettings.isPlaying = false;
+      }
       checkHashesInDB();
       // preloadAllAudio(() => {
       //   log("All other audio has been pre-loaded!");

@@ -33,7 +33,7 @@ import {
 } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
-import { logDebug, log } from "./utils";
+import { logDebug, log, isFirefox } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
 
 /******************************************************************
@@ -183,6 +183,11 @@ export function main() {
     musicSettings.themeType = getCurrentThemeType();
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
+
+    // Firefox doesn't support autoplay, so we need to pause the music
+    if (isFirefox()) {
+      musicSettings.isPlaying = false;
+    }
 
     checkHashesInDB();
 
