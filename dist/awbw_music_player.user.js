@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.4.0
+// @version     4.5.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -93,6 +93,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   }
   function getReplayControls() {
     return document.querySelector(".replay-controls");
+  }
+  function getReplayOpenBtn() {
+    return document.querySelector(".replay-open");
   }
   function getReplayCloseBtn() {
     return document.querySelector(".replay-close");
@@ -396,6 +399,16 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     ).length;
     return numberOfRemainingPlayers === 1;
   }
+  function didGameEndToday() {
+    if (!hasGameEnded()) return false;
+    const endDate = new Date(gameEndDate);
+    const now = new Date();
+    return (
+      endDate.getFullYear() === now.getFullYear() &&
+      endDate.getMonth() === now.getMonth() &&
+      endDate.getDate() === now.getDate()
+    );
+  }
   /**
    * Gets the current day in the game, also works properly in replay mode.
    * In the map editor, we consider it to be day 1.
@@ -459,15 +472,23 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       if (!isGamePageAndActive()) return null;
       const myID = getMyID();
       const myInfo = getPlayerInfo(myID);
+      const myWin = myInfo?.players_eliminated === "N";
       const myLoss = myInfo?.players_eliminated === "Y";
+      const endedToday = didGameEndToday();
+      const isSpectator = isPlayerSpectator(myID);
+      const endGameTheme = isSpectator || myWin ? "victory" : "defeat";
       // Play victory/defeat themes after the game ends for everyone
       if (hasGameEnded()) {
+        // We were watching or playing a game that just ended or ended today
+        if (endedToday) return endGameTheme;
+        // The game ended more than a day ago and we just opened it or closed the replay
         if (!isReplayActive()) return "co-select";
-        if (isPlayerSpectator(myID)) return "victory";
-        return myLoss ? "defeat" : "victory";
+        // The game ended more than a day ago and we are watching the replay
+        return endGameTheme;
       }
-      // Check if we are eliminated even if the game has not ended
+      // The game has not ended, but we already lost
       if (myLoss) return "defeat";
+      // The game has not ended
       return this.info?.co_name;
     }
   }
@@ -1857,8 +1878,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.4.0",
-    highlight_cursor_coordinates: "2.0.2",
+    music_player: "4.5.0",
+    highlight_cursor_coordinates: "2.1.0",
   };
 
   /**
@@ -3118,7 +3139,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const replayBackwardActionBtn = getReplayBackwardActionBtn();
     const replayForwardBtn = getReplayForwardBtn();
     const replayBackwardBtn = getReplayBackwardBtn();
-    // const replayOpenBtn = getReplayOpenBtn();
+    const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
     // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
@@ -3128,8 +3149,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     replayBackwardBtn.addEventListener("click", syncMusic);
     replayDaySelectorCheckBox.addEventListener("change", syncMusic);
     replayCloseBtn.addEventListener("click", syncMusic);
-    // Stop all movement sounds when we go backwards on action
+    // Stop all movement sounds when we go backwards on action, open a replay, or close a replay
     replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
+    replayOpenBtn.addEventListener("click", stopAllMovementSounds);
+    replayCloseBtn.addEventListener("click", stopAllMovementSounds);
     // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
     replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
   }

@@ -33,6 +33,7 @@ import {
   getReplayForwardActionBtn,
   getReplayForwardBtn,
   moveDivToOffset,
+  getReplayOpenBtn,
 } from "../shared/awbw_page";
 import { getBuildingDiv } from "../shared/awbw_page";
 
@@ -246,7 +247,7 @@ function addReplayHandlers() {
   const replayBackwardActionBtn = getReplayBackwardActionBtn();
   const replayForwardBtn = getReplayForwardBtn();
   const replayBackwardBtn = getReplayBackwardBtn();
-  // const replayOpenBtn = getReplayOpenBtn();
+  const replayOpenBtn = getReplayOpenBtn();
   const replayCloseBtn = getReplayCloseBtn();
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
@@ -258,8 +259,10 @@ function addReplayHandlers() {
   replayDaySelectorCheckBox.addEventListener("change", syncMusic);
   replayCloseBtn.addEventListener("click", syncMusic);
 
-  // Stop all movement sounds when we go backwards on action
+  // Stop all movement sounds when we go backwards on action, open a replay, or close a replay
   replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
+  replayOpenBtn.addEventListener("click", stopAllMovementSounds);
+  replayCloseBtn.addEventListener("click", stopAllMovementSounds);
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
   replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));

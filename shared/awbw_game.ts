@@ -169,6 +169,18 @@ export function hasGameEnded() {
   return numberOfRemainingPlayers === 1;
 }
 
+export function didGameEndToday() {
+  if (!hasGameEnded()) return false;
+  const endDate = new Date(gameEndDate);
+  const now = new Date();
+
+  return (
+    endDate.getFullYear() === now.getFullYear() &&
+    endDate.getMonth() === now.getMonth() &&
+    endDate.getDate() === now.getDate()
+  );
+}
+
 /**
  * Gets the current day in the game, also works properly in replay mode.
  * In the map editor, we consider it to be day 1.
@@ -240,18 +252,28 @@ export abstract class currentPlayer {
 
     const myID = getMyID();
     const myInfo = getPlayerInfo(myID);
+    const myWin = myInfo?.players_eliminated === "N";
     const myLoss = myInfo?.players_eliminated === "Y";
+    const endedToday = didGameEndToday();
+    const isSpectator = isPlayerSpectator(myID);
+    const endGameTheme = isSpectator || myWin ? "victory" : "defeat";
 
     // Play victory/defeat themes after the game ends for everyone
     if (hasGameEnded()) {
+      // We were watching or playing a game that just ended or ended today
+      if (endedToday) return endGameTheme;
+
+      // The game ended more than a day ago and we just opened it or closed the replay
       if (!isReplayActive()) return "co-select";
-      if (isPlayerSpectator(myID)) return "victory";
-      return myLoss ? "defeat" : "victory";
+
+      // The game ended more than a day ago and we are watching the replay
+      return endGameTheme;
     }
 
-    // Check if we are eliminated even if the game has not ended
+    // The game has not ended, but we already lost
     if (myLoss) return "defeat";
 
+    // The game has not ended
     return this.info?.co_name;
   }
 }

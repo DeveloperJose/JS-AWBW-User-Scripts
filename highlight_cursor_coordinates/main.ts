@@ -28,7 +28,6 @@ const zoomOutBtn = getZoomOutBtn();
 let ahResizeMap = getResizeMapFn();
 
 /********************** Script Variables & Functions ***********************/
-const CURSOR_THRESHOLD_MS = 30;
 const FONT_SIZE = 9;
 const PREFIX = "highlight_cursor_coordinates";
 const BUTTON_IMG_URL = "https://awbw.amarriner.com/terrain/unit_select.gif";
@@ -36,9 +35,6 @@ const BUTTON_IMG_URL = "https://awbw.amarriner.com/terrain/unit_select.gif";
 let isEnabled = true;
 let previousHighlight: HTMLElement[] = [];
 let isMaximizeToggled = false;
-let lastCursorCall = Date.now();
-let lastCursorX = -1;
-let lastCursorY = -1;
 const currentSquares = new Array<HTMLElement>();
 
 /**
@@ -90,34 +86,22 @@ function onCursorMove(cursorX: number, cursorY: number) {
   // Get cursor row and column indices then the span
   const highlightRow = document.getElementById("grid-spot-row-" + cursorY);
   const highlightCol = document.getElementById("grid-spot-col-" + cursorX);
-  const dx = Math.abs(cursorX - lastCursorX);
-  const dy = Math.abs(cursorY - lastCursorY);
-  const cursorMoved = dx >= 1 || dy >= 1;
-  const timeSinceLastCursorCall = Date.now() - lastCursorCall;
 
   if (!highlightRow || !highlightCol) {
     console.error("[AWBW Highlight Cursor Coordinates] Highlight row or column is null, something isn't right.");
     return;
   }
 
-  // Don't play the sound if we moved the cursor too quickly
-  if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
-
-  if (cursorMoved) {
-    // Remove highlight for previous
-    if (previousHighlight.length > 0) {
-      setHighlight(previousHighlight[0], false);
-      setHighlight(previousHighlight[1], false);
-    }
-
-    // Highlight current
-    setHighlight(highlightRow, true);
-    setHighlight(highlightCol, true);
-    previousHighlight = [highlightRow, highlightCol];
-    lastCursorCall = Date.now();
+  // Remove highlight for previous
+  if (previousHighlight.length > 0) {
+    setHighlight(previousHighlight[0], false);
+    setHighlight(previousHighlight[1], false);
   }
-  lastCursorX = cursorX;
-  lastCursorY = cursorY;
+
+  // Highlight current
+  setHighlight(highlightRow, true);
+  setHighlight(highlightCol, true);
+  previousHighlight = [highlightRow, highlightCol];
 }
 
 function onResizeMap(num: number, btnName: string) {
