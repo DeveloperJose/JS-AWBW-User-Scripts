@@ -2,7 +2,7 @@ import { getMyID } from "../shared/awbw_game";
 
 const BASE_URL = "https://677695d6b0b77423838205b0--developerjose.netlify.app";
 const EMOTE_API_URL = `${BASE_URL}/.netlify/functions/emotes`;
-let emotesInterval: number;
+// let emotesInterval: number;
 
 function sendEmote(emote: string) {
   const message = {
@@ -30,7 +30,7 @@ function fetchEmotes() {
     .then((data) => console.log(data))
     .catch((error) => {
       console.error(error);
-      clearInterval(emotesInterval);
+      // clearInterval(emotesInterval);
     });
 }
 
@@ -41,5 +41,5 @@ button.addEventListener("click", () => sendEmote("👋"));
 p.appendChild(button);
 
 // emotesInterval = setInterval(fetchEmotes, 10000);
-emotesInterval = -1;
+// emotesInterval = -1;
 fetchEmotes();

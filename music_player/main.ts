@@ -23,6 +23,7 @@ import {
   getCurrentThemeType,
   loadSettingsFromLocalStorage,
   musicSettings,
+  RandomThemeType,
 } from "./music_settings";
 import { addHandlers } from "./handlers";
 import {
@@ -118,7 +119,7 @@ function onLiveQueue() {
 function onMaintenance() {
   log("Maintenance detected, playing music...");
   musicPlayerUI.openContextMenu();
-  musicSettings.randomThemes = false;
+  musicSettings.randomThemesType = RandomThemeType.NONE;
   playMusicURL(SpecialTheme.Maintenance);
   allowSettingsToBeSaved();
 }
@@ -256,7 +257,7 @@ export function main() {
       else ifCannotAutoplay();
     })
     .catch((reason) => {
-      logDebug("Script starting, we could not check if we can autoplay so assuming no", reason);
+      logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
       ifCannotAutoplay();
     });
 }

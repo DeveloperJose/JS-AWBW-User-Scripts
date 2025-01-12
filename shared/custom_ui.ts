@@ -1,7 +1,6 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
-
 import { getAllCONames } from "./awbw_globals";
 import { isGamePageAndActive } from "./awbw_page";
 
@@ -635,7 +634,6 @@ export class CustomMenuSettingsUI {
     const coLabel = document.createElement("label");
     coLabel.textContent = text;
     div.appendChild(coLabel);
-
     return div;
   }
 

@@ -11,7 +11,7 @@ import { log, logDebug } from "./utils";
  * Enum that represents which game we want the music player to use for its music.
  * @enum {string}
  */
-export enum SettingsGameType {
+export enum GameType {
   AW1 = "AW1",
   AW2 = "AW2",
   RBC = "RBC",
@@ -22,10 +22,20 @@ export enum SettingsGameType {
  * Enum that represents music theme types like regular or power.
  * @enum {string}
  */
-export enum SettingsThemeType {
+export enum ThemeType {
   REGULAR = "REGULAR",
   CO_POWER = "CO_POWER",
   SUPER_CO_POWER = "SUPER_CO_POWER",
+}
+
+/**
+ * Enum that represents different options for random themes.
+ * @enum {string}
+ */
+export enum RandomThemeType {
+  NONE = "NONE",
+  ALL_THEMES = "ALL_THEMES",
+  CURRENT_SOUNDTRACK = "CURRENT_SOUNDTRACK",
 }
 
 /**
@@ -34,10 +44,10 @@ export enum SettingsThemeType {
  */
 export function getCurrentThemeType() {
   const currentPowerState = currentPlayer?.coPowerState;
-  if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
-  if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
+  if (currentPowerState === "Y") return ThemeType.CO_POWER;
+  if (currentPowerState === "S") return ThemeType.SUPER_CO_POWER;
 
-  return SettingsThemeType.REGULAR;
+  return ThemeType.REGULAR;
 }
 
 /**
@@ -45,7 +55,7 @@ export function getCurrentThemeType() {
  * @returns - A random game type from the SettingsGameType enum.
  */
 export function getRandomGameType() {
-  return Object.values(SettingsGameType)[Math.floor(Math.random() * Object.keys(SettingsGameType).length)];
+  return Object.values(GameType)[Math.floor(Math.random() * Object.keys(GameType).length)];
 }
 
 /**
@@ -57,7 +67,7 @@ const STORAGE_KEY = "musicPlayerSettings";
 /**
  * Function signature for a listener function that will be called whenever a setting changes.
  */
-type SettingsChangeListener = (key: string, isFirstLoad: boolean) => void;
+type SettingsChangeListener = (key: SettingsKey, isFirstLoad: boolean) => void;
 
 /**
  * List of listener functions that will be called anytime settings are changed.
@@ -73,6 +83,38 @@ export function addSettingsChangeListener(fn: SettingsChangeListener) {
 }
 
 /**
+ * Enum that represents the keys for the music player settings.
+ * @enum {number}
+ */
+export enum SettingsKey {
+  IS_PLAYING,
+  VOLUME,
+  SFX_VOLUME,
+  UI_VOLUME,
+  GAME_TYPE,
+  ALTERNATE_THEMES,
+  ALTERNATE_THEME_DAY,
+  RANDOM_THEMES_TYPE,
+  CAPTURE_PROGRESS_SFX,
+  PIPE_SEAM_SFX,
+  OVERRIDE_LIST,
+  RESTART_THEMES,
+  AUTOPLAY_ON_OTHER_PAGES,
+  EXCLUDED_RANDOM_THEMES,
+
+  // Non-user configurable settings
+  THEME_TYPE,
+  CURRENT_RANDOM_CO,
+
+  // Special keys that don't match specific variables
+  ALL,
+  ADD_OVERRIDE,
+  REMOVE_OVERRIDE,
+  ADD_EXCLUDED,
+  REMOVE_EXCLUDED,
+}
+
+/**
  * The music player settings' current internal state.
  * DO NOT EDIT __ prefix variables, use the properties!
  */
@@ -82,20 +124,21 @@ export abstract class musicSettings {
   private static __volume = 0.5;
   private static __sfxVolume = 0.5;
   private static __uiVolume = 0.5;
-  private static __gameType = SettingsGameType.DS;
+  private static __gameType = GameType.DS;
   private static __alternateThemes = true;
   private static __alternateThemeDay = 15;
-  private static __randomThemes = false;
+  private static __randomThemesType = RandomThemeType.NONE;
   private static __captureProgressSFX = true;
   private static __pipeSeamSFX = true;
-  private static __overrideList = new Map<string, SettingsGameType>();
+  private static __overrideList = new Map<string, GameType>();
   private static __restartThemes = false;
   private static __autoplayOnOtherPages = true;
+  private static __excludedRandomThemes = new Set<string>();
 
   // Non-user configurable settings
-  private static __themeType = SettingsThemeType.REGULAR;
-  private static __currentRandomCO = getRandomCO();
-  private static __currentRandomGameType = SettingsGameType.DS;
+  private static __themeType = ThemeType.REGULAR;
+  private static __currentRandomCO: string | null = null;
+  private static __currentRandomGameType = GameType.DS;
   private static __isLoaded = false;
 
   static toJSON() {
@@ -107,12 +150,13 @@ export abstract class musicSettings {
       gameType: this.__gameType,
       alternateThemes: this.__alternateThemes,
       alternateThemeDay: this.__alternateThemeDay,
-      randomThemes: this.__randomThemes,
+      randomThemesType: this.__randomThemesType,
       captureProgressSFX: this.__captureProgressSFX,
       pipeSeamSFX: this.__pipeSeamSFX,
       overrideList: Array.from(this.__overrideList.entries()),
       restartThemes: this.__restartThemes,
       autoplayOnOtherPages: this.__autoplayOnOtherPages,
+      excludedRandomThemes: Array.from(this.__excludedRandomThemes),
     });
   }
 
@@ -127,6 +171,10 @@ export abstract class musicSettings {
           this.__overrideList = new Map(savedSettings[key]);
           continue;
         }
+        if (key === "excludedRandomThemes") {
+          this.__excludedRandomThemes = new Set(savedSettings[key]);
+          continue;
+        }
         // For all other settings, just set them with the setter function
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this as any)[key] = savedSettings[key];
@@ -139,7 +187,7 @@ export abstract class musicSettings {
   static set isPlaying(val: boolean) {
     if (this.__isPlaying === val) return;
     this.__isPlaying = val;
-    this.onSettingChangeEvent("isPlaying");
+    this.onSettingChangeEvent(SettingsKey.IS_PLAYING);
   }
 
   static get isPlaying() {
@@ -149,7 +197,7 @@ export abstract class musicSettings {
   static set volume(val: number) {
     if (this.__volume === val) return;
     this.__volume = val;
-    this.onSettingChangeEvent("volume");
+    this.onSettingChangeEvent(SettingsKey.VOLUME);
   }
 
   static get volume() {
@@ -159,7 +207,7 @@ export abstract class musicSettings {
   static set sfxVolume(val: number) {
     if (this.__sfxVolume === val) return;
     this.__sfxVolume = val;
-    this.onSettingChangeEvent("sfxVolume");
+    this.onSettingChangeEvent(SettingsKey.SFX_VOLUME);
   }
 
   static get sfxVolume() {
@@ -169,19 +217,19 @@ export abstract class musicSettings {
   static set uiVolume(val: number) {
     if (this.__uiVolume === val) return;
     this.__uiVolume = val;
-    this.onSettingChangeEvent("uiVolume");
+    this.onSettingChangeEvent(SettingsKey.UI_VOLUME);
   }
 
   static get uiVolume() {
     return this.__uiVolume;
   }
 
-  static set gameType(val: SettingsGameType) {
+  static set gameType(val: GameType) {
     if (this.__gameType === val) return;
     this.__gameType = val;
     // The user wants this game type, so override whatever random game type we had before
     this.__currentRandomGameType = val;
-    this.onSettingChangeEvent("gameType");
+    this.onSettingChangeEvent(SettingsKey.GAME_TYPE);
   }
   static get gameType() {
     return this.__gameType;
@@ -190,7 +238,7 @@ export abstract class musicSettings {
   static set alternateThemes(val: boolean) {
     if (this.__alternateThemes === val) return;
     this.__alternateThemes = val;
-    this.onSettingChangeEvent("alternateThemes");
+    this.onSettingChangeEvent(SettingsKey.ALTERNATE_THEMES);
   }
 
   static get alternateThemes() {
@@ -200,7 +248,7 @@ export abstract class musicSettings {
   static set alternateThemeDay(val: number) {
     if (this.__alternateThemeDay === val) return;
     this.__alternateThemeDay = val;
-    this.onSettingChangeEvent("alternateThemeDay");
+    this.onSettingChangeEvent(SettingsKey.ALTERNATE_THEME_DAY);
   }
 
   static get alternateThemeDay() {
@@ -210,7 +258,7 @@ export abstract class musicSettings {
   static set captureProgressSFX(val: boolean) {
     // if (this.__captureProgressSFX === val) return;
     this.__captureProgressSFX = val;
-    this.onSettingChangeEvent("captureProgressSFX");
+    this.onSettingChangeEvent(SettingsKey.CAPTURE_PROGRESS_SFX);
   }
 
   static get captureProgressSFX() {
@@ -220,32 +268,32 @@ export abstract class musicSettings {
   static set pipeSeamSFX(val: boolean) {
     // if (this.__pipeSeamSFX === val) return;
     this.__pipeSeamSFX = val;
-    this.onSettingChangeEvent("pipeSeamSFX");
+    this.onSettingChangeEvent(SettingsKey.PIPE_SEAM_SFX);
   }
 
   static get pipeSeamSFX() {
     return this.__pipeSeamSFX;
   }
 
-  private static set overrideList(val: Map<string, SettingsGameType>) {
+  private static set overrideList(val: Map<string, GameType>) {
     this.__overrideList = new Map([...val.entries()].sort());
-    this.onSettingChangeEvent("overrideList");
+    this.onSettingChangeEvent(SettingsKey.OVERRIDE_LIST);
   }
 
   static get overrideList() {
     return this.__overrideList;
   }
 
-  static addOverride(coName: string, gameType: SettingsGameType) {
+  static addOverride(coName: string, gameType: GameType) {
     this.__overrideList.set(coName, gameType);
     this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-    this.onSettingChangeEvent("addOverride");
+    this.onSettingChangeEvent(SettingsKey.ADD_OVERRIDE);
   }
 
   static removeOverride(coName: string) {
     this.__overrideList.delete(coName);
     this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-    this.onSettingChangeEvent("removeOverride");
+    this.onSettingChangeEvent(SettingsKey.REMOVE_OVERRIDE);
   }
 
   static getOverride(coName: string) {
@@ -259,7 +307,7 @@ export abstract class musicSettings {
   static set restartThemes(val: boolean) {
     if (this.__restartThemes === val) return;
     this.__restartThemes = val;
-    this.onSettingChangeEvent("restartThemes");
+    this.onSettingChangeEvent(SettingsKey.RESTART_THEMES);
   }
 
   static get autoplayOnOtherPages() {
@@ -269,46 +317,76 @@ export abstract class musicSettings {
   static set autoplayOnOtherPages(val: boolean) {
     if (this.__autoplayOnOtherPages === val) return;
     this.__autoplayOnOtherPages = val;
-    this.onSettingChangeEvent("autoplayOnOtherPages");
+    this.onSettingChangeEvent(SettingsKey.AUTOPLAY_ON_OTHER_PAGES);
+  }
+
+  static get excludedRandomThemes() {
+    return this.__excludedRandomThemes;
+  }
+
+  static set excludedRandomThemes(val: Set<string>) {
+    this.__excludedRandomThemes = val;
+    this.onSettingChangeEvent(SettingsKey.EXCLUDED_RANDOM_THEMES);
+  }
+
+  static addExcludedRandomTheme(theme: string) {
+    this.__excludedRandomThemes.add(theme);
+    this.onSettingChangeEvent(SettingsKey.ADD_EXCLUDED);
+  }
+
+  static removeExcludedRandomTheme(theme: string) {
+    this.__excludedRandomThemes.delete(theme);
+    this.onSettingChangeEvent(SettingsKey.REMOVE_EXCLUDED);
   }
 
   // ************* Non-user configurable settings from here on
 
-  static set themeType(val: SettingsThemeType) {
+  static set themeType(val: ThemeType) {
     if (this.__themeType === val) return;
     this.__themeType = val;
-    this.onSettingChangeEvent("themeType");
+    this.onSettingChangeEvent(SettingsKey.THEME_TYPE);
   }
 
   static get themeType() {
     return this.__themeType;
   }
 
-  static set randomThemes(val: boolean) {
-    if (this.__randomThemes === val) return;
-    this.__randomThemes = val;
-    this.onSettingChangeEvent("randomThemes");
+  static set randomThemesType(val: RandomThemeType) {
+    if (this.__randomThemesType === val) return;
+    this.__randomThemesType = val;
+    this.onSettingChangeEvent(SettingsKey.RANDOM_THEMES_TYPE);
   }
 
-  static get randomThemes() {
-    return this.__randomThemes;
+  static get randomThemesType() {
+    return this.__randomThemesType;
   }
 
   static get currentRandomCO() {
-    return this.__currentRandomCO;
+    if (!this.__currentRandomCO) this.randomizeCO();
+    return this.__currentRandomCO as string;
   }
 
-  static set currentRandomCO(val: string) {
-    // Make sure we don't get the same CO twice in a row
-    while (this.__currentRandomCO === val) {
-      val = getRandomCO();
+  static randomizeCO() {
+    let val = getRandomCO();
+
+    // logDebug("Excluded themes:", this.__excludedRandomThemes.size);
+
+    // Prevent infinite loop by making sure at least one CO is not excluded
+    if (this.__excludedRandomThemes.size === 28) {
+      val = "map-editor";
+    } else {
+      // Make sure we don't get the same CO twice in a row or a CO that's excluded
+      while (this.__currentRandomCO === val || this.__excludedRandomThemes.has(val)) {
+        val = getRandomCO();
+      }
     }
+
     this.__currentRandomCO = val;
     this.__currentRandomGameType = getRandomGameType();
-    this.onSettingChangeEvent("currentRandomCO");
+    this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO);
   }
 
-  static onSettingChangeEvent(key: string) {
+  static onSettingChangeEvent(key: SettingsKey) {
     onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
   }
 
@@ -331,7 +409,7 @@ export function loadSettingsFromLocalStorage() {
   musicSettings.fromJSON(storageData);
 
   // Tell everyone we just loaded the settings
-  onSettingsChangeListeners.forEach((fn) => fn("all", true));
+  onSettingsChangeListeners.forEach((fn) => fn(SettingsKey.ALL, true));
   logDebug("Settings loaded from storage:", storageData);
 }
 
@@ -340,9 +418,9 @@ export function allowSettingsToBeSaved() {
   addSettingsChangeListener(onSettingsChange);
 }
 
-function onSettingsChange(_key: string, _isFirstLoad: boolean) {
+function onSettingsChange(key: SettingsKey, _isFirstLoad: boolean) {
   // We can't save the non-configurable settings
-  if (_key === "themeType" || _key === "currentRandomCO") return "";
+  if (key === SettingsKey.THEME_TYPE || key === SettingsKey.CURRENT_RANDOM_CO) return "";
 
   // Save all settings otherwise
   updateSettingsInLocalStorage();

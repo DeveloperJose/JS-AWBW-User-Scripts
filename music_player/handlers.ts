@@ -36,7 +36,7 @@ import {
 } from "../shared/awbw_page";
 import { getBuildingDiv } from "../shared/awbw_page";
 
-import { areAnimationsEnabled, getRandomCO } from "../shared/awbw_globals";
+import { areAnimationsEnabled } from "../shared/awbw_globals";
 import {
   playThemeSong,
   playSFX,
@@ -45,7 +45,7 @@ import {
   stopThemeSong,
   stopAllMovementSounds,
 } from "./music";
-import { getCurrentThemeType, musicSettings, SettingsGameType, SettingsThemeType } from "./music_settings";
+import { getCurrentThemeType, musicSettings, GameType, ThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
 import {
@@ -228,7 +228,7 @@ function syncMusic() {
 function refreshMusicForNextTurn(playDelayMS = 0) {
   // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
   visibilityMap.clear();
-  musicSettings.currentRandomCO = getRandomCO();
+  musicSettings.randomizeCO();
   musicSettings.themeType = getCurrentThemeType();
 
   window.setTimeout(() => {
@@ -807,16 +807,16 @@ function onPower(data: PowerData) {
   const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
   // Update the theme type
-  musicSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
+  musicSettings.themeType = isSuperCOPower ? ThemeType.SUPER_CO_POWER : ThemeType.CO_POWER;
   switch (musicSettings.gameType) {
-    case SettingsGameType.AW1:
+    case GameType.AW1:
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);
       stopThemeSong(4500);
       return;
-    case SettingsGameType.AW2:
-    case SettingsGameType.DS:
-    case SettingsGameType.RBC: {
+    case GameType.AW2:
+    case GameType.DS:
+    case GameType.RBC: {
       // Super CO Power
       if (isSuperCOPower) {
         const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;

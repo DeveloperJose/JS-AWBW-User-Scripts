@@ -104,6 +104,6 @@ export function isBlackHoleCO(coName: string) {
  */
 export function getRandomCO() {
   const COs = getAllCONames();
-  COs.push("map-editor");
+  // COs.push("map-editor");
   return COs[Math.floor(Math.random() * COs.length)];
 }

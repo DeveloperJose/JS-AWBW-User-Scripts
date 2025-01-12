@@ -857,7 +857,7 @@
     // designmap.php, wait until designerMapEditor is loaded to run script
     const isMapEditorAndNotLoaded = isMapEditor() && !designMapEditor?.loaded;
     if (isMapEditorAndNotLoaded) {
-      const interval = setInterval(() => {
+      const interval = window.setInterval(() => {
         if (designMapEditor.loaded) {
           ahResizeMap = getResizeMapFn();
           main();

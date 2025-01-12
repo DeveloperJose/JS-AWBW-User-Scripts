@@ -3,7 +3,7 @@
  */
 import SparkMD5 from "spark-md5";
 import { HASH_JSON_URL } from "./resources";
-import { log, logDebug, logError } from "./utils";
+import { logDebug, logError } from "./utils";
 
 /**
  * The IndexedDB database for caching music files.
@@ -217,7 +217,6 @@ function compareHashesAndReplaceIfNeeded(hashesJson: { [key: string]: string }) 
         .then((hash) => {
           if (hash === serverHash) return;
           // The hash is different, so we need to replace the song
-          log("A new version of", url, " is available. Replacing the old version.");
           return storeURLInDB(url);
         })
         .catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));

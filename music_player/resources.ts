@@ -3,7 +3,7 @@
  */
 import { getAllPlayingCONames, getCurrentGameDay } from "../shared/awbw_game";
 import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO, AW2_ONLY_COs } from "../shared/awbw_globals";
-import { SettingsGameType, SettingsThemeType, musicSettings } from "./music_settings";
+import { GameType, ThemeType, musicSettings } from "./music_settings";
 
 /**
  * Base URL where all the files needed for this script are located.
@@ -178,10 +178,10 @@ const onMovementRolloffMap = new Map([
  * Map that takes a game type and gives you a set of CO names that have alternate themes for that game type.
  */
 const alternateThemes = new Map([
-  [SettingsGameType.AW1, new Set(["sturm"])],
-  [SettingsGameType.AW2, new Set(["sturm"])],
-  [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
-  [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
+  [GameType.AW1, new Set(["sturm"])],
+  [GameType.AW2, new Set(["sturm"])],
+  [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
+  [GameType.DS, new Set(["sturm", "vonbolt"])],
 ]);
 
 /**
@@ -196,7 +196,7 @@ const specialLoops = new Set(["vonbolt"]);
  * @param themeType - Which type of music whether regular or power.
  * @returns - The filename of the alternate music to play given the parameters, if any.
  */
-function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, themeType: SettingsThemeType) {
+function getAlternateMusicFilename(coName: string, gameType: GameType, themeType: ThemeType) {
   // Check if this CO has an alternate theme
   if (!alternateThemes.has(gameType)) return;
   const alternateThemesSet = alternateThemes.get(gameType);
@@ -204,8 +204,8 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
   const faction = isBlackHoleCO(coName) ? "bh" : "ally";
 
   // RBC individual CO power themes -> RBC shared factory themes
-  const isPowerActive = themeType !== SettingsThemeType.REGULAR;
-  if (gameType === SettingsGameType.RBC && isPowerActive) {
+  const isPowerActive = themeType !== ThemeType.REGULAR;
+  if (gameType === GameType.RBC && isPowerActive) {
     return `t-${faction}-${themeType}`;
   }
 
@@ -215,7 +215,7 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
   }
 
   // Andy -> Clone Andy
-  if (coName === "andy" && gameType == SettingsGameType.RBC) {
+  if (coName === "andy" && gameType == GameType.RBC) {
     return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
   }
 
@@ -230,12 +230,7 @@ function getAlternateMusicFilename(coName: string, gameType: SettingsGameType, t
  * @param themeType - Which type of music whether regular or power.
  * @returns - The filename of the music to play given the parameters.
  */
-function getMusicFilename(
-  coName: string,
-  gameType: SettingsGameType,
-  themeType: SettingsThemeType,
-  useAlternateTheme: boolean,
-) {
+function getMusicFilename(coName: string, gameType: GameType, themeType: ThemeType, useAlternateTheme: boolean) {
   // Check if we want to play the map editor theme
   if (coName === "map-editor") return "t-map-editor";
 
@@ -246,14 +241,14 @@ function getMusicFilename(
   }
 
   // Regular theme, either no power or we are in AW1 where there's no power themes.
-  const isPowerActive = themeType !== SettingsThemeType.REGULAR;
-  if (!isPowerActive || gameType === SettingsGameType.AW1) {
+  const isPowerActive = themeType !== ThemeType.REGULAR;
+  if (!isPowerActive || gameType === GameType.AW1) {
     return `t-${coName}`;
   }
 
   // For RBC, we play the new power themes (if they are not in the DS games obviously)
   const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-  if (gameType === SettingsGameType.RBC && isCOInRBC) {
+  if (gameType === GameType.RBC && isCOInRBC) {
     return `t-${coName}-cop`;
   }
   // For all other games, play the ally or black hole themes during the CO and Super CO powers
@@ -271,12 +266,7 @@ function getMusicFilename(
  * @param useAlternateTheme - (Optional) Whether to use the alternate theme for the given CO.
  * @returns - The complete URL of the music to play given the parameters.
  */
-export function getMusicURL(
-  coName: string,
-  gameType?: SettingsGameType,
-  themeType?: SettingsThemeType,
-  useAlternateTheme?: boolean,
-) {
+export function getMusicURL(coName: string, gameType?: GameType, themeType?: ThemeType, useAlternateTheme?: boolean) {
   // Override optional parameters with current settings if not provided
   if (gameType === null || gameType === undefined) gameType = musicSettings.gameType;
   if (themeType === null || themeType === undefined) themeType = musicSettings.themeType;
@@ -299,8 +289,8 @@ export function getMusicURL(
   if (overrideType) gameType = overrideType;
 
   // Override the game type to a higher game if the CO is not available in the current game.
-  if (gameType !== SettingsGameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = SettingsGameType.DS;
-  if (gameType === SettingsGameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = SettingsGameType.AW2;
+  if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+  if (gameType === GameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = GameType.AW2;
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
@@ -380,9 +370,9 @@ export function getCurrentThemeURLs(): Set<string> {
   const audioList = new Set<string>();
 
   coNames.forEach((name) => {
-    const regularURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.REGULAR, false);
-    const powerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.CO_POWER, false);
-    const superPowerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+    const regularURL = getMusicURL(name, musicSettings.gameType, ThemeType.REGULAR, false);
+    const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
+    const superPowerURL = getMusicURL(name, musicSettings.gameType, ThemeType.SUPER_CO_POWER, false);
     const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
     audioList.add(regularURL);
     audioList.add(alternateURL);
@@ -422,10 +412,10 @@ export function getAllAudioURLs() {
 
   // Themes
   for (const coName of getAllCONames()) {
-    for (const gameType of Object.values(SettingsGameType)) {
-      for (const themeType of Object.values(SettingsThemeType)) {
+    for (const gameType of Object.values(GameType)) {
+      for (const themeType of Object.values(ThemeType)) {
         const url = getMusicURL(coName, gameType, themeType, false);
-        if (themeType === SettingsThemeType.REGULAR && specialLoops.has(coName)) {
+        if (themeType === ThemeType.REGULAR && specialLoops.has(coName)) {
           allSoundURLs.add(url.replace(".ogg", "-loop.ogg"));
         }
         const alternateURL = getMusicURL(coName, gameType, themeType, true);

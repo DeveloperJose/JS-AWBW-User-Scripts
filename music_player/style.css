@@ -33,6 +33,7 @@
   padding-bottom: 1px;
   height: 100%;
   width: 100%;
+  position: relative;
 }
 
 .cls-settings-menu .cls-horizontal-box {
@@ -46,6 +47,7 @@
   padding-bottom: 1px;
   height: 100%;
   width: 100%;
+  position: relative;
 }
 
 /* Puts the checkbox next to the label */

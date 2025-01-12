@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.1.0
+// @version     4.3.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -53,7 +53,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -254,7 +254,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    */
   function getRandomCO() {
     const COs = getAllCONames();
-    COs.push("map-editor");
+    // COs.push("map-editor");
     return COs[Math.floor(Math.random() * COs.length)];
   }
 
@@ -597,39 +597,49 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Enum that represents which game we want the music player to use for its music.
    * @enum {string}
    */
-  var SettingsGameType;
-  (function (SettingsGameType) {
-    SettingsGameType["AW1"] = "AW1";
-    SettingsGameType["AW2"] = "AW2";
-    SettingsGameType["RBC"] = "RBC";
-    SettingsGameType["DS"] = "DS";
-  })(SettingsGameType || (SettingsGameType = {}));
+  var GameType;
+  (function (GameType) {
+    GameType["AW1"] = "AW1";
+    GameType["AW2"] = "AW2";
+    GameType["RBC"] = "RBC";
+    GameType["DS"] = "DS";
+  })(GameType || (GameType = {}));
   /**
    * Enum that represents music theme types like regular or power.
    * @enum {string}
    */
-  var SettingsThemeType;
-  (function (SettingsThemeType) {
-    SettingsThemeType["REGULAR"] = "REGULAR";
-    SettingsThemeType["CO_POWER"] = "CO_POWER";
-    SettingsThemeType["SUPER_CO_POWER"] = "SUPER_CO_POWER";
-  })(SettingsThemeType || (SettingsThemeType = {}));
+  var ThemeType;
+  (function (ThemeType) {
+    ThemeType["REGULAR"] = "REGULAR";
+    ThemeType["CO_POWER"] = "CO_POWER";
+    ThemeType["SUPER_CO_POWER"] = "SUPER_CO_POWER";
+  })(ThemeType || (ThemeType = {}));
+  /**
+   * Enum that represents different options for random themes.
+   * @enum {string}
+   */
+  var RandomThemeType;
+  (function (RandomThemeType) {
+    RandomThemeType["NONE"] = "NONE";
+    RandomThemeType["ALL_THEMES"] = "ALL_THEMES";
+    RandomThemeType["CURRENT_SOUNDTRACK"] = "CURRENT_SOUNDTRACK";
+  })(RandomThemeType || (RandomThemeType = {}));
   /**
    * Gets the theme type enum corresponding to the CO Power state for the current CO.
    * @returns - The SettingsThemeType enum for the current CO Power state.
    */
   function getCurrentThemeType() {
     const currentPowerState = currentPlayer?.coPowerState;
-    if (currentPowerState === "Y") return SettingsThemeType.CO_POWER;
-    if (currentPowerState === "S") return SettingsThemeType.SUPER_CO_POWER;
-    return SettingsThemeType.REGULAR;
+    if (currentPowerState === "Y") return ThemeType.CO_POWER;
+    if (currentPowerState === "S") return ThemeType.SUPER_CO_POWER;
+    return ThemeType.REGULAR;
   }
   /**
    * Gets a random game type from the SettingsGameType enum.
    * @returns - A random game type from the SettingsGameType enum.
    */
   function getRandomGameType() {
-    return Object.values(SettingsGameType)[Math.floor(Math.random() * Object.keys(SettingsGameType).length)];
+    return Object.values(GameType)[Math.floor(Math.random() * Object.keys(GameType).length)];
   }
   /**
    * String used as the key for storing settings in LocalStorage
@@ -648,6 +658,36 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     onSettingsChangeListeners.push(fn);
   }
   /**
+   * Enum that represents the keys for the music player settings.
+   * @enum {number}
+   */
+  var SettingsKey;
+  (function (SettingsKey) {
+    SettingsKey[(SettingsKey["IS_PLAYING"] = 0)] = "IS_PLAYING";
+    SettingsKey[(SettingsKey["VOLUME"] = 1)] = "VOLUME";
+    SettingsKey[(SettingsKey["SFX_VOLUME"] = 2)] = "SFX_VOLUME";
+    SettingsKey[(SettingsKey["UI_VOLUME"] = 3)] = "UI_VOLUME";
+    SettingsKey[(SettingsKey["GAME_TYPE"] = 4)] = "GAME_TYPE";
+    SettingsKey[(SettingsKey["ALTERNATE_THEMES"] = 5)] = "ALTERNATE_THEMES";
+    SettingsKey[(SettingsKey["ALTERNATE_THEME_DAY"] = 6)] = "ALTERNATE_THEME_DAY";
+    SettingsKey[(SettingsKey["RANDOM_THEMES_TYPE"] = 7)] = "RANDOM_THEMES_TYPE";
+    SettingsKey[(SettingsKey["CAPTURE_PROGRESS_SFX"] = 8)] = "CAPTURE_PROGRESS_SFX";
+    SettingsKey[(SettingsKey["PIPE_SEAM_SFX"] = 9)] = "PIPE_SEAM_SFX";
+    SettingsKey[(SettingsKey["OVERRIDE_LIST"] = 10)] = "OVERRIDE_LIST";
+    SettingsKey[(SettingsKey["RESTART_THEMES"] = 11)] = "RESTART_THEMES";
+    SettingsKey[(SettingsKey["AUTOPLAY_ON_OTHER_PAGES"] = 12)] = "AUTOPLAY_ON_OTHER_PAGES";
+    SettingsKey[(SettingsKey["EXCLUDED_RANDOM_THEMES"] = 13)] = "EXCLUDED_RANDOM_THEMES";
+    // Non-user configurable settings
+    SettingsKey[(SettingsKey["THEME_TYPE"] = 14)] = "THEME_TYPE";
+    SettingsKey[(SettingsKey["CURRENT_RANDOM_CO"] = 15)] = "CURRENT_RANDOM_CO";
+    // Special keys that don't match specific variables
+    SettingsKey[(SettingsKey["ALL"] = 16)] = "ALL";
+    SettingsKey[(SettingsKey["ADD_OVERRIDE"] = 17)] = "ADD_OVERRIDE";
+    SettingsKey[(SettingsKey["REMOVE_OVERRIDE"] = 18)] = "REMOVE_OVERRIDE";
+    SettingsKey[(SettingsKey["ADD_EXCLUDED"] = 19)] = "ADD_EXCLUDED";
+    SettingsKey[(SettingsKey["REMOVE_EXCLUDED"] = 20)] = "REMOVE_EXCLUDED";
+  })(SettingsKey || (SettingsKey = {}));
+  /**
    * The music player settings' current internal state.
    * DO NOT EDIT __ prefix variables, use the properties!
    */
@@ -657,19 +697,20 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static __volume = 0.5;
     static __sfxVolume = 0.5;
     static __uiVolume = 0.5;
-    static __gameType = SettingsGameType.DS;
+    static __gameType = GameType.DS;
     static __alternateThemes = true;
     static __alternateThemeDay = 15;
-    static __randomThemes = false;
+    static __randomThemesType = RandomThemeType.NONE;
     static __captureProgressSFX = true;
     static __pipeSeamSFX = true;
     static __overrideList = new Map();
     static __restartThemes = false;
     static __autoplayOnOtherPages = true;
+    static __excludedRandomThemes = new Set();
     // Non-user configurable settings
-    static __themeType = SettingsThemeType.REGULAR;
-    static __currentRandomCO = getRandomCO();
-    static __currentRandomGameType = SettingsGameType.DS;
+    static __themeType = ThemeType.REGULAR;
+    static __currentRandomCO = null;
+    static __currentRandomGameType = GameType.DS;
     static __isLoaded = false;
     static toJSON() {
       return JSON.stringify({
@@ -680,12 +721,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         gameType: this.__gameType,
         alternateThemes: this.__alternateThemes,
         alternateThemeDay: this.__alternateThemeDay,
-        randomThemes: this.__randomThemes,
+        randomThemesType: this.__randomThemesType,
         captureProgressSFX: this.__captureProgressSFX,
         pipeSeamSFX: this.__pipeSeamSFX,
         overrideList: Array.from(this.__overrideList.entries()),
         restartThemes: this.__restartThemes,
         autoplayOnOtherPages: this.__autoplayOnOtherPages,
+        excludedRandomThemes: Array.from(this.__excludedRandomThemes),
       });
     }
     static fromJSON(json) {
@@ -699,6 +741,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
             this.__overrideList = new Map(savedSettings[key]);
             continue;
           }
+          if (key === "excludedRandomThemes") {
+            this.__excludedRandomThemes = new Set(savedSettings[key]);
+            continue;
+          }
           // For all other settings, just set them with the setter function
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           this[key] = savedSettings[key];
@@ -710,7 +756,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set isPlaying(val) {
       if (this.__isPlaying === val) return;
       this.__isPlaying = val;
-      this.onSettingChangeEvent("isPlaying");
+      this.onSettingChangeEvent(SettingsKey.IS_PLAYING);
     }
     static get isPlaying() {
       return this.__isPlaying;
@@ -718,7 +764,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set volume(val) {
       if (this.__volume === val) return;
       this.__volume = val;
-      this.onSettingChangeEvent("volume");
+      this.onSettingChangeEvent(SettingsKey.VOLUME);
     }
     static get volume() {
       return this.__volume;
@@ -726,7 +772,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set sfxVolume(val) {
       if (this.__sfxVolume === val) return;
       this.__sfxVolume = val;
-      this.onSettingChangeEvent("sfxVolume");
+      this.onSettingChangeEvent(SettingsKey.SFX_VOLUME);
     }
     static get sfxVolume() {
       return this.__sfxVolume;
@@ -734,7 +780,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set uiVolume(val) {
       if (this.__uiVolume === val) return;
       this.__uiVolume = val;
-      this.onSettingChangeEvent("uiVolume");
+      this.onSettingChangeEvent(SettingsKey.UI_VOLUME);
     }
     static get uiVolume() {
       return this.__uiVolume;
@@ -744,7 +790,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       this.__gameType = val;
       // The user wants this game type, so override whatever random game type we had before
       this.__currentRandomGameType = val;
-      this.onSettingChangeEvent("gameType");
+      this.onSettingChangeEvent(SettingsKey.GAME_TYPE);
     }
     static get gameType() {
       return this.__gameType;
@@ -752,7 +798,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set alternateThemes(val) {
       if (this.__alternateThemes === val) return;
       this.__alternateThemes = val;
-      this.onSettingChangeEvent("alternateThemes");
+      this.onSettingChangeEvent(SettingsKey.ALTERNATE_THEMES);
     }
     static get alternateThemes() {
       return this.__alternateThemes;
@@ -760,7 +806,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set alternateThemeDay(val) {
       if (this.__alternateThemeDay === val) return;
       this.__alternateThemeDay = val;
-      this.onSettingChangeEvent("alternateThemeDay");
+      this.onSettingChangeEvent(SettingsKey.ALTERNATE_THEME_DAY);
     }
     static get alternateThemeDay() {
       return this.__alternateThemeDay;
@@ -768,7 +814,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set captureProgressSFX(val) {
       // if (this.__captureProgressSFX === val) return;
       this.__captureProgressSFX = val;
-      this.onSettingChangeEvent("captureProgressSFX");
+      this.onSettingChangeEvent(SettingsKey.CAPTURE_PROGRESS_SFX);
     }
     static get captureProgressSFX() {
       return this.__captureProgressSFX;
@@ -776,14 +822,14 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set pipeSeamSFX(val) {
       // if (this.__pipeSeamSFX === val) return;
       this.__pipeSeamSFX = val;
-      this.onSettingChangeEvent("pipeSeamSFX");
+      this.onSettingChangeEvent(SettingsKey.PIPE_SEAM_SFX);
     }
     static get pipeSeamSFX() {
       return this.__pipeSeamSFX;
     }
     static set overrideList(val) {
       this.__overrideList = new Map([...val.entries()].sort());
-      this.onSettingChangeEvent("overrideList");
+      this.onSettingChangeEvent(SettingsKey.OVERRIDE_LIST);
     }
     static get overrideList() {
       return this.__overrideList;
@@ -791,12 +837,12 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static addOverride(coName, gameType) {
       this.__overrideList.set(coName, gameType);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-      this.onSettingChangeEvent("addOverride");
+      this.onSettingChangeEvent(SettingsKey.ADD_OVERRIDE);
     }
     static removeOverride(coName) {
       this.__overrideList.delete(coName);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-      this.onSettingChangeEvent("removeOverride");
+      this.onSettingChangeEvent(SettingsKey.REMOVE_OVERRIDE);
     }
     static getOverride(coName) {
       return this.__overrideList.get(coName);
@@ -807,7 +853,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set restartThemes(val) {
       if (this.__restartThemes === val) return;
       this.__restartThemes = val;
-      this.onSettingChangeEvent("restartThemes");
+      this.onSettingChangeEvent(SettingsKey.RESTART_THEMES);
     }
     static get autoplayOnOtherPages() {
       return this.__autoplayOnOtherPages;
@@ -815,36 +861,59 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static set autoplayOnOtherPages(val) {
       if (this.__autoplayOnOtherPages === val) return;
       this.__autoplayOnOtherPages = val;
-      this.onSettingChangeEvent("autoplayOnOtherPages");
+      this.onSettingChangeEvent(SettingsKey.AUTOPLAY_ON_OTHER_PAGES);
+    }
+    static get excludedRandomThemes() {
+      return this.__excludedRandomThemes;
+    }
+    static set excludedRandomThemes(val) {
+      this.__excludedRandomThemes = val;
+      this.onSettingChangeEvent(SettingsKey.EXCLUDED_RANDOM_THEMES);
+    }
+    static addExcludedRandomTheme(theme) {
+      this.__excludedRandomThemes.add(theme);
+      this.onSettingChangeEvent(SettingsKey.ADD_EXCLUDED);
+    }
+    static removeExcludedRandomTheme(theme) {
+      this.__excludedRandomThemes.delete(theme);
+      this.onSettingChangeEvent(SettingsKey.REMOVE_EXCLUDED);
     }
     // ************* Non-user configurable settings from here on
     static set themeType(val) {
       if (this.__themeType === val) return;
       this.__themeType = val;
-      this.onSettingChangeEvent("themeType");
+      this.onSettingChangeEvent(SettingsKey.THEME_TYPE);
     }
     static get themeType() {
       return this.__themeType;
     }
-    static set randomThemes(val) {
-      if (this.__randomThemes === val) return;
-      this.__randomThemes = val;
-      this.onSettingChangeEvent("randomThemes");
+    static set randomThemesType(val) {
+      if (this.__randomThemesType === val) return;
+      this.__randomThemesType = val;
+      this.onSettingChangeEvent(SettingsKey.RANDOM_THEMES_TYPE);
     }
-    static get randomThemes() {
-      return this.__randomThemes;
+    static get randomThemesType() {
+      return this.__randomThemesType;
     }
     static get currentRandomCO() {
+      if (!this.__currentRandomCO) this.randomizeCO();
       return this.__currentRandomCO;
     }
-    static set currentRandomCO(val) {
-      // Make sure we don't get the same CO twice in a row
-      while (this.__currentRandomCO === val) {
-        val = getRandomCO();
+    static randomizeCO() {
+      let val = getRandomCO();
+      // logDebug("Excluded themes:", this.__excludedRandomThemes.size);
+      // Prevent infinite loop by making sure at least one CO is not excluded
+      if (this.__excludedRandomThemes.size === 28) {
+        val = "map-editor";
+      } else {
+        // Make sure we don't get the same CO twice in a row or a CO that's excluded
+        while (this.__currentRandomCO === val || this.__excludedRandomThemes.has(val)) {
+          val = getRandomCO();
+        }
       }
       this.__currentRandomCO = val;
       this.__currentRandomGameType = getRandomGameType();
-      this.onSettingChangeEvent("currentRandomCO");
+      this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO);
     }
     static onSettingChangeEvent(key) {
       onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
@@ -865,16 +934,16 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     }
     musicSettings.fromJSON(storageData);
     // Tell everyone we just loaded the settings
-    onSettingsChangeListeners.forEach((fn) => fn("all", true));
+    onSettingsChangeListeners.forEach((fn) => fn(SettingsKey.ALL, true));
     logDebug("Settings loaded from storage:", storageData);
   }
   function allowSettingsToBeSaved() {
     // From now on, any setting changes will be saved and any listeners will be called
     addSettingsChangeListener(onSettingsChange$2);
   }
-  function onSettingsChange$2(_key, _isFirstLoad) {
+  function onSettingsChange$2(key, _isFirstLoad) {
     // We can't save the non-configurable settings
-    if (_key === "themeType" || _key === "currentRandomCO") return "";
+    if (key === SettingsKey.THEME_TYPE || key === SettingsKey.CURRENT_RANDOM_CO) return "";
     // Save all settings otherwise
     updateSettingsInLocalStorage();
   }
@@ -1051,10 +1120,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Map that takes a game type and gives you a set of CO names that have alternate themes for that game type.
    */
   const alternateThemes = new Map([
-    [SettingsGameType.AW1, new Set(["sturm"])],
-    [SettingsGameType.AW2, new Set(["sturm"])],
-    [SettingsGameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
-    [SettingsGameType.DS, new Set(["sturm", "vonbolt"])],
+    [GameType.AW1, new Set(["sturm"])],
+    [GameType.AW2, new Set(["sturm"])],
+    [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
+    [GameType.DS, new Set(["sturm", "vonbolt"])],
   ]);
   /**
    * Set of CO names that have special loops for their music.
@@ -1073,8 +1142,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const alternateThemesSet = alternateThemes.get(gameType);
     const faction = isBlackHoleCO(coName) ? "bh" : "ally";
     // RBC individual CO power themes -> RBC shared factory themes
-    const isPowerActive = themeType !== SettingsThemeType.REGULAR;
-    if (gameType === SettingsGameType.RBC && isPowerActive) {
+    const isPowerActive = themeType !== ThemeType.REGULAR;
+    if (gameType === GameType.RBC && isPowerActive) {
       return `t-${faction}-${themeType}`;
     }
     // No alternate theme or it's a power
@@ -1082,7 +1151,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       return;
     }
     // Andy -> Clone Andy
-    if (coName === "andy" && gameType == SettingsGameType.RBC) {
+    if (coName === "andy" && gameType == GameType.RBC) {
       return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
     }
     // All other alternate themes
@@ -1104,13 +1173,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       if (alternateFilename) return alternateFilename;
     }
     // Regular theme, either no power or we are in AW1 where there's no power themes.
-    const isPowerActive = themeType !== SettingsThemeType.REGULAR;
-    if (!isPowerActive || gameType === SettingsGameType.AW1) {
+    const isPowerActive = themeType !== ThemeType.REGULAR;
+    if (!isPowerActive || gameType === GameType.AW1) {
       return `t-${coName}`;
     }
     // For RBC, we play the new power themes (if they are not in the DS games obviously)
     const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-    if (gameType === SettingsGameType.RBC && isCOInRBC) {
+    if (gameType === GameType.RBC && isCOInRBC) {
       return `t-${coName}-cop`;
     }
     // For all other games, play the ally or black hole themes during the CO and Super CO powers
@@ -1149,8 +1218,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
     // Override the game type to a higher game if the CO is not available in the current game.
-    if (gameType !== SettingsGameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = SettingsGameType.DS;
-    if (gameType === SettingsGameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = SettingsGameType.AW2;
+    if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+    if (gameType === GameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = GameType.AW2;
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
     const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
@@ -1219,9 +1288,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const coNames = getAllPlayingCONames();
     const audioList = new Set();
     coNames.forEach((name) => {
-      const regularURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.REGULAR, false);
-      const powerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.CO_POWER, false);
-      const superPowerURL = getMusicURL(name, musicSettings.gameType, SettingsThemeType.SUPER_CO_POWER, false);
+      const regularURL = getMusicURL(name, musicSettings.gameType, ThemeType.REGULAR, false);
+      const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
+      const superPowerURL = getMusicURL(name, musicSettings.gameType, ThemeType.SUPER_CO_POWER, false);
       const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
       audioList.add(regularURL);
       audioList.add(alternateURL);
@@ -1794,7 +1863,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.1.0",
+    music_player: "4.3.0",
     highlight_cursor_coordinates: "2.0.2",
   };
 
@@ -1827,10 +1896,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       if (sfxVolumeSlider) sfxVolumeSlider.value = musicSettings.sfxVolume.toString();
       if (uiVolumeSlider) uiVolumeSlider.value = musicSettings.uiVolume.toString();
       if (daySlider) daySlider.value = musicSettings.alternateThemeDay.toString();
-      const radio = gameTypeRadioMap.get(musicSettings.gameType);
-      if (radio) radio.checked = true;
-      radioNormal.checked = !musicSettings.randomThemes;
-      radioRandom.checked = musicSettings.randomThemes;
+      const selectedGameTypeRadio = gameTypeRadioMap.get(musicSettings.gameType);
+      if (selectedGameTypeRadio) selectedGameTypeRadio.checked = true;
+      const selectedRandomTypeRadio = randomRadioMap.get(musicSettings.randomThemesType);
+      if (selectedRandomTypeRadio) selectedRandomTypeRadio.checked = true;
       captProgressBox.checked = musicSettings.captureProgressSFX;
       pipeSeamBox.checked = musicSettings.pipeSeamSFX;
       restartThemesBox.checked = musicSettings.restartThemes;
@@ -1840,17 +1909,24 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       musicPlayerUI.updateAllInputLabels();
     }
     // Sort overrides again if we are loading the settings for the first time, or if the override list changed
-    if (key === "all" || key === "addOverride" || key === "removeOverride") {
+    if (key === SettingsKey.ALL || key === SettingsKey.ADD_OVERRIDE || key === SettingsKey.REMOVE_OVERRIDE) {
       clearAndRepopulateOverrideList();
       if (musicSettings.overrideList.size === 0) {
         const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
         musicPlayerUI.addItemToTable(Name.Override_Table, noOverrides);
       }
     }
+    if (key === SettingsKey.ALL || key === SettingsKey.ADD_EXCLUDED || key === SettingsKey.REMOVE_EXCLUDED) {
+      clearAndRepopulateExcludedList();
+      if (musicSettings.excludedRandomThemes.size === 0) {
+        const noExcluded = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No themes excluded yet...");
+        musicPlayerUI.addItemToTable(Name.Excluded_Table, noExcluded);
+      }
+    }
     // Update UI
     const canUpdateDaySlider = daySlider?.parentElement && isGamePageAndActive();
     if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
-    if (shuffleBtn) shuffleBtn.disabled = !musicSettings.randomThemes;
+    if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
     // Update player image and hover text
     const currentSounds = isMovePlanner() ? "Sound Effects" : "Tunes";
     if (musicSettings.isPlaying) {
@@ -1885,6 +1961,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     Name["Volume"] = "Music Volume";
     Name["SFX_Volume"] = "SFX Volume";
     Name["UI_Volume"] = "UI Volume";
+    Name["No_Random"] = "Off";
+    Name["All_Random"] = "All Soundtracks";
+    Name["Current_Random"] = "Current Soundtrack";
     Name["Shuffle"] = "Shuffle";
     Name["Capture_Progress"] = "Capture Progress SFX";
     Name["Pipe_Seam_SFX"] = "Pipe Seam Attack SFX";
@@ -1894,6 +1973,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     Name["Alternate_Day"] = "Alternate Themes Start On Day";
     Name["Add_Override"] = "Add";
     Name["Override_Table"] = "Overrides";
+    Name["Excluded_Table"] = "Excluded Random Themes";
   })(Name || (Name = {}));
   var Description;
   (function (Description) {
@@ -1906,8 +1986,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     Description["DS"] =
       "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.";
     Description["RBC"] = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!";
-    Description["Normal_Themes"] = "Play the music depending on who the current CO is.";
-    Description["Random_Themes"] = "Play random music every turn.";
+    Description["No_Random"] = "Play the music depending on who the current CO is.";
+    Description["All_Random"] = "Play random music every turn from all soundtracks.";
+    Description["Current_Random"] = "Play random music every turn from the current soundtrack.";
     Description["Shuffle"] = "Changes the current theme to a new random one.";
     Description["Capture_Progress"] = "Play a sound effect when a unit makes progress capturing a property.";
     Description["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
@@ -1918,8 +1999,12 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.";
     Description["Alternate_Day"] =
       "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
-    Description["Add_Override"] = "Adds an override for a specific CO so it always plays a specific soundtrack.";
+    Description["Add_Override"] =
+      "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.";
+    Description["Override_Radio"] = "Only play songs from ";
     Description["Remove_Override"] = "Removes the override for this specific CO.";
+    Description["Add_Excluded"] =
+      "Add an override for a specific CO to exclude their themes when playing random themes.";
   })(Description || (Description = {}));
   /* ************************************ Left Menu ************************************ */
   const LEFT = MenuPosition.Left;
@@ -1935,7 +2020,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   const soundtrackGroupDiv = musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
   // Radio buttons
   const gameTypeRadioMap = new Map();
-  for (const gameType of Object.values(SettingsGameType)) {
+  for (const gameType of Object.values(GameType)) {
     const description = Description[gameType];
     const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
     gameTypeRadioMap.set(gameType, radio);
@@ -1945,13 +2030,23 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   const randomGroup = "Random Themes";
   const randomGroupDiv = musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
   // Radio buttons
-  const radioNormal = musicPlayerUI.addRadioButton("Off", randomGroup, Description.Normal_Themes);
-  const radioRandom = musicPlayerUI.addRadioButton("On", randomGroup, Description.Random_Themes);
-  radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemes = false));
-  radioRandom.addEventListener("click", (_e) => (musicSettings.randomThemes = true));
+  const radioNormal = musicPlayerUI.addRadioButton(Name.No_Random, randomGroup, Description.No_Random);
+  const radioAllRandom = musicPlayerUI.addRadioButton(Name.All_Random, randomGroup, Description.All_Random);
+  const radioCurrentRandom = musicPlayerUI.addRadioButton(Name.Current_Random, randomGroup, Description.Current_Random);
+  radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.NONE));
+  radioAllRandom.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.ALL_THEMES));
+  radioCurrentRandom.addEventListener(
+    "click",
+    (_e) => (musicSettings.randomThemesType = RandomThemeType.CURRENT_SOUNDTRACK),
+  );
+  const randomRadioMap = new Map([
+    [RandomThemeType.NONE, radioNormal],
+    [RandomThemeType.ALL_THEMES, radioAllRandom],
+    [RandomThemeType.CURRENT_SOUNDTRACK, radioCurrentRandom],
+  ]);
   // Random theme shuffle button
   const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroup, Description.Shuffle);
-  shuffleBtn.addEventListener("click", (_e) => (musicSettings.currentRandomCO = getRandomCO()));
+  shuffleBtn.addEventListener("click", (_e) => musicSettings.randomizeCO());
   /* **** Group: Sound effect toggle checkboxes **** */
   const toggleGroup = "Extra Options";
   musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
@@ -1986,14 +2081,20 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   if (isGamePageAndActive()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
   // Game type radio buttons
   const overrideGameTypeRadioMap = new Map();
-  for (const gameType of Object.values(SettingsGameType)) {
-    const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroup, Description.Add_Override);
+  for (const gameType of Object.values(GameType)) {
+    const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroup, Description.Override_Radio + gameType);
     overrideGameTypeRadioMap.set(gameType, radio);
     radio.checked = true;
   }
+  const excludeRadio = musicPlayerUI.addRadioButton("Exclude Random", addOverrideGroup, Description.Add_Excluded);
   // Add override button
   const overrideBtn = musicPlayerUI.addButton(Name.Add_Override, addOverrideGroup, Description.Add_Override);
   overrideBtn.addEventListener("click", (_e) => {
+    // Check if it's an exclude
+    if (excludeRadio.checked) {
+      musicSettings.addExcludedRandomTheme(currentSelectedCO);
+      return;
+    }
     // Get the selected game type
     let currentGameType;
     for (const [gameType, radio] of overrideGameTypeRadioMap) {
@@ -2012,7 +2113,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   musicPlayerUI.addTable(Name.Override_Table, tableRows, tableCols, overrideListGroup, Description.Remove_Override);
   function addOverrideDisplayDiv(coName, gameType) {
     const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, gameType);
-    displayDiv.addEventListener("click", () => {
+    displayDiv.addEventListener("click", (_event) => {
       musicSettings.removeOverride(coName);
     });
     overrideDivMap.set(coName, displayDiv);
@@ -2026,6 +2127,26 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     for (const [coName, gameType] of musicSettings.overrideList) {
       addOverrideDisplayDiv(coName, gameType);
     }
+  }
+  /* **** Group: Not Randomized List **** */
+  const excludedListGroup = "Themes Excluded From Randomizer (Click to Remove)";
+  musicPlayerUI.addGroup(excludedListGroup, GroupType.Horizontal, RIGHT);
+  const excludedListDivMap = new Map();
+  musicPlayerUI.addTable(Name.Excluded_Table, tableRows, tableCols, excludedListGroup, Description.Remove_Override);
+  function addExcludedDisplayDiv(coName) {
+    const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, "");
+    displayDiv.addEventListener("click", (_event) => {
+      musicSettings.removeExcludedRandomTheme(coName);
+    });
+    excludedListDivMap.set(coName, displayDiv);
+    musicPlayerUI.addItemToTable(Name.Excluded_Table, displayDiv);
+    return displayDiv;
+  }
+  function clearAndRepopulateExcludedList() {
+    excludedListDivMap.forEach((div) => div.remove());
+    excludedListDivMap.clear();
+    musicPlayerUI.clearTable(Name.Excluded_Table);
+    for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
   }
   /* ************************************ Version ************************************ */
   musicPlayerUI.addVersion(versions.music_player);
@@ -2227,7 +2348,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           .then((hash) => {
             if (hash === serverHash) return;
             // The hash is different, so we need to replace the song
-            log("A new version of", url, " is available. Replacing the old version.");
             return storeURLInDB(url);
           })
           .catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));
@@ -2280,13 +2400,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const audio = audioMap.get(url);
     if (!audio) return;
     // Song update due to hash change
+    log("A new version of", url, " is available. Replacing the old version.");
     if (audio.playing()) audio.stop();
     urlQueue.delete(url);
     audioMap.delete(url);
     preloadURL(url)
       .then(playThemeSong)
       .catch((reason) => logError(reason));
-    logDebug("Replaced song with new version", url);
   });
   /**
    * Event handler that pauses an audio as soon as it gets loaded.
@@ -2319,8 +2439,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
     }
     // The song ended and we are playing random themes, so switch to the next random theme
-    if (musicSettings.randomThemes) {
-      musicSettings.currentRandomCO = getRandomCO();
+    if (musicSettings.randomThemesType !== RandomThemeType.NONE) {
+      musicSettings.randomizeCO();
       playThemeSong();
     }
   }
@@ -2337,8 +2457,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // 2. It's a power theme
     // 3. We are starting a new random theme
     // AND we are on the game page AND the song has played for a bit
-    const isPowerTheme = musicSettings.themeType !== SettingsThemeType.REGULAR;
-    const shouldRestart = musicSettings.restartThemes || isPowerTheme || musicSettings.randomThemes;
+    const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
+    const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
+    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
     const currentPosition = audio.seek();
     if (shouldRestart && isGamePageAndActive() && currentPosition > 0.1) {
       // logDebug("Restart2", shouldRestart, currentPosition);
@@ -2467,10 +2588,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     let coName = currentPlayer.coName;
     // Don't randomize the victory and defeat themes
     const isEndTheme = coName === "victory" || coName === "defeat";
-    if (musicSettings.randomThemes && !isEndTheme) {
+    const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
+    if (isRandomTheme && !isEndTheme) {
       coName = musicSettings.currentRandomCO;
-      gameType = musicSettings.currentRandomGameType;
+      // The user wants the random themes from all soundtracks, so randomize the game type
+      if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) gameType = musicSettings.currentRandomGameType;
     }
+    // For pages with no COs that aren't using the random themes, play the stored theme if any.
     if (!coName) {
       if (!currentThemeKey || currentThemeKey === "") return;
       playMusicURL(currentThemeKey);
@@ -2689,11 +2813,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // Don't do anything if this is the first time the settings are being loaded
     if (isFirstLoad) return;
     switch (key) {
-      case "addOverride":
-      case "removeOverride":
-      case "overrideList":
-      case "currentRandomCO":
-      case "isPlaying":
+      case SettingsKey.ADD_OVERRIDE:
+      case SettingsKey.REMOVE_OVERRIDE:
+      case SettingsKey.OVERRIDE_LIST:
+      case SettingsKey.CURRENT_RANDOM_CO:
+      case SettingsKey.IS_PLAYING:
         // case "restartThemes":
         if (musicSettings.isPlaying) {
           playThemeSong();
@@ -2701,27 +2825,42 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           stopAllSounds();
         }
         break;
-      case "gameType":
-      case "alternateThemeDay":
-      case "alternateThemes":
+      case SettingsKey.GAME_TYPE:
+      case SettingsKey.ALTERNATE_THEME_DAY:
+      case SettingsKey.ALTERNATE_THEMES:
         window.setTimeout(() => playThemeSong(), 500);
         break;
-      case "themeType": {
+      case SettingsKey.THEME_TYPE: {
         // const restartMusic = musicSettings.themeType !== SettingsThemeType.REGULAR;
         playThemeSong();
         break;
       }
-      case "randomThemes":
+      case SettingsKey.REMOVE_EXCLUDED:
+        if (musicSettings.excludedRandomThemes.size === 27) {
+          musicSettings.randomizeCO();
+        }
+        playThemeSong();
+        break;
+      case SettingsKey.EXCLUDED_RANDOM_THEMES:
+      case SettingsKey.ADD_EXCLUDED:
+        if (musicSettings.excludedRandomThemes.has(musicSettings.currentRandomCO)) {
+          musicSettings.randomizeCO();
+        }
+        playThemeSong();
+        break;
+      case SettingsKey.RANDOM_THEMES_TYPE: {
         // Back to normal themes
-        if (!musicSettings.randomThemes) {
+        const randomThemes = musicSettings.randomThemesType !== RandomThemeType.NONE;
+        if (!randomThemes) {
           playThemeSong();
           return;
         }
         // We want a new random theme
-        musicSettings.currentRandomCO = getRandomCO();
+        musicSettings.randomizeCO();
         playThemeSong();
         break;
-      case "volume": {
+      }
+      case SettingsKey.VOLUME: {
         // Adjust the volume of the current theme
         const currentTheme = audioMap.get(currentThemeKey);
         if (currentTheme) currentTheme.volume(musicSettings.volume);
@@ -2959,7 +3098,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   function refreshMusicForNextTurn(playDelayMS = 0) {
     // It's a new turn, so we need to clear the visibility map, randomize COs, and play the theme song
     visibilityMap.clear();
-    musicSettings.currentRandomCO = getRandomCO();
+    musicSettings.randomizeCO();
     musicSettings.themeType = getCurrentThemeType();
     window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
@@ -3423,16 +3562,16 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const isBH = isBlackHoleCO(coName);
     const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     // Update the theme type
-    musicSettings.themeType = isSuperCOPower ? SettingsThemeType.SUPER_CO_POWER : SettingsThemeType.CO_POWER;
+    musicSettings.themeType = isSuperCOPower ? ThemeType.SUPER_CO_POWER : ThemeType.CO_POWER;
     switch (musicSettings.gameType) {
-      case SettingsGameType.AW1:
+      case GameType.AW1:
         // Advance Wars 1 will use the same sound for both CO and Super CO power activations
         playSFX(GameSFX.powerActivateAW1COP);
         stopThemeSong(4500);
         return;
-      case SettingsGameType.AW2:
-      case SettingsGameType.DS:
-      case SettingsGameType.RBC: {
+      case GameType.AW2:
+      case GameType.DS:
+      case GameType.RBC: {
         // Super CO Power
         if (isSuperCOPower) {
           const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
@@ -3525,7 +3664,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   function onMaintenance() {
     log("Maintenance detected, playing music...");
     musicPlayerUI.openContextMenu();
-    musicSettings.randomThemes = false;
+    musicSettings.randomThemesType = RandomThemeType.NONE;
     playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
     allowSettingsToBeSaved();
   }
@@ -3639,7 +3778,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         else ifCannotAutoplay();
       })
       .catch((reason) => {
-        logDebug("Script starting, we could not check if we can autoplay so assuming no", reason);
+        logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
         ifCannotAutoplay();
       });
   }

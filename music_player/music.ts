@@ -19,8 +19,7 @@ import {
   getAllAudioURLs,
   SpecialTheme,
 } from "./resources";
-import { musicSettings, addSettingsChangeListener, SettingsThemeType } from "./music_settings";
-import { getRandomCO } from "../shared/awbw_globals";
+import { musicSettings, addSettingsChangeListener, ThemeType, RandomThemeType, SettingsKey } from "./music_settings";
 
 import { isGamePageAndActive } from "../shared/awbw_page";
 import { musicPlayerUI } from "./music_ui";
@@ -76,6 +75,8 @@ addDatabaseReplacementListener((url) => {
   if (!audio) return;
 
   // Song update due to hash change
+  log("A new version of", url, " is available. Replacing the old version.");
+
   if (audio.playing()) audio.stop();
 
   urlQueue.delete(url);
@@ -83,7 +84,6 @@ addDatabaseReplacementListener((url) => {
   preloadURL(url)
     .then(playThemeSong)
     .catch((reason) => logError(reason));
-  logDebug("Replaced song with new version", url);
 });
 
 /**
@@ -118,8 +118,8 @@ function onThemeEndOrLoop(srcURL: string) {
   }
 
   // The song ended and we are playing random themes, so switch to the next random theme
-  if (musicSettings.randomThemes) {
-    musicSettings.currentRandomCO = getRandomCO();
+  if (musicSettings.randomThemesType !== RandomThemeType.NONE) {
+    musicSettings.randomizeCO();
     playThemeSong();
   }
 }
@@ -138,8 +138,9 @@ function onThemePlay(audio: Howl, srcURL: string) {
   // 2. It's a power theme
   // 3. We are starting a new random theme
   // AND we are on the game page AND the song has played for a bit
-  const isPowerTheme = musicSettings.themeType !== SettingsThemeType.REGULAR;
-  const shouldRestart = musicSettings.restartThemes || isPowerTheme || musicSettings.randomThemes;
+  const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
+  const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
+  const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
   const currentPosition = audio.seek() as number;
   if (shouldRestart && isGamePageAndActive() && currentPosition > 0.1) {
     // logDebug("Restart2", shouldRestart, currentPosition);
@@ -290,11 +291,15 @@ export function playThemeSong() {
 
   // Don't randomize the victory and defeat themes
   const isEndTheme = coName === "victory" || coName === "defeat";
-  if (musicSettings.randomThemes && !isEndTheme) {
+  const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
+  if (isRandomTheme && !isEndTheme) {
     coName = musicSettings.currentRandomCO;
-    gameType = musicSettings.currentRandomGameType;
+
+    // The user wants the random themes from all soundtracks, so randomize the game type
+    if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) gameType = musicSettings.currentRandomGameType;
   }
 
+  // For pages with no COs that aren't using the random themes, play the stored theme if any.
   if (!coName) {
     if (!currentThemeKey || currentThemeKey === "") return;
     playMusicURL(currentThemeKey);
@@ -559,16 +564,16 @@ export function playOrPauseWhenWindowFocusChanges() {
  * @param key - Key of the setting which has been changed.
  * @param isFirstLoad - Whether this is the first time the settings are being loaded.
  */
-function onSettingsChange(key: string, isFirstLoad: boolean) {
+function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
   // Don't do anything if this is the first time the settings are being loaded
   if (isFirstLoad) return;
 
   switch (key) {
-    case "addOverride":
-    case "removeOverride":
-    case "overrideList":
-    case "currentRandomCO":
-    case "isPlaying":
+    case SettingsKey.ADD_OVERRIDE:
+    case SettingsKey.REMOVE_OVERRIDE:
+    case SettingsKey.OVERRIDE_LIST:
+    case SettingsKey.CURRENT_RANDOM_CO:
+    case SettingsKey.IS_PLAYING:
       // case "restartThemes":
       if (musicSettings.isPlaying) {
         playThemeSong();
@@ -576,28 +581,44 @@ function onSettingsChange(key: string, isFirstLoad: boolean) {
         stopAllSounds();
       }
       break;
-    case "gameType":
-    case "alternateThemeDay":
-    case "alternateThemes":
+    case SettingsKey.GAME_TYPE:
+    case SettingsKey.ALTERNATE_THEME_DAY:
+    case SettingsKey.ALTERNATE_THEMES:
       window.setTimeout(() => playThemeSong(), 500);
       break;
-    case "themeType": {
+    case SettingsKey.THEME_TYPE: {
       // const restartMusic = musicSettings.themeType !== SettingsThemeType.REGULAR;
       playThemeSong();
       break;
     }
-    case "randomThemes":
+    case SettingsKey.REMOVE_EXCLUDED:
+      if (musicSettings.excludedRandomThemes.size === 27) {
+        musicSettings.randomizeCO();
+      }
+      playThemeSong();
+      break;
+    case SettingsKey.EXCLUDED_RANDOM_THEMES:
+    case SettingsKey.ADD_EXCLUDED:
+      if (musicSettings.excludedRandomThemes.has(musicSettings.currentRandomCO)) {
+        musicSettings.randomizeCO();
+      }
+
+      playThemeSong();
+      break;
+    case SettingsKey.RANDOM_THEMES_TYPE: {
       // Back to normal themes
-      if (!musicSettings.randomThemes) {
+      const randomThemes = musicSettings.randomThemesType !== RandomThemeType.NONE;
+      if (!randomThemes) {
         playThemeSong();
         return;
       }
 
       // We want a new random theme
-      musicSettings.currentRandomCO = getRandomCO();
+      musicSettings.randomizeCO();
       playThemeSong();
       break;
-    case "volume": {
+    }
+    case SettingsKey.VOLUME: {
       // Adjust the volume of the current theme
       const currentTheme = audioMap.get(currentThemeKey);
       if (currentTheme) currentTheme.volume(musicSettings.volume);
