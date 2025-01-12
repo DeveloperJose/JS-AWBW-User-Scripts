@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.3.0
+// @version     4.4.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -699,8 +699,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // User configurable settings
     static __isPlaying = false;
     static __volume = 0.5;
-    static __sfxVolume = 0.5;
-    static __uiVolume = 0.5;
+    static __sfxVolume = 0.4;
+    static __uiVolume = 0.4;
     static __gameType = GameType.DS;
     static __alternateThemes = true;
     static __alternateThemeDay = 15;
@@ -1857,7 +1857,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.3.0",
+    music_player: "4.4.0",
     highlight_cursor_coordinates: "2.0.2",
   };
 
@@ -2504,10 +2504,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         src: [cacheURL],
         format: ["ogg"],
         // Redundant event listeners to ensure the audio is always at the correct volume
-        onplay: (_id) => audio.volume(getVolumeForURL(audio._src)),
-        onload: (_id) => audio.volume(getVolumeForURL(audio._src)),
-        onseek: (_id) => audio.volume(getVolumeForURL(audio._src)),
-        onpause: (_id) => audio.volume(getVolumeForURL(audio._src)),
+        onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
+        onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
+        onseek: (_id) => audio.volume(getVolumeForURL(srcURL)),
+        onpause: (_id) => audio.volume(getVolumeForURL(srcURL)),
         onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
         onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
       });
@@ -2640,6 +2640,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     movementAudio.loop = false;
     movementAudio.volume = musicSettings.sfxVolume;
     movementAudio.play();
+    // logDebug("Movement sound for", unitId, "is playing", movementAudio.volume);
   }
   /**
    * Stops the movement sound of a given unit if it's playing.
@@ -2692,7 +2693,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (!audio) return;
     audio.volume(getVolumeForURL(sfxURL));
     audio.seek(0);
+    // No need to start another instance if it's already playing
+    if (audio.playing()) return;
     audio.play();
+    // audio.fade(0, musicSettings.sfxVolume, audio.duration() * 1000);
   }
   /**
    * Stops all music, sound effects, and audios.
@@ -2780,9 +2784,14 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The volume to play the audio at.
    */
   function getVolumeForURL(url) {
+    if (url.startsWith("blob:") || !url.startsWith("https://")) {
+      logError("Blob URL when trying to get volume for", url);
+      return musicSettings.volume;
+    }
     if (url.includes("sfx")) {
       if (url.includes("ui")) return musicSettings.uiVolume;
-      if (url.includes("power")) return musicSettings.volume;
+      if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
+      // console.log("SFX", url, musicSettings.sfxVolume);
       return musicSettings.sfxVolume;
     }
     return musicSettings.volume;
@@ -2869,8 +2878,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           });
         }
         // Adjust all theme volumes
-        for (const audio of audioMap.values()) {
-          audio.volume(getVolumeForURL(audio._src));
+        for (const srcURL of audioMap.keys()) {
+          const audio = audioMap.get(srcURL);
+          if (audio) audio.volume(getVolumeForURL(srcURL));
         }
         break;
       }

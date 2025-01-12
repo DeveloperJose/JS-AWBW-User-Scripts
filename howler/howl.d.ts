@@ -261,7 +261,7 @@ declare class Howl {
    * @param len  Time in milliseconds to fade.
    * @param id   The sound id (omit to fade all sounds).
    */
-  fade(from: number | string, to: number | string, len: number | string, id: number): this;
+  fade(from: number | string, to: number | string, len: number | string, id?: number): this;
   /**
    * Starts the internal interval to fade a sound.
    * @param sound Reference to sound to fade.
@@ -317,7 +317,7 @@ declare class Howl {
    * @param id The sound id to check. If none is passed, return full source duration.
    * @return Audio duration in seconds.
    */
-  duration(id: number): number;
+  duration(id?: number): number;
   /**
    * Returns the current loaded state of this Howl.
    * @return 'unloaded', 'loading', 'loaded'

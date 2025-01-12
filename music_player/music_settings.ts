@@ -122,8 +122,8 @@ export abstract class musicSettings {
   // User configurable settings
   private static __isPlaying = false;
   private static __volume = 0.5;
-  private static __sfxVolume = 0.5;
-  private static __uiVolume = 0.5;
+  private static __sfxVolume = 0.4;
+  private static __uiVolume = 0.4;
   private static __gameType = GameType.DS;
   private static __alternateThemes = true;
   private static __alternateThemeDay = 15;

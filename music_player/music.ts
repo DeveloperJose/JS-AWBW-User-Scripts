@@ -198,10 +198,10 @@ function preloadURL(srcURL: string) {
       src: [cacheURL],
       format: ["ogg"],
       // Redundant event listeners to ensure the audio is always at the correct volume
-      onplay: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
-      onload: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
-      onseek: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
-      onpause: (_id) => audio.volume(getVolumeForURL(audio._src as string)),
+      onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onseek: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onpause: (_id) => audio.volume(getVolumeForURL(srcURL)),
       onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
       onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
     });
@@ -360,6 +360,7 @@ export function playMovementSound(unitId: number) {
   movementAudio.loop = false;
   movementAudio.volume = musicSettings.sfxVolume;
   movementAudio.play();
+  // logDebug("Movement sound for", unitId, "is playing", movementAudio.volume);
 }
 
 /**
@@ -424,7 +425,11 @@ export function playSFX(sfx: GameSFX) {
   if (!audio) return;
   audio.volume(getVolumeForURL(sfxURL));
   audio.seek(0);
+
+  // No need to start another instance if it's already playing
+  if (audio.playing()) return;
   audio.play();
+  // audio.fade(0, musicSettings.sfxVolume, audio.duration() * 1000);
 }
 
 /**
@@ -539,9 +544,15 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
  * @returns - The volume to play the audio at.
  */
 function getVolumeForURL(url: string) {
+  if (url.startsWith("blob:") || !url.startsWith("https://")) {
+    logError("Blob URL when trying to get volume for", url);
+    return musicSettings.volume;
+  }
+
   if (url.includes("sfx")) {
     if (url.includes("ui")) return musicSettings.uiVolume;
-    if (url.includes("power")) return musicSettings.volume;
+    if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
+    // console.log("SFX", url, musicSettings.sfxVolume);
     return musicSettings.sfxVolume;
   }
   return musicSettings.volume;
@@ -635,8 +646,9 @@ function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
       }
 
       // Adjust all theme volumes
-      for (const audio of audioMap.values()) {
-        audio.volume(getVolumeForURL(audio._src as string));
+      for (const srcURL of audioMap.keys()) {
+        const audio = audioMap.get(srcURL);
+        if (audio) audio.volume(getVolumeForURL(srcURL));
       }
       break;
     }
