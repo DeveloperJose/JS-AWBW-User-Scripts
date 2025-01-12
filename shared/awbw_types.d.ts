@@ -8,6 +8,16 @@
 declare const gameId: number;
 
 /**
+ * The time zone of the server.
+ */
+declare const serverTimezone: string;
+
+/**
+ * The folder where the game images are stored based on the user's config.
+ */
+declare const coTheme: string;
+
+/**
  * All the player information for the current game.
  */
 declare const playersInfo: PlayerInfo[];

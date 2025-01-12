@@ -2,7 +2,6 @@
  * @file Constants, functions, and variables related to the game state in Advance Wars By Web.
  *  A lot of useful information came from game.js and the code at the bottom of each game page.
  */
-
 import { areAnimationsEnabled } from "./awbw_globals";
 import { isGamePageAndActive, isMapEditor, getReplayControls, getConnectionErrorDiv, isMaintenance } from "./awbw_page";
 
@@ -169,16 +168,38 @@ export function hasGameEnded() {
   return numberOfRemainingPlayers === 1;
 }
 
+export function getCOImagePrefix() {
+  if (typeof coTheme === "undefined") return "aw2";
+  return coTheme;
+}
+
+export function getServerTimeZone() {
+  if (!isGamePageAndActive()) return "-05:00";
+  if (typeof serverTimezone === "undefined") return "-05:00";
+  if (!serverTimezone) return "-05:00";
+
+  return serverTimezone;
+}
+
 export function didGameEndToday() {
   if (!hasGameEnded()) return false;
-  const endDate = new Date(gameEndDate);
-  const now = new Date();
+  const serverTimezone = parseInt(getServerTimeZone());
 
-  return (
-    endDate.getFullYear() === now.getFullYear() &&
-    endDate.getMonth() === now.getMonth() &&
-    endDate.getDate() === now.getDate()
-  );
+  // In server time
+  const endDate = new Date(gameEndDate);
+
+  // Convert now to the server timezone
+  // https://stackoverflow.com/questions/68500998/converting-to-local-time-using-utc-time-zone-format-in-javascript
+  const now = new Date();
+  const timezoneOffset = now.getTimezoneOffset() / 60;
+
+  const difference = +serverTimezone + timezoneOffset;
+  const nowAdjustedToServer = new Date(now.getTime() + difference * 3600000);
+
+  // Check if more than 24 hours have passed since the game ended
+  const oneDayMilliseconds = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  // logDebug(nowAdjustedToServer.getTime() - endDate.getTime(), oneDayMilliseconds);
+  return nowAdjustedToServer.getTime() - endDate.getTime() < oneDayMilliseconds;
 }
 
 /**

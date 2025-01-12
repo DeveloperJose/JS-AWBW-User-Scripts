@@ -54,8 +54,9 @@ export function getCurrentThemeType() {
  * Gets a random game type from the SettingsGameType enum.
  * @returns - A random game type from the SettingsGameType enum.
  */
-export function getRandomGameType() {
-  return Object.values(GameType)[Math.floor(Math.random() * Object.keys(GameType).length)];
+export function getRandomGameType(excludedGameTypes = new Set<GameType>()) {
+  const gameTypes = Object.values(GameType).filter((gameType) => !excludedGameTypes.has(gameType));
+  return gameTypes[Math.floor(Math.random() * gameTypes.length)];
 }
 
 /**
@@ -369,7 +370,13 @@ export abstract class musicSettings {
   static randomizeCO() {
     const excludedCOs = new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
     this.__currentRandomCO = getRandomCO(excludedCOs);
-    this.__currentRandomGameType = getRandomGameType();
+
+    // Randomize soundtrack EXCEPT we don't allow AW1 during power themes
+    const isPower = this.themeType !== ThemeType.REGULAR;
+    const excludedSoundtracks = new Set<GameType>();
+    if (isPower) excludedSoundtracks.add(GameType.AW1);
+    this.__currentRandomGameType = getRandomGameType(excludedSoundtracks);
+
     this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO);
   }
 

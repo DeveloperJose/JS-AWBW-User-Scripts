@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.5.0
+// @version     4.6.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -399,15 +399,31 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     ).length;
     return numberOfRemainingPlayers === 1;
   }
+  function getCOImagePrefix() {
+    if (typeof coTheme === "undefined") return "aw2";
+    return coTheme;
+  }
+  function getServerTimeZone() {
+    if (!isGamePageAndActive()) return "-05:00";
+    if (typeof serverTimezone === "undefined") return "-05:00";
+    if (!serverTimezone) return "-05:00";
+    return serverTimezone;
+  }
   function didGameEndToday() {
     if (!hasGameEnded()) return false;
+    const serverTimezone = parseInt(getServerTimeZone());
+    // In server time
     const endDate = new Date(gameEndDate);
+    // Convert now to the server timezone
+    // https://stackoverflow.com/questions/68500998/converting-to-local-time-using-utc-time-zone-format-in-javascript
     const now = new Date();
-    return (
-      endDate.getFullYear() === now.getFullYear() &&
-      endDate.getMonth() === now.getMonth() &&
-      endDate.getDate() === now.getDate()
-    );
+    const timezoneOffset = now.getTimezoneOffset() / 60;
+    const difference = +serverTimezone + timezoneOffset;
+    const nowAdjustedToServer = new Date(now.getTime() + difference * 3600000);
+    // Check if more than 24 hours have passed since the game ended
+    const oneDayMilliseconds = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // logDebug(nowAdjustedToServer.getTime() - endDate.getTime(), oneDayMilliseconds);
+    return nowAdjustedToServer.getTime() - endDate.getTime() < oneDayMilliseconds;
   }
   /**
    * Gets the current day in the game, also works properly in replay mode.
@@ -663,8 +679,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Gets a random game type from the SettingsGameType enum.
    * @returns - A random game type from the SettingsGameType enum.
    */
-  function getRandomGameType() {
-    return Object.values(GameType)[Math.floor(Math.random() * Object.keys(GameType).length)];
+  function getRandomGameType(excludedGameTypes = new Set()) {
+    const gameTypes = Object.values(GameType).filter((gameType) => !excludedGameTypes.has(gameType));
+    return gameTypes[Math.floor(Math.random() * gameTypes.length)];
   }
   /**
    * String used as the key for storing settings in LocalStorage
@@ -927,7 +944,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static randomizeCO() {
       const excludedCOs = new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
       this.__currentRandomCO = getRandomCO(excludedCOs);
-      this.__currentRandomGameType = getRandomGameType();
+      // Randomize soundtrack EXCEPT we don't allow AW1 during power themes
+      const isPower = this.themeType !== ThemeType.REGULAR;
+      const excludedSoundtracks = new Set();
+      if (isPower) excludedSoundtracks.add(GameType.AW1);
+      this.__currentRandomGameType = getRandomGameType(excludedSoundtracks);
       this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO);
     }
     static onSettingChangeEvent(key) {
@@ -1232,12 +1253,15 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // First apply player overrides, that way we can override their overrides later...
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
-    // Override the game type to a higher game if the CO is not available in the current game.
+    // This needs to go BEFORE overriding the game type
+    const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+    // Override the game type to a higher game if the CO is not in the current soundtrack
+    // We do this AFTER getting the filename so the getMusicFilename function has the correct gameType
+    // Since we only need the correct gameType for the music directory
     if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
     if (gameType === GameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = GameType.AW2;
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
-    const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
     const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
   }
@@ -1811,7 +1835,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     createCOSelectorItem(coName) {
       const location = "javascript:void(0)";
       const internalName = coName.toLowerCase().replaceAll(" ", "");
-      const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+      const coPrefix = getCOImagePrefix();
+      const imgSrc = `terrain/ani/${coPrefix}${internalName}.png?v=1`;
       const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
       return (
         `<tr>` +
@@ -1833,7 +1858,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     createCOPortraitImage(coName) {
       const imgCO = document.createElement("img");
       imgCO.classList.add("co_portrait");
-      imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+      const coPrefix = getCOImagePrefix();
+      imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
       // Allows other icons to be used
       if (!getAllCONames().includes(coName)) {
         imgCO.src = `terrain/${coName}`;
@@ -1858,7 +1884,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       overDiv.style.visibility = "hidden";
       // Change the CO portrait
       const imgCO = this.groups.get("co-portrait");
-      imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+      const coPrefix = getCOImagePrefix();
+      imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
     }
   }
   const coSelectorListeners = [];
@@ -1878,7 +1905,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.5.0",
+    music_player: "4.6.0",
     highlight_cursor_coordinates: "2.1.0",
   };
 

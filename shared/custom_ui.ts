@@ -1,6 +1,7 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
+import { getCOImagePrefix } from "./awbw_game";
 import { getAllCONames } from "./awbw_globals";
 import { isGamePageAndActive } from "./awbw_page";
 
@@ -588,7 +589,8 @@ export class CustomMenuSettingsUI {
     const location = "javascript:void(0)";
     const internalName = coName.toLowerCase().replaceAll(" ", "");
 
-    const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+    const coPrefix = getCOImagePrefix();
+    const imgSrc = `terrain/ani/${coPrefix}${internalName}.png?v=1`;
     const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
 
     return (
@@ -613,7 +615,9 @@ export class CustomMenuSettingsUI {
   createCOPortraitImage(coName: string) {
     const imgCO = document.createElement("img");
     imgCO.classList.add("co_portrait");
-    imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+
+    const coPrefix = getCOImagePrefix();
+    imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
 
     // Allows other icons to be used
     if (!getAllCONames().includes(coName)) {
@@ -644,7 +648,8 @@ export class CustomMenuSettingsUI {
 
     // Change the CO portrait
     const imgCO = this.groups.get("co-portrait") as HTMLImageElement;
-    imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+    const coPrefix = getCOImagePrefix();
+    imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
   }
 }
 

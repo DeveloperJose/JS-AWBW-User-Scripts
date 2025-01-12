@@ -251,6 +251,7 @@ function getMusicFilename(coName: string, gameType: GameType, themeType: ThemeTy
   if (gameType === GameType.RBC && isCOInRBC) {
     return `t-${coName}-cop`;
   }
+
   // For all other games, play the ally or black hole themes during the CO and Super CO powers
   const faction = isBlackHoleCO(coName) ? "bh" : "ally";
   return `t-${faction}-${themeType}`;
@@ -288,14 +289,18 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   const overrideType = musicSettings.getOverride(coName);
   if (overrideType) gameType = overrideType;
 
-  // Override the game type to a higher game if the CO is not available in the current game.
+  // This needs to go BEFORE overriding the game type
+  const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+
+  // Override the game type to a higher game if the CO is not in the current soundtrack
+  // We do this AFTER getting the filename so the getMusicFilename function has the correct gameType
+  // Since we only need the correct gameType for the music directory
   if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
   if (gameType === GameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = GameType.AW2;
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
 
-  const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
   const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
 }
