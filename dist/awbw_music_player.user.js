@@ -252,10 +252,14 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Randomly selects a CO from the list of all COs.
    * @returns - The name of the randomly selected CO.
    */
-  function getRandomCO() {
-    const COs = getAllCONames();
-    // COs.push("map-editor");
-    return COs[Math.floor(Math.random() * COs.length)];
+  function getRandomCO(excludedCOs) {
+    const COs = new Set(getAllCONames());
+    for (const co of excludedCOs) COs.delete(co);
+    // No COs available, play the map editor music
+    if (COs.size === 0) return "map-editor";
+    // Only one CO available, return it
+    if (COs.size === 1) return [...COs][0];
+    return [...COs][Math.floor(Math.random() * COs.size)];
   }
 
   /**
@@ -709,7 +713,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     static __excludedRandomThemes = new Set();
     // Non-user configurable settings
     static __themeType = ThemeType.REGULAR;
-    static __currentRandomCO = null;
+    static __currentRandomCO = "";
     static __currentRandomGameType = GameType.DS;
     static __isLoaded = false;
     static toJSON() {
@@ -896,22 +900,12 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       return this.__randomThemesType;
     }
     static get currentRandomCO() {
-      if (!this.__currentRandomCO) this.randomizeCO();
+      if (!this.__currentRandomCO || this.__currentRandomCO == "") this.randomizeCO();
       return this.__currentRandomCO;
     }
     static randomizeCO() {
-      let val = getRandomCO();
-      // logDebug("Excluded themes:", this.__excludedRandomThemes.size);
-      // Prevent infinite loop by making sure at least one CO is not excluded
-      if (this.__excludedRandomThemes.size === 28) {
-        val = "map-editor";
-      } else {
-        // Make sure we don't get the same CO twice in a row or a CO that's excluded
-        while (this.__currentRandomCO === val || this.__excludedRandomThemes.has(val)) {
-          val = getRandomCO();
-        }
-      }
-      this.__currentRandomCO = val;
+      const excludedCOs = new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
+      this.__currentRandomCO = getRandomCO(excludedCOs);
       this.__currentRandomGameType = getRandomGameType();
       this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO);
     }

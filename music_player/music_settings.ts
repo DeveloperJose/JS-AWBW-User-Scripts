@@ -137,7 +137,7 @@ export abstract class musicSettings {
 
   // Non-user configurable settings
   private static __themeType = ThemeType.REGULAR;
-  private static __currentRandomCO: string | null = null;
+  private static __currentRandomCO: string = "";
   private static __currentRandomGameType = GameType.DS;
   private static __isLoaded = false;
 
@@ -362,26 +362,13 @@ export abstract class musicSettings {
   }
 
   static get currentRandomCO() {
-    if (!this.__currentRandomCO) this.randomizeCO();
+    if (!this.__currentRandomCO || this.__currentRandomCO == "") this.randomizeCO();
     return this.__currentRandomCO as string;
   }
 
   static randomizeCO() {
-    let val = getRandomCO();
-
-    // logDebug("Excluded themes:", this.__excludedRandomThemes.size);
-
-    // Prevent infinite loop by making sure at least one CO is not excluded
-    if (this.__excludedRandomThemes.size === 28) {
-      val = "map-editor";
-    } else {
-      // Make sure we don't get the same CO twice in a row or a CO that's excluded
-      while (this.__currentRandomCO === val || this.__excludedRandomThemes.has(val)) {
-        val = getRandomCO();
-      }
-    }
-
-    this.__currentRandomCO = val;
+    const excludedCOs = new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
+    this.__currentRandomCO = getRandomCO(excludedCOs);
     this.__currentRandomGameType = getRandomGameType();
     this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO);
   }

@@ -102,8 +102,15 @@ export function isBlackHoleCO(coName: string) {
  * Randomly selects a CO from the list of all COs.
  * @returns - The name of the randomly selected CO.
  */
-export function getRandomCO() {
-  const COs = getAllCONames();
-  // COs.push("map-editor");
-  return COs[Math.floor(Math.random() * COs.length)];
+export function getRandomCO(excludedCOs: Set<string>) {
+  const COs = new Set(getAllCONames());
+  for (const co of excludedCOs) COs.delete(co);
+
+  // No COs available, play the map editor music
+  if (COs.size === 0) return "map-editor";
+
+  // Only one CO available, return it
+  if (COs.size === 1) return [...COs][0];
+
+  return [...COs][Math.floor(Math.random() * COs.size)];
 }
