@@ -88,6 +88,12 @@
   background-color: #f0f0f0;
 }
 
+.cls-settings-menu a[id$="update"] {
+  font-size: 12px;
+  background-color: #ff0000;
+  color: white;
+  width: 100%;
+}
 .cls-settings-menu .co_caret {
   position: absolute;
   top: 28px;

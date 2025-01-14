@@ -138,7 +138,6 @@ const onMovementStartMap = new Map([
   ["Fighter", MovementSFX.movePlaneLoop],
   ["Infantry", MovementSFX.moveInfLoop],
   ["Lander", MovementSFX.moveNavalLoop],
-  ["Md. Tank", MovementSFX.moveTreadHeavyLoop],
   ["Md.Tank", MovementSFX.moveTreadHeavyLoop],
   ["Mech", MovementSFX.moveMechLoop],
   ["Mega Tank", MovementSFX.moveTreadHeavyLoop],

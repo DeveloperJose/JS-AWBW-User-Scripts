@@ -53,7 +53,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -1118,7 +1118,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     ["Fighter", MovementSFX.movePlaneLoop],
     ["Infantry", MovementSFX.moveInfLoop],
     ["Lander", MovementSFX.moveNavalLoop],
-    ["Md. Tank", MovementSFX.moveTreadHeavyLoop],
     ["Md.Tank", MovementSFX.moveTreadHeavyLoop],
     ["Mech", MovementSFX.moveMechLoop],
     ["Mega Tank", MovementSFX.moveTreadHeavyLoop],
@@ -1344,6 +1343,78 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   }
 
   /**
+   * @file Constants and other project configuration settings that could be used by any scripts.
+   */
+  /**
+   * The names of the userscripts.
+   */
+  var ScriptName;
+  (function (ScriptName) {
+    ScriptName["None"] = "none";
+    ScriptName["MusicPlayer"] = "music_player";
+    ScriptName["HighlightCursorCoordinates"] = "highlight_cursor_coordinates";
+  })(ScriptName || (ScriptName = {}));
+  /**
+   * The version numbers of the userscripts.
+   */
+  const versions = new Map([
+    [ScriptName.MusicPlayer, "4.7.0"],
+    [ScriptName.HighlightCursorCoordinates, "2.2.0"],
+  ]);
+  /**
+   * The URLs to check for updates for each userscript.
+   */
+  const updateURLs = new Map([
+    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.user.js"],
+    [
+      ScriptName.HighlightCursorCoordinates,
+      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.user.js",
+    ],
+  ]);
+  const homepageURLs = new Map([
+    [ScriptName.MusicPlayer, "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
+    [
+      ScriptName.HighlightCursorCoordinates,
+      "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates",
+    ],
+  ]);
+  /**
+   * Checks for updates for the specified script.
+   * @param scriptName - The name of the script to check for updates
+   * @returns - A promise that resolves with the latest version of the script
+   */
+  function checkIfUpdateIsAvailable(scriptName) {
+    return new Promise((resolve, reject) => {
+      // Get the update URL
+      const updateURL = updateURLs.get(scriptName);
+      if (!updateURL) return reject(`Failed to get the update URL for the script.`);
+      return fetch(updateURL)
+        .then((response) => response.text())
+        .then((text) => {
+          if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
+          // Get the latest version of the script from the userscript metadata
+          const latestVersion = text.match(/@version\s+([0-9.]+)/)?.[1];
+          if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
+          // Check if the latest version is newer than the current version
+          const currentVersion = versions.get(scriptName);
+          if (!currentVersion) return reject(`Failed to get the current version of the script.`);
+          // Check if the version numbers are in the correct format
+          const currentVersionParts = currentVersion.split(".");
+          const latestVersionParts = latestVersion.split(".");
+          const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
+          if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
+          // Compare the version numbers by their parts
+          return resolve(
+            currentVersionParts[0] < latestVersionParts[0] ||
+              currentVersionParts[1] < latestVersionParts[1] ||
+              currentVersionParts[2] < latestVersionParts[2],
+          );
+        })
+        .catch((reason) => reject(reason));
+    });
+  }
+
+  /**
    * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
    */
   var CustomInputType;
@@ -1400,11 +1471,19 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     /**
      * A string used to prefix the IDs of the elements in the menu.
      */
-    prefix = "";
+    prefix;
+    /**
+     * A boolean that represents whether an update is available for the script.
+     */
+    isUpdateAvailable = false;
     /**
      * Text to be displayed when hovering over the main button.
      */
     parentHoverText = "";
+    /**
+     * A map that contains the tables in the menu.
+     * The keys are the names of the tables, and the values are the table elements.
+     */
     tableMap = new Map();
     /**
      * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
@@ -1523,6 +1602,12 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       div.prepend(this.parent);
       this.parent.style.borderRight = "none";
     }
+    hasSettings() {
+      const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
+      const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
+      const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+      return hasLeftMenu || hasCenterMenu || hasRightMenu;
+    }
     getGroup(groupName) {
       const container = this.groups.get(groupName);
       // Unhide group
@@ -1539,6 +1624,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const hoverSpan = this.groups.get("hover");
       if (!hoverSpan) return;
       if (replaceParent) this.parentHoverText = text;
+      if (this.isUpdateAvailable) text += " (New Update Available!)";
       hoverSpan.innerText = text;
       hoverSpan.style.display = text === "" ? "none" : "block";
     }
@@ -1579,10 +1665,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const contextMenu = this.groups.get("settings-parent");
       if (!contextMenu) return;
       // No settings so don't open the menu
-      const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
-      const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
-      const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
-      if (!hasLeftMenu && !hasCenterMenu && !hasRightMenu) return;
+      const hasVersion = this.groups.get("version")?.style.display !== "none";
+      if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
     }
@@ -1732,12 +1816,36 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
      * Adds a special version label to the context menu.
      * @param version - The version to be displayed.
      */
-    addVersion(version) {
+    addVersion() {
+      const version = versions.get(this.prefix);
+      if (!version) return;
       const contextMenu = this.groups.get("settings-parent");
       const versionDiv = document.createElement("label");
       versionDiv.id = this.prefix + "-version";
       versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
       contextMenu?.appendChild(versionDiv);
+      this.groups.set("version", versionDiv);
+    }
+    checkIfNewVersionAvailable() {
+      const currentVersion = versions.get(this.prefix);
+      const updateURL = updateURLs.get(this.prefix);
+      const homepageURL = homepageURLs.get(this.prefix) || "";
+      if (!currentVersion || !updateURL) return;
+      log("Checking if a new version is available...");
+      checkIfUpdateIsAvailable(this.prefix)
+        .then((isUpdateAvailable) => {
+          this.isUpdateAvailable = isUpdateAvailable;
+          if (!isUpdateAvailable) return;
+          const contextMenu = this.groups.get("settings-parent");
+          const versionDiv = document.createElement("a");
+          versionDiv.id = this.prefix + "-update";
+          versionDiv.href = homepageURL;
+          versionDiv.target = "_blank";
+          versionDiv.innerText = `(!) Update Available: Please click here to open the update page in a new tab. (!)`;
+          contextMenu?.append(versionDiv.cloneNode(true));
+          if (this.hasSettings()) contextMenu?.prepend(versionDiv);
+        })
+        .catch((error) => logError(error));
     }
     addTable(name, rows, columns, groupName, hoverText = "") {
       const groupDiv = this.getGroup(groupName);
@@ -1900,19 +2008,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   }
 
   /**
-   * @file Constants and other project configuration settings that could be used by any scripts.
-   */
-
-  /**
-   * The version numbers of the userscripts.
-   * @constant {Object.<string, string>}
-   */
-  const versions = {
-    music_player: "4.7.0",
-    highlight_cursor_coordinates: "2.1.0",
-  };
-
-  /**
    * @file This file contains all the functions and variables relevant to the creation and behavior of the music player UI.
    */
   // Listen for setting changes to update the menu UI
@@ -1998,7 +2093,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   /**
    * The music player UI for the settings.
    */
-  const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
+  const musicPlayerUI = new CustomMenuSettingsUI(ScriptName.MusicPlayer, NEUTRAL_IMG_URL, "Play Tunes");
   // Determine who will catch when the user clicks the play/stop button
   musicPlayerUI.addEventListener("click", onMusicBtnClick);
   var Name;
@@ -2194,7 +2289,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
   }
   /* ************************************ Version ************************************ */
-  musicPlayerUI.addVersion(versions.music_player);
+  musicPlayerUI.addVersion();
   /* ************************************ Disable or hide things in other pages ************************************ */
   if (!isGamePageAndActive()) {
     const parent = musicPlayerUI.getGroup("settings-parent");
@@ -3792,6 +3887,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         window.setTimeout(checkHashesFn, checkHashesMS);
       };
       checkHashesFn();
+      musicPlayerUI.checkIfNewVersionAvailable();
       // preloadAllAudio(() => {
       //   log("All other audio has been pre-loaded!");
       // });

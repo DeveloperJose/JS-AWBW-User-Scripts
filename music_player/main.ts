@@ -199,6 +199,7 @@ export function initializeMusicPlayer() {
       window.setTimeout(checkHashesFn, checkHashesMS);
     };
     checkHashesFn();
+    musicPlayerUI.checkIfNewVersionAvailable();
 
     // preloadAllAudio(() => {
     //   log("All other audio has been pre-loaded!");

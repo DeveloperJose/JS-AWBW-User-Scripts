@@ -1,9 +1,10 @@
 {
   // "extends": "@vue/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "target": "esnext",
-    "lib": ["esnext", "DOM"],
-    "module": "esnext",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "noImplicitAny": true,
     "removeComments": false,
     "preserveConstEnums": true,
@@ -17,10 +18,12 @@
     "allowUmdGlobalAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-
+    "paths": {
+			"rollup": ["./node_modules/rollup"]
+		},
     // "types": [
-    //   "vite/client"
+    //   // "vite/client"
     // ],
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "rollup.config.ts"],
 }

@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
-// @version     2.1.0
+// @version     2.2.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -138,6 +138,12 @@
     if (isMapEditor()) return designMapEditor.map.maxY;
     return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
   }
+  /**
+   * Whether game animations are enabled or not.
+   */
+  function areAnimationsEnabled() {
+    return typeof gameAnims !== "undefined" ? gameAnims : false;
+  }
 
   /**
    * @file Functions used by Advance Wars By Web to handle game actions.
@@ -150,6 +156,129 @@
   // }
   function getResizeMapFn() {
     return typeof designMapEditor !== "undefined" ? designMapEditor.resizeMap : null;
+  }
+
+  /**
+   * @file Constants and other project configuration settings that could be used by any scripts.
+   */
+  /**
+   * The names of the userscripts.
+   */
+  var ScriptName;
+  (function (ScriptName) {
+    ScriptName["None"] = "none";
+    ScriptName["MusicPlayer"] = "music_player";
+    ScriptName["HighlightCursorCoordinates"] = "highlight_cursor_coordinates";
+  })(ScriptName || (ScriptName = {}));
+  /**
+   * The version numbers of the userscripts.
+   */
+  const versions = new Map([
+    [ScriptName.MusicPlayer, "4.7.0"],
+    [ScriptName.HighlightCursorCoordinates, "2.2.0"],
+  ]);
+  /**
+   * The URLs to check for updates for each userscript.
+   */
+  const updateURLs = new Map([
+    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.user.js"],
+    [
+      ScriptName.HighlightCursorCoordinates,
+      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.user.js",
+    ],
+  ]);
+  const homepageURLs = new Map([
+    [ScriptName.MusicPlayer, "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
+    [
+      ScriptName.HighlightCursorCoordinates,
+      "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates",
+    ],
+  ]);
+  /**
+   * Checks for updates for the specified script.
+   * @param scriptName - The name of the script to check for updates
+   * @returns - A promise that resolves with the latest version of the script
+   */
+  function checkIfUpdateIsAvailable(scriptName) {
+    return new Promise((resolve, reject) => {
+      // Get the update URL
+      const updateURL = updateURLs.get(scriptName);
+      if (!updateURL) return reject(`Failed to get the update URL for the script.`);
+      return fetch(updateURL)
+        .then((response) => response.text())
+        .then((text) => {
+          if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
+          // Get the latest version of the script from the userscript metadata
+          const latestVersion = text.match(/@version\s+([0-9.]+)/)?.[1];
+          if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
+          // Check if the latest version is newer than the current version
+          const currentVersion = versions.get(scriptName);
+          if (!currentVersion) return reject(`Failed to get the current version of the script.`);
+          // Check if the version numbers are in the correct format
+          const currentVersionParts = currentVersion.split(".");
+          const latestVersionParts = latestVersion.split(".");
+          const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
+          if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
+          // Compare the version numbers by their parts
+          return resolve(
+            currentVersionParts[0] < latestVersionParts[0] ||
+              currentVersionParts[1] < latestVersionParts[1] ||
+              currentVersionParts[2] < latestVersionParts[2],
+          );
+        })
+        .catch((reason) => reject(reason));
+    });
+  }
+
+  /**
+   * @file Utility functions for the music player that don't fit anywhere else specifically.
+   */
+  /**
+   * Logs a message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function log(message, ...args) {
+    console.log("[AWBW Improved Music Player]", message, ...args);
+  }
+  /**
+   * Logs a warning message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function logError(message, ...args) {
+    console.error("[AWBW Improved Music Player]", message, ...args);
+  }
+
+  /**
+   * @file Constants, functions, and variables related to the game state in Advance Wars By Web.
+   *  A lot of useful information came from game.js and the code at the bottom of each game page.
+   */
+  /**
+   * Enum for the different states a CO Power can be in.
+   * @enum {string}
+   */
+  var COPowerEnum;
+  (function (COPowerEnum) {
+    COPowerEnum["NoPower"] = "N";
+    COPowerEnum["COPower"] = "Y";
+    COPowerEnum["SuperCOPower"] = "S";
+  })(COPowerEnum || (COPowerEnum = {}));
+  /**
+   * The amount of time between the silo launch animation and the hit animation in milliseconds.
+   * Copied from game.js
+   */
+  areAnimationsEnabled() ? 3000 : 0;
+  /**
+   * The amount of time between an attack animation starting and the attack finishing in milliseconds.
+   * Copied from game.js
+   */
+  areAnimationsEnabled() ? 1000 : 0;
+  function getCOImagePrefix() {
+    if (typeof coTheme === "undefined") return "aw2";
+    return coTheme;
   }
 
   /**
@@ -209,11 +338,19 @@
     /**
      * A string used to prefix the IDs of the elements in the menu.
      */
-    prefix = "";
+    prefix;
+    /**
+     * A boolean that represents whether an update is available for the script.
+     */
+    isUpdateAvailable = false;
     /**
      * Text to be displayed when hovering over the main button.
      */
     parentHoverText = "";
+    /**
+     * A map that contains the tables in the menu.
+     * The keys are the names of the tables, and the values are the table elements.
+     */
     tableMap = new Map();
     /**
      * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
@@ -332,6 +469,12 @@
       div.prepend(this.parent);
       this.parent.style.borderRight = "none";
     }
+    hasSettings() {
+      const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
+      const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
+      const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+      return hasLeftMenu || hasCenterMenu || hasRightMenu;
+    }
     getGroup(groupName) {
       const container = this.groups.get(groupName);
       // Unhide group
@@ -348,6 +491,7 @@
       const hoverSpan = this.groups.get("hover");
       if (!hoverSpan) return;
       if (replaceParent) this.parentHoverText = text;
+      if (this.isUpdateAvailable) text += " (New Update Available!)";
       hoverSpan.innerText = text;
       hoverSpan.style.display = text === "" ? "none" : "block";
     }
@@ -388,10 +532,8 @@
       const contextMenu = this.groups.get("settings-parent");
       if (!contextMenu) return;
       // No settings so don't open the menu
-      const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
-      const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
-      const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
-      if (!hasLeftMenu && !hasCenterMenu && !hasRightMenu) return;
+      const hasVersion = this.groups.get("version")?.style.display !== "none";
+      if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
     }
@@ -541,12 +683,36 @@
      * Adds a special version label to the context menu.
      * @param version - The version to be displayed.
      */
-    addVersion(version) {
+    addVersion() {
+      const version = versions.get(this.prefix);
+      if (!version) return;
       const contextMenu = this.groups.get("settings-parent");
       const versionDiv = document.createElement("label");
       versionDiv.id = this.prefix + "-version";
       versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
       contextMenu?.appendChild(versionDiv);
+      this.groups.set("version", versionDiv);
+    }
+    checkIfNewVersionAvailable() {
+      const currentVersion = versions.get(this.prefix);
+      const updateURL = updateURLs.get(this.prefix);
+      const homepageURL = homepageURLs.get(this.prefix) || "";
+      if (!currentVersion || !updateURL) return;
+      log("Checking if a new version is available...");
+      checkIfUpdateIsAvailable(this.prefix)
+        .then((isUpdateAvailable) => {
+          this.isUpdateAvailable = isUpdateAvailable;
+          if (!isUpdateAvailable) return;
+          const contextMenu = this.groups.get("settings-parent");
+          const versionDiv = document.createElement("a");
+          versionDiv.id = this.prefix + "-update";
+          versionDiv.href = homepageURL;
+          versionDiv.target = "_blank";
+          versionDiv.innerText = `(!) Update Available: Please click here to open the update page in a new tab. (!)`;
+          contextMenu?.append(versionDiv.cloneNode(true));
+          if (this.hasSettings()) contextMenu?.prepend(versionDiv);
+        })
+        .catch((error) => logError(error));
     }
     addTable(name, rows, columns, groupName, hoverText = "") {
       const groupDiv = this.getGroup(groupName);
@@ -644,7 +810,8 @@
     createCOSelectorItem(coName) {
       const location = "javascript:void(0)";
       const internalName = coName.toLowerCase().replaceAll(" ", "");
-      const imgSrc = `terrain/ani/aw2${internalName}.png?v=1`;
+      const coPrefix = getCOImagePrefix();
+      const imgSrc = `terrain/ani/${coPrefix}${internalName}.png?v=1`;
       const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
       return (
         `<tr>` +
@@ -666,7 +833,8 @@
     createCOPortraitImage(coName) {
       const imgCO = document.createElement("img");
       imgCO.classList.add("co_portrait");
-      imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+      const coPrefix = getCOImagePrefix();
+      imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
       // Allows other icons to be used
       if (!getAllCONames().includes(coName)) {
         imgCO.src = `terrain/${coName}`;
@@ -691,7 +859,8 @@
       overDiv.style.visibility = "hidden";
       // Change the CO portrait
       const imgCO = this.groups.get("co-portrait");
-      imgCO.src = `terrain/ani/aw2${coName}.png?v=1`;
+      const coPrefix = getCOImagePrefix();
+      imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
     }
   }
 
@@ -717,7 +886,7 @@
   let ahResizeMap = getResizeMapFn();
   /********************** Script Variables & Functions ***********************/
   const FONT_SIZE = 9;
-  const PREFIX = "highlight_cursor_coordinates";
+  const PREFIX = ScriptName.HighlightCursorCoordinates;
   const BUTTON_IMG_URL = "https://awbw.amarriner.com/terrain/unit_select.gif";
   let isEnabled = true;
   let previousHighlight = [];
@@ -886,6 +1055,8 @@
     if (isMapEditor() || isMovePlanner()) {
       customUI.parent.style.height = "31px";
     }
+    customUI.addVersion();
+    customUI.checkIfNewVersionAvailable();
     console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
   }
   main();

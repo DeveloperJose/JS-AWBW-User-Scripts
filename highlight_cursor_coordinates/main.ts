@@ -16,6 +16,7 @@ import {
   getZoomOutBtn,
   getCoordsDiv,
 } from "../shared/awbw_page";
+import { ScriptName } from "../shared/config";
 import { CustomMenuSettingsUI } from "../shared/custom_ui";
 import { getMaximizeBtn } from "../shared/other_userscripts";
 
@@ -29,7 +30,7 @@ let ahResizeMap = getResizeMapFn();
 
 /********************** Script Variables & Functions ***********************/
 const FONT_SIZE = 9;
-const PREFIX = "highlight_cursor_coordinates";
+const PREFIX = ScriptName.HighlightCursorCoordinates;
 const BUTTON_IMG_URL = "https://awbw.amarriner.com/terrain/unit_select.gif";
 
 let isEnabled = true;
@@ -231,7 +232,8 @@ function main() {
   if (isMapEditor() || isMovePlanner()) {
     customUI.parent.style.height = "31px";
   }
-
+  customUI.addVersion();
+  customUI.checkIfNewVersionAvailable();
   console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
 }
 main();

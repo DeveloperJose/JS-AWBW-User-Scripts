@@ -1,9 +1,11 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
+import { log, logError } from "../music_player/utils";
 import { getCOImagePrefix } from "./awbw_game";
 import { getAllCONames } from "./awbw_globals";
 import { isGamePageAndActive } from "./awbw_page";
+import { checkIfUpdateIsAvailable, homepageURLs, ScriptName, updateURLs, versions } from "./config";
 
 export enum CustomInputType {
   Radio = "radio",
@@ -72,13 +74,22 @@ export class CustomMenuSettingsUI {
   /**
    * A string used to prefix the IDs of the elements in the menu.
    */
-  prefix = "";
+  prefix: ScriptName;
+
+  /**
+   * A boolean that represents whether an update is available for the script.
+   */
+  private isUpdateAvailable = false;
 
   /**
    * Text to be displayed when hovering over the main button.
    */
   private parentHoverText = "";
 
+  /**
+   * A map that contains the tables in the menu.
+   * The keys are the names of the tables, and the values are the table elements.
+   */
   private tableMap: Map<string, TableData> = new Map();
 
   /**
@@ -87,7 +98,7 @@ export class CustomMenuSettingsUI {
    * @param buttonImageURL - The URL of the image to be used as the button.
    * @param hoverText - The text to be displayed when hovering over the button.
    */
-  constructor(prefix: string, buttonImageURL: string, hoverText = "") {
+  constructor(prefix: ScriptName, buttonImageURL: string, hoverText = "") {
     this.prefix = prefix;
     this.parentHoverText = hoverText;
 
@@ -217,6 +228,13 @@ export class CustomMenuSettingsUI {
     this.parent.style.borderRight = "none";
   }
 
+  hasSettings() {
+    const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
+    const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
+    const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+    return hasLeftMenu || hasCenterMenu || hasRightMenu;
+  }
+
   getGroup(groupName: string) {
     const container = this.groups.get(groupName);
     // Unhide group
@@ -234,6 +252,8 @@ export class CustomMenuSettingsUI {
     const hoverSpan = this.groups.get("hover");
     if (!hoverSpan) return;
     if (replaceParent) this.parentHoverText = text;
+
+    if (this.isUpdateAvailable) text += " (New Update Available!)";
     hoverSpan.innerText = text;
     hoverSpan.style.display = text === "" ? "none" : "block";
   }
@@ -277,11 +297,10 @@ export class CustomMenuSettingsUI {
   openContextMenu() {
     const contextMenu = this.groups.get("settings-parent");
     if (!contextMenu) return;
+
     // No settings so don't open the menu
-    const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
-    const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
-    const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
-    if (!hasLeftMenu && !hasCenterMenu && !hasRightMenu) return;
+    const hasVersion = this.groups.get("version")?.style.display !== "none";
+    if (!this.hasSettings() && !hasVersion) return;
 
     contextMenu.style.display = "flex";
     this.isSettingsMenuOpen = true;
@@ -459,12 +478,41 @@ export class CustomMenuSettingsUI {
    * Adds a special version label to the context menu.
    * @param version - The version to be displayed.
    */
-  addVersion(version: string) {
+  addVersion() {
+    const version = versions.get(this.prefix);
+    if (!version) return;
+
     const contextMenu = this.groups.get("settings-parent");
     const versionDiv = document.createElement("label");
     versionDiv.id = this.prefix + "-version";
     versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
     contextMenu?.appendChild(versionDiv);
+    this.groups.set("version", versionDiv);
+  }
+
+  checkIfNewVersionAvailable() {
+    const currentVersion = versions.get(this.prefix);
+    const updateURL = updateURLs.get(this.prefix);
+    const homepageURL = homepageURLs.get(this.prefix) || "";
+    if (!currentVersion || !updateURL) return;
+
+    log("Checking if a new version is available...");
+    checkIfUpdateIsAvailable(this.prefix)
+      .then((isUpdateAvailable) => {
+        this.isUpdateAvailable = isUpdateAvailable;
+        if (!isUpdateAvailable) return;
+
+        const contextMenu = this.groups.get("settings-parent");
+        const versionDiv = document.createElement("a");
+        versionDiv.id = this.prefix + "-update";
+        versionDiv.href = homepageURL;
+        versionDiv.target = "_blank";
+        versionDiv.innerText = `(!) Update Available: Please click here to open the update page in a new tab. (!)`;
+        contextMenu?.append(versionDiv.cloneNode(true));
+
+        if (this.hasSettings()) contextMenu?.prepend(versionDiv);
+      })
+      .catch((error) => logError(error));
   }
 
   addTable(name: string, rows: number, columns: number, groupName: string, hoverText = "") {

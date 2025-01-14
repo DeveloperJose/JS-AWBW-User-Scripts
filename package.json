@@ -6,8 +6,8 @@
   "type": "module",
   "sideEffects": "*/*.css",
   "scripts": {
-    "build:dev": "rollup -c --configInputDir music_player && npm run prettier && npm run lint",
-    "build:all": "rollup -c && npm run prettier && npm run lint",
+    "build:dev": "rollup -c --configInputDir music_player --configPlugin @rollup/plugin-typescript && npm run prettier && npm run lint",
+    "build:all": "rollup -c --configPlugin @rollup/plugin-typescript && npm run prettier && npm run lint",
     "netlify": "cd ../JS-Website && npm run netlify",
     "netlify:dev": "cd ../JS-Website && netlify deploy --dir=./public",
     "prettier": "prettier --write \"**/*.{js,ts,css}\"",

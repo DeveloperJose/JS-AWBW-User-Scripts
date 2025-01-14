@@ -10,7 +10,7 @@ import {
   SettingsKey,
 } from "./music_settings";
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
-import { versions } from "../shared/config";
+import { ScriptName } from "../shared/config";
 import { isGamePageAndActive, isMaintenance, isMapEditor, isMovePlanner } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
@@ -110,7 +110,7 @@ const parseInputInt = (event: Event): number => parseInt((event.target as HTMLIn
 /**
  * The music player UI for the settings.
  */
-export const musicPlayerUI = new CustomMenuSettingsUI("music-player", NEUTRAL_IMG_URL, "Play Tunes");
+export const musicPlayerUI = new CustomMenuSettingsUI(ScriptName.MusicPlayer, NEUTRAL_IMG_URL, "Play Tunes");
 
 // Determine who will catch when the user clicks the play/stop button
 musicPlayerUI.addEventListener("click", onMusicBtnClick);
@@ -336,7 +336,7 @@ function clearAndRepopulateExcludedList() {
 }
 
 /* ************************************ Version ************************************ */
-musicPlayerUI.addVersion(versions.music_player);
+musicPlayerUI.addVersion();
 
 /* ************************************ Disable or hide things in other pages ************************************ */
 if (!isGamePageAndActive()) {
