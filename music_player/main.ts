@@ -7,8 +7,8 @@
 import canAutoplay, { CheckResponse } from "can-autoplay";
 
 // Add our CSS to the page using rollup-plugin-postcss
-import "./style.css";
-import "./style_sliders.css";
+import "../shared/style.css";
+import "../shared/style_sliders.css";
 
 import { musicPlayerUI } from "./music_ui";
 import {

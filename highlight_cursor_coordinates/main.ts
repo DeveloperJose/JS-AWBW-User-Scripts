@@ -20,6 +20,10 @@ import { ScriptName } from "../shared/config";
 import { CustomMenuSettingsUI } from "../shared/custom_ui";
 import { getMaximizeBtn } from "../shared/other_userscripts";
 
+// Add our CSS to the page using rollup-plugin-postcss
+import "../shared/style.css";
+import "../shared/style_sliders.css";
+
 /********************** AWBW Stuff ***********************/
 const gamemap = getGamemap();
 const gamemapContainer = getGamemapContainer();
@@ -233,6 +237,7 @@ function main() {
     customUI.parent.style.height = "31px";
   }
   customUI.addVersion();
+
   customUI.checkIfNewVersionAvailable();
   console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
 }

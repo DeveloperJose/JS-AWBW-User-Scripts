@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
-// @version     2.2.0
+// @version     2.2.1
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -174,8 +174,8 @@
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.0"],
-    [ScriptName.HighlightCursorCoordinates, "2.2.0"],
+    [ScriptName.MusicPlayer, "4.7.1"],
+    [ScriptName.HighlightCursorCoordinates, "2.2.1"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
@@ -874,6 +874,43 @@
   function getMaximizeBtn() {
     return document.getElementsByClassName("AWBWMaxmiseButton")[0];
   }
+
+  function styleInject(css, ref) {
+    if (ref === void 0) ref = {};
+    var insertAt = ref.insertAt;
+
+    if (!css || typeof document === "undefined") {
+      return;
+    }
+
+    var head = document.head || document.getElementsByTagName("head")[0];
+    var style = document.createElement("style");
+    style.type = "text/css";
+
+    if (insertAt === "top") {
+      if (head.firstChild) {
+        head.insertBefore(style, head.firstChild);
+      } else {
+        head.appendChild(style);
+      }
+    } else {
+      head.appendChild(style);
+    }
+
+    if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }
+  }
+
+  var css_248z$1 =
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+  styleInject(css_248z$1);
+
+  var css_248z =
+    '/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n';
+  styleInject(css_248z);
 
   /**
    * @file Main script that loads everything for the AWBW Highlight Cursor Coordinates userscript.

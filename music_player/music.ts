@@ -26,6 +26,14 @@ import { musicPlayerUI } from "./music_ui";
 import { addDatabaseReplacementListener, loadMusicFromDB } from "./db";
 import { logError, log, logDebug } from "./utils";
 
+// TODO: DEBUGGING
+// window.setInterval(() => {
+//   for (const audio of audioMap.values()) {
+//     const count = audio._getSoundIds().length;
+//     if (count > 1) logDebug("Multiple instances of", audio._src, count);
+//   }
+// }, 500);
+
 /**
  * The URL of the current theme that is playing.
  */
@@ -197,6 +205,7 @@ function preloadURL(srcURL: string) {
     const audio = new Howl({
       src: [cacheURL],
       format: ["ogg"],
+      volume: getVolumeForURL(srcURL),
       // Redundant event listeners to ensure the audio is always at the correct volume
       onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
       onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
@@ -208,13 +217,9 @@ function preloadURL(srcURL: string) {
     audioMap.set(srcURL, audio);
 
     // Sound Effects
-    if (srcURL.includes("sfx")) {
-      audio.volume(srcURL.includes("ui") ? musicSettings.uiVolume : musicSettings.sfxVolume);
-      return audio;
-    }
+    if (srcURL.includes("sfx")) return audio;
 
     // Themes
-    audio.volume(getVolumeForURL(srcURL));
     audio.on("play", () => onThemePlay(audio, srcURL));
     audio.on("load", () => playThemeSong());
     audio.on("end", () => onThemeEndOrLoop(srcURL));

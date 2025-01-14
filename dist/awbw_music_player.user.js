@@ -1359,7 +1359,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    */
   const versions = new Map([
     [ScriptName.MusicPlayer, "4.7.1"],
-    [ScriptName.HighlightCursorCoordinates, "2.2.0"],
+    [ScriptName.HighlightCursorCoordinates, "2.2.1"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
@@ -2500,6 +2500,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    */
   // Type definitions for Howler
   // Until howler gets modernized (https://github.com/goldfire/howler.js/pull/1518)
+  // TODO: DEBUGGING
+  // window.setInterval(() => {
+  //   for (const audio of audioMap.values()) {
+  //     const count = audio._getSoundIds().length;
+  //     if (count > 1) logDebug("Multiple instances of", audio._src, count);
+  //   }
+  // }, 500);
   /**
    * The URL of the current theme that is playing.
    */
@@ -2649,6 +2656,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const audio = new Howl({
         src: [cacheURL],
         format: ["ogg"],
+        volume: getVolumeForURL(srcURL),
         // Redundant event listeners to ensure the audio is always at the correct volume
         onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
         onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
@@ -2659,12 +2667,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       });
       audioMap.set(srcURL, audio);
       // Sound Effects
-      if (srcURL.includes("sfx")) {
-        audio.volume(srcURL.includes("ui") ? musicSettings.uiVolume : musicSettings.sfxVolume);
-        return audio;
-      }
+      if (srcURL.includes("sfx")) return audio;
       // Themes
-      audio.volume(getVolumeForURL(srcURL));
       audio.on("play", () => onThemePlay(audio, srcURL));
       audio.on("load", () => playThemeSong());
       audio.on("end", () => onThemeEndOrLoop(srcURL));
