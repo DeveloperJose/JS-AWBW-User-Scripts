@@ -15,7 +15,7 @@ export enum ScriptName {
  * The version numbers of the userscripts.
  */
 export const versions = new Map<string, string>([
-  [ScriptName.MusicPlayer, "4.7.0"],
+  [ScriptName.MusicPlayer, "4.7.1"],
   [ScriptName.HighlightCursorCoordinates, "2.2.0"],
 ]);
 

@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.7.0
+// @version     4.7.1
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1358,7 +1358,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.0"],
+    [ScriptName.MusicPlayer, "4.7.1"],
     [ScriptName.HighlightCursorCoordinates, "2.2.0"],
   ]);
   /**
@@ -3858,8 +3858,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   function initializeMusicPlayer() {
     if (isMusicPlayerInitialized) return;
     isMusicPlayerInitialized = true;
-    // Load settings from local storage but don't allow saving yet
-    loadSettingsFromLocalStorage();
     // Override the saved setting for autoplay if we are on a different page than the main game page
     if (!isGamePageAndActive()) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
     // Handle pages that aren't the main game page or the map editor
@@ -3917,6 +3915,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Main function that initializes everything depending on the browser autoplay settings.
    */
   function main() {
+    // Load settings from local storage but don't allow saving yet
+    loadSettingsFromLocalStorage();
     initializeUI();
     const ifCanAutoplay = () => {
       initializeMusicPlayer();

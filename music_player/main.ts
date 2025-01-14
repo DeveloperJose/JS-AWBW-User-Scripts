@@ -163,9 +163,6 @@ export function initializeMusicPlayer() {
   if (isMusicPlayerInitialized) return;
   isMusicPlayerInitialized = true;
 
-  // Load settings from local storage but don't allow saving yet
-  loadSettingsFromLocalStorage();
-
   // Override the saved setting for autoplay if we are on a different page than the main game page
   if (!isGamePageAndActive()) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
 
@@ -235,6 +232,9 @@ export function initializeUI() {
  * Main function that initializes everything depending on the browser autoplay settings.
  */
 export function main() {
+  // Load settings from local storage but don't allow saving yet
+  loadSettingsFromLocalStorage();
+
   initializeUI();
 
   const ifCanAutoplay = () => {
