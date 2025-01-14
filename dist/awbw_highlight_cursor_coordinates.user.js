@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
-// @version     2.2.1
+// @version     2.2.2
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -174,8 +174,8 @@
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.1"],
-    [ScriptName.HighlightCursorCoordinates, "2.2.1"],
+    [ScriptName.MusicPlayer, "4.7.2"],
+    [ScriptName.HighlightCursorCoordinates, "2.2.2"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
@@ -221,9 +221,9 @@
           if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
           // Compare the version numbers by their parts
           return resolve(
-            currentVersionParts[0] < latestVersionParts[0] ||
-              currentVersionParts[1] < latestVersionParts[1] ||
-              currentVersionParts[2] < latestVersionParts[2],
+            parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
+              parseInt(currentVersionParts[1]) < parseInt(latestVersionParts[1]) ||
+              parseInt(currentVersionParts[2]) < parseInt(latestVersionParts[2]),
           );
         })
         .catch((reason) => reject(reason));

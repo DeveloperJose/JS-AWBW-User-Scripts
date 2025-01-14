@@ -15,8 +15,8 @@ export enum ScriptName {
  * The version numbers of the userscripts.
  */
 export const versions = new Map<string, string>([
-  [ScriptName.MusicPlayer, "4.7.1"],
-  [ScriptName.HighlightCursorCoordinates, "2.2.1"],
+  [ScriptName.MusicPlayer, "4.7.2"],
+  [ScriptName.HighlightCursorCoordinates, "2.2.2"],
 ]);
 
 /**
@@ -67,9 +67,9 @@ export function checkIfUpdateIsAvailable(scriptName: ScriptName) {
 
         // Compare the version numbers by their parts
         return resolve(
-          currentVersionParts[0] < latestVersionParts[0] ||
-            currentVersionParts[1] < latestVersionParts[1] ||
-            currentVersionParts[2] < latestVersionParts[2],
+          parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
+            parseInt(currentVersionParts[1]) < parseInt(latestVersionParts[1]) ||
+            parseInt(currentVersionParts[2]) < parseInt(latestVersionParts[2]),
         );
       })
       .catch((reason) => reject(reason));

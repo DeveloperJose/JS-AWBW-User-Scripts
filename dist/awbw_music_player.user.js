@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.7.1
+// @version     4.7.2
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1358,8 +1358,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.1"],
-    [ScriptName.HighlightCursorCoordinates, "2.2.1"],
+    [ScriptName.MusicPlayer, "4.7.2"],
+    [ScriptName.HighlightCursorCoordinates, "2.2.2"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
@@ -1405,9 +1405,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
           // Compare the version numbers by their parts
           return resolve(
-            currentVersionParts[0] < latestVersionParts[0] ||
-              currentVersionParts[1] < latestVersionParts[1] ||
-              currentVersionParts[2] < latestVersionParts[2],
+            parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
+              parseInt(currentVersionParts[1]) < parseInt(latestVersionParts[1]) ||
+              parseInt(currentVersionParts[2]) < parseInt(latestVersionParts[2]),
           );
         })
         .catch((reason) => reject(reason));
