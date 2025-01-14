@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.6.0
+// @version     4.7.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1119,6 +1119,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     ["Infantry", MovementSFX.moveInfLoop],
     ["Lander", MovementSFX.moveNavalLoop],
     ["Md. Tank", MovementSFX.moveTreadHeavyLoop],
+    ["Md.Tank", MovementSFX.moveTreadHeavyLoop],
     ["Mech", MovementSFX.moveMechLoop],
     ["Mega Tank", MovementSFX.moveTreadHeavyLoop],
     ["Missile", MovementSFX.moveTiresHeavyLoop],
@@ -1291,6 +1292,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The URL of the given unit's movement start sound.
    */
   function getMovementSoundURL(unitName) {
+    const sfx = onMovementStartMap.get(unitName);
+    if (!sfx) return "";
     return `${BASE_SFX_URL}/${onMovementStartMap.get(unitName)}.ogg`;
   }
   /**
@@ -1905,7 +1908,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @constant {Object.<string, string>}
    */
   const versions = {
-    music_player: "4.6.0",
+    music_player: "4.7.0",
     highlight_cursor_coordinates: "2.1.0",
   };
 
@@ -2679,6 +2682,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const unitName = getUnitName(unitId);
       if (!unitName) return;
       const movementSoundURL = getMovementSoundURL(unitName);
+      if (!movementSoundURL) {
+        logError("No movement sound for", unitName);
+        return;
+      }
+      // logDebug("Creating new audio player for:", unitId, unitName, movementSoundURL);
       unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
     }
     // Restart the audio and then play it
@@ -2688,7 +2696,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     movementAudio.loop = false;
     movementAudio.volume = musicSettings.sfxVolume;
     movementAudio.play();
-    // logDebug("Movement sound for", unitId, "is playing", movementAudio.volume);
+    // logDebug("Movement sound for", unitId, "is playing", movementAudio);
   }
   /**
    * Stops the movement sound of a given unit if it's playing.

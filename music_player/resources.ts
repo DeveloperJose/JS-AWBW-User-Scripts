@@ -139,6 +139,7 @@ const onMovementStartMap = new Map([
   ["Infantry", MovementSFX.moveInfLoop],
   ["Lander", MovementSFX.moveNavalLoop],
   ["Md. Tank", MovementSFX.moveTreadHeavyLoop],
+  ["Md.Tank", MovementSFX.moveTreadHeavyLoop],
   ["Mech", MovementSFX.moveMechLoop],
   ["Mega Tank", MovementSFX.moveTreadHeavyLoop],
   ["Missile", MovementSFX.moveTiresHeavyLoop],
@@ -334,6 +335,9 @@ export function getSoundEffectURL(sfx: GameSFX) {
  * @returns - The URL of the given unit's movement start sound.
  */
 export function getMovementSoundURL(unitName: string) {
+  const sfx = onMovementStartMap.get(unitName);
+  if (!sfx) return "";
+
   return `${BASE_SFX_URL}/${onMovementStartMap.get(unitName)}.ogg`;
 }
 
@@ -398,12 +402,14 @@ function getAllSoundEffectURLs() {
   for (const sfx of Object.values(GameSFX)) {
     allSoundURLs.add(getSoundEffectURL(sfx));
   }
-  for (const unitName of onMovementStartMap.keys()) {
-    allSoundURLs.add(getMovementSoundURL(unitName));
-  }
-  for (const unitName of onMovementRolloffMap.keys()) {
-    allSoundURLs.add(getMovementRollOffURL(unitName));
-  }
+
+  // for (const unitName of onMovementStartMap.keys()) {
+  //   allSoundURLs.add(getMovementSoundURL(unitName));
+  // }
+  // for (const unitName of onMovementRolloffMap.keys()) {
+  //   allSoundURLs.add(getMovementRollOffURL(unitName));
+  // }
+
   return allSoundURLs;
 }
 

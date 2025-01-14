@@ -350,6 +350,11 @@ export function playMovementSound(unitId: number) {
     const unitName = getUnitName(unitId);
     if (!unitName) return;
     const movementSoundURL = getMovementSoundURL(unitName);
+    if (!movementSoundURL) {
+      logError("No movement sound for", unitName);
+      return;
+    }
+    // logDebug("Creating new audio player for:", unitId, unitName, movementSoundURL);
     unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
   }
 
@@ -360,7 +365,7 @@ export function playMovementSound(unitId: number) {
   movementAudio.loop = false;
   movementAudio.volume = musicSettings.sfxVolume;
   movementAudio.play();
-  // logDebug("Movement sound for", unitId, "is playing", movementAudio.volume);
+  // logDebug("Movement sound for", unitId, "is playing", movementAudio);
 }
 
 /**

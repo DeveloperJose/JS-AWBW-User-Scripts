@@ -7,6 +7,6 @@
  * @constant {Object.<string, string>}
  */
 export const versions = {
-  music_player: "4.6.0",
+  music_player: "4.7.0",
   highlight_cursor_coordinates: "2.1.0",
 };
