@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.7.2
+// @version     4.7.5
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1358,7 +1358,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.2"],
+    [ScriptName.MusicPlayer, "4.7.5"],
     [ScriptName.HighlightCursorCoordinates, "2.2.2"],
   ]);
   /**
@@ -2502,9 +2502,14 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   // Until howler gets modernized (https://github.com/goldfire/howler.js/pull/1518)
   // TODO: DEBUGGING
   // window.setInterval(() => {
-  //   for (const audio of audioMap.values()) {
+  //   for (const key of audioMap.keys()) {
+  //     const audio = audioMap.get(key);
+  //     if (!audio) continue;
   //     const count = audio._getSoundIds().length;
-  //     if (count > 1) logDebug("Multiple instances of", audio._src, count);
+  //     if (count > 1) {
+  //       const playingCount = audio._getSoundIds().filter((id) => audio.playing(id)).length;
+  //       if (playingCount > 1) logDebug("Multiple instances of", key, count, playingCount);
+  //     }
   //   }
   // }, 500);
   /**
@@ -2516,6 +2521,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * The keys are the audio URLs.
    */
   const audioMap = new Map();
+  const audioIDMap = new Map();
   /**
    * Set of URLs that are queued to be pre-loaded.
    * This is used to prevent pre-loading the same URL multiple times while waiting for promises.
@@ -2551,9 +2557,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (audio.playing()) audio.stop();
     urlQueue.delete(url);
     audioMap.delete(url);
+    audioIDMap.delete(url);
     preloadURL(url)
-      .then(playThemeSong)
-      .catch((reason) => logError(reason));
+      .catch((reason) => logError(reason))
+      .finally(() => playThemeSong());
   });
   /**
    * Event handler that pauses an audio as soon as it gets loaded.
@@ -2609,7 +2616,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
     const currentPosition = audio.seek();
     if (shouldRestart && isGamePageAndActive() && currentPosition > 0.1) {
-      // logDebug("Restart2", shouldRestart, currentPosition);
       audio.seek(0);
     }
     // The current theme is not this one, so pause this one and let the other one play
@@ -2617,6 +2623,12 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (currentThemeKey !== srcURL && audio.playing()) {
       audio.pause();
       playThemeSong();
+    }
+    // There's multiple instances this sound playing so stop the extra ones
+    const audioID = audioIDMap.get(srcURL);
+    if (!audioID) return;
+    for (const id of audio._getSoundIds()) {
+      if (id !== audioID) audio.stop(id);
     }
   }
   /**
@@ -2632,7 +2644,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // We already have this audio loaded
     if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already pre-loaded.`);
     // Preload the audio from the database if possible
-    // logDebug("Loading new song", srcURL);
     return loadMusicFromDB(srcURL).then(
       (localCacheURL) => createNewAudio(srcURL, localCacheURL),
       (reason) => {
@@ -2651,7 +2662,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         logError("Race Condition! Please report this bug!", srcURL);
         return audioInMap;
       }
-      // logDebug("Creating new audio player for:", srcURL, cacheURL);
       // Shared audio settings for all audio players
       const audio = new Howl({
         src: [cacheURL],
@@ -2703,7 +2713,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     // Play the song if it's not already playing
     if (!nextSong.playing() && musicSettings.isPlaying) {
       log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
-      nextSong.play();
+      const newID = nextSong.play();
+      if (!newID) return;
+      audioIDMap.set(srcURL, newID);
     }
   }
   /**
@@ -2850,7 +2862,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     audio.seek(0);
     // No need to start another instance if it's already playing
     if (audio.playing()) return;
-    audio.play();
+    const newID = audio.play();
+    if (!newID) return;
+    audioIDMap.set(sfxURL, newID);
     // audio.fade(0, musicSettings.sfxVolume, audio.duration() * 1000);
   }
   /**
@@ -2946,7 +2960,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (url.includes("sfx")) {
       if (url.includes("ui")) return musicSettings.uiVolume;
       if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
-      // console.log("SFX", url, musicSettings.sfxVolume);
       return musicSettings.sfxVolume;
     }
     return musicSettings.volume;

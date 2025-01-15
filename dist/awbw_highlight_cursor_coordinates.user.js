@@ -174,7 +174,7 @@
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.2"],
+    [ScriptName.MusicPlayer, "4.7.5"],
     [ScriptName.HighlightCursorCoordinates, "2.2.2"],
   ]);
   /**
