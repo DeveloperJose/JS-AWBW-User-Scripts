@@ -20,11 +20,10 @@ import {
   SpecialTheme,
 } from "./resources";
 import { musicSettings, addSettingsChangeListener, ThemeType, RandomThemeType, SettingsKey } from "./music_settings";
-
-import { isGamePageAndActive } from "../shared/awbw_page";
 import { musicPlayerUI } from "./music_ui";
 import { addDatabaseReplacementListener, loadMusicFromDB } from "./db";
 import { logError, log, logDebug } from "./utils";
+import { getCurrentPageType, PageType } from "../shared/awbw_page";
 
 // TODO: DEBUGGING
 // window.setInterval(() => {
@@ -158,7 +157,8 @@ function onThemePlay(audio: Howl, srcURL: string) {
   const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
   const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
   const currentPosition = audio.seek() as number;
-  if (shouldRestart && isGamePageAndActive() && currentPosition > 0.1) {
+  const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
+  if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
     audio.seek(0);
   }
 

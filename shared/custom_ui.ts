@@ -4,7 +4,7 @@
 import { log, logError } from "../music_player/utils";
 import { getCOImagePrefix } from "./awbw_game";
 import { getAllCONames } from "./awbw_globals";
-import { isGamePageAndActive } from "./awbw_page";
+import { getCurrentPageType, PageType } from "./awbw_page";
 import { checkIfUpdateIsAvailable, homepageURLs, ScriptName, updateURLs, versions } from "./config";
 
 export enum CustomInputType {
@@ -318,7 +318,8 @@ export class CustomMenuSettingsUI {
     // Check if we have a CO selector and need to hide it
     const overDiv = document.querySelector("#overDiv") as HTMLDivElement;
     const hasCOSelector = this.groups.has("co-selector");
-    if (overDiv && hasCOSelector && isGamePageAndActive()) {
+    const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
+    if (overDiv && hasCOSelector && isGamePageAndActive) {
       overDiv.style.visibility = "hidden";
     }
   }

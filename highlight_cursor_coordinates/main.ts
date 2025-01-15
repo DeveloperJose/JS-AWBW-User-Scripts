@@ -9,12 +9,11 @@ import {
   getCurrentZoomLevel,
   getGamemap,
   getGamemapContainer,
-  isMaintenance,
-  isMapEditor,
-  isMovePlanner,
   getZoomInBtn,
   getZoomOutBtn,
   getCoordsDiv,
+  getCurrentPageType,
+  PageType,
 } from "../shared/awbw_page";
 import { ScriptName } from "../shared/config";
 import { CustomMenuSettingsUI } from "../shared/custom_ui";
@@ -46,11 +45,16 @@ const currentSquares = new Array<HTMLElement>();
  * Where should we place the highlight cursor coordinates UI?
  */
 function getMenu() {
-  if (isMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
-  if (isMovePlanner()) return document.querySelector("#map-controls-container");
-
-  const coordsDiv = getCoordsDiv();
-  return coordsDiv.parentElement;
+  switch (getCurrentPageType()) {
+    case PageType.MapEditor:
+      return document.querySelector("#design-map-controls-container")?.children[1];
+    case PageType.MovePlanner:
+      return document.querySelector("#map-controls-container");
+    case PageType.ActiveGame: {
+      const coordsDiv = getCoordsDiv();
+      return coordsDiv.parentElement;
+    }
+  }
 }
 
 function setHighlight(node: HTMLElement, highlight: boolean) {
@@ -170,18 +174,18 @@ function addHighlightBoxesAroundMapEdges() {
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
 function main() {
-  if (isMaintenance()) {
+  if (getCurrentPageType() === PageType.Maintenance) {
     console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
     return;
   }
 
   // Hide by default on map editor and move planner
-  if (isMapEditor() || isMovePlanner()) {
+  if (getCurrentPageType() === PageType.MapEditor || getCurrentPageType() === PageType.MovePlanner) {
     isEnabled = false;
   }
 
   // designmap.php, wait until designerMapEditor is loaded to run script
-  const isMapEditorAndNotLoaded = isMapEditor() && !designMapEditor?.loaded;
+  const isMapEditorAndNotLoaded = getCurrentPageType() === PageType.MapEditor && !designMapEditor?.loaded;
   if (isMapEditorAndNotLoaded) {
     const interval = window.setInterval(() => {
       if (designMapEditor.loaded) {
@@ -197,7 +201,7 @@ function main() {
   addUpdateCursorObserver(onCursorMove);
 
   // Intercept designmap functions
-  if (isMapEditor()) {
+  if (getCurrentPageType() === PageType.MapEditor) {
     designMapEditor.resizeMap = onResizeMap;
   }
 
@@ -233,9 +237,10 @@ function main() {
   customUI.addToAWBWPage(getMenu() as HTMLElement, true);
   customUI.setProgress(100);
 
-  if (isMapEditor() || isMovePlanner()) {
+  if (getCurrentPageType() === PageType.MapEditor || getCurrentPageType() === PageType.MovePlanner) {
     customUI.parent.style.height = "31px";
   }
+
   customUI.addVersion();
 
   customUI.checkIfNewVersionAvailable();

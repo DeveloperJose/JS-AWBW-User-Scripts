@@ -2,7 +2,7 @@
  * @file Global variables exposed by Advance Wars By Web's JS code and other useful constants.
  */
 
-import { isMapEditor } from "./awbw_page";
+import { getCurrentPageType, PageType } from "./awbw_page";
 
 // ============================== Advance Wars Stuff ==============================
 
@@ -68,7 +68,7 @@ export function getAllCONames(properCase = false) {
  * The number of columns of this map.
  */
 export function getMapColumns() {
-  if (isMapEditor()) return designMapEditor.map.maxX;
+  if (getCurrentPageType() === PageType.MapEditor) return designMapEditor.map.maxX;
   return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
 }
 
@@ -76,7 +76,7 @@ export function getMapColumns() {
  * The number of rows of this map.
  */
 export function getMapRows() {
-  if (isMapEditor()) return designMapEditor.map.maxY;
+  if (getCurrentPageType() === PageType.MapEditor) return designMapEditor.map.maxY;
   return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
 }
 

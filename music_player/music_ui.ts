@@ -11,7 +11,7 @@ import {
 } from "./music_settings";
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { ScriptName } from "../shared/config";
-import { isGamePageAndActive, isMaintenance, isMapEditor, isMovePlanner } from "../shared/awbw_page";
+import { getCurrentPageType, PageType } from "../shared/awbw_page";
 
 // Listen for setting changes to update the menu UI
 addSettingsChangeListener(onSettingsChange);
@@ -76,12 +76,12 @@ function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
   }
 
   // Update UI
-  const canUpdateDaySlider = daySlider?.parentElement && isGamePageAndActive();
+  const canUpdateDaySlider = daySlider?.parentElement && getCurrentPageType() === PageType.ActiveGame;
   if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
   if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
 
   // Update player image and hover text
-  const currentSounds = isMovePlanner() ? "Sound Effects" : "Tunes";
+  const currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
   if (musicSettings.isPlaying) {
     musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
     musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -249,7 +249,11 @@ let currentSelectedCO = "andy";
 function onCOSelectorClick(coName: string) {
   currentSelectedCO = coName;
 }
-if (isGamePageAndActive()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+
+// This makes sure all other pages don't break with overlib
+if (getCurrentPageType() === PageType.ActiveGame) {
+  musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+}
 
 // Game type radio buttons
 const overrideGameTypeRadioMap = new Map<GameType, HTMLInputElement>();
@@ -339,7 +343,7 @@ function clearAndRepopulateExcludedList() {
 musicPlayerUI.addVersion();
 
 /* ************************************ Disable or hide things in other pages ************************************ */
-if (!isGamePageAndActive()) {
+if (getCurrentPageType() !== PageType.ActiveGame) {
   const parent = musicPlayerUI.getGroup("settings-parent");
   if (parent) parent.style.width = "475px";
 
@@ -352,7 +356,7 @@ if (!isGamePageAndActive()) {
   if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
   if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
 
-  if (!isMapEditor() && !isMaintenance()) {
+  if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
     if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
     if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
   }

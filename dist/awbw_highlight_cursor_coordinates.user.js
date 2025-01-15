@@ -7,7 +7,7 @@
 // @match       https://awbw.amarriner.com/moveplanner.php*
 // @match       https://awbw.amarriner.com/*editmap*
 // @icon        https://awbw.amarriner.com/terrain/unit_select.gif
-// @version     2.2.2
+// @version     2.3.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -25,19 +25,31 @@
    * # = id
    */
   /**
-   * Are we in the map editor?
+   * The type of page we are currently on.
    */
-  function isMapEditor() {
-    return window.location.href.indexOf("editmap.php?") > -1;
-  }
-  function isMaintenance() {
-    return document.querySelector("#server-maintenance-alert") !== null;
-  }
-  function isMovePlanner() {
-    return window.location.href.indexOf("moveplanner.php") > -1;
-  }
-  function isGamePageAndActive() {
-    return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
+  var PageType;
+  (function (PageType) {
+    PageType[(PageType["Maintenance"] = 0)] = "Maintenance";
+    PageType[(PageType["ActiveGame"] = 1)] = "ActiveGame";
+    PageType[(PageType["MapEditor"] = 2)] = "MapEditor";
+    PageType[(PageType["MovePlanner"] = 3)] = "MovePlanner";
+    PageType[(PageType["LiveQueue"] = 4)] = "LiveQueue";
+    PageType[(PageType["MainPage"] = 5)] = "MainPage";
+    PageType[(PageType["Default"] = 6)] = "Default";
+  })(PageType || (PageType = {}));
+  /**
+   * Gets the current page type based on the URL.
+   * @returns - The current page type.
+   */
+  function getCurrentPageType() {
+    const isMaintenance = document.querySelector("#server-maintenance-alert") !== null;
+    if (isMaintenance) return PageType.Maintenance;
+    if (window.location.href.indexOf("game.php") > -1) return PageType.ActiveGame;
+    if (window.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
+    if (window.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
+    if (window.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
+    if (window.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
+    return PageType.Default;
   }
   // ============================== AWBW Page Elements ==============================
   function getGamemap() {
@@ -128,14 +140,14 @@
    * The number of columns of this map.
    */
   function getMapColumns() {
-    if (isMapEditor()) return designMapEditor.map.maxX;
+    if (getCurrentPageType() === PageType.MapEditor) return designMapEditor.map.maxX;
     return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
   }
   /**
    * The number of rows of this map.
    */
   function getMapRows() {
-    if (isMapEditor()) return designMapEditor.map.maxY;
+    if (getCurrentPageType() === PageType.MapEditor) return designMapEditor.map.maxY;
     return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
   }
   /**
@@ -205,8 +217,8 @@
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.6"],
-    [ScriptName.HighlightCursorCoordinates, "2.2.2"],
+    [ScriptName.MusicPlayer, "4.8.0"],
+    [ScriptName.HighlightCursorCoordinates, "2.3.0"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
@@ -231,6 +243,11 @@
    * @returns - A promise that resolves with the latest version of the script
    */
   function checkIfUpdateIsAvailable(scriptName) {
+    // SemVer comparison function
+    // https://stackoverflow.com/questions/55466274/simplify-semver-version-compare-logic
+    const isGreater = (a, b) => {
+      return a.localeCompare(b, undefined, { numeric: true }) === 1;
+    };
     return new Promise((resolve, reject) => {
       // Get the update URL
       const updateURL = updateURLs.get(scriptName);
@@ -250,13 +267,9 @@
           const latestVersionParts = latestVersion.split(".");
           const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
           if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
-          logDebug(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
-          // Compare the version numbers by their parts
-          return resolve(
-            parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
-              parseInt(currentVersionParts[1]) < parseInt(latestVersionParts[1]) ||
-              parseInt(currentVersionParts[2]) < parseInt(latestVersionParts[2]),
-          );
+          const isUpdateAvailable = isGreater(latestVersion, currentVersion);
+          logDebug(`Current version: ${currentVersion}, latest: ${latestVersion}, update needed: ${isUpdateAvailable}`);
+          return resolve(isUpdateAvailable);
         })
         .catch((reason) => reject(reason));
     });
@@ -558,7 +571,8 @@
       // Check if we have a CO selector and need to hide it
       const overDiv = document.querySelector("#overDiv");
       const hasCOSelector = this.groups.has("co-selector");
-      if (overDiv && hasCOSelector && isGamePageAndActive()) {
+      const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
+      if (overDiv && hasCOSelector && isGamePageAndActive) {
         overDiv.style.visibility = "hidden";
       }
     }
@@ -943,10 +957,16 @@
    * Where should we place the highlight cursor coordinates UI?
    */
   function getMenu() {
-    if (isMapEditor()) return document.querySelector("#design-map-controls-container")?.children[1];
-    if (isMovePlanner()) return document.querySelector("#map-controls-container");
-    const coordsDiv = getCoordsDiv();
-    return coordsDiv.parentElement;
+    switch (getCurrentPageType()) {
+      case PageType.MapEditor:
+        return document.querySelector("#design-map-controls-container")?.children[1];
+      case PageType.MovePlanner:
+        return document.querySelector("#map-controls-container");
+      case PageType.ActiveGame: {
+        const coordsDiv = getCoordsDiv();
+        return coordsDiv.parentElement;
+      }
+    }
   }
   function setHighlight(node, highlight) {
     if (!isEnabled) return;
@@ -1047,16 +1067,16 @@
    * SCRIPT ENTRY (MAIN FUNCTION)
    ******************************************************************/
   function main() {
-    if (isMaintenance()) {
+    if (getCurrentPageType() === PageType.Maintenance) {
       console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
       return;
     }
     // Hide by default on map editor and move planner
-    if (isMapEditor() || isMovePlanner()) {
+    if (getCurrentPageType() === PageType.MapEditor || getCurrentPageType() === PageType.MovePlanner) {
       isEnabled = false;
     }
     // designmap.php, wait until designerMapEditor is loaded to run script
-    const isMapEditorAndNotLoaded = isMapEditor() && !designMapEditor?.loaded;
+    const isMapEditorAndNotLoaded = getCurrentPageType() === PageType.MapEditor && !designMapEditor?.loaded;
     if (isMapEditorAndNotLoaded) {
       const interval = window.setInterval(() => {
         if (designMapEditor.loaded) {
@@ -1070,7 +1090,7 @@
     // Intercept AWBW functions (global)
     addUpdateCursorObserver(onCursorMove);
     // Intercept designmap functions
-    if (isMapEditor()) {
+    if (getCurrentPageType() === PageType.MapEditor) {
       designMapEditor.resizeMap = onResizeMap;
     }
     if (zoomInBtn != null) zoomInBtn.addEventListener("click", onZoomChangeEvent);
@@ -1099,7 +1119,7 @@
     });
     customUI.addToAWBWPage(getMenu(), true);
     customUI.setProgress(100);
-    if (isMapEditor() || isMovePlanner()) {
+    if (getCurrentPageType() === PageType.MapEditor || getCurrentPageType() === PageType.MovePlanner) {
       customUI.parent.style.height = "31px";
     }
     customUI.addVersion();

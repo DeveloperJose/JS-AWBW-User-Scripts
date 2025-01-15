@@ -17,8 +17,8 @@ export enum ScriptName {
  * The version numbers of the userscripts.
  */
 export const versions = new Map<string, string>([
-  [ScriptName.MusicPlayer, "4.7.6"],
-  [ScriptName.HighlightCursorCoordinates, "2.2.2"],
+  [ScriptName.MusicPlayer, "4.8.0"],
+  [ScriptName.HighlightCursorCoordinates, "2.3.0"],
 ]);
 
 /**
@@ -43,6 +43,12 @@ export const homepageURLs = new Map<string, string>([
  * @returns - A promise that resolves with the latest version of the script
  */
 export function checkIfUpdateIsAvailable(scriptName: ScriptName) {
+  // SemVer comparison function
+  // https://stackoverflow.com/questions/55466274/simplify-semver-version-compare-logic
+  const isGreater = (a: string, b: string) => {
+    return a.localeCompare(b, undefined, { numeric: true }) === 1;
+  };
+
   return new Promise<boolean>((resolve, reject) => {
     // Get the update URL
     const updateURL = updateURLs.get(scriptName);
@@ -67,13 +73,9 @@ export function checkIfUpdateIsAvailable(scriptName: ScriptName) {
         const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
         if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
 
-        logDebug(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
-        // Compare the version numbers by their parts
-        return resolve(
-          parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
-            parseInt(currentVersionParts[1]) < parseInt(latestVersionParts[1]) ||
-            parseInt(currentVersionParts[2]) < parseInt(latestVersionParts[2]),
-        );
+        const isUpdateAvailable = isGreater(latestVersion, currentVersion);
+        logDebug(`Current version: ${currentVersion}, latest: ${latestVersion}, update needed: ${isUpdateAvailable}`);
+        return resolve(isUpdateAvailable);
       })
       .catch((reason) => reject(reason));
   });

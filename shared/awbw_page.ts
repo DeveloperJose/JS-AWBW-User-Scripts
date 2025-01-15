@@ -7,30 +7,33 @@
  */
 
 /**
- * Are we in the map editor?
+ * The type of page we are currently on.
  */
-export function isMapEditor() {
-  return window.location.href.indexOf("editmap.php?") > -1;
+export enum PageType {
+  Maintenance,
+  ActiveGame,
+  MapEditor,
+  MovePlanner,
+  LiveQueue,
+  MainPage,
+
+  Default, // For all other pages
 }
 
-export function isMaintenance() {
-  return document.querySelector("#server-maintenance-alert") !== null;
-}
+/**
+ * Gets the current page type based on the URL.
+ * @returns - The current page type.
+ */
+export function getCurrentPageType(): PageType {
+  const isMaintenance = document.querySelector("#server-maintenance-alert") !== null;
+  if (isMaintenance) return PageType.Maintenance;
 
-export function isMovePlanner() {
-  return window.location.href.indexOf("moveplanner.php") > -1;
-}
-
-export function isYourGames() {
-  return window.location.href.indexOf("yourgames.php") > -1 || window.location.href.indexOf("yourturn.php") > -1;
-}
-
-export function isGamePageAndActive() {
-  return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
-}
-
-export function isLiveQueue() {
-  return window.location.href.indexOf("live_queue.php") > -1;
+  if (window.location.href.indexOf("game.php") > -1) return PageType.ActiveGame;
+  if (window.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
+  if (window.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
+  if (window.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
+  if (window.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
+  return PageType.Default;
 }
 
 // ============================== AWBW Page Elements ==============================

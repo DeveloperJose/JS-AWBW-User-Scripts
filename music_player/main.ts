@@ -26,16 +26,7 @@ import {
   RandomThemeType,
 } from "./music_settings";
 import { addHandlers } from "./handlers";
-import {
-  getLiveQueueBlockerPopup,
-  getLiveQueueSelectPopup,
-  isGamePageAndActive,
-  isLiveQueue,
-  isMaintenance,
-  isMapEditor,
-  isMovePlanner,
-  isYourGames,
-} from "../shared/awbw_page";
+import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 import { logDebug, log, logError } from "./utils";
@@ -55,19 +46,26 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
  * Where should we place the music player UI?
  */
 function getMenu() {
-  if (isMaintenance()) return document.querySelector("#main");
-  if (isMapEditor()) return document.querySelector("#replay-misc-controls");
-  if (isMovePlanner()) return document.querySelector("#map-controls-container");
-  if (isYourGames()) return document.querySelector("#nav-options");
-  return document.querySelector("#game-map-menu")?.parentNode;
+  switch (getCurrentPageType()) {
+    case PageType.Maintenance:
+      return document.querySelector("#main");
+    case PageType.MapEditor:
+      return document.querySelector("#replay-misc-controls");
+    case PageType.MovePlanner:
+      return document.querySelector("#map-controls-container");
+    case PageType.ActiveGame:
+      return document.querySelector("#game-map-menu")?.parentNode;
+    // case PageType.LiveQueue:
+    // case PageType.MainPage:
+    default:
+      return document.querySelector("#nav-options");
+  }
 }
 
 /**
  * Adjust the music player for the Live Queue page.
  */
 function onLiveQueue() {
-  log("Live Queue detected...");
-
   const addMusicFn = () => {
     // Check if the parent popup is created and visible
     const blockerPopup = getLiveQueueBlockerPopup();
@@ -84,7 +82,7 @@ function onLiveQueue() {
 
     // Prepend the music player UI to the box
     musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
-    musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+    musicSettings.randomThemesType = RandomThemeType.NONE;
     playMusicURL(SpecialTheme.COSelect);
     allowSettingsToBeSaved();
     playOrPauseWhenWindowFocusChanges();
@@ -113,70 +111,7 @@ function onLiveQueue() {
   }, 500);
 }
 
-/**
- * Adjust the music player for the maintenance page.
- */
-function onMaintenance() {
-  log("Maintenance detected, playing music...");
-  musicPlayerUI.openContextMenu();
-  musicSettings.randomThemesType = RandomThemeType.NONE;
-  playMusicURL(SpecialTheme.Maintenance);
-  allowSettingsToBeSaved();
-}
-
-/**
- * Adjust the music player for the Move Planner page.
- */
-function onMovePlanner() {
-  log("Move Planner detected");
-  musicSettings.isPlaying = true;
-  allowSettingsToBeSaved();
-}
-
-/**
- * Adjust the music player for the Your Games and Your Turn pages.
- */
-function onIsYourGames() {
-  log("Your Games detected, playing music...");
-
-  playMusicURL(SpecialTheme.ModeSelect);
-  allowSettingsToBeSaved();
-  playOrPauseWhenWindowFocusChanges();
-}
-
-/**
- * Adjust the music player for the map editor page.
- */
-function onMapEditor() {
-  playOrPauseWhenWindowFocusChanges();
-}
-
-/**
- * Whether the music player has been initialized or not.
- */
-let isMusicPlayerInitialized = false;
-
-/**
- * Initializes the music player script by setting everything up.
- */
-export function initializeMusicPlayer() {
-  if (isMusicPlayerInitialized) return;
-  isMusicPlayerInitialized = true;
-
-  // Override the saved setting for autoplay if we are on a different page than the main game page
-  if (!isGamePageAndActive()) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
-
-  // Handle pages that aren't the main game page or the map editor
-  addHandlers();
-  if (isLiveQueue()) return onLiveQueue();
-  if (isMaintenance()) return onMaintenance();
-  if (isMovePlanner()) return onMovePlanner();
-  if (isYourGames()) return onIsYourGames();
-
-  // game.php or designmap.php from now on
-  if (isMapEditor()) onMapEditor();
-  allowSettingsToBeSaved();
-
+function preloadThemes() {
   preloadAllCommonAudio(() => {
     log("All common audio has been pre-loaded!");
 
@@ -205,27 +140,83 @@ export function initializeMusicPlayer() {
 }
 
 /**
+ * Whether the music player has been initialized or not.
+ */
+let isMusicPlayerInitialized = false;
+
+/**
+ * Initializes the music player script by setting everything up.
+ */
+export function initializeMusicPlayer() {
+  if (isMusicPlayerInitialized) return;
+  isMusicPlayerInitialized = true;
+
+  const currentPageType = getCurrentPageType();
+
+  // Override the saved setting for autoplay if we are on a different page than an active game page
+  if (currentPageType !== PageType.ActiveGame) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+
+  log("Initializing music player for page type:", currentPageType);
+  addHandlers();
+
+  switch (currentPageType) {
+    case PageType.LiveQueue:
+      return onLiveQueue();
+    case PageType.Maintenance:
+      musicPlayerUI.openContextMenu();
+      musicSettings.randomThemesType = RandomThemeType.NONE;
+      playMusicURL(SpecialTheme.Maintenance);
+      break;
+    case PageType.MovePlanner:
+      musicSettings.isPlaying = true;
+      break;
+    // case PageType.MainPage:
+    //   return;
+    case PageType.ActiveGame:
+      preloadThemes();
+      break;
+    case PageType.MapEditor:
+      preloadThemes();
+      playOrPauseWhenWindowFocusChanges();
+      break;
+    default:
+      musicSettings.randomThemesType = RandomThemeType.NONE;
+      playMusicURL(SpecialTheme.ModeSelect);
+      playOrPauseWhenWindowFocusChanges();
+      break;
+  }
+
+  allowSettingsToBeSaved();
+}
+
+/**
  * Initializes and adds the music player UI to the page.
  */
 export function initializeUI() {
-  // Add the music player UI to the page and the necessary event handlers
-  if (!isLiveQueue()) musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, isYourGames());
   musicPlayerUI.setProgress(100);
+  let prepend = false;
 
   // Make adjustments to the UI based on the page we are on
-  if (isYourGames()) {
-    musicPlayerUI.parent.style.border = "none";
-    musicPlayerUI.parent.style.backgroundColor = "#0000";
-    musicPlayerUI.setProgress(-1);
+  switch (getCurrentPageType()) {
+    case PageType.LiveQueue:
+      return;
+    case PageType.ActiveGame:
+      break;
+    case PageType.MapEditor:
+      musicPlayerUI.parent.style.borderTop = "none";
+      break;
+    case PageType.Maintenance:
+      musicPlayerUI.parent.style.borderLeft = "";
+      break;
+    default:
+      musicPlayerUI.parent.style.border = "none";
+      musicPlayerUI.parent.style.backgroundColor = "#0000";
+      musicPlayerUI.setProgress(-1);
+      prepend = true;
+      break;
   }
-
-  if (isMapEditor()) {
-    musicPlayerUI.parent.style.borderTop = "none";
-  }
-
-  if (isMaintenance()) {
-    musicPlayerUI.parent.style.borderLeft = "";
-  }
+  // Add the music player UI to the page
+  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, prepend);
 }
 
 /**

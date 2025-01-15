@@ -3,17 +3,12 @@
 // @description An improved version of the comprehensive audio player that attempts to recreate the cart experience with more sound effects, more music, and more customizability.
 // @namespace   https://awbw.amarriner.com/
 // @author      DeveloperJose, _twiggy
-// @match       https://awbw.amarriner.com/game.php*
-// @match       https://awbw.amarriner.com/moveplanner.php*
-// @match       https://awbw.amarriner.com/*editmap*
-// @match       https://awbw.amarriner.com/yourgames.php*
-// @match       https://awbw.amarriner.com/yourturn.php*
-// @match       https://awbw.amarriner.com/live_queue.php*
+// @match       https://awbw.amarriner.com/*
 // @icon        https://developerjose.netlify.app/img/music-player-icon.png
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.7.6
+// @version     4.8.0
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -68,25 +63,31 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * # = id
    */
   /**
-   * Are we in the map editor?
+   * The type of page we are currently on.
    */
-  function isMapEditor() {
-    return window.location.href.indexOf("editmap.php?") > -1;
-  }
-  function isMaintenance() {
-    return document.querySelector("#server-maintenance-alert") !== null;
-  }
-  function isMovePlanner() {
-    return window.location.href.indexOf("moveplanner.php") > -1;
-  }
-  function isYourGames() {
-    return window.location.href.indexOf("yourgames.php") > -1 || window.location.href.indexOf("yourturn.php") > -1;
-  }
-  function isGamePageAndActive() {
-    return window.location.href.indexOf("game.php") > -1 && !isMaintenance();
-  }
-  function isLiveQueue() {
-    return window.location.href.indexOf("live_queue.php") > -1;
+  var PageType;
+  (function (PageType) {
+    PageType[(PageType["Maintenance"] = 0)] = "Maintenance";
+    PageType[(PageType["ActiveGame"] = 1)] = "ActiveGame";
+    PageType[(PageType["MapEditor"] = 2)] = "MapEditor";
+    PageType[(PageType["MovePlanner"] = 3)] = "MovePlanner";
+    PageType[(PageType["LiveQueue"] = 4)] = "LiveQueue";
+    PageType[(PageType["MainPage"] = 5)] = "MainPage";
+    PageType[(PageType["Default"] = 6)] = "Default";
+  })(PageType || (PageType = {}));
+  /**
+   * Gets the current page type based on the URL.
+   * @returns - The current page type.
+   */
+  function getCurrentPageType() {
+    const isMaintenance = document.querySelector("#server-maintenance-alert") !== null;
+    if (isMaintenance) return PageType.Maintenance;
+    if (window.location.href.indexOf("game.php") > -1) return PageType.ActiveGame;
+    if (window.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
+    if (window.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
+    if (window.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
+    if (window.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
+    return PageType.Default;
   }
   function getCoordsDiv() {
     return document.querySelector("#coords");
@@ -308,7 +309,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The player ID of the person logged in to the website.
    */
   function getMyID() {
-    if (!isGamePageAndActive()) return -1;
+    if (getCurrentPageType() !== PageType.ActiveGame) return -1;
     if (myID < 0) {
       getAllPlayersInfo().forEach((entry) => {
         if (entry.users_username === getMyUsername()) {
@@ -324,7 +325,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The info for that given player or null if such ID is not present in the game.
    */
   function getPlayerInfo(pid) {
-    if (!isGamePageAndActive()) return null;
+    if (getCurrentPageType() !== PageType.ActiveGame) return null;
     return playersInfo[pid];
   }
   /**
@@ -332,7 +333,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - List of player info data for all players in the current game.
    */
   function getAllPlayersInfo() {
-    if (!isGamePageAndActive()) return [];
+    if (getCurrentPageType() !== PageType.ActiveGame) return [];
     return Object.values(playersInfo);
   }
   /**
@@ -341,7 +342,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns True if the player is a spectator, false if they are playing in this game.
    */
   function isPlayerSpectator(pid) {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     return !playerKeys.includes(pid);
   }
   /**
@@ -350,7 +351,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if the player can activate a regular CO Power.
    */
   function canPlayerActivateCOPower(pid) {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_power;
@@ -361,7 +362,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if the player can activate a Super CO Power.
    */
   function canPlayerActivateSuperCOPower(pid) {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     const info = getPlayerInfo(pid);
     if (!info) return false;
     return info.players_co_power >= info.players_co_max_spower;
@@ -373,7 +374,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The info for that building at its current state.
    */
   function getBuildingInfo(x, y) {
-    if (!isGamePageAndActive()) return null;
+    if (getCurrentPageType() !== PageType.ActiveGame) return null;
     return buildingsInfo[x][y];
   }
   /**
@@ -381,7 +382,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if we are in replay mode.
    */
   function isReplayActive() {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     // Check if replay mode is open by checking if the replay section is set to display
     const replayControls = getReplayControls();
     const replayOpen = replayControls.style.display !== "none";
@@ -392,7 +393,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if the game has ended.
    */
   function hasGameEnded() {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     // Count how many players are still in the game
     const numberOfRemainingPlayers = Object.values(playersInfo).filter(
       (info) => info.players_eliminated === "N",
@@ -404,7 +405,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     return coTheme;
   }
   function getServerTimeZone() {
-    if (!isGamePageAndActive()) return "-05:00";
+    if (getCurrentPageType() !== PageType.ActiveGame) return "-05:00";
     if (typeof serverTimezone === "undefined") return "-05:00";
     if (!serverTimezone) return "-05:00";
     return serverTimezone;
@@ -431,7 +432,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The current day in the game.
    */
   function getCurrentGameDay() {
-    if (!isGamePageAndActive()) return 1;
+    if (getCurrentPageType() !== PageType.ActiveGame) return 1;
     if (!isReplayActive()) return gameDay;
     const replayData = Object.values(replay);
     if (replayData.length === 0) return gameDay;
@@ -448,7 +449,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
      * Get the internal info object containing the state of the current player.
      */
     static get info() {
-      if (!isGamePageAndActive()) return null;
+      if (getCurrentPageType() !== PageType.ActiveGame) return null;
       if (typeof currentTurn === "undefined") return null;
       return getPlayerInfo(currentTurn);
     }
@@ -457,7 +458,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
      * @returns - True if a regular CO power or a Super CO Power is activated.
      */
     static get isPowerActivated() {
-      if (!isGamePageAndActive()) return false;
+      if (getCurrentPageType() !== PageType.ActiveGame) return false;
       return this?.coPowerState !== COPowerEnum.NoPower;
     }
     /**
@@ -465,7 +466,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
      * @returns - The state of the CO Power for the current player.
      */
     static get coPowerState() {
-      if (!isGamePageAndActive()) return COPowerEnum.NoPower;
+      if (getCurrentPageType() !== PageType.ActiveGame) return COPowerEnum.NoPower;
       return this.info?.players_co_power_on;
     }
     /**
@@ -473,7 +474,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
      * @returns - True if the current player has been eliminated.
      */
     static get isEliminated() {
-      if (!isGamePageAndActive()) return false;
+      if (getCurrentPageType() !== PageType.ActiveGame) return false;
       return this.info?.players_eliminated === "Y";
     }
     /**
@@ -483,9 +484,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
      * @returns - The name of the CO for the current player.
      */
     static get coName() {
-      if (isMapEditor()) return "map-editor";
-      if (isMaintenance()) return "maintenance";
-      if (!isGamePageAndActive()) return null;
+      if (getCurrentPageType() === PageType.MapEditor) return "map-editor";
+      if (getCurrentPageType() === PageType.Maintenance) return "maintenance";
+      if (getCurrentPageType() !== PageType.ActiveGame) return null;
       const myID = getMyID();
       const myInfo = getPlayerInfo(myID);
       const myWin = myInfo?.players_eliminated === "N";
@@ -513,8 +514,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - List with the names of each CO in the game.
    */
   function getAllPlayingCONames() {
-    if (isMapEditor()) return new Set(["map-editor"]);
-    if (!isGamePageAndActive()) return new Set();
+    if (getCurrentPageType() === PageType.MapEditor) return new Set(["map-editor"]);
+    if (getCurrentPageType() !== PageType.ActiveGame) return new Set();
     const allPlayers = new Set(getAllPlayersInfo().map((info) => info.co_name));
     const allTagPlayers = getAllTagCONames();
     return new Set([...allPlayers, ...allTagPlayers]);
@@ -524,7 +525,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if the game is a tag game.
    */
   function isTagGame() {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     return typeof tagsInfo !== "undefined" && tagsInfo;
   }
   /**
@@ -532,7 +533,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - Set with the names of each secondary CO in the tag.
    */
   function getAllTagCONames() {
-    if (!isGamePageAndActive() || !isTagGame()) return new Set();
+    if (getCurrentPageType() !== PageType.ActiveGame || !isTagGame()) return new Set();
     return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
   }
   /**
@@ -541,7 +542,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The info for that unit at its current state.
    */
   function getUnitInfo(unitId) {
-    if (!isGamePageAndActive()) return null;
+    if (getCurrentPageType() !== PageType.ActiveGame) return null;
     return unitsInfo[unitId];
   }
   /**
@@ -550,7 +551,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - Name of the unit.
    */
   function getUnitName(unitId) {
-    if (!isGamePageAndActive()) return null;
+    if (getCurrentPageType() !== PageType.ActiveGame) return null;
     return getUnitInfo(unitId)?.units_name;
   }
   /**
@@ -560,7 +561,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - The info for the unit at the given coordinates or null if there is no unit there.
    */
   function getUnitInfoFromCoords(x, y) {
-    if (!isGamePageAndActive()) return null;
+    if (getCurrentPageType() !== PageType.ActiveGame) return null;
     return Object.values(unitsInfo)
       .filter((info) => info.units_x == x && info.units_y == y)
       .pop();
@@ -572,7 +573,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if the given unit is valid.
    */
   function isValidUnit(unitId) {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     return unitId !== undefined && unitsInfo[unitId] !== undefined;
   }
   /**
@@ -581,7 +582,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - True if the unit is valid and it has moved this turn.
    */
   function hasUnitMovedThisTurn(unitId) {
-    if (!isGamePageAndActive()) return false;
+    if (getCurrentPageType() !== PageType.ActiveGame) return false;
     return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
   }
   function addConnectionErrorObserver(onConnectionError) {
@@ -1358,8 +1359,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.6"],
-    [ScriptName.HighlightCursorCoordinates, "2.2.2"],
+    [ScriptName.MusicPlayer, "4.8.0"],
+    [ScriptName.HighlightCursorCoordinates, "2.3.0"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
@@ -1384,6 +1385,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * @returns - A promise that resolves with the latest version of the script
    */
   function checkIfUpdateIsAvailable(scriptName) {
+    // SemVer comparison function
+    // https://stackoverflow.com/questions/55466274/simplify-semver-version-compare-logic
+    const isGreater = (a, b) => {
+      return a.localeCompare(b, undefined, { numeric: true }) === 1;
+    };
     return new Promise((resolve, reject) => {
       // Get the update URL
       const updateURL = updateURLs.get(scriptName);
@@ -1403,13 +1409,9 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           const latestVersionParts = latestVersion.split(".");
           const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
           if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
-          logDebug(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
-          // Compare the version numbers by their parts
-          return resolve(
-            parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
-              parseInt(currentVersionParts[1]) < parseInt(latestVersionParts[1]) ||
-              parseInt(currentVersionParts[2]) < parseInt(latestVersionParts[2]),
-          );
+          const isUpdateAvailable = isGreater(latestVersion, currentVersion);
+          logDebug(`Current version: ${currentVersion}, latest: ${latestVersion}, update needed: ${isUpdateAvailable}`);
+          return resolve(isUpdateAvailable);
         })
         .catch((reason) => reject(reason));
     });
@@ -1682,7 +1684,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       // Check if we have a CO selector and need to hide it
       const overDiv = document.querySelector("#overDiv");
       const hasCOSelector = this.groups.has("co-selector");
-      if (overDiv && hasCOSelector && isGamePageAndActive()) {
+      const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
+      if (overDiv && hasCOSelector && isGamePageAndActive) {
         overDiv.style.visibility = "hidden";
       }
     }
@@ -2065,11 +2068,11 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       }
     }
     // Update UI
-    const canUpdateDaySlider = daySlider?.parentElement && isGamePageAndActive();
+    const canUpdateDaySlider = daySlider?.parentElement && getCurrentPageType() === PageType.ActiveGame;
     if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
     // Update player image and hover text
-    const currentSounds = isMovePlanner() ? "Sound Effects" : "Tunes";
+    const currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
     if (musicSettings.isPlaying) {
       musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -2219,7 +2222,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   function onCOSelectorClick(coName) {
     currentSelectedCO = coName;
   }
-  if (isGamePageAndActive()) musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+  // This makes sure all other pages don't break with overlib
+  if (getCurrentPageType() === PageType.ActiveGame) {
+    musicPlayerUI.addCOSelector(addOverrideGroup, Description.Add_Override, onCOSelectorClick);
+  }
   // Game type radio buttons
   const overrideGameTypeRadioMap = new Map();
   for (const gameType of Object.values(GameType)) {
@@ -2292,7 +2298,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   /* ************************************ Version ************************************ */
   musicPlayerUI.addVersion();
   /* ************************************ Disable or hide things in other pages ************************************ */
-  if (!isGamePageAndActive()) {
+  if (getCurrentPageType() !== PageType.ActiveGame) {
     const parent = musicPlayerUI.getGroup("settings-parent");
     if (parent) parent.style.width = "475px";
     const rightGroup = musicPlayerUI.getGroup(RIGHT);
@@ -2302,7 +2308,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
     if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
     if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
-    if (!isMapEditor() && !isMaintenance()) {
+    if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
       if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
       if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
     }
@@ -2616,7 +2622,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
     const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
     const currentPosition = audio.seek();
-    if (shouldRestart && isGamePageAndActive() && currentPosition > 0.1) {
+    const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
+    if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
       audio.seek(0);
     }
     // The current theme is not this one, so pause this one and let the other one play
@@ -3238,20 +3245,20 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Intercept functions and add our own handlers to the website.
    */
   function addHandlers() {
-    if (isMaintenance()) return;
+    const currentPageType = getCurrentPageType();
+    if (currentPageType === PageType.Maintenance) return;
     // Global handlers
     addUpdateCursorObserver(onCursorMove);
     // Specific page handlers
-    if (isMapEditor()) {
-      return;
-    }
-    if (isMovePlanner()) {
-      return;
-    }
-    if (isGamePageAndActive()) {
-      addReplayHandlers();
-      addGameHandlers();
-      return;
+    switch (currentPageType) {
+      case PageType.ActiveGame:
+        addReplayHandlers();
+        addGameHandlers();
+        return;
+      case PageType.MapEditor:
+        return;
+      case PageType.MovePlanner:
+        return;
     }
   }
   /**
@@ -3785,17 +3792,25 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * Where should we place the music player UI?
    */
   function getMenu() {
-    if (isMaintenance()) return document.querySelector("#main");
-    if (isMapEditor()) return document.querySelector("#replay-misc-controls");
-    if (isMovePlanner()) return document.querySelector("#map-controls-container");
-    if (isYourGames()) return document.querySelector("#nav-options");
-    return document.querySelector("#game-map-menu")?.parentNode;
+    switch (getCurrentPageType()) {
+      case PageType.Maintenance:
+        return document.querySelector("#main");
+      case PageType.MapEditor:
+        return document.querySelector("#replay-misc-controls");
+      case PageType.MovePlanner:
+        return document.querySelector("#map-controls-container");
+      case PageType.ActiveGame:
+        return document.querySelector("#game-map-menu")?.parentNode;
+      // case PageType.LiveQueue:
+      // case PageType.MainPage:
+      default:
+        return document.querySelector("#nav-options");
+    }
   }
   /**
    * Adjust the music player for the Live Queue page.
    */
   function onLiveQueue() {
-    log("Live Queue detected...");
     const addMusicFn = () => {
       // Check if the parent popup is created and visible
       const blockerPopup = getLiveQueueBlockerPopup();
@@ -3809,7 +3824,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       if (!box) return false;
       // Prepend the music player UI to the box
       musicPlayerUI.addToAWBWPage(box, true);
-      musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+      musicSettings.randomThemesType = RandomThemeType.NONE;
       playMusicURL("https://developerjose.netlify.app/music/t-co-select.ogg" /* SpecialTheme.COSelect */);
       allowSettingsToBeSaved();
       playOrPauseWhenWindowFocusChanges();
@@ -3833,60 +3848,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       }, 500);
     }, 500);
   }
-  /**
-   * Adjust the music player for the maintenance page.
-   */
-  function onMaintenance() {
-    log("Maintenance detected, playing music...");
-    musicPlayerUI.openContextMenu();
-    musicSettings.randomThemesType = RandomThemeType.NONE;
-    playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
-    allowSettingsToBeSaved();
-  }
-  /**
-   * Adjust the music player for the Move Planner page.
-   */
-  function onMovePlanner() {
-    log("Move Planner detected");
-    musicSettings.isPlaying = true;
-    allowSettingsToBeSaved();
-  }
-  /**
-   * Adjust the music player for the Your Games and Your Turn pages.
-   */
-  function onIsYourGames() {
-    log("Your Games detected, playing music...");
-    playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
-    allowSettingsToBeSaved();
-    playOrPauseWhenWindowFocusChanges();
-  }
-  /**
-   * Adjust the music player for the map editor page.
-   */
-  function onMapEditor() {
-    playOrPauseWhenWindowFocusChanges();
-  }
-  /**
-   * Whether the music player has been initialized or not.
-   */
-  let isMusicPlayerInitialized = false;
-  /**
-   * Initializes the music player script by setting everything up.
-   */
-  function initializeMusicPlayer() {
-    if (isMusicPlayerInitialized) return;
-    isMusicPlayerInitialized = true;
-    // Override the saved setting for autoplay if we are on a different page than the main game page
-    if (!isGamePageAndActive()) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
-    // Handle pages that aren't the main game page or the map editor
-    addHandlers();
-    if (isLiveQueue()) return onLiveQueue();
-    if (isMaintenance()) return onMaintenance();
-    if (isMovePlanner()) return onMovePlanner();
-    if (isYourGames()) return onIsYourGames();
-    // game.php or designmap.php from now on
-    if (isMapEditor()) onMapEditor();
-    allowSettingsToBeSaved();
+  function preloadThemes() {
     preloadAllCommonAudio(() => {
       log("All common audio has been pre-loaded!");
       // Set dynamic settings based on the current game state
@@ -3910,24 +3872,75 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     });
   }
   /**
+   * Whether the music player has been initialized or not.
+   */
+  let isMusicPlayerInitialized = false;
+  /**
+   * Initializes the music player script by setting everything up.
+   */
+  function initializeMusicPlayer() {
+    if (isMusicPlayerInitialized) return;
+    isMusicPlayerInitialized = true;
+    const currentPageType = getCurrentPageType();
+    // Override the saved setting for autoplay if we are on a different page than an active game page
+    if (currentPageType !== PageType.ActiveGame) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
+    log("Initializing music player for page type:", currentPageType);
+    addHandlers();
+    switch (currentPageType) {
+      case PageType.LiveQueue:
+        return onLiveQueue();
+      case PageType.Maintenance:
+        musicPlayerUI.openContextMenu();
+        musicSettings.randomThemesType = RandomThemeType.NONE;
+        playMusicURL("https://developerjose.netlify.app/music/t-maintenance.ogg" /* SpecialTheme.Maintenance */);
+        break;
+      case PageType.MovePlanner:
+        musicSettings.isPlaying = true;
+        break;
+      // case PageType.MainPage:
+      //   return;
+      case PageType.ActiveGame:
+        preloadThemes();
+        break;
+      case PageType.MapEditor:
+        preloadThemes();
+        playOrPauseWhenWindowFocusChanges();
+        break;
+      default:
+        musicSettings.randomThemesType = RandomThemeType.NONE;
+        playMusicURL("https://developerjose.netlify.app/music/t-mode-select.ogg" /* SpecialTheme.ModeSelect */);
+        playOrPauseWhenWindowFocusChanges();
+        break;
+    }
+    allowSettingsToBeSaved();
+  }
+  /**
    * Initializes and adds the music player UI to the page.
    */
   function initializeUI() {
-    // Add the music player UI to the page and the necessary event handlers
-    if (!isLiveQueue()) musicPlayerUI.addToAWBWPage(getMenu(), isYourGames());
     musicPlayerUI.setProgress(100);
+    let prepend = false;
     // Make adjustments to the UI based on the page we are on
-    if (isYourGames()) {
-      musicPlayerUI.parent.style.border = "none";
-      musicPlayerUI.parent.style.backgroundColor = "#0000";
-      musicPlayerUI.setProgress(-1);
+    switch (getCurrentPageType()) {
+      case PageType.LiveQueue:
+        return;
+      case PageType.ActiveGame:
+        break;
+      case PageType.MapEditor:
+        musicPlayerUI.parent.style.borderTop = "none";
+        break;
+      case PageType.Maintenance:
+        musicPlayerUI.parent.style.borderLeft = "";
+        break;
+      default:
+        musicPlayerUI.parent.style.border = "none";
+        musicPlayerUI.parent.style.backgroundColor = "#0000";
+        musicPlayerUI.setProgress(-1);
+        prepend = true;
+        break;
     }
-    if (isMapEditor()) {
-      musicPlayerUI.parent.style.borderTop = "none";
-    }
-    if (isMaintenance()) {
-      musicPlayerUI.parent.style.borderLeft = "";
-    }
+    // Add the music player UI to the page
+    musicPlayerUI.addToAWBWPage(getMenu(), prepend);
   }
   /**
    * Main function that initializes everything depending on the browser autoplay settings.

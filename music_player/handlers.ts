@@ -22,10 +22,6 @@ import {
 import {
   addUpdateCursorObserver,
   getAllDamageSquares,
-  isGamePageAndActive,
-  isMaintenance,
-  isMapEditor,
-  isMovePlanner,
   getReplayBackwardActionBtn,
   getReplayBackwardBtn,
   getReplayCloseBtn,
@@ -34,6 +30,8 @@ import {
   getReplayForwardBtn,
   moveDivToOffset,
   getReplayOpenBtn,
+  getCurrentPageType,
+  PageType,
 } from "../shared/awbw_page";
 import { getBuildingDiv } from "../shared/awbw_page";
 
@@ -172,26 +170,25 @@ const ahResign = getResignFn();
  * Intercept functions and add our own handlers to the website.
  */
 export function addHandlers() {
-  if (isMaintenance()) return;
+  const currentPageType = getCurrentPageType();
+
+  if (currentPageType === PageType.Maintenance) return;
 
   // Global handlers
   addUpdateCursorObserver(onCursorMove);
 
   // Specific page handlers
-  if (isMapEditor()) {
-    addMapEditorHandlers();
-    return;
-  }
-
-  if (isMovePlanner()) {
-    addMovePlannerHandlers();
-    return;
-  }
-
-  if (isGamePageAndActive()) {
-    addReplayHandlers();
-    addGameHandlers();
-    return;
+  switch (currentPageType) {
+    case PageType.ActiveGame:
+      addReplayHandlers();
+      addGameHandlers();
+      return;
+    case PageType.MapEditor:
+      addMapEditorHandlers();
+      return;
+    case PageType.MovePlanner:
+      addMovePlannerHandlers();
+      return;
   }
 }
 
