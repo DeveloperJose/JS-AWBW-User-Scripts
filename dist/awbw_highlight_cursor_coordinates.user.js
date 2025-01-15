@@ -159,6 +159,37 @@
   }
 
   /**
+   * @file Utility functions for the music player that don't fit anywhere else specifically.
+   */
+  /**
+   * Logs a message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function log(message, ...args) {
+    console.log("[AWBW Improved Music Player]", message, ...args);
+  }
+  /**
+   * Logs a warning message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function logError(message, ...args) {
+    console.error("[AWBW Improved Music Player]", message, ...args);
+  }
+  /**
+   * Logs a debug message to the console with the prefix "[AWBW Improved Music Player]"
+   * @param message - The message to log
+   * @param args - Additional arguments to log
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function logDebug(message, ...args) {
+    console.debug("[AWBW Improved Music Player]", message, ...args);
+  }
+
+  /**
    * @file Constants and other project configuration settings that could be used by any scripts.
    */
   /**
@@ -174,17 +205,17 @@
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.5"],
+    [ScriptName.MusicPlayer, "4.7.6"],
     [ScriptName.HighlightCursorCoordinates, "2.2.2"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
    */
   const updateURLs = new Map([
-    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.user.js"],
+    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js"],
     [
       ScriptName.HighlightCursorCoordinates,
-      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.user.js",
+      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js",
     ],
   ]);
   const homepageURLs = new Map([
@@ -219,6 +250,7 @@
           const latestVersionParts = latestVersion.split(".");
           const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
           if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
+          logDebug(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
           // Compare the version numbers by their parts
           return resolve(
             parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
@@ -228,28 +260,6 @@
         })
         .catch((reason) => reject(reason));
     });
-  }
-
-  /**
-   * @file Utility functions for the music player that don't fit anywhere else specifically.
-   */
-  /**
-   * Logs a message to the console with the prefix "[AWBW Improved Music Player]"
-   * @param message - The message to log
-   * @param args - Additional arguments to log
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function log(message, ...args) {
-    console.log("[AWBW Improved Music Player]", message, ...args);
-  }
-  /**
-   * Logs a warning message to the console with the prefix "[AWBW Improved Music Player]"
-   * @param message - The message to log
-   * @param args - Additional arguments to log
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function logError(message, ...args) {
-    console.error("[AWBW Improved Music Player]", message, ...args);
   }
 
   /**
@@ -698,10 +708,10 @@
       const updateURL = updateURLs.get(this.prefix);
       const homepageURL = homepageURLs.get(this.prefix) || "";
       if (!currentVersion || !updateURL) return;
-      log("Checking if a new version is available...");
       checkIfUpdateIsAvailable(this.prefix)
         .then((isUpdateAvailable) => {
           this.isUpdateAvailable = isUpdateAvailable;
+          log("Checking if a new version is available...", isUpdateAvailable);
           if (!isUpdateAvailable) return;
           const contextMenu = this.groups.get("settings-parent");
           const versionDiv = document.createElement("a");

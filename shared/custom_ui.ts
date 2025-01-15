@@ -496,10 +496,10 @@ export class CustomMenuSettingsUI {
     const homepageURL = homepageURLs.get(this.prefix) || "";
     if (!currentVersion || !updateURL) return;
 
-    log("Checking if a new version is available...");
     checkIfUpdateIsAvailable(this.prefix)
       .then((isUpdateAvailable) => {
         this.isUpdateAvailable = isUpdateAvailable;
+        log("Checking if a new version is available...", isUpdateAvailable);
         if (!isUpdateAvailable) return;
 
         const contextMenu = this.groups.get("settings-parent");

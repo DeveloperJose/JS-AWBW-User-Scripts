@@ -2,6 +2,8 @@
  * @file Constants and other project configuration settings that could be used by any scripts.
  */
 
+import { logDebug } from "../music_player/utils";
+
 /**
  * The names of the userscripts.
  */
@@ -15,7 +17,7 @@ export enum ScriptName {
  * The version numbers of the userscripts.
  */
 export const versions = new Map<string, string>([
-  [ScriptName.MusicPlayer, "4.7.5"],
+  [ScriptName.MusicPlayer, "4.7.6"],
   [ScriptName.HighlightCursorCoordinates, "2.2.2"],
 ]);
 
@@ -23,10 +25,10 @@ export const versions = new Map<string, string>([
  * The URLs to check for updates for each userscript.
  */
 export const updateURLs = new Map<string, string>([
-  [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.user.js"],
+  [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js"],
   [
     ScriptName.HighlightCursorCoordinates,
-    "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.user.js",
+    "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js",
   ],
 ]);
 
@@ -65,6 +67,7 @@ export function checkIfUpdateIsAvailable(scriptName: ScriptName) {
         const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
         if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
 
+        logDebug(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
         // Compare the version numbers by their parts
         return resolve(
           parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||

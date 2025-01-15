@@ -13,7 +13,7 @@
 // @require     https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require     https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require     https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @version     4.7.5
+// @version     4.7.6
 // @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @license     MIT
 // @unwrap
@@ -1358,17 +1358,17 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
    * The version numbers of the userscripts.
    */
   const versions = new Map([
-    [ScriptName.MusicPlayer, "4.7.5"],
+    [ScriptName.MusicPlayer, "4.7.6"],
     [ScriptName.HighlightCursorCoordinates, "2.2.2"],
   ]);
   /**
    * The URLs to check for updates for each userscript.
    */
   const updateURLs = new Map([
-    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.user.js"],
+    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js"],
     [
       ScriptName.HighlightCursorCoordinates,
-      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.user.js",
+      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js",
     ],
   ]);
   const homepageURLs = new Map([
@@ -1403,6 +1403,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           const latestVersionParts = latestVersion.split(".");
           const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
           if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
+          logDebug(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
           // Compare the version numbers by their parts
           return resolve(
             parseInt(currentVersionParts[0]) < parseInt(latestVersionParts[0]) ||
@@ -1831,10 +1832,10 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       const updateURL = updateURLs.get(this.prefix);
       const homepageURL = homepageURLs.get(this.prefix) || "";
       if (!currentVersion || !updateURL) return;
-      log("Checking if a new version is available...");
       checkIfUpdateIsAvailable(this.prefix)
         .then((isUpdateAvailable) => {
           this.isUpdateAvailable = isUpdateAvailable;
+          log("Checking if a new version is available...", isUpdateAvailable);
           if (!isUpdateAvailable) return;
           const contextMenu = this.groups.get("settings-parent");
           const versionDiv = document.createElement("a");
