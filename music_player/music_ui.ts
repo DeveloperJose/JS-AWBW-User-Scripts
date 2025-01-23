@@ -12,15 +12,36 @@ import {
 import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { ScriptName } from "../shared/config";
 import { getCurrentPageType, PageType } from "../shared/awbw_page";
+import { log } from "./utils";
 
-// Listen for setting changes to update the menu UI
-addSettingsChangeListener(onSettingsChange);
+/**
+ * Where should we place the music player UI?
+ */
+function getMenu() {
+  const doc = window.document.querySelector("iframe")?.contentDocument ?? window.document;
+
+  switch (getCurrentPageType()) {
+    case PageType.Maintenance:
+      return doc.querySelector("#main");
+    case PageType.MapEditor:
+      return doc.querySelector("#replay-misc-controls");
+    case PageType.MovePlanner:
+      return doc.querySelector("#map-controls-container");
+    case PageType.ActiveGame:
+      return doc.querySelector("#game-map-menu")?.parentNode;
+    // case PageType.LiveQueue:
+    // case PageType.MainPage:
+    default:
+      return doc.querySelector("#nav-options");
+  }
+}
 
 /**
  * Event handler for when the music button is clicked that turns the music ON/OFF.
  * @param _event - Click event handler, not used.
  */
 function onMusicBtnClick(_event: Event) {
+  log("Music button clicked", musicSettings);
   musicSettings.isPlaying = !musicSettings.isPlaying;
 }
 
@@ -112,8 +133,58 @@ const parseInputInt = (event: Event): number => parseInt((event.target as HTMLIn
  */
 export const musicPlayerUI = new CustomMenuSettingsUI(ScriptName.MusicPlayer, NEUTRAL_IMG_URL, "Play Tunes");
 
-// Determine who will catch when the user clicks the play/stop button
-musicPlayerUI.addEventListener("click", onMusicBtnClick);
+export function initializeMusicPlayerUI() {
+  musicPlayerUI.setProgress(100);
+  let prepend = false;
+
+  // Make adjustments to the UI based on the page we are on
+  switch (getCurrentPageType()) {
+    case PageType.LiveQueue:
+      return;
+    case PageType.ActiveGame:
+      break;
+    case PageType.MapEditor:
+      musicPlayerUI.parent.style.borderTop = "none";
+      break;
+    case PageType.Maintenance:
+      musicPlayerUI.parent.style.borderLeft = "";
+      break;
+    default:
+      musicPlayerUI.parent.style.border = "none";
+      musicPlayerUI.parent.style.backgroundColor = "#0000";
+      musicPlayerUI.setProgress(-1);
+      prepend = true;
+      break;
+  }
+  // Add the music player UI to the page
+  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, prepend);
+
+  // Determine who will catch when the user clicks the play/stop button
+  musicPlayerUI.addEventListener("click", onMusicBtnClick);
+
+  /* ************************************ Disable or hide things in other pages ************************************ */
+  if (getCurrentPageType() !== PageType.ActiveGame) {
+    const parent = musicPlayerUI.getGroup("settings-parent");
+    if (parent) parent.style.width = "475px";
+
+    const rightGroup = musicPlayerUI.getGroup(RIGHT);
+    if (rightGroup) rightGroup.style.display = "none";
+
+    if (captProgressBox?.parentElement) captProgressBox.parentElement.style.display = "none";
+    if (pipeSeamBox?.parentElement) pipeSeamBox.parentElement.style.display = "none";
+    if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
+    if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
+    if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
+
+    if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
+      if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
+      if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
+    }
+  }
+}
+
+// Listen for setting changes to update the menu UI
+addSettingsChangeListener(onSettingsChange);
 
 enum Name {
   Volume = "Music Volume",
@@ -341,23 +412,3 @@ function clearAndRepopulateExcludedList() {
 
 /* ************************************ Version ************************************ */
 musicPlayerUI.addVersion();
-
-/* ************************************ Disable or hide things in other pages ************************************ */
-if (getCurrentPageType() !== PageType.ActiveGame) {
-  const parent = musicPlayerUI.getGroup("settings-parent");
-  if (parent) parent.style.width = "475px";
-
-  const rightGroup = musicPlayerUI.getGroup(RIGHT);
-  if (rightGroup) rightGroup.style.display = "none";
-
-  if (captProgressBox?.parentElement) captProgressBox.parentElement.style.display = "none";
-  if (pipeSeamBox?.parentElement) pipeSeamBox.parentElement.style.display = "none";
-  if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
-  if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
-  if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
-
-  if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
-    if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
-    if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
-  }
-}

@@ -10,7 +10,7 @@ import canAutoplay, { CheckResponse } from "can-autoplay";
 import "../shared/style.css";
 import "../shared/style_sliders.css";
 
-import { musicPlayerUI } from "./music_ui";
+import { initializeMusicPlayerUI, musicPlayerUI } from "./music_ui";
 import {
   playMusicURL,
   playOrPauseWhenWindowFocusChanges,
@@ -41,26 +41,6 @@ export { notifyCOSelectorListeners as notifyCOSelectorListeners };
 /******************************************************************
  * Functions
  ******************************************************************/
-
-/**
- * Where should we place the music player UI?
- */
-function getMenu() {
-  switch (getCurrentPageType()) {
-    case PageType.Maintenance:
-      return document.querySelector("#main");
-    case PageType.MapEditor:
-      return document.querySelector("#replay-misc-controls");
-    case PageType.MovePlanner:
-      return document.querySelector("#map-controls-container");
-    case PageType.ActiveGame:
-      return document.querySelector("#game-map-menu")?.parentNode;
-    // case PageType.LiveQueue:
-    // case PageType.MainPage:
-    default:
-      return document.querySelector("#nav-options");
-  }
-}
 
 /**
  * Adjust the music player for the Live Queue page.
@@ -140,16 +120,10 @@ function preloadThemes() {
 }
 
 /**
- * Whether the music player has been initialized or not.
- */
-let isMusicPlayerInitialized = false;
-
-/**
  * Initializes the music player script by setting everything up.
  */
 export function initializeMusicPlayer() {
-  if (isMusicPlayerInitialized) return;
-  isMusicPlayerInitialized = true;
+  initializeMusicPlayerUI();
 
   const currentPageType = getCurrentPageType();
 
@@ -177,12 +151,12 @@ export function initializeMusicPlayer() {
       break;
     case PageType.MapEditor:
       preloadThemes();
-      playOrPauseWhenWindowFocusChanges();
+      // playOrPauseWhenWindowFocusChanges();
       break;
     default:
       musicSettings.randomThemesType = RandomThemeType.NONE;
       playMusicURL(SpecialTheme.ModeSelect);
-      playOrPauseWhenWindowFocusChanges();
+      // playOrPauseWhenWindowFocusChanges();
       break;
   }
 
@@ -190,43 +164,18 @@ export function initializeMusicPlayer() {
 }
 
 /**
- * Initializes and adds the music player UI to the page.
+ * Whether the music player has been initialized or not.
  */
-export function initializeUI() {
-  musicPlayerUI.setProgress(100);
-  let prepend = false;
-
-  // Make adjustments to the UI based on the page we are on
-  switch (getCurrentPageType()) {
-    case PageType.LiveQueue:
-      return;
-    case PageType.ActiveGame:
-      break;
-    case PageType.MapEditor:
-      musicPlayerUI.parent.style.borderTop = "none";
-      break;
-    case PageType.Maintenance:
-      musicPlayerUI.parent.style.borderLeft = "";
-      break;
-    default:
-      musicPlayerUI.parent.style.border = "none";
-      musicPlayerUI.parent.style.backgroundColor = "#0000";
-      musicPlayerUI.setProgress(-1);
-      prepend = true;
-      break;
-  }
-  // Add the music player UI to the page
-  musicPlayerUI.addToAWBWPage(getMenu() as HTMLElement, prepend);
-}
+let mainFunctionExecuted = false;
 
 /**
  * Main function that initializes everything depending on the browser autoplay settings.
  */
 export function main() {
-  // Load settings from local storage but don't allow saving yet
-  loadSettingsFromLocalStorage();
-
-  initializeUI();
+  if (mainFunctionExecuted) {
+    initializeMusicPlayer();
+    return;
+  }
 
   const ifCanAutoplay = () => {
     initializeMusicPlayer();
@@ -251,16 +200,84 @@ export function main() {
     .catch((reason) => {
       logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
       ifCannotAutoplay();
-    });
+    })
+    .finally(() => (mainFunctionExecuted = true));
 }
 
 /******************************************************************
  * SCRIPT ENTRY (MAIN FUNCTION)
  ******************************************************************/
-// Open the database for caching music files first
-// No matter what happens, we will initialize the music player
-log("Opening database to cache music files.");
-openDB()
-  .then(() => log("Database opened successfully. Ready to cache music files."))
-  .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
-  .finally(main);
+// Load settings from local storage but don't allow saving yet
+loadSettingsFromLocalStorage();
+
+// Only run the script if we are the top window and not inside the iframe
+if (self === top) {
+  // Open the database for caching music files first
+  // No matter what happens, we will initialize the music player
+  log("Opening database to cache music files.");
+  openDB()
+    .then(() => log("Database opened successfully. Ready to cache music files."))
+    .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
+    .finally(() => {
+      // Always run game pages without iframes
+      if (getCurrentPageType() === PageType.ActiveGame) {
+        main();
+        return;
+      }
+
+      const hasFrame = document.querySelector("iframe");
+      if (hasFrame) return;
+
+      for (const child of Array.from(document.body.children)) {
+        if (child.id.startsWith("music")) continue;
+        if (child.tagName === "SCRIPT") continue;
+        child.remove();
+      }
+
+      const iframe = document.createElement("iframe");
+      iframe.src = window.location.href;
+      iframe.name = "main";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      document.body.appendChild(iframe);
+      document.body.style.width = "100%";
+      document.body.style.height = "100%";
+      if (document.body.parentElement) {
+        document.body.parentElement.style.width = "100%";
+        document.body.parentElement.style.height = "100%";
+      }
+
+      // When the page changes, hijack the links so they change the iframe
+      // instead of opening a new page and also re-add the music player UI
+      iframe.addEventListener("load", (_e) => {
+        log("Iframe loaded, hijacking links.", getCurrentPageType());
+        const href = iframe.contentDocument?.location.href ?? iframe.src;
+        window.history.pushState({}, "", href);
+        iframe.contentWindow?.history.pushState({}, "", href);
+
+        hijackLinks();
+        main();
+      });
+
+      const hijackLinks = () => {
+        const doc = iframe.contentDocument;
+        const links = doc?.querySelectorAll("a");
+        if (!links) {
+          logError("Could not find any links to hijack.");
+          return;
+        }
+
+        for (const link of Array.from(links)) {
+          if (link.href.includes("game.php") || link.name.includes("game")) {
+            link.target = "_top";
+            continue;
+          }
+          link.target = "main";
+
+          // for (const child of Array.from(link.querySelectorAll("a"))) {
+          //   if (child.href.includes("game.php") || link.name.includes("game") ) continue;
+          // }
+        }
+      };
+    });
+}

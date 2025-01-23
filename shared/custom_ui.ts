@@ -219,6 +219,11 @@ export class CustomMenuSettingsUI {
    * Adds the custom menu to the AWBW page.
    */
   addToAWBWPage(div: HTMLElement, prepend = false) {
+    if (!div) {
+      logError("Parent div is null, cannot add custom menu to the page.");
+      return;
+    }
+
     if (!prepend) {
       div.appendChild(this.parent);
       this.parent.style.borderLeft = "none";

@@ -1,6 +1,7 @@
 import postcss from "rollup-plugin-postcss";
 import metablock from "rollup-plugin-userscript-metablock";
-import typescript from "@rollup/plugin-typescript";
+// import typescript from "@rollup/plugin-typescript";
+import esbuild from "rollup-plugin-esbuild";
 import { defineConfig } from "rollup";
 
 import path from "path";
@@ -35,16 +36,18 @@ function createUserscriptRollUpConfig(inputDir: string, outputDir = "./dist") {
     },
     external: ["../howler/howl", "spark-md5", "can-autoplay"],
     plugins: [
-      typescript(),
+      // typescript(),
+      esbuild(),
       postcss(),
       metablock({
         file: path.join(inputDir, "metadata.json"),
-        manager: "tampermonkey",
-        validator: "error",
+        // manager: "tampermonkey",
+        // validator: "error",
         override: {
           version: versions.get(inputDir),
           supportURL: "https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues",
           namespace: "https://awbw.amarriner.com/",
+          contributionURL: "https://ko-fi.com/developerjose",
           license: "MIT",
           unwrap: true,
         } as MetaValues,

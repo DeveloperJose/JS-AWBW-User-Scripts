@@ -31,6 +31,7 @@ export const attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
  * Gets the username of the person logged in to the website.
  */
 export function getMyUsername() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   const profileMenu = document.querySelector("#profile-menu");
   if (!profileMenu) return null;
   const link = profileMenu.getElementsByClassName("dropdown-menu-link")[0] as HTMLAnchorElement;
@@ -66,6 +67,7 @@ export function getMyID() {
  */
 export function getPlayerInfo(pid: number): PlayerInfo | null {
   if (getCurrentPageType() !== PageType.ActiveGame) return null;
+  if (typeof playersInfo === "undefined") return null;
   return playersInfo[pid];
 }
 
@@ -75,6 +77,7 @@ export function getPlayerInfo(pid: number): PlayerInfo | null {
  */
 export function getAllPlayersInfo() {
   if (getCurrentPageType() !== PageType.ActiveGame) return [];
+  if (typeof playersInfo === "undefined") return [];
   return Object.values(playersInfo);
 }
 
@@ -85,6 +88,7 @@ export function getAllPlayersInfo() {
  */
 export function isPlayerSpectator(pid: number) {
   if (getCurrentPageType() !== PageType.ActiveGame) return false;
+  if (typeof playerKeys === "undefined") return false;
   return !playerKeys.includes(pid);
 }
 
@@ -120,6 +124,7 @@ export function canPlayerActivateSuperCOPower(pid: number) {
  */
 export function isValidBuilding(x: number, y: number) {
   if (getCurrentPageType() !== PageType.ActiveGame) return false;
+  if (typeof buildingsInfo === "undefined") return false;
   return buildingsInfo[x] && buildingsInfo[x][y];
 }
 
@@ -131,6 +136,7 @@ export function isValidBuilding(x: number, y: number) {
  */
 export function getBuildingInfo(x: number, y: number) {
   if (getCurrentPageType() !== PageType.ActiveGame) return null;
+  if (typeof buildingsInfo === "undefined") return null;
   return buildingsInfo[x][y];
 }
 
@@ -153,6 +159,7 @@ export function isReplayActive() {
   if (getCurrentPageType() !== PageType.ActiveGame) return false;
   // Check if replay mode is open by checking if the replay section is set to display
   const replayControls = getReplayControls();
+  if (!replayControls) return false;
   const replayOpen = replayControls.style.display !== "none";
   return replayOpen && Object.keys(replay).length > 0;
 }
@@ -164,6 +171,7 @@ export function isReplayActive() {
 export function hasGameEnded() {
   if (getCurrentPageType() !== PageType.ActiveGame) return false;
   // Count how many players are still in the game
+  if (typeof playersInfo === "undefined") return false;
   const numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
   return numberOfRemainingPlayers === 1;
 }
@@ -209,7 +217,10 @@ export function didGameEndToday() {
  */
 export function getCurrentGameDay() {
   if (getCurrentPageType() !== PageType.ActiveGame) return 1;
+  if (typeof gameDay === "undefined") return 1;
+
   if (!isReplayActive()) return gameDay;
+
   const replayData = Object.values(replay);
   if (replayData.length === 0) return gameDay;
 
@@ -326,6 +337,7 @@ export function isTagGame() {
  */
 export function getAllTagCONames(): Set<string> {
   if (getCurrentPageType() !== PageType.ActiveGame || !isTagGame()) return new Set();
+  if (typeof tagsInfo === "undefined") return new Set();
   return new Set(Object.values(tagsInfo).map((tag) => tag.co_name));
 }
 
@@ -336,6 +348,7 @@ export function getAllTagCONames(): Set<string> {
  */
 export function getUnitInfo(unitId: number) {
   if (getCurrentPageType() !== PageType.ActiveGame) return null;
+  if (typeof unitsInfo === "undefined") return null;
   return unitsInfo[unitId];
 }
 
@@ -357,6 +370,7 @@ export function getUnitName(unitId: number) {
  */
 export function getUnitInfoFromCoords(x: number, y: number) {
   if (getCurrentPageType() !== PageType.ActiveGame) return null;
+  if (typeof unitsInfo === "undefined") return null;
   return Object.values(unitsInfo)
     .filter((info) => info.units_x == x && info.units_y == y)
     .pop();
@@ -370,6 +384,7 @@ export function getUnitInfoFromCoords(x: number, y: number) {
  */
 export function isValidUnit(unitId: number) {
   if (getCurrentPageType() !== PageType.ActiveGame) return false;
+  if (typeof unitsInfo === "undefined") return false;
   return unitId !== undefined && unitsInfo[unitId] !== undefined;
 }
 

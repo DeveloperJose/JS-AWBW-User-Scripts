@@ -78,6 +78,7 @@ import {
   getUnloadFn,
   getWaitFn,
 } from "../shared/awbw_handlers";
+import { log } from "./utils";
 
 /**
  * How long to wait in milliseconds before we register a cursor movement.
@@ -133,43 +134,109 @@ const movementResponseMap: Map<number, MoveResponse> = new Map();
  */
 const clickedDamageSquaresMap: Map<HTMLSpanElement, boolean> = new Map();
 
-/* **Store a copy of all the original functions we are going to override** */
-const ahQueryTurn = getQueryTurnFn();
-const ahShowEventScreen = getShowEventScreenFn();
-const ahShowEndGameScreen = getShowEndGameScreenFn();
-// let ahSwapCosDisplay = getSwapCosDisplayFn();
-const ahOpenMenu = getOpenMenuFn();
-const ahCloseMenu = getCloseMenuFn();
-const ahCreateDamageSquares = getCreateDamageSquaresFn();
+// Replay handlers
+let ahQueryTurn:
+  | ((
+      gameId: number,
+      turn: number,
+      turnPId: number,
+      turnDay: number,
+      replay: ReplayObject[],
+      initial: boolean,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) => Promise<any> | undefined)
+  | null;
+
+// Game handlers
+// let ahSwapCosDisplay;
 // let ahResetAttack = getResetAttackFn();
-const ahUnitClick = getUnitClickFn();
-const ahWait = getWaitFn();
-const ahAnimUnit = getAnimUnitFn();
-const ahAnimExplosion = getAnimExplosionFn();
-const ahFog = getFogFn();
-const ahFire = getFireFn();
-const ahAttackSeam = getAttackSeamFn();
-const ahMove = getMoveFn();
-const ahCapt = getCaptFn();
-const ahBuild = getBuildFn();
-const ahLoad = getLoadFn();
-const ahUnload = getUnloadFn();
-const ahSupply = getSupplyFn();
-const ahRepair = getRepairFn();
-const ahHide = getHideFn();
-const ahUnhide = getUnhideFn();
-const ahJoin = getJoinFn();
-const ahLaunch = getLaunchFn();
-const ahNextTurn = getNextTurnFn();
-const ahElimination = getEliminationFn();
-const ahPower = getPowerFn();
-const ahGameOver = getGameOverFn();
-const ahResign = getResignFn();
+let ahShowEventScreen: ((event: ShowEventScreenData) => void) | null;
+let ahShowEndGameScreen: ((event: ShowEndGameScreenData) => void) | null;
+let ahOpenMenu: ((menu: HTMLDivElement, x: number, y: number) => void) | null;
+let ahCloseMenu: (() => void) | null;
+
+let ahCreateDamageSquares: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+((attackerUnit: UnitInfo, unitsInRange: UnitInfo[], movementInfo: any, movingUnit: any) => void) | null;
+let ahUnitClick: ((clicked: UnitClickData) => void) | null;
+let ahWait: ((unitId: number) => void) | null;
+let ahAnimUnit:
+  | ((
+      path: PathInfo[],
+      unitId: number,
+      unitSpan: HTMLSpanElement,
+      unitTeam: number,
+      viewerTeam: number,
+      i: number,
+    ) => void)
+  | null;
+let ahAnimExplosion: ((unit: UnitInfo) => void) | null;
+
+let ahFog:
+  | ((
+      x: number,
+      y: number,
+      mType: object,
+      neighbours: object[],
+      unitVisible: boolean,
+      change: string,
+      delay: number,
+    ) => void)
+  | null;
+let ahFire: ((response: FireResponse) => void) | null;
+let ahAttackSeam: ((response: SeamResponse) => void) | null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let ahMove: ((response: MoveResponse, loadFlag: any) => void) | null;
+let ahCapt: ((data: CaptureData) => void) | null;
+let ahBuild: ((data: BuildData) => void) | null;
+let ahLoad: ((data: LoadData) => void) | null;
+let ahUnload: ((data: UnloadData) => void) | null;
+let ahSupply: ((data: SupplyData) => void) | null;
+let ahRepair: ((data: RepairData) => void) | null;
+let ahHide: ((data: HideData) => void) | null;
+let ahUnhide: ((data: UnhideData) => void) | null;
+let ahJoin: ((data: JoinData) => void) | null;
+let ahLaunch: ((data: LaunchData) => void) | null;
+let ahNextTurn: ((data: NextTurnData) => void) | null;
+let ahElimination: ((data: EliminationData) => void) | null;
+let ahPower: ((data: PowerData) => void) | null;
+let ahGameOver: (() => void) | null;
+let ahResign: ((data: ResignData) => void) | null;
 
 /**
  * Intercept functions and add our own handlers to the website.
  */
 export function addHandlers() {
+  // Clear previous handlers
+  ahQueryTurn = null;
+  ahShowEventScreen = null;
+  ahShowEndGameScreen = null;
+  ahOpenMenu = null;
+  ahCloseMenu = null;
+  ahCreateDamageSquares = null;
+  ahUnitClick = null;
+  ahWait = null;
+  ahAnimUnit = null;
+  ahAnimExplosion = null;
+  ahFog = null;
+  ahFire = null;
+  ahAttackSeam = null;
+  ahMove = null;
+  ahCapt = null;
+  ahBuild = null;
+  ahLoad = null;
+  ahUnload = null;
+  ahSupply = null;
+  ahRepair = null;
+  ahHide = null;
+  ahUnhide = null;
+  ahJoin = null;
+  ahLaunch = null;
+  ahNextTurn = null;
+  ahElimination = null;
+  ahPower = null;
+  ahGameOver = null;
+  ahResign = null;
+
   const currentPageType = getCurrentPageType();
 
   if (currentPageType === PageType.Maintenance) return;
@@ -263,14 +330,60 @@ function addReplayHandlers() {
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
   replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+
+  // Hijack replay handlers when they are created
+  replayOpenBtn.addEventListener("click", () => {
+    if (ahQueryTurn !== null) return;
+    ahQueryTurn = getQueryTurnFn();
+    queryTurn = onQueryTurn;
+  });
 }
 
 /**
  * Add all handlers that will intercept clicks and functions during a game.
  */
 function addGameHandlers() {
+  // while (
+  //   typeof showEventScreen === "undefined" &&
+  //   typeof playersInfo === "undefined" &&
+  //   typeof queryTurn === "undefined" &&
+  //   typeof actionHandlers === "undefined" &&
+  //   typeof serverTimezone === "undefined" &&
+  //   typeof currentTurn === "undefined"
+  // ) {
+  //   await new Promise((resolve) => setTimeout(resolve, 50));
+  // }
+
+  ahShowEventScreen = getShowEventScreenFn();
+  ahShowEndGameScreen = getShowEndGameScreenFn();
+  ahOpenMenu = getOpenMenuFn();
+  ahCloseMenu = getCloseMenuFn();
+  ahCreateDamageSquares = getCreateDamageSquaresFn();
+  ahUnitClick = getUnitClickFn();
+  ahWait = getWaitFn();
+  ahAnimUnit = getAnimUnitFn();
+  ahAnimExplosion = getAnimExplosionFn();
+  ahFog = getFogFn();
+  ahFire = getFireFn();
+  ahAttackSeam = getAttackSeamFn();
+  ahMove = getMoveFn();
+  ahCapt = getCaptFn();
+  ahBuild = getBuildFn();
+  ahLoad = getLoadFn();
+  ahUnload = getUnloadFn();
+  ahSupply = getSupplyFn();
+  ahRepair = getRepairFn();
+  ahHide = getHideFn();
+  ahUnhide = getUnhideFn();
+  ahJoin = getJoinFn();
+  ahLaunch = getLaunchFn();
+  ahNextTurn = getNextTurnFn();
+  ahElimination = getEliminationFn();
+  ahPower = getPowerFn();
+  ahGameOver = getGameOverFn();
+  ahResign = getResignFn();
+
   // updateCursor = onCursorMove;
-  queryTurn = onQueryTurn;
   showEventScreen = onShowEventScreen;
   showEndGameScreen = onShowEndGameScreen;
   openMenu = onOpenMenu;

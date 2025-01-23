@@ -10,14 +10,14 @@
  * The type of page we are currently on.
  */
 export enum PageType {
-  Maintenance,
-  ActiveGame,
-  MapEditor,
-  MovePlanner,
-  LiveQueue,
-  MainPage,
+  Maintenance = "Maintenance",
+  ActiveGame = "ActiveGame",
+  MapEditor = "MapEditor",
+  MovePlanner = "MovePlanner",
+  LiveQueue = "LiveQueue",
+  MainPage = "MainPage",
 
-  Default, // For all other pages
+  Default = "Default", // For all other pages
 }
 
 /**
@@ -25,29 +25,34 @@ export enum PageType {
  * @returns - The current page type.
  */
 export function getCurrentPageType(): PageType {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   const isMaintenance = document.querySelector("#server-maintenance-alert") !== null;
   if (isMaintenance) return PageType.Maintenance;
 
-  if (window.location.href.indexOf("game.php") > -1) return PageType.ActiveGame;
-  if (window.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
-  if (window.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
-  if (window.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
-  if (window.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
+  if (document.location.href.indexOf("game.php") > -1) return PageType.ActiveGame;
+  if (document.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
+  if (document.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
+  if (document.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
+  if (document.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
   return PageType.Default;
 }
 
 // ============================== AWBW Page Elements ==============================
 export function getGamemap() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#gamemap") as HTMLElement;
 }
 
 export function getGamemapContainer() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#gamemap-container") as HTMLElement;
 }
 export function getZoomInBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#zoom-in") as HTMLElement;
 }
 export function getZoomOutBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#zoom-out") as HTMLElement;
 }
 // export function getZoomLevel() {
@@ -60,65 +65,83 @@ export function getCurrentZoomLevel() {
 }
 
 export function getCursorImg() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#cursor") as HTMLElement;
 }
 
 export function getCoordsDiv() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#coords") as HTMLElement;
 }
 
 export function getEventUsername() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".event-username") as HTMLElement;
 }
 
 export function getReplayControls() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-controls") as HTMLElement;
 }
 
 export function getSupplyIcon() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".supply-icon") as HTMLElement;
 }
 export function getTrappedIcon() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".trapped-icon") as HTMLElement;
 }
 export function getTargetIcon() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".target-icon") as HTMLElement;
 }
 export function getExplosionIcon() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".destroy-icon") as HTMLElement;
 }
 
 export function getReplayOpenBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-open") as HTMLElement;
 }
 export function getReplayCloseBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-close") as HTMLElement;
 }
 export function getReplayForwardBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-forward") as HTMLElement;
 }
 export function getReplayForwardActionBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-forward-action") as HTMLElement;
 }
 export function getReplayBackwardBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-backward") as HTMLElement;
 }
 export function getReplayBackwardActionBtn() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-backward-action") as HTMLElement;
 }
 export function getReplayDaySelectorCheckBox() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".replay-day-selector") as HTMLElement;
 }
 
 export function getConnectionErrorDiv() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".connection-error-msg") as HTMLElement;
 }
 
 export function getLiveQueueSelectPopup() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#live-queue-select-popup") as HTMLElement;
 }
 
 export function getLiveQueueBlockerPopup() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(".live-queue-blocker-popup") as HTMLElement;
 }
 
@@ -128,6 +151,7 @@ export function getLiveQueueBlockerPopup() {
  * @returns The HTML node for the unit build menu.
  */
 export function getBuildMenu() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector("#build-menu") as HTMLElement;
 }
 
@@ -139,10 +163,12 @@ export function getBuildMenu() {
  * @returns - The HTML div element for the building, or null if it does not exist.
  */
 export function getBuildingDiv(buildingID: number) {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return document.querySelector(`.game-building[data-building-id='${buildingID}']`) as HTMLDivElement;
 }
 
 export function getAllDamageSquares() {
+  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
   return Array.from(document.getElementsByClassName("dmg-square"));
 }
 

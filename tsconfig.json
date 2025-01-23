@@ -9,7 +9,7 @@
     "removeComments": false,
     "preserveConstEnums": true,
     "sourceMap": false,
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "outDir": "./dist",
     "strict": true,
@@ -18,9 +18,9 @@
     "allowUmdGlobalAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "paths": {
-			"rollup": ["./node_modules/rollup"]
-		},
+    // "paths": {
+		// 	"rollup": ["./node_modules/rollup"]
+		// },
     // "types": [
     //   // "vite/client"
     // ],
