@@ -8,6 +8,7 @@
 // @require         https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
+// @run-at          document-end
 // @version         4.8.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
@@ -16,7 +17,7 @@
 // @grant           none
 // ==/UserScript==
 
-var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
+var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   "use strict";
 
   function styleInject(css, ref) {
@@ -1133,9 +1134,13 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       rightBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(rightBox);
       this.groups.set("settings-right" /* Right */, rightBox);
+      this.addContextMenuHandlers();
+    }
+    addContextMenuHandlers() {
       this.parent.addEventListener("contextmenu", (event) => {
+        event.stopImmediatePropagation();
         const element = event.target;
-        if (element.id.startsWith(prefix)) {
+        if (element.id.startsWith(this.prefix)) {
           event.preventDefault();
           this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
           if (this.isSettingsMenuOpen) {
@@ -1154,7 +1159,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           }
         }
         if (!elmnt) return;
-        if (elmnt.id.startsWith(prefix) || elmnt.id === "overDiv") return;
+        if (elmnt.id.startsWith(this.prefix) || elmnt.id === "overDiv") return;
         this.closeContextMenu();
       });
     }
@@ -1173,6 +1178,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       }
       div.prepend(this.parent);
       this.parent.style.borderRight = "none";
+      this.addContextMenuHandlers();
     }
     hasSettings() {
       const hasLeftMenu = this.groups.get("settings-left" /* Left */)?.style.display !== "none";
@@ -1539,8 +1545,62 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     coSelectorListeners.forEach((listener) => listener(coName));
   }
 
+  function getCurrentDocument() {
+    const iframe = document.querySelector("iframe");
+    if (!iframe) return window.document;
+    const href = iframe.contentDocument?.location.href ?? iframe.src;
+    if (href === null || href === "" || href === "about:blank") return window.document;
+    return iframe.contentDocument ?? window.document;
+  }
+  function initializeIFrame(init_fn) {
+    const hasFrame = document.querySelector("iframe");
+    if (hasFrame) return;
+    const iframe = document.createElement("iframe");
+    iframe.name = "main";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    document.body.appendChild(iframe);
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    if (document.body.parentElement) {
+      document.body.parentElement.style.width = "100%";
+      document.body.parentElement.style.height = "100%";
+    }
+    iframe.addEventListener("load", (event) => onIFrameLoad(event, init_fn));
+    hijackLinks(window.document);
+    init_fn();
+  }
+  function onIFrameLoad(event, initFn) {
+    const iframe = event.target;
+    const href = iframe.contentDocument?.location.href ?? iframe.src;
+    log("Iframe loaded, hijacking links.", getCurrentPageType(), href);
+    if (href === null || href === "" || href === "about:blank") return;
+    for (const child of Array.from(document.body.children)) {
+      if (child === iframe) continue;
+      child.remove();
+    }
+    window.history.pushState({}, "", href);
+    iframe.contentWindow?.history.pushState({}, "", href);
+    hijackLinks(iframe.contentDocument);
+    initFn();
+  }
+  const hijackLinks = (doc) => {
+    if (!doc) {
+      logError("Could not find the document to hijack links.");
+      return;
+    }
+    const links = doc.querySelectorAll("a");
+    if (!links) {
+      logError("Could not find any links to hijack.");
+      return;
+    }
+    for (const link of Array.from(links)) {
+      link.target = "main";
+    }
+  };
+
   function getMenu() {
-    const doc = window.document.querySelector("iframe")?.contentDocument ?? window.document;
+    const doc = getCurrentDocument();
     switch (getCurrentPageType()) {
       case PageType.Maintenance:
         return doc.querySelector("#main");
@@ -1639,10 +1699,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       if (restartThemesBox?.parentElement) restartThemesBox.parentElement.style.display = "none";
       if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
       if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
-      if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
-        if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
-        if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
-      }
     }
   }
   addSettingsChangeListener(onSettingsChange$1);
@@ -1706,7 +1762,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   sfxVolumeSlider?.addEventListener("input", (event) => (musicSettings.sfxVolume = parseInputFloat(event)));
   uiVolumeSlider?.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
   const soundtrackGroup = "Soundtrack";
-  const soundtrackGroupDiv = musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
+  musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
   const gameTypeRadioMap = /* @__PURE__ */ new Map();
   for (const gameType of Object.values(GameType)) {
     const description = Description[gameType];
@@ -1715,7 +1771,7 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     radio.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
   }
   const randomGroup = "Random Themes";
-  const randomGroupDiv = musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
+  musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
   const radioNormal = musicPlayerUI.addRadioButton(
     "Off" /* No_Random */,
     randomGroup,
@@ -1891,6 +1947,94 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   }
   musicPlayerUI.addVersion();
 
+  function getQueryTurnFn() {
+    return typeof queryTurn !== "undefined" ? queryTurn : null;
+  }
+  function getShowEventScreenFn() {
+    return typeof showEventScreen !== "undefined" ? showEventScreen : null;
+  }
+  function getShowEndGameScreenFn() {
+    return typeof showEndGameScreen !== "undefined" ? showEndGameScreen : null;
+  }
+  function getOpenMenuFn() {
+    return typeof openMenu !== "undefined" ? openMenu : null;
+  }
+  function getCloseMenuFn() {
+    return typeof closeMenu !== "undefined" ? closeMenu : null;
+  }
+  function getCreateDamageSquaresFn() {
+    return typeof createDamageSquares !== "undefined" ? createDamageSquares : null;
+  }
+  function getUnitClickFn() {
+    return typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
+  }
+  function getWaitFn() {
+    return typeof waitUnit !== "undefined" ? waitUnit : null;
+  }
+  function getAnimUnitFn() {
+    return typeof animUnit !== "undefined" ? animUnit : null;
+  }
+  function getAnimExplosionFn() {
+    return typeof animExplosion !== "undefined" ? animExplosion : null;
+  }
+  function getFogFn() {
+    return typeof updateAirUnitFogOnMove !== "undefined" ? updateAirUnitFogOnMove : null;
+  }
+  function getFireFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Fire : null;
+  }
+  function getAttackSeamFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.AttackSeam : null;
+  }
+  function getMoveFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Move : null;
+  }
+  function getCaptFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Capt : null;
+  }
+  function getBuildFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Build : null;
+  }
+  function getLoadFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Load : null;
+  }
+  function getUnloadFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Unload : null;
+  }
+  function getSupplyFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Supply : null;
+  }
+  function getRepairFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Repair : null;
+  }
+  function getHideFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Hide : null;
+  }
+  function getUnhideFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Unhide : null;
+  }
+  function getJoinFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Join : null;
+  }
+  function getLaunchFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Launch : null;
+  }
+  function getNextTurnFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
+  }
+  function getEliminationFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
+  }
+  function getPowerFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
+  }
+  function getGameOverFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
+  }
+  function getResignFn() {
+    return typeof actionHandlers !== "undefined" ? actionHandlers.Resign : null;
+  }
+
   let db = null;
   const dbName = "awbw_music_player";
   const dbVersion = 1;
@@ -2012,129 +2156,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     });
   }
 
-  let currentThemeKey = "";
   const audioMap = /* @__PURE__ */ new Map();
   const audioIDMap = /* @__PURE__ */ new Map();
-  const urlQueue = /* @__PURE__ */ new Set();
-  const unitIDAudioMap = /* @__PURE__ */ new Map();
-  const specialLoopMap = /* @__PURE__ */ new Map();
-  let currentLoops = 0;
-  let currentlyDelaying = false;
-  addSettingsChangeListener(onSettingsChange);
-  addDatabaseReplacementListener((url) => {
-    const audio = audioMap.get(url);
-    if (!audio) return;
-    log("A new version of", url, " is available. Replacing the old version.");
-    if (audio.playing()) audio.stop();
-    urlQueue.delete(url);
-    audioMap.delete(url);
-    audioIDMap.delete(url);
-    preloadURL(url)
-      .catch((reason) => logError(reason))
-      .finally(() => playThemeSong());
-  });
-  function whenAudioLoadsPauseIt(event) {
-    event.target.pause();
-  }
-  function onThemeEndOrLoop(srcURL) {
-    currentLoops++;
-    if (currentThemeKey !== srcURL) {
-      logError("Playing more than one theme at a time! Please report this bug!", srcURL);
-      return;
-    }
-    if (hasSpecialLoop(srcURL)) {
-      const loopURL = srcURL.replace(".ogg", "-loop.ogg");
-      specialLoopMap.set(srcURL, loopURL);
-      playThemeSong();
-    }
-    if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
-      if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
-    }
-    if (musicSettings.randomThemesType !== RandomThemeType.NONE) {
-      musicSettings.randomizeCO();
-      playThemeSong();
-    }
-  }
-  function onThemePlay(audio, srcURL) {
-    currentLoops = 0;
-    audio.volume(getVolumeForURL(srcURL));
-    const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
-    const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
-    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
-    const currentPosition = audio.seek();
-    const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
-    if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
-      audio.seek(0);
-    }
-    if (currentThemeKey !== srcURL && audio.playing()) {
-      audio.pause();
-      playThemeSong();
-    }
-    const audioID = audioIDMap.get(srcURL);
-    if (!audioID) return;
-    for (const id of audio._getSoundIds()) {
-      if (id !== audioID) audio.stop(id);
-    }
-  }
-  function preloadURL(srcURL) {
-    if (urlQueue.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already queued for pre-loading.`);
-    urlQueue.add(srcURL);
-    if (audioMap.has(srcURL)) return Promise.reject(`Cannot preload ${srcURL}, it is already pre-loaded.`);
-    return loadMusicFromDB(srcURL).then(
-      (localCacheURL) => createNewAudio(srcURL, localCacheURL),
-      (reason) => {
-        logDebug(reason, srcURL);
-        return createNewAudio(srcURL, srcURL);
-      },
-    );
-    function createNewAudio(srcURL2, cacheURL) {
-      const audioInMap = audioMap.get(srcURL2);
-      if (audioInMap !== undefined) {
-        logError("Race Condition! Please report this bug!", srcURL2);
-        return audioInMap;
-      }
-      const audio = new Howl({
-        src: [cacheURL],
-        format: ["ogg"],
-        volume: getVolumeForURL(srcURL2),
-        // Redundant event listeners to ensure the audio is always at the correct volume
-        onplay: (_id) => audio.volume(getVolumeForURL(srcURL2)),
-        onload: (_id) => audio.volume(getVolumeForURL(srcURL2)),
-        onseek: (_id) => audio.volume(getVolumeForURL(srcURL2)),
-        onpause: (_id) => audio.volume(getVolumeForURL(srcURL2)),
-        onloaderror: (_id, error) => logError("Error loading audio:", srcURL2, error),
-        onplayerror: (_id, error) => logError("Error playing audio:", srcURL2, error),
-      });
-      audioMap.set(srcURL2, audio);
-      if (srcURL2.includes("sfx")) return audio;
-      audio.on("play", () => onThemePlay(audio, srcURL2));
-      audio.on("load", () => playThemeSong());
-      audio.on("end", () => onThemeEndOrLoop(srcURL2));
-      return audio;
-    }
-  }
-  function playMusicURL(srcURL) {
-    const specialLoopURL = specialLoopMap.get(srcURL);
-    if (specialLoopURL) srcURL = specialLoopURL;
-    if (srcURL !== currentThemeKey) {
-      stopThemeSong();
-      currentThemeKey = srcURL;
-    }
-    if (!audioMap.has(srcURL)) {
-      if (!urlQueue.has(srcURL)) preloadURL(srcURL).catch((reason) => logError(reason));
-      return;
-    }
-    const nextSong = audioMap.get(srcURL);
-    if (!nextSong) return;
-    nextSong.loop(!hasSpecialLoop(srcURL));
-    nextSong.volume(getVolumeForURL(srcURL));
-    if (!nextSong.playing() && musicSettings.isPlaying) {
-      log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
-      const newID = nextSong.play();
-      if (!newID) return;
-      audioIDMap.set(srcURL, newID);
-    }
-  }
   function playOneShotURL(srcURL, volume) {
     if (!musicSettings.isPlaying) return;
     const soundInstance = new Audio(srcURL);
@@ -2142,106 +2165,41 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     soundInstance.volume = volume;
     soundInstance.play();
   }
-  function playThemeSong() {
-    if (!musicSettings.isPlaying) return;
-    if (currentlyDelaying) return;
-    let gameType = undefined;
-    let coName = currentPlayer.coName;
-    const isEndTheme = coName === "victory" || coName === "defeat";
-    const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
-    if (isRandomTheme && !isEndTheme) {
-      coName = musicSettings.currentRandomCO;
-      if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) gameType = musicSettings.currentRandomGameType;
+  function getVolumeForURL(url) {
+    if (url.startsWith("blob:") || !url.startsWith("https://")) {
+      logError("Blob URL when trying to get volume for", url);
+      return musicSettings.volume;
     }
-    if (!coName) {
-      if (!currentThemeKey || currentThemeKey === "") return;
-      playMusicURL(currentThemeKey);
-      return;
+    if (url.includes("sfx")) {
+      if (url.includes("ui")) return musicSettings.uiVolume;
+      if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
+      return musicSettings.sfxVolume;
     }
-    playMusicURL(getMusicURL(coName, gameType));
+    return musicSettings.volume;
   }
-  function stopThemeSong(delayMS = 0) {
-    if (delayMS > 0) {
-      window.setTimeout(() => {
-        currentlyDelaying = false;
-        playThemeSong();
-      }, delayMS);
-      currentlyDelaying = true;
+
+  const urlQueue = /* @__PURE__ */ new Set();
+  const promiseMap = /* @__PURE__ */ new Map();
+  function createNewAudio(srcURL, cacheURL) {
+    const audioInMap = audioMap.get(srcURL);
+    if (audioInMap) {
+      logError("Race Condition! Please report this bug!", srcURL);
+      return audioInMap;
     }
-    if (!audioMap.has(currentThemeKey)) return;
-    const currentTheme = audioMap.get(currentThemeKey);
-    if (!currentTheme) return;
-    logDebug("Pausing: ", currentThemeKey);
-    currentTheme.pause();
-  }
-  function playMovementSound(unitId) {
-    if (!musicSettings.isPlaying) return;
-    if (!unitIDAudioMap.has(unitId)) {
-      const unitName = getUnitName(unitId);
-      if (!unitName) return;
-      const movementSoundURL = getMovementSoundURL(unitName);
-      if (!movementSoundURL) {
-        logError("No movement sound for", unitName);
-        return;
-      }
-      unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
-    }
-    const movementAudio = unitIDAudioMap.get(unitId);
-    if (!movementAudio) return;
-    movementAudio.currentTime = 0;
-    movementAudio.loop = false;
-    movementAudio.volume = musicSettings.sfxVolume;
-    movementAudio.play();
-  }
-  function stopMovementSound(unitId, rolloff = true) {
-    if (!musicSettings.isPlaying) return;
-    if (!unitIDAudioMap.has(unitId)) return;
-    const movementAudio = unitIDAudioMap.get(unitId);
-    if (!movementAudio || movementAudio.paused) return;
-    if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
-      movementAudio.addEventListener("canplaythrough", whenAudioLoadsPauseIt, { once: true });
-      return;
-    }
-    movementAudio.pause();
-    movementAudio.currentTime = 0;
-    const unitName = getUnitName(unitId);
-    if (!rolloff || !unitName) return;
-    if (hasMovementRollOff(unitName)) {
-      const audioURL = getMovementRollOffURL(unitName);
-      playOneShotURL(audioURL, musicSettings.sfxVolume);
-    }
-  }
-  function playSFX(sfx) {
-    if (!musicSettings.isPlaying) return;
-    if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
-    if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
-    const sfxURL = getSoundEffectURL(sfx);
-    if (!audioMap.has(sfxURL)) {
-      preloadURL(sfxURL)
-        .then(() => playSFX(sfx))
-        .catch((reason) => logError(reason));
-      return;
-    }
-    const audio = audioMap.get(sfxURL);
-    if (!audio) return;
-    audio.volume(getVolumeForURL(sfxURL));
-    audio.seek(0);
-    if (audio.playing()) return;
-    const newID = audio.play();
-    if (!newID) return;
-    audioIDMap.set(sfxURL, newID);
-  }
-  function stopAllSounds() {
-    stopThemeSong();
-    stopAllMovementSounds();
-    for (const audio of audioMap.values()) {
-      if (audio.playing()) audio.pause();
-    }
-  }
-  function stopAllMovementSounds() {
-    for (const unitId of unitIDAudioMap.keys()) {
-      stopMovementSound(unitId, false);
-    }
+    const audio = new Howl({
+      src: [cacheURL],
+      format: ["ogg"],
+      volume: getVolumeForURL(srcURL),
+      // Redundant event listeners to ensure the audio is always at the correct volume
+      onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onseek: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onpause: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
+      onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
+    });
+    audioMap.set(srcURL, audio);
+    return audio;
   }
   function preloadAllCommonAudio(afterPreloadFunction) {
     const audioList = getCurrentThemeURLs();
@@ -2282,17 +2240,188 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
         .catch((_reason) => onAudioPreload("error", url));
     });
   }
-  function getVolumeForURL(url) {
-    if (url.startsWith("blob:") || !url.startsWith("https://")) {
-      logError("Blob URL when trying to get volume for", url);
-      return musicSettings.volume;
+  async function preloadURL(srcURL) {
+    const audio = audioMap.get(srcURL);
+    if (audio) return audio;
+    if (urlQueue.has(srcURL)) {
+      const storedPromise = promiseMap.get(srcURL);
+      if (!storedPromise) return Promise.reject(`No promise found for ${srcURL}, please report this bug!`);
+      return storedPromise;
     }
-    if (url.includes("sfx")) {
-      if (url.includes("ui")) return musicSettings.uiVolume;
-      if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
-      return musicSettings.sfxVolume;
+    urlQueue.add(srcURL);
+    const promise = loadMusicFromDB(srcURL).then(
+      (localCacheURL) => createNewAudio(srcURL, localCacheURL),
+      (reason) => {
+        logDebug(reason, srcURL);
+        return createNewAudio(srcURL, srcURL);
+      },
+    );
+    promiseMap.set(srcURL, promise);
+    return promise;
+  }
+
+  const unitIDAudioMap = /* @__PURE__ */ new Map();
+  function playMovementSound(unitId) {
+    if (!musicSettings.isPlaying) return;
+    if (!unitIDAudioMap.has(unitId)) {
+      const unitName = getUnitName(unitId);
+      if (!unitName) return;
+      const movementSoundURL = getMovementSoundURL(unitName);
+      if (!movementSoundURL) {
+        logError("No movement sound for", unitName);
+        return;
+      }
+      unitIDAudioMap.set(unitId, new Audio(movementSoundURL));
     }
-    return musicSettings.volume;
+    const movementAudio = unitIDAudioMap.get(unitId);
+    if (!movementAudio) return;
+    movementAudio.currentTime = 0;
+    movementAudio.loop = false;
+    movementAudio.volume = musicSettings.sfxVolume;
+    movementAudio.play();
+  }
+  function stopMovementSound(unitId, rolloff = true) {
+    if (!musicSettings.isPlaying) return;
+    if (!unitIDAudioMap.has(unitId)) return;
+    const movementAudio = unitIDAudioMap.get(unitId);
+    if (!movementAudio || movementAudio.paused) return;
+    if (movementAudio.readyState != HTMLAudioElement.prototype.HAVE_ENOUGH_DATA) {
+      movementAudio.addEventListener("canplaythrough", whenAudioLoadsPauseIt, { once: true });
+      return;
+    }
+    movementAudio.pause();
+    movementAudio.currentTime = 0;
+    const unitName = getUnitName(unitId);
+    if (!rolloff || !unitName) return;
+    if (hasMovementRollOff(unitName)) {
+      const audioURL = getMovementRollOffURL(unitName);
+      playOneShotURL(audioURL, musicSettings.sfxVolume);
+    }
+  }
+  function stopAllMovementSounds() {
+    for (const unitId of unitIDAudioMap.keys()) {
+      stopMovementSound(unitId, false);
+    }
+  }
+  function whenAudioLoadsPauseIt(event) {
+    event.target.pause();
+  }
+
+  let currentThemeURL = "";
+  let currentLoops = 0;
+  const specialLoopMap = /* @__PURE__ */ new Map();
+  addSettingsChangeListener(onSettingsChange);
+  addDatabaseReplacementListener((url) => {
+    const audio = audioMap.get(url);
+    if (!audio) return;
+    log("A new version of", url, " is available. Replacing the old version.");
+    if (audio.playing()) audio.stop();
+    urlQueue.delete(url);
+    promiseMap.delete(url);
+    audioMap.delete(url);
+    audioIDMap.delete(url);
+    preloadURL(url)
+      .catch((reason) => logError(reason))
+      .finally(() => playThemeSong());
+  });
+  let currentlyDelaying = false;
+  async function playMusicURL(srcURL) {
+    const specialLoopURL = specialLoopMap.get(srcURL);
+    if (specialLoopURL) srcURL = specialLoopURL;
+    if (srcURL !== currentThemeURL) {
+      stopThemeSong();
+      currentThemeURL = srcURL;
+    }
+    const nextSong = audioMap.get(srcURL) ?? (await preloadURL(srcURL));
+    nextSong.loop(!hasSpecialLoop(srcURL));
+    nextSong.volume(getVolumeForURL(srcURL));
+    nextSong.on("play", () => onThemePlay(nextSong, srcURL));
+    nextSong.on("load", () => playThemeSong());
+    nextSong.on("end", () => onThemeEndOrLoop(srcURL));
+    if (!nextSong.playing() && musicSettings.isPlaying) {
+      log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
+      const newID = nextSong.play();
+      if (!newID) return;
+      audioIDMap.set(srcURL, newID);
+    }
+  }
+  function playThemeSong() {
+    if (!musicSettings.isPlaying) return;
+    if (currentlyDelaying) return;
+    let gameType = undefined;
+    let coName = currentPlayer.coName;
+    const isEndTheme = coName === "victory" || coName === "defeat";
+    const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
+    if (isRandomTheme && !isEndTheme) {
+      coName = musicSettings.currentRandomCO;
+      if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) gameType = musicSettings.currentRandomGameType;
+    }
+    if (!coName) {
+      if (!currentThemeURL || currentThemeURL === "") return;
+      playMusicURL(currentThemeURL);
+      return;
+    }
+    playMusicURL(getMusicURL(coName, gameType));
+  }
+  function stopThemeSong(delayMS = 0) {
+    if (delayMS > 0) {
+      window.setTimeout(() => {
+        currentlyDelaying = false;
+        playThemeSong();
+      }, delayMS);
+      currentlyDelaying = true;
+    }
+    const currentTheme = audioMap.get(currentThemeURL);
+    if (!currentTheme) return;
+    logDebug("Pausing: ", currentThemeURL);
+    currentTheme.pause();
+  }
+  function stopAllSounds() {
+    stopThemeSong();
+    stopAllMovementSounds();
+    for (const audio of audioMap.values()) {
+      if (audio.playing()) audio.pause();
+    }
+  }
+  function onThemePlay(audio, srcURL) {
+    currentLoops = 0;
+    audio.volume(getVolumeForURL(srcURL));
+    const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
+    const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
+    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
+    const currentPosition = audio.seek();
+    const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
+    if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
+      audio.seek(0);
+    }
+    if (currentThemeURL !== srcURL && audio.playing()) {
+      audio.pause();
+      playThemeSong();
+    }
+    const audioID = audioIDMap.get(srcURL);
+    if (!audioID) return;
+    for (const id of audio._getSoundIds()) {
+      if (id !== audioID) audio.stop(id);
+    }
+  }
+  function onThemeEndOrLoop(srcURL) {
+    currentLoops++;
+    if (currentThemeURL !== srcURL) {
+      logError("Playing more than one theme at a time! Please report this bug!", srcURL);
+      return;
+    }
+    if (hasSpecialLoop(srcURL)) {
+      const loopURL = srcURL.replace(".ogg", "-loop.ogg");
+      specialLoopMap.set(srcURL, loopURL);
+      playThemeSong();
+    }
+    if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
+      if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
+    }
+    if (musicSettings.randomThemesType !== RandomThemeType.NONE) {
+      musicSettings.randomizeCO();
+      playThemeSong();
+    }
   }
   function playOrPauseWhenWindowFocusChanges() {
     window.addEventListener("blur", () => {
@@ -2310,50 +2439,33 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       case SettingsKey.OVERRIDE_LIST:
       case SettingsKey.CURRENT_RANDOM_CO:
       case SettingsKey.IS_PLAYING:
-        if (musicSettings.isPlaying) {
-          playThemeSong();
-        } else {
-          stopAllSounds();
-        }
-        break;
+        return musicSettings.isPlaying ? playThemeSong() : stopAllSounds();
       case SettingsKey.GAME_TYPE:
       case SettingsKey.ALTERNATE_THEME_DAY:
       case SettingsKey.ALTERNATE_THEMES:
-        window.setTimeout(() => playThemeSong(), 500);
-        break;
-      case SettingsKey.THEME_TYPE: {
-        playThemeSong();
-        break;
-      }
+        return window.setTimeout(() => playThemeSong(), 500);
+      case SettingsKey.THEME_TYPE:
+        return playThemeSong();
       case SettingsKey.REMOVE_EXCLUDED:
-        if (musicSettings.excludedRandomThemes.size === 27) {
-          musicSettings.randomizeCO();
-        }
-        playThemeSong();
-        break;
+        if (musicSettings.excludedRandomThemes.size === 27) musicSettings.randomizeCO();
+        return playThemeSong();
       case SettingsKey.EXCLUDED_RANDOM_THEMES:
       case SettingsKey.ADD_EXCLUDED:
-        if (musicSettings.excludedRandomThemes.has(musicSettings.currentRandomCO)) {
-          musicSettings.randomizeCO();
-        }
-        playThemeSong();
-        break;
+        if (musicSettings.excludedRandomThemes.has(musicSettings.currentRandomCO)) musicSettings.randomizeCO();
+        return playThemeSong();
       case SettingsKey.RANDOM_THEMES_TYPE: {
         const randomThemes = musicSettings.randomThemesType !== RandomThemeType.NONE;
-        if (!randomThemes) {
-          playThemeSong();
-          return;
-        }
+        if (!randomThemes) return playThemeSong();
         musicSettings.randomizeCO();
         playThemeSong();
-        break;
+        return;
       }
       case SettingsKey.VOLUME: {
-        const currentTheme = audioMap.get(currentThemeKey);
+        const currentTheme = audioMap.get(currentThemeURL);
         if (currentTheme) currentTheme.volume(musicSettings.volume);
         if (!currentTheme) {
           const intervalID = window.setInterval(() => {
-            const currentTheme2 = audioMap.get(currentThemeKey);
+            const currentTheme2 = audioMap.get(currentThemeURL);
             if (currentTheme2) {
               currentTheme2.volume(musicSettings.volume);
               clearInterval(intervalID);
@@ -2364,97 +2476,23 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
           const audio = audioMap.get(srcURL);
           if (audio) audio.volume(getVolumeForURL(srcURL));
         }
-        break;
+        return;
       }
     }
   }
 
-  function getQueryTurnFn() {
-    return typeof queryTurn !== "undefined" ? queryTurn : null;
-  }
-  function getShowEventScreenFn() {
-    return typeof showEventScreen !== "undefined" ? showEventScreen : null;
-  }
-  function getShowEndGameScreenFn() {
-    return typeof showEndGameScreen !== "undefined" ? showEndGameScreen : null;
-  }
-  function getOpenMenuFn() {
-    return typeof openMenu !== "undefined" ? openMenu : null;
-  }
-  function getCloseMenuFn() {
-    return typeof closeMenu !== "undefined" ? closeMenu : null;
-  }
-  function getCreateDamageSquaresFn() {
-    return typeof createDamageSquares !== "undefined" ? createDamageSquares : null;
-  }
-  function getUnitClickFn() {
-    return typeof unitClickHandler !== "undefined" ? unitClickHandler : null;
-  }
-  function getWaitFn() {
-    return typeof waitUnit !== "undefined" ? waitUnit : null;
-  }
-  function getAnimUnitFn() {
-    return typeof animUnit !== "undefined" ? animUnit : null;
-  }
-  function getAnimExplosionFn() {
-    return typeof animExplosion !== "undefined" ? animExplosion : null;
-  }
-  function getFogFn() {
-    return typeof updateAirUnitFogOnMove !== "undefined" ? updateAirUnitFogOnMove : null;
-  }
-  function getFireFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Fire : null;
-  }
-  function getAttackSeamFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.AttackSeam : null;
-  }
-  function getMoveFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Move : null;
-  }
-  function getCaptFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Capt : null;
-  }
-  function getBuildFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Build : null;
-  }
-  function getLoadFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Load : null;
-  }
-  function getUnloadFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Unload : null;
-  }
-  function getSupplyFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Supply : null;
-  }
-  function getRepairFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Repair : null;
-  }
-  function getHideFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Hide : null;
-  }
-  function getUnhideFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Unhide : null;
-  }
-  function getJoinFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Join : null;
-  }
-  function getLaunchFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Launch : null;
-  }
-  function getNextTurnFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.NextTurn : null;
-  }
-  function getEliminationFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Elimination : null;
-  }
-  function getPowerFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Power : null;
-  }
-  function getGameOverFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.GameOver : null;
-  }
-  function getResignFn() {
-    return typeof actionHandlers !== "undefined" ? actionHandlers.Resign : null;
+  async function playSFX(sfx) {
+    if (!musicSettings.isPlaying) return;
+    if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
+    if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
+    const sfxURL = getSoundEffectURL(sfx);
+    const audio = audioMap.get(sfxURL) ?? (await preloadURL(sfxURL));
+    audio.volume(getVolumeForURL(sfxURL));
+    audio.seek(0);
+    if (audio.playing()) return;
+    const newID = audio.play();
+    if (!newID) return;
+    audioIDMap.set(sfxURL, newID);
   }
 
   const CURSOR_THRESHOLD_MS = 25;
@@ -2969,7 +3007,6 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
     switch (musicSettings.gameType) {
       case GameType.AW1:
         playSFX(GameSFX.powerActivateAW1COP);
-        stopThemeSong(4500);
         return;
       case GameType.AW2:
       case GameType.DS:
@@ -3022,24 +3059,26 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       clearInterval(addPlayerIntervalID);
       window.setInterval(() => {
         if (checkStillActiveFn()) playThemeSong();
-        else stopThemeSong();
       }, 500);
     }, 500);
   }
+  let setHashesTimeoutID;
   function preloadThemes() {
     preloadAllCommonAudio(() => {
       log("All common audio has been pre-loaded!");
       musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
-      const checkHashesMS = 1e3 * 60 * 1;
-      const checkHashesFn = () => {
-        checkHashesInDB()
-          .then(() => log("All music files have been checked for updates."))
-          .catch((reason) => logError("Could not check for music file updates:", reason));
-        window.setTimeout(checkHashesFn, checkHashesMS);
-      };
-      checkHashesFn();
+      if (!setHashesTimeoutID) {
+        const checkHashesMS = 1e3 * 60 * 1;
+        const checkHashesFn = () => {
+          checkHashesInDB()
+            .then(() => log("All music files have been checked for updates."))
+            .catch((reason) => logError("Could not check for music file updates:", reason));
+          setHashesTimeoutID = window.setTimeout(checkHashesFn, checkHashesMS);
+        };
+        checkHashesFn();
+      }
       musicPlayerUI.checkIfNewVersionAvailable();
     });
   }
@@ -3109,52 +3148,8 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
       .then(() => log("Database opened successfully. Ready to cache music files."))
       .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
       .finally(() => {
-        if (getCurrentPageType() === PageType.ActiveGame) {
-          main();
-          return;
-        }
-        const hasFrame = document.querySelector("iframe");
-        if (hasFrame) return;
-        for (const child of Array.from(document.body.children)) {
-          if (child.id.startsWith("music")) continue;
-          if (child.tagName === "SCRIPT") continue;
-          child.remove();
-        }
-        const iframe = document.createElement("iframe");
-        iframe.src = window.location.href;
-        iframe.name = "main";
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        document.body.appendChild(iframe);
-        document.body.style.width = "100%";
-        document.body.style.height = "100%";
-        if (document.body.parentElement) {
-          document.body.parentElement.style.width = "100%";
-          document.body.parentElement.style.height = "100%";
-        }
-        iframe.addEventListener("load", (_e) => {
-          log("Iframe loaded, hijacking links.", getCurrentPageType());
-          const href = iframe.contentDocument?.location.href ?? iframe.src;
-          window.history.pushState({}, "", href);
-          iframe.contentWindow?.history.pushState({}, "", href);
-          hijackLinks();
-          main();
-        });
-        const hijackLinks = () => {
-          const doc = iframe.contentDocument;
-          const links = doc?.querySelectorAll("a");
-          if (!links) {
-            logError("Could not find any links to hijack.");
-            return;
-          }
-          for (const link of Array.from(links)) {
-            if (link.href.includes("game.php") || link.name.includes("game")) {
-              link.target = "_top";
-              continue;
-            }
-            link.target = "main";
-          }
-        };
+        initializeIFrame(main);
+        main();
       });
   }
 
@@ -3163,4 +3158,4 @@ var awbw_music_player = (function (exports, canAutoplay, Howl, SparkMD5) {
   exports.notifyCOSelectorListeners = notifyCOSelectorListeners;
 
   return exports;
-})({}, canAutoplay, Howl, SparkMD5);
+})({}, canAutoplay, SparkMD5);

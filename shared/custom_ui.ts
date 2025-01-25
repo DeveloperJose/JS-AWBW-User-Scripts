@@ -176,10 +176,15 @@ export class CustomMenuSettingsUI {
     contextMenuBoxesContainer.appendChild(rightBox);
     this.groups.set(MenuPosition.Right, rightBox);
 
+    this.addContextMenuHandlers();
+  }
+
+  addContextMenuHandlers() {
     // Enable right-click to open and close the context menu
     this.parent.addEventListener("contextmenu", (event) => {
+      event.stopImmediatePropagation();
       const element = event.target as HTMLElement;
-      if (element.id.startsWith(prefix)) {
+      if (element.id.startsWith(this.prefix)) {
         event.preventDefault();
         this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
         if (this.isSettingsMenuOpen) {
@@ -207,10 +212,10 @@ export class CustomMenuSettingsUI {
       if (!elmnt) return;
 
       // Check if we are in the music player or the overlib overDiv, so we don't close the menu
-      if (elmnt.id.startsWith(prefix) || elmnt.id === "overDiv") return;
+      if (elmnt.id.startsWith(this.prefix) || elmnt.id === "overDiv") return;
 
       // Close the menu if we clicked outside of it
-      // console.debug("[MP] Clicked on: ", elmnt.id);
+      // console.debug("[MP] Closing becase clicked on: ", elmnt.id);
       this.closeContextMenu();
     });
   }
@@ -223,7 +228,6 @@ export class CustomMenuSettingsUI {
       logError("Parent div is null, cannot add custom menu to the page.");
       return;
     }
-
     if (!prepend) {
       div.appendChild(this.parent);
       this.parent.style.borderLeft = "none";
@@ -231,6 +235,7 @@ export class CustomMenuSettingsUI {
     }
     div.prepend(this.parent);
     this.parent.style.borderRight = "none";
+    this.addContextMenuHandlers();
   }
 
   hasSettings() {

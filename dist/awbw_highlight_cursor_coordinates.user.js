@@ -1,85 +1,69 @@
 // ==UserScript==
-// @name        AWBW Highlight Cursor Coordinates
-// @description Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
-// @namespace   https://awbw.amarriner.com/
-// @author      DeveloperJose
-// @match       https://awbw.amarriner.com/game.php*
-// @match       https://awbw.amarriner.com/moveplanner.php*
-// @match       https://awbw.amarriner.com/*editmap*
-// @icon        https://awbw.amarriner.com/terrain/unit_select.gif
-// @version     2.3.0
-// @supportURL  https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
-// @license     MIT
+// @name            AWBW Highlight Cursor Coordinates
+// @description     Displays and better highlights the coordinates of your cursor by adding numbered rows and columns next to the map in Advance Wars by Web.
+// @namespace       https://awbw.amarriner.com/
+// @author          DeveloperJose
+// @match           https://awbw.amarriner.com/game.php*
+// @match           https://awbw.amarriner.com/moveplanner.php*
+// @match           https://awbw.amarriner.com/*editmap*
+// @icon            https://awbw.amarriner.com/terrain/unit_select.gif
+// @version         2.3.0
+// @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
+// @contributionURL https://ko-fi.com/developerjose
+// @license         MIT
 // @unwrap
-// @grant       none
+// @grant           none
 // ==/UserScript==
 
 (function () {
   "use strict";
 
-  /**
-   * @file Constants, variables, and functions that come from analyzing the web pages of AWBW.
-   *
-   * querySelector()
-   * . = class
-   * # = id
-   */
-  /**
-   * The type of page we are currently on.
-   */
-  var PageType;
-  (function (PageType) {
-    PageType[(PageType["Maintenance"] = 0)] = "Maintenance";
-    PageType[(PageType["ActiveGame"] = 1)] = "ActiveGame";
-    PageType[(PageType["MapEditor"] = 2)] = "MapEditor";
-    PageType[(PageType["MovePlanner"] = 3)] = "MovePlanner";
-    PageType[(PageType["LiveQueue"] = 4)] = "LiveQueue";
-    PageType[(PageType["MainPage"] = 5)] = "MainPage";
-    PageType[(PageType["Default"] = 6)] = "Default";
-  })(PageType || (PageType = {}));
-  /**
-   * Gets the current page type based on the URL.
-   * @returns - The current page type.
-   */
+  var PageType = /* @__PURE__ */ ((PageType2) => {
+    PageType2["Maintenance"] = "Maintenance";
+    PageType2["ActiveGame"] = "ActiveGame";
+    PageType2["MapEditor"] = "MapEditor";
+    PageType2["MovePlanner"] = "MovePlanner";
+    PageType2["LiveQueue"] = "LiveQueue";
+    PageType2["MainPage"] = "MainPage";
+    PageType2["Default"] = "Default";
+    return PageType2;
+  })(PageType || {});
   function getCurrentPageType() {
+    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
     const isMaintenance = document.querySelector("#server-maintenance-alert") !== null;
-    if (isMaintenance) return PageType.Maintenance;
-    if (window.location.href.indexOf("game.php") > -1) return PageType.ActiveGame;
-    if (window.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
-    if (window.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
-    if (window.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
-    if (window.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
-    return PageType.Default;
+    if (isMaintenance) return "Maintenance" /* Maintenance */;
+    if (document.location.href.indexOf("game.php") > -1) return "ActiveGame" /* ActiveGame */;
+    if (document.location.href.indexOf("editmap.php?") > -1) return "MapEditor" /* MapEditor */;
+    if (document.location.href.indexOf("moveplanner.php") > -1) return "MovePlanner" /* MovePlanner */;
+    if (document.location.href.indexOf("live_queue.php") > -1) return "LiveQueue" /* LiveQueue */;
+    if (document.location.href === "https://awbw.amarriner.com") return "MainPage" /* MainPage */;
+    return "Default" /* Default */;
   }
-  // ============================== AWBW Page Elements ==============================
   function getGamemap() {
+    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
     return document.querySelector("#gamemap");
   }
   function getGamemapContainer() {
+    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
     return document.querySelector("#gamemap-container");
   }
   function getZoomInBtn() {
+    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
     return document.querySelector("#zoom-in");
   }
   function getZoomOutBtn() {
+    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
     return document.querySelector("#zoom-out");
   }
-  // export function getZoomLevel() {
-  //   return document.querySelector(".zoom-level") as HTMLElement;
-  // }
   function getCurrentZoomLevel() {
     const storedScale = localStorage.getItem("scale") || "1";
     return parseFloat(storedScale);
   }
   function getCoordsDiv() {
+    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
     return document.querySelector("#coords");
   }
-  /**
-   * Adds an observer to the cursor coordinates so we can replicate the "updateCursor" function outside of game.php
-   * @param onCursorMove - The function to call when the cursor moves.
-   */
   function addUpdateCursorObserver(onCursorMove) {
-    // We want to catch when div textContent is changed
     const coordsDiv = getCoordsDiv();
     if (!coordsDiv) return;
     const observer = new MutationObserver((mutationsList) => {
@@ -87,9 +71,7 @@
         if (mutation.type !== "childList") return;
         if (!mutation.target) return;
         if (!mutation.target.textContent) return;
-        // (X, Y)
         let coordsText = mutation.target.textContent;
-        // Remove parentheses and split by comma
         coordsText = coordsText.substring(1, coordsText.length - 1);
         const splitCoords = coordsText.split(",");
         const cursorX = Number(splitCoords[0]);
@@ -100,34 +82,21 @@
     observer.observe(coordsDiv, { childList: true });
   }
 
-  /**
-   * @file Global variables exposed by Advance Wars By Web's JS code and other useful constants.
-   */
-  // ============================== Advance Wars Stuff ==============================
-  /**
-   * List of Orange Star COs, stored in a set for more efficient lookups.
-   */
-  const ORANGE_STAR_COs = new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
-  /**
-   * List of Blue Moon COs, stored in a set for more efficient lookups.
-   */
-  const BLUE_MOON_COs = new Set(["olaf", "grit", "colin", "sasha"]);
-  /**
-   * List of Green Earth COs, stored in a set for more efficient lookups.
-   */
-  const GREEN_EARTH_COs = new Set(["eagle", "drake", "jess", "javier"]);
-  /**
-   * List of Yellow Comet COs, stored in a set for more efficient lookups.
-   */
-  const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
-  /**
-   * List of Black Hole COs, stored in a set for more efficient lookups.
-   * @constant
-   */
-  const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
-  /**
-   * List of all COs in the game.
-   */
+  const ORANGE_STAR_COs = /* @__PURE__ */ new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
+  const BLUE_MOON_COs = /* @__PURE__ */ new Set(["olaf", "grit", "colin", "sasha"]);
+  const GREEN_EARTH_COs = /* @__PURE__ */ new Set(["eagle", "drake", "jess", "javier"]);
+  const YELLOW_COMET_COs = /* @__PURE__ */ new Set(["kanbei", "sonja", "sensei", "grimm"]);
+  const BLACK_HOLE_COs = /* @__PURE__ */ new Set([
+    "flak",
+    "lash",
+    "adder",
+    "hawke",
+    "sturm",
+    "jugger",
+    "koal",
+    "kindle",
+    "vonbolt",
+  ]);
   function getAllCONames(properCase = false) {
     if (!properCase)
       return [...ORANGE_STAR_COs, ...BLUE_MOON_COs, ...GREEN_EARTH_COs, ...YELLOW_COMET_COs, ...BLACK_HOLE_COs];
@@ -135,134 +104,74 @@
     allCOs[allCOs.indexOf("vonbolt")] = "Von Bolt";
     return allCOs.map((co) => co[0].toUpperCase() + co.slice(1));
   }
-  // ============================== AWBW Page Global Variables ==============================
-  /**
-   * The number of columns of this map.
-   */
   function getMapColumns() {
     if (getCurrentPageType() === PageType.MapEditor) return designMapEditor.map.maxX;
     return typeof maxX !== "undefined" ? maxX : typeof map_width !== "undefined" ? map_width : -1;
   }
-  /**
-   * The number of rows of this map.
-   */
   function getMapRows() {
     if (getCurrentPageType() === PageType.MapEditor) return designMapEditor.map.maxY;
     return typeof maxY !== "undefined" ? maxY : typeof map_height !== "undefined" ? map_height : -1;
   }
-  /**
-   * Whether game animations are enabled or not.
-   */
   function areAnimationsEnabled() {
     return typeof gameAnims !== "undefined" ? gameAnims : false;
   }
 
-  /**
-   * @file Functions used by Advance Wars By Web to handle game actions.
-   */
-  // export function getCursorMoveFn() {
-  //   if (getIsMapEditor()) {
-  //     return typeof designMapEditor !== "undefined" ? designMapEditor.updateCursor : null;
-  //   }
-  //   return typeof updateCursor !== "undefined" ? updateCursor : null;
-  // }
   function getResizeMapFn() {
     return typeof designMapEditor !== "undefined" ? designMapEditor.resizeMap : null;
   }
 
-  /**
-   * @file Utility functions for the music player that don't fit anywhere else specifically.
-   */
-  /**
-   * Logs a message to the console with the prefix "[AWBW Improved Music Player]"
-   * @param message - The message to log
-   * @param args - Additional arguments to log
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function log(message, ...args) {
     console.log("[AWBW Improved Music Player]", message, ...args);
   }
-  /**
-   * Logs a warning message to the console with the prefix "[AWBW Improved Music Player]"
-   * @param message - The message to log
-   * @param args - Additional arguments to log
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function logError(message, ...args) {
     console.error("[AWBW Improved Music Player]", message, ...args);
   }
-  /**
-   * Logs a debug message to the console with the prefix "[AWBW Improved Music Player]"
-   * @param message - The message to log
-   * @param args - Additional arguments to log
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function logDebug(message, ...args) {
     console.debug("[AWBW Improved Music Player]", message, ...args);
   }
 
-  /**
-   * @file Constants and other project configuration settings that could be used by any scripts.
-   */
-  /**
-   * The names of the userscripts.
-   */
-  var ScriptName;
-  (function (ScriptName) {
-    ScriptName["None"] = "none";
-    ScriptName["MusicPlayer"] = "music_player";
-    ScriptName["HighlightCursorCoordinates"] = "highlight_cursor_coordinates";
-  })(ScriptName || (ScriptName = {}));
-  /**
-   * The version numbers of the userscripts.
-   */
-  const versions = new Map([
-    [ScriptName.MusicPlayer, "4.8.0"],
-    [ScriptName.HighlightCursorCoordinates, "2.3.0"],
+  var ScriptName = /* @__PURE__ */ ((ScriptName2) => {
+    ScriptName2["None"] = "none";
+    ScriptName2["MusicPlayer"] = "music_player";
+    ScriptName2["HighlightCursorCoordinates"] = "highlight_cursor_coordinates";
+    return ScriptName2;
+  })(ScriptName || {});
+  const versions = /* @__PURE__ */ new Map([
+    ["music_player" /* MusicPlayer */, "4.8.0"],
+    ["highlight_cursor_coordinates" /* HighlightCursorCoordinates */, "2.3.0"],
   ]);
-  /**
-   * The URLs to check for updates for each userscript.
-   */
-  const updateURLs = new Map([
-    [ScriptName.MusicPlayer, "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js"],
+  const updateURLs = /* @__PURE__ */ new Map([
     [
-      ScriptName.HighlightCursorCoordinates,
+      "music_player" /* MusicPlayer */,
+      "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js",
+    ],
+    [
+      "highlight_cursor_coordinates" /* HighlightCursorCoordinates */,
       "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js",
     ],
   ]);
-  const homepageURLs = new Map([
-    [ScriptName.MusicPlayer, "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
+  const homepageURLs = /* @__PURE__ */ new Map([
+    ["music_player" /* MusicPlayer */, "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
     [
-      ScriptName.HighlightCursorCoordinates,
+      "highlight_cursor_coordinates" /* HighlightCursorCoordinates */,
       "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates",
     ],
   ]);
-  /**
-   * Checks for updates for the specified script.
-   * @param scriptName - The name of the script to check for updates
-   * @returns - A promise that resolves with the latest version of the script
-   */
   function checkIfUpdateIsAvailable(scriptName) {
-    // SemVer comparison function
-    // https://stackoverflow.com/questions/55466274/simplify-semver-version-compare-logic
     const isGreater = (a, b) => {
       return a.localeCompare(b, undefined, { numeric: true }) === 1;
     };
     return new Promise((resolve, reject) => {
-      // Get the update URL
       const updateURL = updateURLs.get(scriptName);
       if (!updateURL) return reject(`Failed to get the update URL for the script.`);
       return fetch(updateURL)
         .then((response) => response.text())
         .then((text) => {
           if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
-          // Get the latest version of the script from the userscript metadata
           const latestVersion = text.match(/@version\s+([0-9.]+)/)?.[1];
           if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
-          // Check if the latest version is newer than the current version
           const currentVersion = versions.get(scriptName);
           if (!currentVersion) return reject(`Failed to get the current version of the script.`);
-          // Check if the version numbers are in the correct format
           const currentVersionParts = currentVersion.split(".");
           const latestVersionParts = latestVersion.split(".");
           const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
@@ -275,106 +184,23 @@
     });
   }
 
-  /**
-   * @file Constants, functions, and variables related to the game state in Advance Wars By Web.
-   *  A lot of useful information came from game.js and the code at the bottom of each game page.
-   */
-  /**
-   * Enum for the different states a CO Power can be in.
-   * @enum {string}
-   */
-  var COPowerEnum;
-  (function (COPowerEnum) {
-    COPowerEnum["NoPower"] = "N";
-    COPowerEnum["COPower"] = "Y";
-    COPowerEnum["SuperCOPower"] = "S";
-  })(COPowerEnum || (COPowerEnum = {}));
-  /**
-   * The amount of time between the silo launch animation and the hit animation in milliseconds.
-   * Copied from game.js
-   */
-  areAnimationsEnabled() ? 3000 : 0;
-  /**
-   * The amount of time between an attack animation starting and the attack finishing in milliseconds.
-   * Copied from game.js
-   */
-  areAnimationsEnabled() ? 1000 : 0;
+  areAnimationsEnabled() ? 3e3 : 0;
+  areAnimationsEnabled() ? 1e3 : 0;
   function getCOImagePrefix() {
     if (typeof coTheme === "undefined") return "aw2";
     return coTheme;
   }
 
-  /**
-   * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
-   */
-  var CustomInputType;
-  (function (CustomInputType) {
-    CustomInputType["Radio"] = "radio";
-    CustomInputType["Checkbox"] = "checkbox";
-    CustomInputType["Button"] = "button";
-  })(CustomInputType || (CustomInputType = {}));
-  var GroupType;
-  (function (GroupType) {
-    GroupType["Vertical"] = "cls-vertical-box";
-    GroupType["Horizontal"] = "cls-horizontal-box";
-  })(GroupType || (GroupType = {}));
-  var MenuPosition;
-  (function (MenuPosition) {
-    MenuPosition["Left"] = "settings-left";
-    MenuPosition["Center"] = "settings-center";
-    MenuPosition["Right"] = "settings-right";
-  })(MenuPosition || (MenuPosition = {}));
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) =>
+    key in obj
+      ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value })
+      : (obj[key] = value);
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   function sanitize(str) {
     return str.toLowerCase().replaceAll(" ", "-");
   }
-  /**
-   * A class that represents a custom menu UI that can be added to the AWBW page.
-   */
   class CustomMenuSettingsUI {
-    /**
-     * The root element or parent of the custom menu.
-     */
-    parent;
-    /**
-     * A map that contains the important nodes of the menu.
-     * The keys are the names of the children, and the values are the elements themselves.
-     * Allows for easy access to any element in the menu.
-     */
-    groups = new Map();
-    /**
-     * A map that contains the group types for each group in the menu.
-     * The keys are the names of the groups, and the values are the types of the groups.
-     */
-    groupTypes = new Map();
-    /**
-     * An array of all the input elements in the menu.
-     */
-    inputElements = [];
-    /**
-     * An array of all the button elements in the menu.
-     */
-    buttonElements = [];
-    /**
-     * A boolean that represents whether the settings menu is open or not.
-     */
-    isSettingsMenuOpen = false;
-    /**
-     * A string used to prefix the IDs of the elements in the menu.
-     */
-    prefix;
-    /**
-     * A boolean that represents whether an update is available for the script.
-     */
-    isUpdateAvailable = false;
-    /**
-     * Text to be displayed when hovering over the main button.
-     */
-    parentHoverText = "";
-    /**
-     * A map that contains the tables in the menu.
-     * The keys are the names of the tables, and the values are the table elements.
-     */
-    tableMap = new Map();
     /**
      * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
      * @param prefix - A string used to prefix the IDs of the elements in the menu.
@@ -382,6 +208,50 @@
      * @param hoverText - The text to be displayed when hovering over the button.
      */
     constructor(prefix, buttonImageURL, hoverText = "") {
+      /**
+       * The root element or parent of the custom menu.
+       */
+      __publicField(this, "parent");
+      /**
+       * A map that contains the important nodes of the menu.
+       * The keys are the names of the children, and the values are the elements themselves.
+       * Allows for easy access to any element in the menu.
+       */
+      __publicField(this, "groups", /* @__PURE__ */ new Map());
+      /**
+       * A map that contains the group types for each group in the menu.
+       * The keys are the names of the groups, and the values are the types of the groups.
+       */
+      __publicField(this, "groupTypes", /* @__PURE__ */ new Map());
+      /**
+       * An array of all the input elements in the menu.
+       */
+      __publicField(this, "inputElements", []);
+      /**
+       * An array of all the button elements in the menu.
+       */
+      __publicField(this, "buttonElements", []);
+      /**
+       * A boolean that represents whether the settings menu is open or not.
+       */
+      __publicField(this, "isSettingsMenuOpen", false);
+      /**
+       * A string used to prefix the IDs of the elements in the menu.
+       */
+      __publicField(this, "prefix");
+      /**
+       * A boolean that represents whether an update is available for the script.
+       */
+      __publicField(this, "isUpdateAvailable", false);
+      /**
+       * Text to be displayed when hovering over the main button.
+       */
+      __publicField(this, "parentHoverText", "");
+      /**
+       * A map that contains the tables in the menu.
+       * The keys are the names of the tables, and the values are the table elements.
+       */
+      __publicField(this, "tableMap", /* @__PURE__ */ new Map());
       this.prefix = prefix;
       this.parentHoverText = hoverText;
       this.parent = document.createElement("div");
@@ -389,24 +259,20 @@
       this.parent.classList.add("game-tools-btn");
       this.parent.style.width = "34px";
       this.parent.style.height = "30px";
-      // Hover text
       const hoverSpan = document.createElement("span");
       hoverSpan.id = `${prefix}-hover-span`;
       hoverSpan.classList.add("game-tools-btn-text", "small_text");
       hoverSpan.innerText = hoverText;
       this.parent.appendChild(hoverSpan);
       this.groups.set("hover", hoverSpan);
-      // Button Background
       const bgDiv = document.createElement("div");
       bgDiv.id = `${prefix}-background`;
       bgDiv.classList.add("game-tools-bg");
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
       this.parent.appendChild(bgDiv);
       this.groups.set("bg", bgDiv);
-      // Reset hover text for parent button
       bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
       bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
-      // Button
       const btnLink = document.createElement("a");
       btnLink.id = `${prefix}-link`;
       btnLink.classList.add("norm2");
@@ -416,7 +282,6 @@
       btnImg.src = buttonImageURL;
       btnLink.appendChild(btnImg);
       this.groups.set("img", btnImg);
-      // Context Menu
       const contextMenu = document.createElement("div");
       contextMenu.id = `${prefix}-settings`;
       contextMenu.classList.add("cls-settings-menu");
@@ -428,29 +293,30 @@
       contextMenuBoxesContainer.classList.add("cls-horizontal-box");
       contextMenu.appendChild(contextMenuBoxesContainer);
       this.groups.set("settings", contextMenuBoxesContainer);
-      // Context Menu 3 Boxes
       const leftBox = document.createElement("div");
       leftBox.id = `${prefix}-settings-left`;
       leftBox.classList.add("cls-settings-menu-box");
       leftBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(leftBox);
-      this.groups.set(MenuPosition.Left, leftBox);
+      this.groups.set("settings-left" /* Left */, leftBox);
       const centerBox = document.createElement("div");
       centerBox.id = `${prefix}-settings-center`;
       centerBox.classList.add("cls-settings-menu-box");
       centerBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(centerBox);
-      this.groups.set(MenuPosition.Center, centerBox);
+      this.groups.set("settings-center" /* Center */, centerBox);
       const rightBox = document.createElement("div");
       rightBox.id = `${prefix}-settings-right`;
       rightBox.classList.add("cls-settings-menu-box");
       rightBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(rightBox);
-      this.groups.set(MenuPosition.Right, rightBox);
-      // Enable right-click to open and close the context menu
+      this.groups.set("settings-right" /* Right */, rightBox);
+      this.addContextMenuHandlers();
+    }
+    addContextMenuHandlers() {
       this.parent.addEventListener("contextmenu", (event) => {
         const element = event.target;
-        if (element.id.startsWith(prefix)) {
+        if (element.id.startsWith(this.prefix)) {
           event.preventDefault();
           this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
           if (this.isSettingsMenuOpen) {
@@ -460,23 +326,16 @@
           }
         }
       });
-      // Close settings menu whenever the user clicks anywhere outside the player
       document.addEventListener("click", (event) => {
         let elmnt = event.target;
-        // Find the first parent that has an ID if the element doesn't have one
         if (!elmnt.id) {
           while (!elmnt.id) {
             elmnt = elmnt.parentNode;
-            // Break if we reach the top of the document or this element isn't properly connected
             if (!elmnt) break;
           }
         }
-        // Most likely this element is part of our UI and was created with JS and not properly connected so don't close
         if (!elmnt) return;
-        // Check if we are in the music player or the overlib overDiv, so we don't close the menu
-        if (elmnt.id.startsWith(prefix) || elmnt.id === "overDiv") return;
-        // Close the menu if we clicked outside of it
-        // console.debug("[MP] Clicked on: ", elmnt.id);
+        if (elmnt.id.startsWith(this.prefix) || elmnt.id === "overDiv") return;
         this.closeContextMenu();
       });
     }
@@ -484,6 +343,10 @@
      * Adds the custom menu to the AWBW page.
      */
     addToAWBWPage(div, prepend = false) {
+      if (!div) {
+        logError("Parent div is null, cannot add custom menu to the page.");
+        return;
+      }
       if (!prepend) {
         div.appendChild(this.parent);
         this.parent.style.borderLeft = "none";
@@ -491,16 +354,16 @@
       }
       div.prepend(this.parent);
       this.parent.style.borderRight = "none";
+      this.addContextMenuHandlers();
     }
     hasSettings() {
-      const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
-      const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
-      const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+      const hasLeftMenu = this.groups.get("settings-left" /* Left */)?.style.display !== "none";
+      const hasCenterMenu = this.groups.get("settings-center" /* Center */)?.style.display !== "none";
+      const hasRightMenu = this.groups.get("settings-right" /* Right */)?.style.display !== "none";
       return hasLeftMenu || hasCenterMenu || hasRightMenu;
     }
     getGroup(groupName) {
       const container = this.groups.get(groupName);
-      // Unhide group
       if (!container) return;
       if (container.style.display === "none") container.style.display = "flex";
       return container;
@@ -554,7 +417,6 @@
     openContextMenu() {
       const contextMenu = this.groups.get("settings-parent");
       if (!contextMenu) return;
-      // No settings so don't open the menu
       const hasVersion = this.groups.get("version")?.style.display !== "none";
       if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
@@ -568,7 +430,6 @@
       if (!contextMenu) return;
       contextMenu.style.display = "none";
       this.isSettingsMenuOpen = false;
-      // Check if we have a CO selector and need to hide it
       const overDiv = document.querySelector("#overDiv");
       const hasCOSelector = this.groups.has("co-selector");
       const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
@@ -586,18 +447,15 @@
      * @param position - The position of the slider in the context menu.
      * @returns - The slider element.
      */
-    addSlider(name, min, max, step, hoverText = "", position = MenuPosition.Center) {
+    addSlider(name, min, max, step, hoverText = "", position = "settings-center" /* Center */) {
       const contextMenu = this.getGroup(position);
       if (!contextMenu) return;
-      // Container for the slider and label
       const sliderBox = document.createElement("div");
       sliderBox.classList.add("cls-vertical-box");
       sliderBox.classList.add("cls-group-box");
       contextMenu?.appendChild(sliderBox);
-      // Slider label
       const label = document.createElement("label");
       sliderBox?.appendChild(label);
-      // Slider
       const slider = document.createElement("input");
       slider.id = `${this.prefix}-${sanitize(name)}`;
       slider.type = "range";
@@ -605,32 +463,27 @@
       slider.max = String(max);
       slider.step = String(step);
       this.inputElements.push(slider);
-      // Set the label to the current value of the slider
       slider.addEventListener("input", (_e) => {
         let displayValue = slider.value;
         if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
         label.innerText = `${name}: ${displayValue}`;
       });
       sliderBox?.appendChild(slider);
-      // Hover text
       slider.title = hoverText;
       slider.addEventListener("mouseover", () => this.setHoverText(hoverText));
       slider.addEventListener("mouseout", () => this.setHoverText(""));
       return slider;
     }
-    addGroup(groupName, type = GroupType.Horizontal, position = MenuPosition.Center) {
+    addGroup(groupName, type = "cls-horizontal-box" /* Horizontal */, position = "settings-center" /* Center */) {
       const contextMenu = this.getGroup(position);
       if (!contextMenu) return;
-      // Container for the label and group inner container
       const groupBox = document.createElement("div");
       groupBox.classList.add("cls-vertical-box");
       groupBox.classList.add("cls-group-box");
       contextMenu?.appendChild(groupBox);
-      // Label for the group
       const groupLabel = document.createElement("label");
       groupLabel.innerText = groupName;
       groupBox?.appendChild(groupLabel);
-      // Group container
       const group = document.createElement("div");
       group.id = `${this.prefix}-${sanitize(groupName)}`;
       group.classList.add(type);
@@ -640,13 +493,13 @@
       return group;
     }
     addRadioButton(name, groupName, hoverText = "") {
-      return this.addInput(name, groupName, hoverText, CustomInputType.Radio);
+      return this.addInput(name, groupName, hoverText, "radio" /* Radio */);
     }
     addCheckbox(name, groupName, hoverText = "") {
-      return this.addInput(name, groupName, hoverText, CustomInputType.Checkbox);
+      return this.addInput(name, groupName, hoverText, "checkbox" /* Checkbox */);
     }
     addButton(name, groupName, hoverText = "") {
-      return this.addInput(name, groupName, hoverText, CustomInputType.Button);
+      return this.addInput(name, groupName, hoverText, "button" /* Button */);
     }
     /**
      * Adds an input to the context menu in a specific group.
@@ -657,33 +510,30 @@
      * @returns - The input element.
      */
     addInput(name, groupName, hoverText = "", type) {
-      // Check if the group already exists
       const groupDiv = this.getGroup(groupName);
       const groupType = this.groupTypes.get(groupName);
       if (!groupDiv || !groupType) return;
-      // Container for input and label
       const inputBox = document.createElement("div");
-      const otherType = groupType === GroupType.Horizontal ? GroupType.Vertical : GroupType.Horizontal;
+      const otherType =
+        groupType === "cls-horizontal-box" /* Horizontal */
+          ? "cls-vertical-box" /* Vertical */
+          : "cls-horizontal-box"; /* Horizontal */
       inputBox.classList.add(otherType);
       groupDiv.appendChild(inputBox);
-      // Hover text
       inputBox.title = hoverText;
       inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
       inputBox.addEventListener("mouseout", () => this.setHoverText(""));
-      // Create button or a different type of input
       let input;
-      if (type === CustomInputType.Button) {
+      if (type === "button" /* Button */) {
         input = this.createButton(name, inputBox);
       } else {
         input = this.createInput(name, inputBox);
       }
-      // Set the rest of the shared input properties
       input.type = type;
       input.name = groupName;
       return input;
     }
     createButton(name, inputBox) {
-      // Buttons don't need a separate label
       const input = document.createElement("button");
       input.innerText = name;
       inputBox.appendChild(input);
@@ -691,14 +541,11 @@
       return input;
     }
     createInput(name, inputBox) {
-      // Create the input and a label for it
       const input = document.createElement("input");
       const label = document.createElement("label");
       label.innerText = name;
-      // Input first, then label
       inputBox.appendChild(input);
       inputBox.appendChild(label);
-      // Propagate label clicks to the input
       label.addEventListener("click", () => input.click());
       this.inputElements.push(input);
       return input;
@@ -744,7 +591,6 @@
       const table = document.createElement("table");
       table.classList.add("cls-settings-table");
       groupDiv.appendChild(table);
-      // Hover text
       table.title = hoverText;
       table.addEventListener("mouseover", () => this.setHoverText(hoverText));
       table.addEventListener("mouseout", () => this.setHoverText(""));
@@ -760,13 +606,10 @@
       const tableData = this.tableMap.get(name);
       if (!tableData) return;
       const table = tableData.table;
-      // Check if we need to create the first row
       if (table.rows.length === 0) table.insertRow();
-      // Check if the row is full
       const maxItemsPerRow = tableData.columns;
       const currentItemsInRow = table.rows[table.rows.length - 1].cells.length;
       if (currentItemsInRow >= maxItemsPerRow) table.insertRow();
-      // Add the item to the last row
       const currentRow = table.rows[table.rows.length - 1];
       const cell = currentRow.insertCell();
       cell.appendChild(item);
@@ -804,17 +647,13 @@
       const imgCO = this.createCOPortraitImage("andy");
       coSelector.appendChild(imgCaret);
       coSelector.appendChild(imgCO);
-      // Hover text
       coSelector.title = hoverText;
       coSelector.addEventListener("mouseover", () => this.setHoverText(hoverText));
       coSelector.addEventListener("mouseout", () => this.setHoverText(""));
-      // Update UI
       this.groups.set("co-selector", coSelector);
       this.groups.set("co-portrait", imgCO);
       groupDiv?.appendChild(coSelector);
-      // Sort all the COs alphabetically, get their proper names
       const allCOs = getAllCONames(true).sort();
-      // Prepare the CO selector HTML with overlib (style taken from AWBW)
       let allColumnsHTML = "";
       for (let i = 0; i < 7; i++) {
         const startIDX = i * 4;
@@ -825,7 +664,6 @@
       }
       const selectorInnerHTML = `<table><tr>${allColumnsHTML}</tr></table>`;
       const selectorTitle = `<img src=terrain/ani/blankred.gif height=16 width=1 align=absmiddle>Select CO`;
-      // Make the CO selector that will appear when the user clicks on the CO portrait
       coSelector.onclick = () => {
         return overlib(selectorInnerHTML, STICKY, CAPTION, selectorTitle, OFFSETY, 25, OFFSETX, -322, CLOSECLICK);
       };
@@ -837,16 +675,7 @@
       const coPrefix = getCOImagePrefix();
       const imgSrc = `terrain/ani/${coPrefix}${internalName}.png?v=1`;
       const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
-      return (
-        `<tr>` +
-        `<td class=borderwhite><img class=co_portrait src=${imgSrc}></td>` +
-        `<td class=borderwhite align=center valign=center>` +
-        `<span class=small_text>` +
-        `<a onclick="${onClickFn}" href=${location}>${coName}</a></b>` +
-        `</span>` +
-        `</td>` +
-        `</tr>`
-      );
+      return `<tr><td class=borderwhite><img class=co_portrait src=${imgSrc}></td><td class=borderwhite align=center valign=center><span class=small_text><a onclick="${onClickFn}" href=${location}>${coName}</a></b></span></td></tr>`;
     }
     createCOSelectorCaret() {
       const imgCaret = document.createElement("img");
@@ -859,7 +688,6 @@
       imgCO.classList.add("co_portrait");
       const coPrefix = getCOImagePrefix();
       imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
-      // Allows other icons to be used
       if (!getAllCONames().includes(coName)) {
         imgCO.src = `terrain/${coName}`;
       }
@@ -868,39 +696,28 @@
     createCOPortraitImageWithText(coName, text) {
       const div = document.createElement("div");
       div.classList.add("cls-vertical-box");
-      // CO picture
       const coImg = this.createCOPortraitImage(coName);
       div.appendChild(coImg);
-      // Text
       const coLabel = document.createElement("label");
       coLabel.textContent = text;
       div.appendChild(coLabel);
       return div;
     }
     onCOSelectorClick(coName) {
-      // Hide the CO selector
       const overDiv = document.querySelector("#overDiv");
       overDiv.style.visibility = "hidden";
-      // Change the CO portrait
       const imgCO = this.groups.get("co-portrait");
       const coPrefix = getCOImagePrefix();
       imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
     }
   }
 
-  /**
-   * @file Constants, functions, and computed variables that come from other userscripts.
-   *  These are useful when we want to have better synergy with other userscripts.
-   */
-  /**
-   * The button that is used to enter maximization mode or exit it for the AWBW Maximize Extension
-   */
   function getMaximizeBtn() {
     return document.getElementsByClassName("AWBWMaxmiseButton")[0];
   }
 
   function styleInject(css, ref) {
-    if (ref === void 0) ref = {};
+    if (ref === undefined) ref = {};
     var insertAt = ref.insertAt;
 
     if (!css || typeof document === "undefined") {
@@ -936,16 +753,11 @@
     '/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n';
   styleInject(css_248z);
 
-  /**
-   * @file Main script that loads everything for the AWBW Highlight Cursor Coordinates userscript.
-   */
-  /********************** AWBW Stuff ***********************/
   const gamemap = getGamemap();
   const gamemapContainer = getGamemapContainer();
   const zoomInBtn = getZoomInBtn();
   const zoomOutBtn = getZoomOutBtn();
   let ahResizeMap = getResizeMapFn();
-  /********************** Script Variables & Functions ***********************/
   const FONT_SIZE = 9;
   const PREFIX = ScriptName.HighlightCursorCoordinates;
   const BUTTON_IMG_URL = "https://awbw.amarriner.com/terrain/unit_select.gif";
@@ -953,9 +765,6 @@
   let previousHighlight = [];
   let isMaximizeToggled = false;
   const currentSquares = new Array();
-  /**
-   * Where should we place the highlight cursor coordinates UI?
-   */
   function getMenu() {
     switch (getCurrentPageType()) {
       case PageType.MapEditor:
@@ -997,19 +806,16 @@
   }
   function onCursorMove(cursorX, cursorY) {
     if (!isEnabled) return;
-    // Get cursor row and column indices then the span
     const highlightRow = document.getElementById("grid-spot-row-" + cursorY);
     const highlightCol = document.getElementById("grid-spot-col-" + cursorX);
     if (!highlightRow || !highlightCol) {
       console.error("[AWBW Highlight Cursor Coordinates] Highlight row or column is null, something isn't right.");
       return;
     }
-    // Remove highlight for previous
     if (previousHighlight.length > 0) {
       setHighlight(previousHighlight[0], false);
       setHighlight(previousHighlight[1], false);
     }
-    // Highlight current
     setHighlight(highlightRow, true);
     setHighlight(highlightCol, true);
     previousHighlight = [highlightRow, highlightCol];
@@ -1040,11 +846,7 @@
     spotSpanTemplate.style.fontSize = FONT_SIZE + "px";
     spotSpanTemplate.style.zIndex = "100";
     spotSpanTemplate.style.alignContent = "center";
-    // spotSpanTemplate.style.backgroundImage = "url(https://awbw.amarriner.com/terrain/ani/plain.gif)";
-    // spotSpanTemplate.style.visibility = "hidden";
-    // Clear previous squares
     clearHighlightBoxes();
-    // Create squares
     for (let row = 0; row < mapRows; row++) {
       const spotSpan = spotSpanTemplate.cloneNode(true);
       spotSpan.id = "grid-spot-row-" + row;
@@ -1063,19 +865,14 @@
     }
     onZoomChangeEvent();
   }
-  /******************************************************************
-   * SCRIPT ENTRY (MAIN FUNCTION)
-   ******************************************************************/
   function main() {
     if (getCurrentPageType() === PageType.Maintenance) {
       console.log("[AWBW Highlight Cursor Coordinates] Maintenance mode is active, not loading script...");
       return;
     }
-    // Hide by default on map editor and move planner
     if (getCurrentPageType() === PageType.MapEditor || getCurrentPageType() === PageType.MovePlanner) {
       isEnabled = false;
     }
-    // designmap.php, wait until designerMapEditor is loaded to run script
     const isMapEditorAndNotLoaded = getCurrentPageType() === PageType.MapEditor && !designMapEditor?.loaded;
     if (isMapEditorAndNotLoaded) {
       const interval = window.setInterval(() => {
@@ -1084,31 +881,25 @@
           main();
           clearInterval(interval);
         }
-      }, 1000);
+      }, 1e3);
       return;
     }
-    // Intercept AWBW functions (global)
     addUpdateCursorObserver(onCursorMove);
-    // Intercept designmap functions
     if (getCurrentPageType() === PageType.MapEditor) {
       designMapEditor.resizeMap = onResizeMap;
     }
     if (zoomInBtn != null) zoomInBtn.addEventListener("click", onZoomChangeEvent);
     if (zoomOutBtn != null) zoomOutBtn.addEventListener("click", onZoomChangeEvent);
-    // Synergize with AWBW Maximize if that script is running as well
     const maximizeBtn = getMaximizeBtn();
     if (maximizeBtn != null) {
       console.log("[AWBW Highlight Cursor Coordinates] Found AWBW Maximize script and connected to it.");
       maximizeBtn.addEventListener("click", (event) => {
         isMaximizeToggled = !isMaximizeToggled;
-        onZoomChangeEvent(event, isMaximizeToggled ? 3.0 : -1);
+        onZoomChangeEvent(event, isMaximizeToggled ? 3 : -1);
       });
     }
-    // Scale to current zoom level
     onZoomChangeEvent();
-    // Add highlight boxes around map edges
     if (isEnabled) addHighlightBoxesAroundMapEdges();
-    // Create UI button to toggle highlight boxes
     const customUI = new CustomMenuSettingsUI(PREFIX, BUTTON_IMG_URL, "Disable Highlight Cursor Coordinates");
     customUI.addEventListener("click", () => {
       isEnabled = !isEnabled;

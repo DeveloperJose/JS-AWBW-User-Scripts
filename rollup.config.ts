@@ -1,6 +1,5 @@
 import postcss from "rollup-plugin-postcss";
 import metablock from "rollup-plugin-userscript-metablock";
-// import typescript from "@rollup/plugin-typescript";
 import esbuild from "rollup-plugin-esbuild";
 import { defineConfig } from "rollup";
 
@@ -9,11 +8,6 @@ import { versions } from "./shared/config.js";
 
 // Until https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock gets updated
 import { MetaValues } from "updated-rollup-plugin-userscript-metablock";
-
-// Until howler gets modernized (https://github.com/goldfire/howler.js/pull/1518)
-// We'll need to do this
-import { fileURLToPath, URL } from "node:url";
-const externalId = fileURLToPath(new URL("./howler/howl", import.meta.url));
 
 /**
  * Creates the rollup configuration for a given userscript.
@@ -29,20 +23,19 @@ function createUserscriptRollUpConfig(inputDir: string, outputDir = "./dist") {
       format: "iife",
       name: "awbw_" + inputDir,
       globals: {
-        [externalId]: "Howl",
+        howler: "Howl",
         "spark-md5": "SparkMD5",
         "can-autoplay": "canAutoplay",
       },
     },
-    external: ["../howler/howl", "spark-md5", "can-autoplay"],
+    external: ["howler", "spark-md5", "can-autoplay"],
     plugins: [
-      // typescript(),
       esbuild(),
       postcss(),
       metablock({
         file: path.join(inputDir, "metadata.json"),
-        // manager: "tampermonkey",
-        // validator: "error",
+        manager: "tampermonkey",
+        validator: "error",
         override: {
           version: versions.get(inputDir),
           supportURL: "https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues",

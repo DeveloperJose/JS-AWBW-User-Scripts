@@ -13,12 +13,13 @@ import { MenuPosition, CustomMenuSettingsUI, GroupType } from "../shared/custom_
 import { ScriptName } from "../shared/config";
 import { getCurrentPageType, PageType } from "../shared/awbw_page";
 import { log } from "./utils";
+import { getCurrentDocument } from "./iframe";
 
 /**
  * Where should we place the music player UI?
  */
 function getMenu() {
-  const doc = window.document.querySelector("iframe")?.contentDocument ?? window.document;
+  const doc = getCurrentDocument();
 
   switch (getCurrentPageType()) {
     case PageType.Maintenance:
@@ -176,10 +177,10 @@ export function initializeMusicPlayerUI() {
     if (alternateThemesBox?.parentElement) alternateThemesBox.parentElement.style.display = "none";
     if (daySlider?.parentElement) daySlider.parentElement.style.display = "none";
 
-    if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
-      if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
-      if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
-    }
+    // if (getCurrentPageType() !== PageType.MapEditor && getCurrentPageType() !== PageType.Maintenance) {
+    //   if (soundtrackGroupDiv?.parentElement) soundtrackGroupDiv.parentElement.style.display = "none";
+    //   if (randomGroupDiv?.parentElement) randomGroupDiv.parentElement.style.display = "none";
+    // }
   }
 }
 

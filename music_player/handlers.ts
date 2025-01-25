@@ -36,14 +36,7 @@ import {
 import { getBuildingDiv } from "../shared/awbw_page";
 
 import { areAnimationsEnabled } from "../shared/awbw_globals";
-import {
-  playThemeSong,
-  playSFX,
-  stopMovementSound,
-  playMovementSound,
-  stopThemeSong,
-  stopAllMovementSounds,
-} from "./music";
+
 import { getCurrentThemeType, musicSettings, GameType, ThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
@@ -78,7 +71,9 @@ import {
   getUnloadFn,
   getWaitFn,
 } from "../shared/awbw_handlers";
-import { log } from "./utils";
+import { playThemeSong, stopThemeSong } from "./music/co_themes";
+import { playSFX } from "./music/sound_effects";
+import { stopAllMovementSounds, stopMovementSound, playMovementSound } from "./music/unit_movement";
 
 /**
  * How long to wait in milliseconds before we register a cursor movement.
@@ -925,7 +920,7 @@ function onPower(data: PowerData) {
     case GameType.AW1:
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);
-      stopThemeSong(4500);
+      // stopThemeSong(4500);
       return;
     case GameType.AW2:
     case GameType.DS:

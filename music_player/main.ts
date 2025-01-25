@@ -12,13 +12,6 @@ import "../shared/style_sliders.css";
 
 import { initializeMusicPlayerUI, musicPlayerUI } from "./music_ui";
 import {
-  playMusicURL,
-  playOrPauseWhenWindowFocusChanges,
-  playThemeSong,
-  preloadAllCommonAudio,
-  stopThemeSong,
-} from "./music";
-import {
   allowSettingsToBeSaved,
   getCurrentThemeType,
   loadSettingsFromLocalStorage,
@@ -31,6 +24,9 @@ import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 import { logDebug, log, logError } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
+import { playMusicURL, playOrPauseWhenWindowFocusChanges, playThemeSong } from "./music/co_themes";
+import { preloadAllCommonAudio } from "./music/preloading";
+import { initializeIFrame } from "./iframe";
 
 /******************************************************************
  * MODULE EXPORTS
@@ -86,11 +82,12 @@ function onLiveQueue() {
       // We are still in the CO select, play the music
       if (checkStillActiveFn()) playThemeSong();
       // We are not in the CO select, stop the music
-      else stopThemeSong();
+      // else stopThemeSong();
     }, 500);
   }, 500);
 }
 
+let setHashesTimeoutID: number | undefined;
 function preloadThemes() {
   preloadAllCommonAudio(() => {
     log("All common audio has been pre-loaded!");
@@ -102,15 +99,17 @@ function preloadThemes() {
     playThemeSong();
 
     // Check for new music files every minute
-    const checkHashesMS = 1000 * 60 * 1;
-    const checkHashesFn = () => {
-      checkHashesInDB()
-        .then(() => log("All music files have been checked for updates."))
-        .catch((reason) => logError("Could not check for music file updates:", reason));
+    if (!setHashesTimeoutID) {
+      const checkHashesMS = 1000 * 60 * 1;
+      const checkHashesFn = () => {
+        checkHashesInDB()
+          .then(() => log("All music files have been checked for updates."))
+          .catch((reason) => logError("Could not check for music file updates:", reason));
 
-      window.setTimeout(checkHashesFn, checkHashesMS);
-    };
-    checkHashesFn();
+        setHashesTimeoutID = window.setTimeout(checkHashesFn, checkHashesMS);
+      };
+      checkHashesFn();
+    }
     musicPlayerUI.checkIfNewVersionAvailable();
 
     // preloadAllAudio(() => {
@@ -220,64 +219,12 @@ if (self === top) {
     .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
     .finally(() => {
       // Always run game pages without iframes
-      if (getCurrentPageType() === PageType.ActiveGame) {
-        main();
-        return;
-      }
+      // if (getCurrentPageType() === PageType.ActiveGame) {
+      //   main();
+      //   return;
+      // }
 
-      const hasFrame = document.querySelector("iframe");
-      if (hasFrame) return;
-
-      for (const child of Array.from(document.body.children)) {
-        if (child.id.startsWith("music")) continue;
-        if (child.tagName === "SCRIPT") continue;
-        child.remove();
-      }
-
-      const iframe = document.createElement("iframe");
-      iframe.src = window.location.href;
-      iframe.name = "main";
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      document.body.appendChild(iframe);
-      document.body.style.width = "100%";
-      document.body.style.height = "100%";
-      if (document.body.parentElement) {
-        document.body.parentElement.style.width = "100%";
-        document.body.parentElement.style.height = "100%";
-      }
-
-      // When the page changes, hijack the links so they change the iframe
-      // instead of opening a new page and also re-add the music player UI
-      iframe.addEventListener("load", (_e) => {
-        log("Iframe loaded, hijacking links.", getCurrentPageType());
-        const href = iframe.contentDocument?.location.href ?? iframe.src;
-        window.history.pushState({}, "", href);
-        iframe.contentWindow?.history.pushState({}, "", href);
-
-        hijackLinks();
-        main();
-      });
-
-      const hijackLinks = () => {
-        const doc = iframe.contentDocument;
-        const links = doc?.querySelectorAll("a");
-        if (!links) {
-          logError("Could not find any links to hijack.");
-          return;
-        }
-
-        for (const link of Array.from(links)) {
-          if (link.href.includes("game.php") || link.name.includes("game")) {
-            link.target = "_top";
-            continue;
-          }
-          link.target = "main";
-
-          // for (const child of Array.from(link.querySelectorAll("a"))) {
-          //   if (child.href.includes("game.php") || link.name.includes("game") ) continue;
-          // }
-        }
-      };
+      initializeIFrame(main);
+      main();
     });
 }
