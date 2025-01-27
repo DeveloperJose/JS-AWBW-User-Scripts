@@ -35,7 +35,7 @@ export function getCurrentPageType(): PageType {
   if (doc.location.href.indexOf("editmap.php?") > -1) return PageType.MapEditor;
   if (doc.location.href.indexOf("moveplanner.php") > -1) return PageType.MovePlanner;
   if (doc.location.href.indexOf("live_queue.php") > -1) return PageType.LiveQueue;
-  if (doc.location.href === "https://awbw.amarriner.com") return PageType.MainPage;
+  if (doc.location.href === "https://awbw.amarriner.com/") return PageType.MainPage;
   return PageType.Default;
 }
 

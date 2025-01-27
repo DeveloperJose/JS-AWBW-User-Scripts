@@ -8,6 +8,9 @@
   width: 850px;
   border: black 1px solid;
   z-index: 200;
+  text-align: center;
+  align-items: center;
+  font-family: "Nova Square", cursive !important;
 }
 
 .cls-settings-menu label {

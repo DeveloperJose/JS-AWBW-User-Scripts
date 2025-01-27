@@ -260,7 +260,9 @@ function main() {
   // Only run the script if we are the top window and not inside the iframe
   // Also only run the script if we are on a .php page
   if (self !== top) return;
-  if (!window.location.href.includes(".php")) return;
+
+  const isMainPage = getCurrentPageType() === PageType.MainPage;
+  if (!isMainPage && !window.location.href.includes(".php")) return;
 
   // Load settings from local storage but don't allow saving yet
   loadSettingsFromLocalStorage();
