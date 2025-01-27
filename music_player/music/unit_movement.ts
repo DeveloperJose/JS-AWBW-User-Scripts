@@ -1,3 +1,6 @@
+/**
+ * @file Functions for playing and stopping the movement sounds of units.
+ */
 import { getUnitName } from "../../shared/awbw_game";
 import { musicSettings } from "../music_settings";
 import { getMovementSoundURL, hasMovementRollOff, getMovementRollOffURL } from "../resources";

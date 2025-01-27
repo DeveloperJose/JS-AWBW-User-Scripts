@@ -1,7 +1,7 @@
 /**
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
-import { getAllPlayingCONames, getCurrentGameDay } from "../shared/awbw_game";
+import { getAllPlayingCONames, getCurrentGameDay, SpecialCOs } from "../shared/awbw_game";
 import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO, AW2_ONLY_COs } from "../shared/awbw_globals";
 import { GameType, ThemeType, musicSettings } from "./music_settings";
 
@@ -232,7 +232,7 @@ function getAlternateMusicFilename(coName: string, gameType: GameType, themeType
  */
 function getMusicFilename(coName: string, gameType: GameType, themeType: ThemeType, useAlternateTheme: boolean) {
   // Check if we want to play the map editor theme
-  if (coName === "map-editor") return "t-map-editor";
+  if (coName === SpecialCOs.MapEditor) return "t-map-editor";
 
   // Check if we need to play an alternate theme
   if (useAlternateTheme) {
@@ -279,11 +279,12 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   coName = coName.toLowerCase().replaceAll(" ", "");
 
   // Check if we want to play a special theme;
-  if (coName === "victory") return SpecialTheme.Victory;
-  if (coName === "defeat") return SpecialTheme.Defeat;
-  if (coName === "co-select") return SpecialTheme.COSelect;
-  if (coName === "mode-select") return SpecialTheme.ModeSelect;
-  if (coName === "maintenance") return SpecialTheme.Maintenance;
+  if (coName === SpecialCOs.Victory) return SpecialTheme.Victory;
+  if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
+  if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
+  if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
+  if (coName === SpecialCOs.ModeSelect || coName === SpecialCOs.MainPage || coName === SpecialCOs.Default)
+    return SpecialTheme.ModeSelect;
 
   // First apply player overrides, that way we can override their overrides later...
   const overrideType = musicSettings.getOverride(coName);

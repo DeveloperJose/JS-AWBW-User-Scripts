@@ -1,7 +1,7 @@
 /**
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
-import { log, logError } from "../music_player/utils";
+import { getCurrentDocument } from "../music_player/iframe";
 import { getCOImagePrefix } from "./awbw_game";
 import { getAllCONames } from "./awbw_globals";
 import { getCurrentPageType, PageType } from "./awbw_page";
@@ -18,12 +18,6 @@ export enum GroupType {
   Horizontal = "cls-horizontal-box",
 }
 
-export enum MenuPosition {
-  Left = "settings-left",
-  Center = "settings-center",
-  Right = "settings-right",
-}
-
 function sanitize(str: string) {
   return str.toLowerCase().replaceAll(" ", "-");
 }
@@ -32,6 +26,22 @@ interface TableData {
   table: HTMLTableElement;
   rows: number;
   columns: number;
+}
+
+export enum NodeID {
+  Parent = "parent",
+  Hover = "hover",
+  Background = "background",
+  Button_Image = "button-image",
+
+  Settings = "settings",
+  Settings_Left = "settings-left",
+  Settings_Center = "settings-center",
+  Settings_Right = "settings-right",
+
+  Version = "version",
+  CO_Selector = "co-selector",
+  CO_Portrait = "co-portrait",
 }
 
 /**
@@ -103,26 +113,24 @@ export class CustomMenuSettingsUI {
     this.parentHoverText = hoverText;
 
     this.parent = document.createElement("div");
-    this.parent.id = `${prefix}-parent`;
     this.parent.classList.add("game-tools-btn");
     this.parent.style.width = "34px";
     this.parent.style.height = "30px";
+    this.setNodeID(this.parent, NodeID.Parent);
 
     // Hover text
     const hoverSpan = document.createElement("span");
-    hoverSpan.id = `${prefix}-hover-span`;
     hoverSpan.classList.add("game-tools-btn-text", "small_text");
     hoverSpan.innerText = hoverText;
     this.parent.appendChild(hoverSpan);
-    this.groups.set("hover", hoverSpan);
+    this.setNodeID(hoverSpan, NodeID.Hover);
 
     // Button Background
     const bgDiv = document.createElement("div");
-    bgDiv.id = `${prefix}-background`;
     bgDiv.classList.add("game-tools-bg");
     bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
     this.parent.appendChild(bgDiv);
-    this.groups.set("bg", bgDiv);
+    this.setNodeID(bgDiv, NodeID.Background);
 
     // Reset hover text for parent button
     bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
@@ -130,68 +138,66 @@ export class CustomMenuSettingsUI {
 
     // Button
     const btnLink = document.createElement("a");
-    btnLink.id = `${prefix}-link`;
     btnLink.classList.add("norm2");
     bgDiv.appendChild(btnLink);
 
     const btnImg = document.createElement("img") as HTMLImageElement;
-    btnImg.id = `${prefix}-link-img`;
     btnImg.src = buttonImageURL;
     btnLink.appendChild(btnImg);
-    this.groups.set("img", btnImg);
+    this.setNodeID(btnImg, NodeID.Button_Image);
 
     // Context Menu
     const contextMenu = document.createElement("div");
-    contextMenu.id = `${prefix}-settings`;
+    // contextMenu.id = `${prefix}-settings`;
     contextMenu.classList.add("cls-settings-menu");
-    contextMenu.style.zIndex = "20";
+    contextMenu.style.zIndex = "200";
     this.parent.appendChild(contextMenu);
-    this.groups.set("settings-parent", contextMenu);
+    this.setNodeID(contextMenu, NodeID.Settings);
 
     const contextMenuBoxesContainer = document.createElement("div");
-    contextMenuBoxesContainer.id = `${prefix}-settings-container`;
+    // contextMenuBoxesContainer.id = `${prefix}-settings-container`;
     contextMenuBoxesContainer.classList.add("cls-horizontal-box");
     contextMenu.appendChild(contextMenuBoxesContainer);
-    this.groups.set("settings", contextMenuBoxesContainer);
+    // this.groups.set("settings", contextMenuBoxesContainer);
 
     // Context Menu 3 Boxes
     const leftBox = document.createElement("div");
-    leftBox.id = `${prefix}-settings-left`;
+    // leftBox.id = `${prefix}-settings-left`;
     leftBox.classList.add("cls-settings-menu-box");
     leftBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(leftBox);
-    this.groups.set(MenuPosition.Left, leftBox);
+    // this.groups.set(MenuPosition.Left, leftBox);
+    this.setNodeID(leftBox, NodeID.Settings_Left);
 
     const centerBox = document.createElement("div");
-    centerBox.id = `${prefix}-settings-center`;
+    // centerBox.id = `${prefix}-settings-center`;
     centerBox.classList.add("cls-settings-menu-box");
     centerBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(centerBox);
-    this.groups.set(MenuPosition.Center, centerBox);
+    this.setNodeID(centerBox, NodeID.Settings_Center);
+    // this.groups.set(MenuPosition.Center, centerBox);
 
     const rightBox = document.createElement("div");
-    rightBox.id = `${prefix}-settings-right`;
+    // rightBox.id = `${prefix}-settings-right`;
     rightBox.classList.add("cls-settings-menu-box");
     rightBox.style.display = "none";
     contextMenuBoxesContainer.appendChild(rightBox);
-    this.groups.set(MenuPosition.Right, rightBox);
+    this.setNodeID(rightBox, NodeID.Settings_Right);
+    // this.groups.set(MenuPosition.Right, rightBox);
 
-    this.addContextMenuHandlers();
-  }
-
-  addContextMenuHandlers() {
-    // Enable right-click to open and close the context menu
-    this.parent.addEventListener("contextmenu", (event) => {
-      event.stopImmediatePropagation();
+    // Right-click context menu
+    document.addEventListener("contextmenu", (event: Event) => {
       const element = event.target as HTMLElement;
-      if (element.id.startsWith(this.prefix)) {
-        event.preventDefault();
-        this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
-        if (this.isSettingsMenuOpen) {
-          this.openContextMenu();
-        } else {
-          this.closeContextMenu();
-        }
+      // logDebug("ContextMenu", event, element, this.isSettingsMenuOpen);
+      if (!element.id.startsWith(this.prefix)) return;
+
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
+      if (this.isSettingsMenuOpen) {
+        this.openContextMenu();
+      } else {
+        this.closeContextMenu();
       }
     });
 
@@ -220,37 +226,57 @@ export class CustomMenuSettingsUI {
     });
   }
 
+  setNodeID(node: HTMLElement, id: NodeID) {
+    node.id = `${this.prefix}-${id}`;
+  }
+
+  getNodeByID(id: NodeID) {
+    const fullID = `${this.prefix}-${id}`;
+    const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
+    if (!node) {
+      if (id !== NodeID.CO_Selector) console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
+      return null;
+    }
+
+    const isSettingsSubMenu =
+      id === NodeID.Settings_Left || id === NodeID.Settings_Center || id === NodeID.Settings_Right;
+    const isHidden = node.style.display === "none";
+    const hasChildren = node.children.length > 0;
+    if (isSettingsSubMenu && isHidden && hasChildren) {
+      node.style.display = "flex";
+    }
+
+    return node;
+  }
+
   /**
    * Adds the custom menu to the AWBW page.
    */
   addToAWBWPage(div: HTMLElement, prepend = false) {
     if (!div) {
-      logError("Parent div is null, cannot add custom menu to the page.");
+      console.error("[DeveloperJose] Parent div is null, cannot add custom menu to the page.");
       return;
     }
+
     if (!prepend) {
       div.appendChild(this.parent);
       this.parent.style.borderLeft = "none";
       return;
     }
+
     div.prepend(this.parent);
     this.parent.style.borderRight = "none";
-    this.addContextMenuHandlers();
   }
 
   hasSettings() {
-    const hasLeftMenu = this.groups.get(MenuPosition.Left)?.style.display !== "none";
-    const hasCenterMenu = this.groups.get(MenuPosition.Center)?.style.display !== "none";
-    const hasRightMenu = this.groups.get(MenuPosition.Right)?.style.display !== "none";
+    const hasLeftMenu = this.getNodeByID(NodeID.Settings_Left)?.style.display !== "none";
+    const hasCenterMenu = this.getNodeByID(NodeID.Settings_Center)?.style.display !== "none";
+    const hasRightMenu = this.getNodeByID(NodeID.Settings_Right)?.style.display !== "none";
     return hasLeftMenu || hasCenterMenu || hasRightMenu;
   }
 
   getGroup(groupName: string) {
-    const container = this.groups.get(groupName);
-    // Unhide group
-    if (!container) return;
-    if (container.style.display === "none") container.style.display = "flex";
-    return container;
+    return this.groups.get(groupName);
   }
 
   /**
@@ -259,7 +285,7 @@ export class CustomMenuSettingsUI {
    * @param replaceParent - Whether to replace the current hover text for the main button or not.
    */
   setHoverText(text: string, replaceParent = false) {
-    const hoverSpan = this.groups.get("hover");
+    const hoverSpan = this.getNodeByID(NodeID.Hover) as HTMLSpanElement;
     if (!hoverSpan) return;
     if (replaceParent) this.parentHoverText = text;
 
@@ -273,9 +299,9 @@ export class CustomMenuSettingsUI {
    * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
    */
   setProgress(progress: number) {
-    const bgDiv = this.groups.get("bg");
+    const bgDiv = this.getNodeByID(NodeID.Background) as HTMLDivElement;
     if (!bgDiv) return;
-    if (progress < 0) {
+    if (progress <= 0 || progress >= 100) {
       bgDiv.style.backgroundImage = "";
       return;
     }
@@ -287,7 +313,7 @@ export class CustomMenuSettingsUI {
    * @param imageURL - The URL of the image to be used on the button.
    */
   setImage(imageURL: string) {
-    const btnImg = this.groups.get("img") as HTMLImageElement;
+    const btnImg = this.getNodeByID(NodeID.Button_Image) as HTMLImageElement;
     btnImg.src = imageURL;
   }
 
@@ -297,7 +323,7 @@ export class CustomMenuSettingsUI {
    * @param listener - The function to be called when the event is triggered.
    */
   addEventListener(type: string, listener: (event: Event) => void, options: boolean | AddEventListenerOptions = false) {
-    const div = this.groups.get("bg");
+    const div = this.getNodeByID(NodeID.Background);
     div?.addEventListener(type, listener, options);
   }
 
@@ -305,29 +331,31 @@ export class CustomMenuSettingsUI {
    * Opens the context (right-click) menu.
    */
   openContextMenu() {
-    const contextMenu = this.groups.get("settings-parent");
+    const contextMenu = this.getNodeByID(NodeID.Settings);
     if (!contextMenu) return;
 
     // No settings so don't open the menu
-    const hasVersion = this.groups.get("version")?.style.display !== "none";
+    const hasVersion = this.getNodeByID(NodeID.Version)?.style.display !== "none";
     if (!this.hasSettings() && !hasVersion) return;
 
     contextMenu.style.display = "flex";
     this.isSettingsMenuOpen = true;
+    // logDebug("Opening context menu...", this.hasSettings(), hasVersion, contextMenu);
   }
 
   /**
    * Closes the context (right-click) menu.
    */
   closeContextMenu() {
-    const contextMenu = this.groups.get("settings-parent");
+    const contextMenu = this.getNodeByID(NodeID.Settings);
     if (!contextMenu) return;
+    // logDebug("Closing context menu...");
     contextMenu.style.display = "none";
     this.isSettingsMenuOpen = false;
 
     // Check if we have a CO selector and need to hide it
     const overDiv = document.querySelector("#overDiv") as HTMLDivElement;
-    const hasCOSelector = this.groups.has("co-selector");
+    const hasCOSelector = this.getNodeByID(NodeID.CO_Selector) !== null;
     const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
     if (overDiv && hasCOSelector && isGamePageAndActive) {
       overDiv.style.visibility = "hidden";
@@ -344,15 +372,22 @@ export class CustomMenuSettingsUI {
    * @param position - The position of the slider in the context menu.
    * @returns - The slider element.
    */
-  addSlider(name: string, min: number, max: number, step: number, hoverText = "", position = MenuPosition.Center) {
-    const contextMenu = this.getGroup(position);
-    if (!contextMenu) return;
+  addSlider(
+    name: string,
+    min: number,
+    max: number,
+    step: number,
+    hoverText = "",
+    position: NodeID = NodeID.Settings_Center,
+  ) {
+    const submenu = this.getNodeByID(position);
+    if (!submenu) return;
 
     // Container for the slider and label
     const sliderBox = document.createElement("div");
     sliderBox.classList.add("cls-vertical-box");
     sliderBox.classList.add("cls-group-box");
-    contextMenu?.appendChild(sliderBox);
+    submenu?.appendChild(sliderBox);
 
     // Slider label
     const label = document.createElement("label");
@@ -383,15 +418,16 @@ export class CustomMenuSettingsUI {
     return slider;
   }
 
-  addGroup(groupName: string, type: GroupType = GroupType.Horizontal, position = MenuPosition.Center) {
-    const contextMenu = this.getGroup(position);
-    if (!contextMenu) return;
+  addGroup(groupName: string, type: GroupType = GroupType.Horizontal, position = NodeID.Settings_Center) {
+    const submenu = this.getNodeByID(position);
+    if (!submenu) return;
+    if (this.groups.has(groupName)) return this.groups.get(groupName);
 
     // Container for the label and group inner container
     const groupBox = document.createElement("div");
     groupBox.classList.add("cls-vertical-box");
     groupBox.classList.add("cls-group-box");
-    contextMenu?.appendChild(groupBox);
+    submenu?.appendChild(groupBox);
 
     // Label for the group
     const groupLabel = document.createElement("label");
@@ -493,12 +529,13 @@ export class CustomMenuSettingsUI {
     const version = versions.get(this.prefix);
     if (!version) return;
 
-    const contextMenu = this.groups.get("settings-parent");
+    const contextMenu = this.getNodeByID(NodeID.Settings);
     const versionDiv = document.createElement("label");
-    versionDiv.id = this.prefix + "-version";
+    // versionDiv.id = this.prefix + "-version";
     versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
     contextMenu?.appendChild(versionDiv);
-    this.groups.set("version", versionDiv);
+    // this.groups.set("version", versionDiv);
+    this.setNodeID(versionDiv, NodeID.Version);
   }
 
   checkIfNewVersionAvailable() {
@@ -510,10 +547,10 @@ export class CustomMenuSettingsUI {
     checkIfUpdateIsAvailable(this.prefix)
       .then((isUpdateAvailable) => {
         this.isUpdateAvailable = isUpdateAvailable;
-        log("Checking if a new version is available...", isUpdateAvailable);
+        console.log("[DeveloperJose] Checking if a new version is available...", isUpdateAvailable);
         if (!isUpdateAvailable) return;
 
-        const contextMenu = this.groups.get("settings-parent");
+        const contextMenu = this.getNodeByID(NodeID.Settings);
         const versionDiv = document.createElement("a");
         versionDiv.id = this.prefix + "-update";
         versionDiv.href = homepageURL;
@@ -523,7 +560,7 @@ export class CustomMenuSettingsUI {
 
         if (this.hasSettings()) contextMenu?.prepend(versionDiv);
       })
-      .catch((error) => logError(error));
+      .catch((error) => console.error(error));
   }
 
   addTable(name: string, rows: number, columns: number, groupName: string, hoverText = "") {
@@ -614,8 +651,10 @@ export class CustomMenuSettingsUI {
     coSelector.addEventListener("mouseout", () => this.setHoverText(""));
 
     // Update UI
-    this.groups.set("co-selector", coSelector);
-    this.groups.set("co-portrait", imgCO);
+    this.setNodeID(coSelector, NodeID.CO_Selector);
+    this.setNodeID(imgCO, NodeID.CO_Portrait);
+    // this.groups.set("co-selector", coSelector);
+    // this.groups.set("co-portrait", imgCO);
     groupDiv?.appendChild(coSelector);
 
     // Sort all the COs alphabetically, get their proper names
@@ -706,7 +745,7 @@ export class CustomMenuSettingsUI {
     overDiv.style.visibility = "hidden";
 
     // Change the CO portrait
-    const imgCO = this.groups.get("co-portrait") as HTMLImageElement;
+    const imgCO = this.getNodeByID(NodeID.CO_Portrait) as HTMLImageElement;
     const coPrefix = getCOImagePrefix();
     imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
   }

@@ -1,3 +1,7 @@
+/**
+ * @file Functions for playing sound effects.
+ */
+
 import { musicSettings } from "../music_settings";
 import { GameSFX, getSoundEffectURL } from "../resources";
 import { audioMap, getVolumeForURL, audioIDMap } from "./core";

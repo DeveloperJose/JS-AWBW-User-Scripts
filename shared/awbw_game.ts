@@ -6,6 +6,24 @@ import { areAnimationsEnabled } from "./awbw_globals";
 import { getReplayControls, getConnectionErrorDiv, PageType, getCurrentPageType } from "./awbw_page";
 
 /**
+ * Enumeration of all special CO names that have special themes.
+ * Note: Must be lowercase as all other CO names are stored in lowercase.
+ * @enum {string}
+ */
+
+export const enum SpecialCOs {
+  Maintenance = "maintenance",
+  MapEditor = "map-editor",
+  MainPage = "main-page",
+  Default = "default",
+
+  Victory = "victory",
+  Defeat = "defeat",
+  COSelect = "co-select",
+  ModeSelect = "mode-select",
+}
+
+/**
  * Enum for the different states a CO Power can be in.
  * @enum {string}
  */
@@ -278,8 +296,6 @@ export abstract class currentPlayer {
    * @returns - The name of the CO for the current player.
    */
   static get coName() {
-    if (getCurrentPageType() === PageType.MapEditor) return "map-editor";
-    if (getCurrentPageType() === PageType.Maintenance) return "maintenance";
     if (getCurrentPageType() !== PageType.ActiveGame) return null;
 
     const myID = getMyID();
@@ -288,7 +304,7 @@ export abstract class currentPlayer {
     const myLoss = myInfo?.players_eliminated === "Y";
     const endedToday = didGameEndToday();
     const isSpectator = isPlayerSpectator(myID);
-    const endGameTheme = isSpectator || myWin ? "victory" : "defeat";
+    const endGameTheme = isSpectator || myWin ? SpecialCOs.Victory : SpecialCOs.Defeat;
 
     // Play victory/defeat themes after the game ends for everyone
     if (hasGameEnded()) {
@@ -296,14 +312,14 @@ export abstract class currentPlayer {
       if (endedToday) return endGameTheme;
 
       // The game ended more than a day ago and we just opened it or closed the replay
-      if (!isReplayActive()) return "co-select";
+      if (!isReplayActive()) return SpecialCOs.COSelect;
 
       // The game ended more than a day ago and we are watching the replay
       return endGameTheme;
     }
 
     // The game has not ended, but we already lost
-    if (myLoss) return "defeat";
+    if (myLoss) return SpecialCOs.Defeat;
 
     // The game has not ended
     return this.info?.co_name;

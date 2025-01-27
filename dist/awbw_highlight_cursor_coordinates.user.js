@@ -18,6 +18,22 @@
 (function () {
   "use strict";
 
+  function logDebug(message, ...args) {
+    console.debug("[AWBW Improved Music Player]", message, ...args);
+  }
+
+  const IFRAME_NAME = "music-player-iframe";
+  function isIFrameActive() {
+    const iframe = document.querySelector("#" + IFRAME_NAME);
+    if (!iframe) return false;
+    const href = iframe.contentDocument?.location.href ?? iframe.src;
+    return href !== null && href !== "" && href !== "about:blank";
+  }
+  function getCurrentDocument() {
+    if (!isIFrameActive()) return window.document;
+    return document.querySelector("iframe")?.contentDocument ?? window.document;
+  }
+
   var PageType = /* @__PURE__ */ ((PageType2) => {
     PageType2["Maintenance"] = "Maintenance";
     PageType2["ActiveGame"] = "ActiveGame";
@@ -29,39 +45,34 @@
     return PageType2;
   })(PageType || {});
   function getCurrentPageType() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
-    const isMaintenance = document.querySelector("#server-maintenance-alert") !== null;
+    const doc = getCurrentDocument();
+    const isMaintenance = doc.querySelector("#server-maintenance-alert") !== null;
     if (isMaintenance) return "Maintenance" /* Maintenance */;
-    if (document.location.href.indexOf("game.php") > -1) return "ActiveGame" /* ActiveGame */;
-    if (document.location.href.indexOf("editmap.php?") > -1) return "MapEditor" /* MapEditor */;
-    if (document.location.href.indexOf("moveplanner.php") > -1) return "MovePlanner" /* MovePlanner */;
-    if (document.location.href.indexOf("live_queue.php") > -1) return "LiveQueue" /* LiveQueue */;
-    if (document.location.href === "https://awbw.amarriner.com") return "MainPage" /* MainPage */;
+    if (doc.location.href.indexOf("game.php") > -1) return "ActiveGame" /* ActiveGame */;
+    if (doc.location.href.indexOf("editmap.php?") > -1) return "MapEditor" /* MapEditor */;
+    if (doc.location.href.indexOf("moveplanner.php") > -1) return "MovePlanner" /* MovePlanner */;
+    if (doc.location.href.indexOf("live_queue.php") > -1) return "LiveQueue" /* LiveQueue */;
+    if (doc.location.href === "https://awbw.amarriner.com") return "MainPage" /* MainPage */;
     return "Default" /* Default */;
   }
   function getGamemap() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
-    return document.querySelector("#gamemap");
+    return getCurrentDocument().querySelector("#gamemap");
   }
   function getGamemapContainer() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
-    return document.querySelector("#gamemap-container");
+    return getCurrentDocument().querySelector("#gamemap-container");
   }
   function getZoomInBtn() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
-    return document.querySelector("#zoom-in");
+    return getCurrentDocument().querySelector("#zoom-in");
   }
   function getZoomOutBtn() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
-    return document.querySelector("#zoom-out");
+    return getCurrentDocument().querySelector("#zoom-out");
   }
   function getCurrentZoomLevel() {
     const storedScale = localStorage.getItem("scale") || "1";
     return parseFloat(storedScale);
   }
   function getCoordsDiv() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
-    return document.querySelector("#coords");
+    return getCurrentDocument().querySelector("#coords");
   }
   function addUpdateCursorObserver(onCursorMove) {
     const coordsDiv = getCoordsDiv();
@@ -120,16 +131,6 @@
     return typeof designMapEditor !== "undefined" ? designMapEditor.resizeMap : null;
   }
 
-  function log(message, ...args) {
-    console.log("[AWBW Improved Music Player]", message, ...args);
-  }
-  function logError(message, ...args) {
-    console.error("[AWBW Improved Music Player]", message, ...args);
-  }
-  function logDebug(message, ...args) {
-    console.debug("[AWBW Improved Music Player]", message, ...args);
-  }
-
   var ScriptName = /* @__PURE__ */ ((ScriptName2) => {
     ScriptName2["None"] = "none";
     ScriptName2["MusicPlayer"] = "music_player";
@@ -137,7 +138,7 @@
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player" /* MusicPlayer */, "4.8.0"],
+    ["music_player" /* MusicPlayer */, "5.0.0"],
     ["highlight_cursor_coordinates" /* HighlightCursorCoordinates */, "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -255,75 +256,62 @@
       this.prefix = prefix;
       this.parentHoverText = hoverText;
       this.parent = document.createElement("div");
-      this.parent.id = `${prefix}-parent`;
       this.parent.classList.add("game-tools-btn");
       this.parent.style.width = "34px";
       this.parent.style.height = "30px";
+      this.setNodeID(this.parent, "parent" /* Parent */);
       const hoverSpan = document.createElement("span");
-      hoverSpan.id = `${prefix}-hover-span`;
       hoverSpan.classList.add("game-tools-btn-text", "small_text");
       hoverSpan.innerText = hoverText;
       this.parent.appendChild(hoverSpan);
-      this.groups.set("hover", hoverSpan);
+      this.setNodeID(hoverSpan, "hover" /* Hover */);
       const bgDiv = document.createElement("div");
-      bgDiv.id = `${prefix}-background`;
       bgDiv.classList.add("game-tools-bg");
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
       this.parent.appendChild(bgDiv);
-      this.groups.set("bg", bgDiv);
+      this.setNodeID(bgDiv, "background" /* Background */);
       bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
       bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
       const btnLink = document.createElement("a");
-      btnLink.id = `${prefix}-link`;
       btnLink.classList.add("norm2");
       bgDiv.appendChild(btnLink);
       const btnImg = document.createElement("img");
-      btnImg.id = `${prefix}-link-img`;
       btnImg.src = buttonImageURL;
       btnLink.appendChild(btnImg);
-      this.groups.set("img", btnImg);
+      this.setNodeID(btnImg, "button-image" /* Button_Image */);
       const contextMenu = document.createElement("div");
-      contextMenu.id = `${prefix}-settings`;
       contextMenu.classList.add("cls-settings-menu");
-      contextMenu.style.zIndex = "20";
+      contextMenu.style.zIndex = "200";
       this.parent.appendChild(contextMenu);
-      this.groups.set("settings-parent", contextMenu);
+      this.setNodeID(contextMenu, "settings" /* Settings */);
       const contextMenuBoxesContainer = document.createElement("div");
-      contextMenuBoxesContainer.id = `${prefix}-settings-container`;
       contextMenuBoxesContainer.classList.add("cls-horizontal-box");
       contextMenu.appendChild(contextMenuBoxesContainer);
-      this.groups.set("settings", contextMenuBoxesContainer);
       const leftBox = document.createElement("div");
-      leftBox.id = `${prefix}-settings-left`;
       leftBox.classList.add("cls-settings-menu-box");
       leftBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(leftBox);
-      this.groups.set("settings-left" /* Left */, leftBox);
+      this.setNodeID(leftBox, "settings-left" /* Settings_Left */);
       const centerBox = document.createElement("div");
-      centerBox.id = `${prefix}-settings-center`;
       centerBox.classList.add("cls-settings-menu-box");
       centerBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(centerBox);
-      this.groups.set("settings-center" /* Center */, centerBox);
+      this.setNodeID(centerBox, "settings-center" /* Settings_Center */);
       const rightBox = document.createElement("div");
-      rightBox.id = `${prefix}-settings-right`;
       rightBox.classList.add("cls-settings-menu-box");
       rightBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(rightBox);
-      this.groups.set("settings-right" /* Right */, rightBox);
-      this.addContextMenuHandlers();
-    }
-    addContextMenuHandlers() {
-      this.parent.addEventListener("contextmenu", (event) => {
+      this.setNodeID(rightBox, "settings-right" /* Settings_Right */);
+      document.addEventListener("contextmenu", (event) => {
         const element = event.target;
-        if (element.id.startsWith(this.prefix)) {
-          event.preventDefault();
-          this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
-          if (this.isSettingsMenuOpen) {
-            this.openContextMenu();
-          } else {
-            this.closeContextMenu();
-          }
+        if (!element.id.startsWith(this.prefix)) return;
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
+        if (this.isSettingsMenuOpen) {
+          this.openContextMenu();
+        } else {
+          this.closeContextMenu();
         }
       });
       document.addEventListener("click", (event) => {
@@ -339,12 +327,33 @@
         this.closeContextMenu();
       });
     }
+    setNodeID(node, id) {
+      node.id = `${this.prefix}-${id}`;
+    }
+    getNodeByID(id) {
+      const fullID = `${this.prefix}-${id}`;
+      const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
+      if (!node) {
+        if (id !== "co-selector" /* CO_Selector */) console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
+        return null;
+      }
+      const isSettingsSubMenu =
+        id === "settings-left" /* Settings_Left */ ||
+        id === "settings-center" /* Settings_Center */ ||
+        id === "settings-right"; /* Settings_Right */
+      const isHidden = node.style.display === "none";
+      const hasChildren = node.children.length > 0;
+      if (isSettingsSubMenu && isHidden && hasChildren) {
+        node.style.display = "flex";
+      }
+      return node;
+    }
     /**
      * Adds the custom menu to the AWBW page.
      */
     addToAWBWPage(div, prepend = false) {
       if (!div) {
-        logError("Parent div is null, cannot add custom menu to the page.");
+        console.error("[DeveloperJose] Parent div is null, cannot add custom menu to the page.");
         return;
       }
       if (!prepend) {
@@ -354,19 +363,15 @@
       }
       div.prepend(this.parent);
       this.parent.style.borderRight = "none";
-      this.addContextMenuHandlers();
     }
     hasSettings() {
-      const hasLeftMenu = this.groups.get("settings-left" /* Left */)?.style.display !== "none";
-      const hasCenterMenu = this.groups.get("settings-center" /* Center */)?.style.display !== "none";
-      const hasRightMenu = this.groups.get("settings-right" /* Right */)?.style.display !== "none";
+      const hasLeftMenu = this.getNodeByID("settings-left" /* Settings_Left */)?.style.display !== "none";
+      const hasCenterMenu = this.getNodeByID("settings-center" /* Settings_Center */)?.style.display !== "none";
+      const hasRightMenu = this.getNodeByID("settings-right" /* Settings_Right */)?.style.display !== "none";
       return hasLeftMenu || hasCenterMenu || hasRightMenu;
     }
     getGroup(groupName) {
-      const container = this.groups.get(groupName);
-      if (!container) return;
-      if (container.style.display === "none") container.style.display = "flex";
-      return container;
+      return this.groups.get(groupName);
     }
     /**
      * Changes the hover text of the main button.
@@ -374,7 +379,7 @@
      * @param replaceParent - Whether to replace the current hover text for the main button or not.
      */
     setHoverText(text, replaceParent = false) {
-      const hoverSpan = this.groups.get("hover");
+      const hoverSpan = this.getNodeByID("hover" /* Hover */);
       if (!hoverSpan) return;
       if (replaceParent) this.parentHoverText = text;
       if (this.isUpdateAvailable) text += " (New Update Available!)";
@@ -386,9 +391,9 @@
      * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
      */
     setProgress(progress) {
-      const bgDiv = this.groups.get("bg");
+      const bgDiv = this.getNodeByID("background" /* Background */);
       if (!bgDiv) return;
-      if (progress < 0) {
+      if (progress <= 0 || progress >= 100) {
         bgDiv.style.backgroundImage = "";
         return;
       }
@@ -399,7 +404,7 @@
      * @param imageURL - The URL of the image to be used on the button.
      */
     setImage(imageURL) {
-      const btnImg = this.groups.get("img");
+      const btnImg = this.getNodeByID("button-image" /* Button_Image */);
       btnImg.src = imageURL;
     }
     /**
@@ -408,16 +413,16 @@
      * @param listener - The function to be called when the event is triggered.
      */
     addEventListener(type, listener, options = false) {
-      const div = this.groups.get("bg");
+      const div = this.getNodeByID("background" /* Background */);
       div?.addEventListener(type, listener, options);
     }
     /**
      * Opens the context (right-click) menu.
      */
     openContextMenu() {
-      const contextMenu = this.groups.get("settings-parent");
+      const contextMenu = this.getNodeByID("settings" /* Settings */);
       if (!contextMenu) return;
-      const hasVersion = this.groups.get("version")?.style.display !== "none";
+      const hasVersion = this.getNodeByID("version" /* Version */)?.style.display !== "none";
       if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
@@ -426,12 +431,12 @@
      * Closes the context (right-click) menu.
      */
     closeContextMenu() {
-      const contextMenu = this.groups.get("settings-parent");
+      const contextMenu = this.getNodeByID("settings" /* Settings */);
       if (!contextMenu) return;
       contextMenu.style.display = "none";
       this.isSettingsMenuOpen = false;
       const overDiv = document.querySelector("#overDiv");
-      const hasCOSelector = this.groups.has("co-selector");
+      const hasCOSelector = this.getNodeByID("co-selector" /* CO_Selector */) !== null;
       const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
       if (overDiv && hasCOSelector && isGamePageAndActive) {
         overDiv.style.visibility = "hidden";
@@ -447,13 +452,13 @@
      * @param position - The position of the slider in the context menu.
      * @returns - The slider element.
      */
-    addSlider(name, min, max, step, hoverText = "", position = "settings-center" /* Center */) {
-      const contextMenu = this.getGroup(position);
-      if (!contextMenu) return;
+    addSlider(name, min, max, step, hoverText = "", position = "settings-center" /* Settings_Center */) {
+      const submenu = this.getNodeByID(position);
+      if (!submenu) return;
       const sliderBox = document.createElement("div");
       sliderBox.classList.add("cls-vertical-box");
       sliderBox.classList.add("cls-group-box");
-      contextMenu?.appendChild(sliderBox);
+      submenu?.appendChild(sliderBox);
       const label = document.createElement("label");
       sliderBox?.appendChild(label);
       const slider = document.createElement("input");
@@ -474,13 +479,18 @@
       slider.addEventListener("mouseout", () => this.setHoverText(""));
       return slider;
     }
-    addGroup(groupName, type = "cls-horizontal-box" /* Horizontal */, position = "settings-center" /* Center */) {
-      const contextMenu = this.getGroup(position);
-      if (!contextMenu) return;
+    addGroup(
+      groupName,
+      type = "cls-horizontal-box" /* Horizontal */,
+      position = "settings-center" /* Settings_Center */,
+    ) {
+      const submenu = this.getNodeByID(position);
+      if (!submenu) return;
+      if (this.groups.has(groupName)) return this.groups.get(groupName);
       const groupBox = document.createElement("div");
       groupBox.classList.add("cls-vertical-box");
       groupBox.classList.add("cls-group-box");
-      contextMenu?.appendChild(groupBox);
+      submenu?.appendChild(groupBox);
       const groupLabel = document.createElement("label");
       groupLabel.innerText = groupName;
       groupBox?.appendChild(groupLabel);
@@ -557,12 +567,11 @@
     addVersion() {
       const version = versions.get(this.prefix);
       if (!version) return;
-      const contextMenu = this.groups.get("settings-parent");
+      const contextMenu = this.getNodeByID("settings" /* Settings */);
       const versionDiv = document.createElement("label");
-      versionDiv.id = this.prefix + "-version";
       versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
       contextMenu?.appendChild(versionDiv);
-      this.groups.set("version", versionDiv);
+      this.setNodeID(versionDiv, "version" /* Version */);
     }
     checkIfNewVersionAvailable() {
       const currentVersion = versions.get(this.prefix);
@@ -572,9 +581,9 @@
       checkIfUpdateIsAvailable(this.prefix)
         .then((isUpdateAvailable) => {
           this.isUpdateAvailable = isUpdateAvailable;
-          log("Checking if a new version is available...", isUpdateAvailable);
+          console.log("[DeveloperJose] Checking if a new version is available...", isUpdateAvailable);
           if (!isUpdateAvailable) return;
-          const contextMenu = this.groups.get("settings-parent");
+          const contextMenu = this.getNodeByID("settings" /* Settings */);
           const versionDiv = document.createElement("a");
           versionDiv.id = this.prefix + "-update";
           versionDiv.href = homepageURL;
@@ -583,7 +592,7 @@
           contextMenu?.append(versionDiv.cloneNode(true));
           if (this.hasSettings()) contextMenu?.prepend(versionDiv);
         })
-        .catch((error) => logError(error));
+        .catch((error) => console.error(error));
     }
     addTable(name, rows, columns, groupName, hoverText = "") {
       const groupDiv = this.getGroup(groupName);
@@ -650,8 +659,8 @@
       coSelector.title = hoverText;
       coSelector.addEventListener("mouseover", () => this.setHoverText(hoverText));
       coSelector.addEventListener("mouseout", () => this.setHoverText(""));
-      this.groups.set("co-selector", coSelector);
-      this.groups.set("co-portrait", imgCO);
+      this.setNodeID(coSelector, "co-selector" /* CO_Selector */);
+      this.setNodeID(imgCO, "co-portrait" /* CO_Portrait */);
       groupDiv?.appendChild(coSelector);
       const allCOs = getAllCONames(true).sort();
       let allColumnsHTML = "";
@@ -706,7 +715,7 @@
     onCOSelectorClick(coName) {
       const overDiv = document.querySelector("#overDiv");
       overDiv.style.visibility = "hidden";
-      const imgCO = this.groups.get("co-portrait");
+      const imgCO = this.getNodeByID("co-portrait" /* CO_Portrait */);
       const coPrefix = getCOImagePrefix();
       imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
     }
@@ -746,7 +755,7 @@
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 110;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 100;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n  z-index: 200;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 200;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 200;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =

@@ -1,3 +1,7 @@
+/**
+ * @file Core functions and variables for playing audio.
+ */
+
 import { musicSettings } from "../music_settings";
 import { logError } from "../utils";
 

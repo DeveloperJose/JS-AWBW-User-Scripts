@@ -1,9 +1,13 @@
+/**
+ * @file Functions for playing, managing, and stopping any music tracks including CO themes.
+ */
 import { currentPlayer } from "../../shared/awbw_game";
 import { getCurrentPageType, PageType } from "../../shared/awbw_page";
 import { addDatabaseReplacementListener } from "../db";
 import { addSettingsChangeListener, musicSettings, RandomThemeType, SettingsKey, ThemeType } from "../music_settings";
 import { getMusicURL, hasSpecialLoop, SpecialTheme } from "../resources";
-import { log, logDebug, logError } from "../utils";
+import { SpecialCOs } from "../../shared/awbw_game";
+import { logInfo, logDebug, logError } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
 import { preloadURL, promiseMap, urlQueue } from "./preloading";
 import { stopAllMovementSounds } from "./unit_movement";
@@ -24,31 +28,6 @@ let currentLoops = 0;
  * The values are the special loop URLs to play after the original theme ends.
  */
 const specialLoopMap = new Map<string, string>();
-
-// Listen for setting changes to update the internal variables accordingly
-addSettingsChangeListener(onSettingsChange);
-
-// Listens for when the database downloads a new song
-addDatabaseReplacementListener((url) => {
-  const audio = audioMap.get(url);
-  if (!audio) return;
-  log("A new version of", url, " is available. Replacing the old version.");
-
-  // Pause the song while we switch to the new version
-  if (audio.playing()) audio.stop();
-
-  // Clear queues and promises when the database is updated. This allows us to re-load the audio.
-  urlQueue.delete(url);
-  promiseMap.delete(url);
-
-  // Clear maps to prevent anyone else from using those audios
-  audioMap.delete(url);
-  audioIDMap.delete(url);
-
-  preloadURL(url)
-    .catch((reason) => logError(reason))
-    .finally(() => playThemeSong());
-});
 
 /**
  * If set to true, calls to playMusic() will set a timer after which the music will play again.
@@ -85,7 +64,7 @@ export async function playMusicURL(srcURL: string) {
 
   // Play the song if it's not already playing
   if (!nextSong.playing() && musicSettings.isPlaying) {
-    log("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
+    logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
     const newID = nextSong.play();
 
     if (!newID) return;
@@ -108,8 +87,13 @@ export function playThemeSong() {
   let gameType = undefined;
   let coName = currentPlayer.coName;
 
+  if (getCurrentPageType() === PageType.Maintenance) coName = SpecialCOs.Maintenance;
+  if (getCurrentPageType() === PageType.MapEditor) coName = SpecialCOs.MapEditor;
+  if (getCurrentPageType() === PageType.MainPage) coName = SpecialCOs.MainPage;
+  if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
+
   // Don't randomize during victory and defeat themes
-  const isEndTheme = coName === "victory" || coName === "defeat";
+  const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat;
   const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
   if (isRandomTheme && !isEndTheme) {
     coName = musicSettings.currentRandomCO;
@@ -117,6 +101,8 @@ export function playThemeSong() {
     // The user wants the random themes from all soundtracks, so randomize the game type
     if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) gameType = musicSettings.currentRandomGameType;
   }
+
+  // log("Playing theme for: ", coName, " | Game Type: ", gameType);
 
   // For pages with no COs that aren't using the random themes, play the stored theme if any.
   if (!coName) {
@@ -298,6 +284,7 @@ function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
       // Adjust the volume of the current theme
       const currentTheme = audioMap.get(currentThemeURL);
       if (currentTheme) currentTheme.volume(musicSettings.volume);
+      // logDebug("Volume changed to: ", musicSettings.volume, currentTheme);
 
       // Adjust the volume once we can
       if (!currentTheme) {
@@ -319,3 +306,31 @@ function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
     }
   }
 }
+
+export function addThemeListeners() {
+  // Listen for setting changes to update the internal variables accordingly
+  addSettingsChangeListener(onSettingsChange);
+
+  // Listens for when the database downloads a new song
+  addDatabaseReplacementListener((url) => {
+    const audio = audioMap.get(url);
+    if (!audio) return;
+    logInfo("A new version of", url, " is available. Replacing the old version.");
+
+    // Pause the song while we switch to the new version
+    if (audio.playing()) audio.stop();
+
+    // Clear queues and promises when the database is updated. This allows us to re-load the audio.
+    urlQueue.delete(url);
+    promiseMap.delete(url);
+
+    // Clear maps to prevent anyone else from using those audios
+    audioMap.delete(url);
+    audioIDMap.delete(url);
+
+    preloadURL(url)
+      .catch((reason) => logError(reason))
+      .finally(() => playThemeSong());
+  });
+}
+addThemeListeners();

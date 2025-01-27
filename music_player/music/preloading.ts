@@ -1,4 +1,7 @@
-import { log } from "../utils";
+/**
+ * @file Functions for pre-loading audio files.
+ */
+import { logInfo } from "../utils";
 import { loadMusicFromDB } from "../db";
 import { musicPlayerUI } from "../music_ui";
 import { getCurrentThemeURLs, getSoundEffectURL, GameSFX, getAllAudioURLs } from "../resources";
@@ -96,7 +99,7 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
     }
 
     if (action === "error") {
-      log(`Could not pre-load: ${url}. This might not be a problem, the audio may still play normally later.`);
+      logInfo(`Could not pre-load: ${url}. This might not be a problem, the audio may still play normally later.`);
       audioMap.delete(url);
       return;
     }
@@ -125,6 +128,10 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
       })
       .catch((_reason) => onAudioPreload("error", url));
   });
+
+  if (numLoadedAudios >= audioURLs.size) {
+    if (afterPreloadFunction) afterPreloadFunction();
+  }
 }
 
 /**

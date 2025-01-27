@@ -5,7 +5,7 @@
 
 import { currentPlayer } from "../shared/awbw_game";
 import { getRandomCO } from "../shared/awbw_globals";
-import { log, logDebug } from "./utils";
+import { logInfo, logDebug } from "./utils";
 
 /**
  * Enum that represents which game we want the music player to use for its music.
@@ -397,7 +397,7 @@ export function loadSettingsFromLocalStorage() {
 
   // Store defaults if nothing or undefined is stored
   if (!storageData || storageData === "undefined") {
-    log("No saved settings found, storing defaults");
+    logInfo("No saved settings found, storing defaults");
     storageData = updateSettingsInLocalStorage();
   }
   musicSettings.fromJSON(storageData);
@@ -407,6 +407,9 @@ export function loadSettingsFromLocalStorage() {
   logDebug("Settings loaded from storage:", storageData);
 }
 
+/**
+ * Allows the music player settings to be saved in the local storage.
+ */
 export function allowSettingsToBeSaved() {
   // From now on, any setting changes will be saved and any listeners will be called
   addSettingsChangeListener(onSettingsChange);

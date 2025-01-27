@@ -22,9 +22,9 @@ import { addHandlers } from "./handlers";
 import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
 import { SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
-import { logDebug, log, logError } from "./utils";
+import { logDebug, logInfo, logError } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
-import { playMusicURL, playOrPauseWhenWindowFocusChanges, playThemeSong } from "./music/co_themes";
+import { addThemeListeners, playMusicURL, playOrPauseWhenWindowFocusChanges, playThemeSong } from "./music/co_themes";
 import { preloadAllCommonAudio } from "./music/preloading";
 import { initializeIFrame } from "./iframe";
 
@@ -71,6 +71,12 @@ function onLiveQueue() {
   };
 
   const addPlayerIntervalID = window.setInterval(() => {
+    // We have switched pages
+    if (getCurrentPageType() !== PageType.LiveQueue) {
+      clearInterval(addPlayerIntervalID);
+      return;
+    }
+
     if (!addMusicFn()) return;
 
     // We don't need to add the music player anymore
@@ -78,32 +84,48 @@ function onLiveQueue() {
 
     // Now we need to check if we need to pause/resume the music because the player left/rejoined
     // We will do this indefinitely until eventually the player accepts a match or leaves the page
-    window.setInterval(() => {
-      // We are still in the CO select, play the music
-      if (checkStillActiveFn()) playThemeSong();
-      // We are not in the CO select, stop the music
-      // else stopThemeSong();
+    const checkInterval = window.setInterval(() => {
+      // We have switched pages
+      if (getCurrentPageType() !== PageType.LiveQueue) {
+        clearInterval(checkInterval);
+        playThemeSong();
+        return;
+      }
+
+      // If we are still in the CO select, play the CO Select music
+      // Otherwise play whatever is currently set
+      if (checkStillActiveFn()) playMusicURL(SpecialTheme.COSelect);
+      else playThemeSong();
     }, 500);
   }, 500);
 }
 
+/**
+ * The ID of the timeout that checks for new music files every minute.
+ */
 let setHashesTimeoutID: number | undefined;
+
+/**
+ * Preloads all themes and audio files, plays the theme song, and checks for new music files every minute.
+ */
 function preloadThemes() {
+  addThemeListeners();
   preloadAllCommonAudio(() => {
-    log("All common audio has been pre-loaded!");
+    logInfo("All common audio has been pre-loaded!");
 
     // Set dynamic settings based on the current game state
     // Lastly, update the UI to reflect the current settings
     musicSettings.themeType = getCurrentThemeType();
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
+    setTimeout(playThemeSong, 500);
 
     // Check for new music files every minute
     if (!setHashesTimeoutID) {
       const checkHashesMS = 1000 * 60 * 1;
       const checkHashesFn = () => {
         checkHashesInDB()
-          .then(() => log("All music files have been checked for updates."))
+          .then(() => logInfo("All music files have been checked for updates."))
           .catch((reason) => logError("Could not check for music file updates:", reason));
 
         setHashesTimeoutID = window.setTimeout(checkHashesFn, checkHashesMS);
@@ -122,59 +144,88 @@ function preloadThemes() {
  * Initializes the music player script by setting everything up.
  */
 export function initializeMusicPlayer() {
-  initializeMusicPlayerUI();
-
   const currentPageType = getCurrentPageType();
+  // logInfo("Initializing music player for page type:", currentPageType);
+
+  // Live queue page has a special music player
+  if (currentPageType === PageType.LiveQueue) return onLiveQueue();
 
   // Override the saved setting for autoplay if we are on a different page than an active game page
   if (currentPageType !== PageType.ActiveGame) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
 
-  log("Initializing music player for page type:", currentPageType);
-  addHandlers();
-
   switch (currentPageType) {
-    case PageType.LiveQueue:
-      return onLiveQueue();
     case PageType.Maintenance:
       musicPlayerUI.openContextMenu();
-      musicSettings.randomThemesType = RandomThemeType.NONE;
-      playMusicURL(SpecialTheme.Maintenance);
       break;
     case PageType.MovePlanner:
       musicSettings.isPlaying = true;
       break;
-    // case PageType.MainPage:
-    //   return;
     case PageType.ActiveGame:
-      preloadThemes();
-      break;
-    case PageType.MapEditor:
-      preloadThemes();
-      // playOrPauseWhenWindowFocusChanges();
-      break;
-    default:
-      musicSettings.randomThemesType = RandomThemeType.NONE;
-      playMusicURL(SpecialTheme.ModeSelect);
-      // playOrPauseWhenWindowFocusChanges();
-      break;
-  }
+      // {
+      //   if (isIFrameActive()) {
+      //     for (const scriptSrc of [
+      //       // "js/overlib_mini_minify.js?v=1.0",
+      //       // "js/tinyqueue.js",
+      //       // "js/axios.js",
+      //       // "js/vue.min.js",
+      //       // "js/lib/animate_weather.js",
+      //       // "terrain/tilesets.js",
+      //       // "js/lib/map_renderer.js",
+      //       // "js/lib/game.js",
+      //       // "js/lib/draw_movement.js",
+      //       "js/lib/gameReplay.js",
+      //       // "js/lib/calculator_new.js",
+      //       // "js/lib/game_shortcuts.js",
+      //     ]) {
+      //       const gameShortcuts = document.createElement("script");
+      //       gameShortcuts.src = scriptSrc;
+      //       gameShortcuts.addEventListener("load", () => {
+      //         const scripts = Array.from(getCurrentDocument().querySelectorAll("script"));
+      //         for (const script of Array.from(scripts)) {
+      //           if (script.src !== "") continue;
+      //           if (!script.innerHTML.includes("let playersInfo =")) continue;
 
+      //           const newScript = document.createElement("script");
+      //           newScript.innerHTML = script.innerHTML;
+      //           newScript.innerHTML = newScript.innerHTML.replaceAll("const", "let");
+
+      //           if (typeof playersInfo !== "undefined") {
+      //             newScript.innerHTML = newScript.innerHTML.replaceAll("const", "");
+      //             newScript.innerHTML = newScript.innerHTML.replaceAll("let", "");
+      //           }
+
+      //           document.body.appendChild(newScript);
+      //         }
+      //       });
+      //       document.body.appendChild(gameShortcuts);
+      //       gameJSLoaded = true;
+      //     }
+      //   }
+      // }
+      break;
+    // case PageType.MapEditor:
+    //   break;
+  }
+  preloadThemes();
   allowSettingsToBeSaved();
+  initializeMusicPlayerUI();
+  addHandlers();
 }
 
 /**
- * Whether the music player has been initialized or not.
+ * Whether the autoplay settings have been checked already.
  */
-let mainFunctionExecuted = false;
+let autoplayChecked = false;
 
 /**
  * Main function that initializes everything depending on the browser autoplay settings.
  */
-export function main() {
-  if (mainFunctionExecuted) {
+export function checkAutoplayThenInitialize() {
+  if (autoplayChecked) {
     initializeMusicPlayer();
     return;
   }
+  autoplayChecked = true;
 
   const ifCanAutoplay = () => {
     initializeMusicPlayer();
@@ -199,32 +250,46 @@ export function main() {
     .catch((reason) => {
       logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
       ifCannotAutoplay();
-    })
-    .finally(() => (mainFunctionExecuted = true));
+    });
+}
+
+/**
+ * Main function that begins the script.
+ */
+function main() {
+  // Only run the script if we are the top window and not inside the iframe
+  // Also only run the script if we are on a .php page
+  if (self !== top) return;
+  if (!window.location.href.includes(".php")) return;
+
+  // Load settings from local storage but don't allow saving yet
+  loadSettingsFromLocalStorage();
+
+  // Open the database for caching music files first
+  // No matter what happens, we will initialize the music player
+  logInfo("Opening database to cache music files.");
+  openDB()
+    .then(() => logInfo("Database opened successfully. Ready to cache music files."))
+    .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
+    .finally(() => {
+      // Always run maintenance pages without iframes
+      if (getCurrentPageType() === PageType.Maintenance) {
+        checkAutoplayThenInitialize();
+
+        // The site is currently down for daily maintenance. Please try again in 2m 24s.
+        const maintenanceDiv = document.querySelector("#server-maintenance-alert");
+        const currentText = maintenanceDiv?.textContent;
+        const minutes = currentText?.match(/\d+m/)?.[0].replace("m", "") ?? 0;
+        const seconds = currentText?.match(/\d+s/)?.[0].replace("s", "") ?? 0;
+        logInfo("Maintenance page detected. Will try again in", minutes, "minutes and", seconds, "seconds.");
+        return;
+      }
+
+      initializeIFrame(checkAutoplayThenInitialize);
+    });
 }
 
 /******************************************************************
- * SCRIPT ENTRY (MAIN FUNCTION)
+ * SCRIPT ENTRY
  ******************************************************************/
-// Load settings from local storage but don't allow saving yet
-loadSettingsFromLocalStorage();
-
-// Only run the script if we are the top window and not inside the iframe
-if (self === top) {
-  // Open the database for caching music files first
-  // No matter what happens, we will initialize the music player
-  log("Opening database to cache music files.");
-  openDB()
-    .then(() => log("Database opened successfully. Ready to cache music files."))
-    .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
-    .finally(() => {
-      // Always run game pages without iframes
-      // if (getCurrentPageType() === PageType.ActiveGame) {
-      //   main();
-      //   return;
-      // }
-
-      initializeIFrame(main);
-      main();
-    });
-}
+main();

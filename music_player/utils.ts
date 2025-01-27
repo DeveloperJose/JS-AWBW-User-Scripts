@@ -8,7 +8,7 @@
  * @param args - Additional arguments to log
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function log(message: any, ...args: any[]): void {
+export function logInfo(message: any, ...args: any[]): void {
   console.log("[AWBW Improved Music Player]", message, ...args);
 }
 
