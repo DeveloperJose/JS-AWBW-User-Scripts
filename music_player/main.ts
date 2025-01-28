@@ -16,17 +16,17 @@ import {
   getCurrentThemeType,
   loadSettingsFromLocalStorage,
   musicSettings,
-  RandomThemeType,
 } from "./music_settings";
 import { addHandlers } from "./handlers";
 import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
-import { SpecialTheme } from "./resources";
+import { GameSFX, SpecialTheme } from "./resources";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 import { logDebug, logInfo, logError } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
-import { addThemeListeners, playMusicURL, playOrPauseWhenWindowFocusChanges, playThemeSong } from "./music/co_themes";
+import { addThemeListeners, playMusicURL, playThemeSong, stopThemeSong } from "./music/co_themes";
 import { preloadAllCommonAudio } from "./music/preloading";
-import { initializeIFrame } from "./iframe";
+import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } from "./iframe";
+import { playSFX } from "./music/sound_effects";
 
 /******************************************************************
  * MODULE EXPORTS
@@ -58,10 +58,7 @@ function onLiveQueue() {
 
     // Prepend the music player UI to the box
     musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
-    musicSettings.randomThemesType = RandomThemeType.NONE;
     playMusicURL(SpecialTheme.COSelect);
-    allowSettingsToBeSaved();
-    playOrPauseWhenWindowFocusChanges();
     return true;
   };
 
@@ -73,21 +70,21 @@ function onLiveQueue() {
   const addPlayerIntervalID = window.setInterval(() => {
     // We have switched pages
     if (getCurrentPageType() !== PageType.LiveQueue) {
-      clearInterval(addPlayerIntervalID);
+      window.clearInterval(addPlayerIntervalID);
       return;
     }
 
     if (!addMusicFn()) return;
 
     // We don't need to add the music player anymore
-    clearInterval(addPlayerIntervalID);
+    window.clearInterval(addPlayerIntervalID);
 
     // Now we need to check if we need to pause/resume the music because the player left/rejoined
     // We will do this indefinitely until eventually the player accepts a match or leaves the page
     const checkInterval = window.setInterval(() => {
       // We have switched pages
       if (getCurrentPageType() !== PageType.LiveQueue) {
-        clearInterval(checkInterval);
+        window.clearInterval(checkInterval);
         playThemeSong();
         return;
       }
@@ -118,7 +115,7 @@ function preloadThemes() {
     musicSettings.themeType = getCurrentThemeType();
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
-    setTimeout(playThemeSong, 500);
+    window.setTimeout(playThemeSong, 500);
 
     // Check for new music files every minute
     if (!setHashesTimeoutID) {
@@ -139,6 +136,7 @@ function preloadThemes() {
     // });
   });
 }
+let lastCursorCall = Date.now();
 
 /**
  * Initializes the music player script by setting everything up.
@@ -147,69 +145,79 @@ export function initializeMusicPlayer() {
   const currentPageType = getCurrentPageType();
   // logInfo("Initializing music player for page type:", currentPageType);
 
-  // Live queue page has a special music player
-  if (currentPageType === PageType.LiveQueue) return onLiveQueue();
-
   // Override the saved setting for autoplay if we are on a different page than an active game page
   if (currentPageType !== PageType.ActiveGame) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
 
   switch (currentPageType) {
+    case PageType.LiveQueue:
+      onLiveQueue();
+      break;
     case PageType.Maintenance:
       musicPlayerUI.openContextMenu();
       break;
     case PageType.MovePlanner:
       musicSettings.isPlaying = true;
       break;
-    case PageType.ActiveGame:
-      // {
-      //   if (isIFrameActive()) {
-      //     for (const scriptSrc of [
-      //       // "js/overlib_mini_minify.js?v=1.0",
-      //       // "js/tinyqueue.js",
-      //       // "js/axios.js",
-      //       // "js/vue.min.js",
-      //       // "js/lib/animate_weather.js",
-      //       // "terrain/tilesets.js",
-      //       // "js/lib/map_renderer.js",
-      //       // "js/lib/game.js",
-      //       // "js/lib/draw_movement.js",
-      //       "js/lib/gameReplay.js",
-      //       // "js/lib/calculator_new.js",
-      //       // "js/lib/game_shortcuts.js",
-      //     ]) {
-      //       const gameShortcuts = document.createElement("script");
-      //       gameShortcuts.src = scriptSrc;
-      //       gameShortcuts.addEventListener("load", () => {
-      //         const scripts = Array.from(getCurrentDocument().querySelectorAll("script"));
-      //         for (const script of Array.from(scripts)) {
-      //           if (script.src !== "") continue;
-      //           if (!script.innerHTML.includes("let playersInfo =")) continue;
-
-      //           const newScript = document.createElement("script");
-      //           newScript.innerHTML = script.innerHTML;
-      //           newScript.innerHTML = newScript.innerHTML.replaceAll("const", "let");
-
-      //           if (typeof playersInfo !== "undefined") {
-      //             newScript.innerHTML = newScript.innerHTML.replaceAll("const", "");
-      //             newScript.innerHTML = newScript.innerHTML.replaceAll("let", "");
-      //           }
-
-      //           document.body.appendChild(newScript);
-      //         }
-      //       });
-      //       document.body.appendChild(gameShortcuts);
-      //       gameJSLoaded = true;
-      //     }
-      //   }
-      // }
-      break;
-    // case PageType.MapEditor:
-    //   break;
   }
   preloadThemes();
   allowSettingsToBeSaved();
   initializeMusicPlayerUI();
   addHandlers();
+
+  const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
+  iframe?.addEventListener("focus", () => {
+    if (musicSettings.isPlaying) playThemeSong();
+  });
+
+  window.addEventListener("focus", () => {
+    if (musicSettings.isPlaying) playThemeSong();
+  });
+
+  broadcastChannel.onmessage = (ev) => {
+    logDebug("Received message from another tab:", ev.data);
+    if (ev.data === "pause") stopThemeSong();
+    else if (ev.data === "play") playThemeSong();
+  };
+
+  const fn = (_e: Event) => {
+    const timeSinceLastCursorCall = Date.now() - lastCursorCall;
+    if (!musicSettings.sfxOnOtherPages) return;
+    if (timeSinceLastCursorCall < 80) return;
+    playSFX(GameSFX.uiMenuMove);
+    lastCursorCall = Date.now();
+  };
+
+  const addSFXToPage = () => {
+    getCurrentDocument()
+      .querySelectorAll("a")
+      .forEach((link) =>
+        link.addEventListener("click", () => {
+          if (!musicSettings.sfxOnOtherPages) return;
+          playSFX(GameSFX.uiMenuOpen);
+        }),
+      );
+
+    const hoverElements = Array.from(
+      getCurrentDocument().querySelectorAll("li, ul, .dropdown-menu, .co_portrait, a, input, button"),
+    );
+    hoverElements.forEach((menu) => menu.addEventListener("mouseenter", fn));
+  };
+  addSFXToPage();
+
+  let overDiv = document.querySelector("#overDiv") as HTMLElement;
+  if (!overDiv) {
+    overDiv = document.createElement("div");
+    overDiv.id = "overDiv";
+    overDiv.style.visibility = "hidden";
+    overDiv.style.position = "absolute";
+    overDiv.style.zIndex = "2000";
+    document.appendChild(overDiv);
+  }
+
+  const overDivObserver = new MutationObserver(() => {
+    if (overDiv.style.visibility === "visible") addSFXToPage();
+  });
+  overDivObserver.observe(overDiv, { attributes: true });
 }
 
 /**
@@ -221,6 +229,7 @@ let autoplayChecked = false;
  * Main function that initializes everything depending on the browser autoplay settings.
  */
 export function checkAutoplayThenInitialize() {
+  logDebug("Checking if we can autoplay then initializing the music player.");
   if (autoplayChecked) {
     initializeMusicPlayer();
     return;
@@ -232,25 +241,33 @@ export function checkAutoplayThenInitialize() {
   };
 
   const ifCannotAutoplay = () => {
+    const initfn = () => {
+      window.clearInterval(autoplayIntervalID);
+      initializeMusicPlayer();
+    };
     // Listen for any clicks
-    musicPlayerUI.addEventListener("click", () => initializeMusicPlayer(), { once: true });
-    document.querySelector("body")?.addEventListener("click", () => initializeMusicPlayer(), { once: true });
+    musicPlayerUI.addEventListener("click", initfn, { once: true });
+    document.querySelector("body")?.addEventListener("click", initfn, { once: true });
   };
 
   // Check if we can autoplay
-  canAutoplay
-    .audio()
-    .then((response: CheckResponse) => {
-      const result = response.result;
-      logDebug("Script starting, does your browser allow you to auto-play:", result);
+  const autoplayIntervalID = window.setInterval(() => {
+    canAutoplay
+      .audio()
+      .then((response: CheckResponse) => {
+        const result = response.result;
+        logDebug("Script starting, does your browser allow you to auto-play:", result);
 
-      if (result) ifCanAutoplay();
-      else ifCannotAutoplay();
-    })
-    .catch((reason) => {
-      logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
-      ifCannotAutoplay();
-    });
+        if (result) {
+          ifCanAutoplay();
+          window.clearInterval(autoplayIntervalID);
+        } else ifCannotAutoplay();
+      })
+      .catch((reason) => {
+        logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
+        ifCannotAutoplay();
+      });
+  }, 100);
 }
 
 /**

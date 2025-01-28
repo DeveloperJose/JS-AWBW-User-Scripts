@@ -1,13 +1,17 @@
 /* This file is used to style the music player settings */
 
+iframe {
+  border: none;
+}
+
 .cls-settings-menu {
   display: none;
   /* display: flex; */
   top: 40px;
   flex-direction: column;
-  width: 850px;
+  width: 750px;
   border: black 1px solid;
-  z-index: 200;
+  z-index: 20;
   text-align: center;
   align-items: center;
   font-family: "Nova Square", cursive !important;
@@ -55,20 +59,31 @@
 }
 
 /* Puts the checkbox next to the label */
-.cls-settings-menu .cls-vertical-box[id$="extra-options"] {
+.cls-settings-menu .cls-vertical-box[id$="options"] {
   align-items: center;
   align-self: center;
 }
 
-.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {
+.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {
   width: 100%;
   justify-content: center;
 }
 
-.cls-settings-menu .cls-horizontal-box[id$="random-themes"],
+.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {
+  vertical-align: middle;
+}
+
+/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {
+  display: block;
+  padding-right: 10px;
+  padding-left: 22px;
+  text-indent: -22px;
+} */
+
+/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],
 .cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {
   justify-content: center;
-}
+} */
 
 .cls-settings-menu-box {
   display: flex;
@@ -103,12 +118,12 @@
   top: 28px;
   left: 25px;
   border: none;
-  z-index: 200;
+  z-index: 30;
 }
 
 .cls-settings-menu .co_portrait {
   border-color: #009966;
-  z-index: 200;
+  z-index: 30;
   border: 2px solid;
   vertical-align: middle;
   align-self: center;

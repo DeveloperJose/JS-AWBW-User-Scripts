@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.0.0
+// @version         5.0.2
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -50,7 +50,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   }
 
   var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 850px;\n  border: black 1px solid;\n  z-index: 200;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="extra-options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n}\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 200;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 200;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
+    '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
   styleInject(css_248z$1);
 
   var css_248z =
@@ -66,32 +66,54 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function logDebug(message, ...args) {
     console.debug("[AWBW Improved Music Player]", message, ...args);
   }
+  function debounce(ms, callback, immediate = false) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      const later = () => {
+        timeout = null;
+        if (!immediate) {
+          callback.apply(context, args);
+        }
+      };
+      const callNow = immediate && !timeout;
+      if (typeof timeout === "number") {
+        window.clearTimeout(timeout);
+      }
+      timeout = window.setTimeout(later, ms);
+      if (callNow) {
+        callback.apply(context, args);
+      }
+    };
+  }
 
-  const IFRAME_NAME = "music-player-iframe";
+  const IFRAME_ID = "music-player-iframe";
+  const broadcastChannel = new BroadcastChannel("awbw-music-player");
   function isIFrameActive() {
-    const iframe = document.querySelector("#" + IFRAME_NAME);
+    const iframe = document.getElementById(IFRAME_ID);
     if (!iframe) return false;
     const href = iframe.contentDocument?.location.href ?? iframe.src;
     return href !== null && href !== "" && href !== "about:blank";
   }
   function getCurrentDocument() {
     if (!isIFrameActive()) return window.document;
-    return document.querySelector("iframe")?.contentDocument ?? window.document;
+    const iframe = document.getElementById(IFRAME_ID);
+    return iframe?.contentDocument ?? window.document;
   }
   function initializeIFrame(init_fn) {
-    const hasFrame = document.querySelector("iframe");
+    const hasFrame = document.getElementById(IFRAME_ID);
     if (hasFrame) return;
     const iframe = document.createElement("iframe");
     iframe.style.display = "none";
-    iframe.id = IFRAME_NAME;
-    iframe.name = IFRAME_NAME;
+    iframe.id = IFRAME_ID;
+    iframe.name = IFRAME_ID;
     document.body.appendChild(iframe);
     iframe.addEventListener("load", (event) => onIFrameLoad(event, init_fn));
     hijackLinks(window.document);
     init_fn();
     window.addEventListener("popstate", (event) => {
       const href = window.location.href;
-      const iframe2 = document.querySelector("iframe");
+      const iframe2 = document.getElementById(IFRAME_ID);
       if (!iframe2 || href.includes("game.php")) {
         window.location.reload();
         return;
@@ -107,7 +129,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (!iframe || !iframe.contentDocument) return;
     const href = iframe.contentDocument.location.href ?? iframe.src;
     if (href === null || href === "" || href === "about:blank") return;
-    for (const child of Array.from(document.body.children)) if (child !== iframe) child.remove();
+    for (const child of Array.from(document.body.children)) {
+      if (child === iframe) continue;
+      if (child.id === "overDiv") continue;
+      child.remove();
+    }
     iframe.style.display = "block";
     iframe.style.width = "100%";
     iframe.style.height = "100%";
@@ -137,8 +163,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     for (const link of Array.from(links)) {
       const isGamePageLink =
         link.href.includes("game.php") || (link.classList.contains("anchor") && link.name.includes("game_"));
-      if (isGamePageLink) link.target = "_top";
-      else link.target = IFRAME_NAME;
+      const isJSLink = link.href.startsWith("javascript:");
+      if (isJSLink) continue;
+      else if (link.href === "") continue;
+      else if (isGamePageLink) link.target = "_top";
+      else link.target = IFRAME_ID;
     }
   }
 
@@ -310,7 +339,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   const siloDelayMS = areAnimationsEnabled() ? 3e3 : 0;
   const attackDelayMS = areAnimationsEnabled() ? 1e3 : 0;
   function getMyUsername() {
-    const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
+    const document = getCurrentDocument();
     const profileMenu = document.querySelector("#profile-menu");
     if (!profileMenu) return null;
     const link = profileMenu.getElementsByClassName("dropdown-menu-link")[0];
@@ -561,27 +590,29 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     onSettingsChangeListeners.push(fn);
   }
   var SettingsKey = /* @__PURE__ */ ((SettingsKey2) => {
-    SettingsKey2[(SettingsKey2["IS_PLAYING"] = 0)] = "IS_PLAYING";
-    SettingsKey2[(SettingsKey2["VOLUME"] = 1)] = "VOLUME";
-    SettingsKey2[(SettingsKey2["SFX_VOLUME"] = 2)] = "SFX_VOLUME";
-    SettingsKey2[(SettingsKey2["UI_VOLUME"] = 3)] = "UI_VOLUME";
-    SettingsKey2[(SettingsKey2["GAME_TYPE"] = 4)] = "GAME_TYPE";
-    SettingsKey2[(SettingsKey2["ALTERNATE_THEMES"] = 5)] = "ALTERNATE_THEMES";
-    SettingsKey2[(SettingsKey2["ALTERNATE_THEME_DAY"] = 6)] = "ALTERNATE_THEME_DAY";
-    SettingsKey2[(SettingsKey2["RANDOM_THEMES_TYPE"] = 7)] = "RANDOM_THEMES_TYPE";
-    SettingsKey2[(SettingsKey2["CAPTURE_PROGRESS_SFX"] = 8)] = "CAPTURE_PROGRESS_SFX";
-    SettingsKey2[(SettingsKey2["PIPE_SEAM_SFX"] = 9)] = "PIPE_SEAM_SFX";
-    SettingsKey2[(SettingsKey2["OVERRIDE_LIST"] = 10)] = "OVERRIDE_LIST";
-    SettingsKey2[(SettingsKey2["RESTART_THEMES"] = 11)] = "RESTART_THEMES";
-    SettingsKey2[(SettingsKey2["AUTOPLAY_ON_OTHER_PAGES"] = 12)] = "AUTOPLAY_ON_OTHER_PAGES";
-    SettingsKey2[(SettingsKey2["EXCLUDED_RANDOM_THEMES"] = 13)] = "EXCLUDED_RANDOM_THEMES";
-    SettingsKey2[(SettingsKey2["THEME_TYPE"] = 14)] = "THEME_TYPE";
-    SettingsKey2[(SettingsKey2["CURRENT_RANDOM_CO"] = 15)] = "CURRENT_RANDOM_CO";
-    SettingsKey2[(SettingsKey2["ALL"] = 16)] = "ALL";
-    SettingsKey2[(SettingsKey2["ADD_OVERRIDE"] = 17)] = "ADD_OVERRIDE";
-    SettingsKey2[(SettingsKey2["REMOVE_OVERRIDE"] = 18)] = "REMOVE_OVERRIDE";
-    SettingsKey2[(SettingsKey2["ADD_EXCLUDED"] = 19)] = "ADD_EXCLUDED";
-    SettingsKey2[(SettingsKey2["REMOVE_EXCLUDED"] = 20)] = "REMOVE_EXCLUDED";
+    SettingsKey2["IS_PLAYING"] = "isPlaying";
+    SettingsKey2["VOLUME"] = "volume";
+    SettingsKey2["SFX_VOLUME"] = "sfxVolume";
+    SettingsKey2["UI_VOLUME"] = "uiVolume";
+    SettingsKey2["GAME_TYPE"] = "gameType";
+    SettingsKey2["ALTERNATE_THEMES"] = "alternateThemes";
+    SettingsKey2["ALTERNATE_THEME_DAY"] = "alternateThemeDay";
+    SettingsKey2["RANDOM_THEMES_TYPE"] = "randomThemesType";
+    SettingsKey2["CAPTURE_PROGRESS_SFX"] = "captureProgressSFX";
+    SettingsKey2["PIPE_SEAM_SFX"] = "pipeSeamSFX";
+    SettingsKey2["OVERRIDE_LIST"] = "overrideList";
+    SettingsKey2["RESTART_THEMES"] = "restartThemes";
+    SettingsKey2["AUTOPLAY_ON_OTHER_PAGES"] = "autoplayOnOtherPages";
+    SettingsKey2["EXCLUDED_RANDOM_THEMES"] = "excludedRandomThemes";
+    SettingsKey2["LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE"] = "loopRandomSongsUntilTurnChange";
+    SettingsKey2["SFX_ON_OTHER_PAGES"] = "sfxOnOtherPages";
+    SettingsKey2["THEME_TYPE"] = "themeType";
+    SettingsKey2["CURRENT_RANDOM_CO"] = "currentRandomCO";
+    SettingsKey2["ALL"] = "all";
+    SettingsKey2["ADD_OVERRIDE"] = "addOverride";
+    SettingsKey2["REMOVE_OVERRIDE"] = "removeOverride";
+    SettingsKey2["ADD_EXCLUDED"] = "addExcluded";
+    SettingsKey2["REMOVE_EXCLUDED"] = "removeExcluded";
     return SettingsKey2;
   })(SettingsKey || {});
   class musicSettings {
@@ -601,7 +632,16 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
         restartThemes: this.__restartThemes,
         autoplayOnOtherPages: this.__autoplayOnOtherPages,
         excludedRandomThemes: Array.from(this.__excludedRandomThemes),
+        loopRandomSongsUntilTurnChange: this.__loopRandomSongsUntilTurnChange,
+        sfxOnOtherPages: this.__sfxOnOtherPages,
       });
+    }
+    static runWithoutSavingSettings(fn) {
+      this.isLoaded = false;
+      this.saveChanges = false;
+      fn();
+      this.isLoaded = true;
+      this.saveChanges = true;
     }
     static fromJSON(json) {
       const savedSettings = JSON.parse(json);
@@ -619,12 +659,13 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
           this[key] = savedSettings[key];
         }
       }
-      this.__isLoaded = true;
+      this.isLoaded = true;
+      broadcastChannel.addEventListener("message", onStorageBroadcast);
     }
     static set isPlaying(val) {
       if (this.__isPlaying === val) return;
       this.__isPlaying = val;
-      this.onSettingChangeEvent(0 /* IS_PLAYING */);
+      this.onSettingChangeEvent("isPlaying" /* IS_PLAYING */, val);
     }
     static get isPlaying() {
       return this.__isPlaying;
@@ -632,7 +673,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set volume(val) {
       if (this.__volume === val) return;
       this.__volume = val;
-      this.onSettingChangeEvent(1 /* VOLUME */);
+      this.onSettingChangeEvent("volume" /* VOLUME */, val);
     }
     static get volume() {
       return this.__volume;
@@ -640,7 +681,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set sfxVolume(val) {
       if (this.__sfxVolume === val) return;
       this.__sfxVolume = val;
-      this.onSettingChangeEvent(2 /* SFX_VOLUME */);
+      this.onSettingChangeEvent("sfxVolume" /* SFX_VOLUME */, val);
     }
     static get sfxVolume() {
       return this.__sfxVolume;
@@ -648,7 +689,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set uiVolume(val) {
       if (this.__uiVolume === val) return;
       this.__uiVolume = val;
-      this.onSettingChangeEvent(3 /* UI_VOLUME */);
+      this.onSettingChangeEvent("uiVolume" /* UI_VOLUME */, val);
     }
     static get uiVolume() {
       return this.__uiVolume;
@@ -657,7 +698,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       if (this.__gameType === val) return;
       this.__gameType = val;
       this.__currentRandomGameType = val;
-      this.onSettingChangeEvent(4 /* GAME_TYPE */);
+      this.onSettingChangeEvent("gameType" /* GAME_TYPE */, val);
     }
     static get gameType() {
       return this.__gameType;
@@ -665,7 +706,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set alternateThemes(val) {
       if (this.__alternateThemes === val) return;
       this.__alternateThemes = val;
-      this.onSettingChangeEvent(5 /* ALTERNATE_THEMES */);
+      this.onSettingChangeEvent("alternateThemes" /* ALTERNATE_THEMES */, val);
     }
     static get alternateThemes() {
       return this.__alternateThemes;
@@ -673,28 +714,28 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set alternateThemeDay(val) {
       if (this.__alternateThemeDay === val) return;
       this.__alternateThemeDay = val;
-      this.onSettingChangeEvent(6 /* ALTERNATE_THEME_DAY */);
+      this.onSettingChangeEvent("alternateThemeDay" /* ALTERNATE_THEME_DAY */, val);
     }
     static get alternateThemeDay() {
       return this.__alternateThemeDay;
     }
     static set captureProgressSFX(val) {
       this.__captureProgressSFX = val;
-      this.onSettingChangeEvent(8 /* CAPTURE_PROGRESS_SFX */);
+      this.onSettingChangeEvent("captureProgressSFX" /* CAPTURE_PROGRESS_SFX */, val);
     }
     static get captureProgressSFX() {
       return this.__captureProgressSFX;
     }
     static set pipeSeamSFX(val) {
       this.__pipeSeamSFX = val;
-      this.onSettingChangeEvent(9 /* PIPE_SEAM_SFX */);
+      this.onSettingChangeEvent("pipeSeamSFX" /* PIPE_SEAM_SFX */, val);
     }
     static get pipeSeamSFX() {
       return this.__pipeSeamSFX;
     }
     static set overrideList(val) {
       this.__overrideList = new Map([...val.entries()].sort());
-      this.onSettingChangeEvent(10 /* OVERRIDE_LIST */);
+      this.onSettingChangeEvent("overrideList" /* OVERRIDE_LIST */, val);
     }
     static get overrideList() {
       return this.__overrideList;
@@ -702,12 +743,12 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static addOverride(coName, gameType) {
       this.__overrideList.set(coName, gameType);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-      this.onSettingChangeEvent(17 /* ADD_OVERRIDE */);
+      this.onSettingChangeEvent("addOverride" /* ADD_OVERRIDE */, [coName, gameType]);
     }
     static removeOverride(coName) {
       this.__overrideList.delete(coName);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-      this.onSettingChangeEvent(18 /* REMOVE_OVERRIDE */);
+      this.onSettingChangeEvent("removeOverride" /* REMOVE_OVERRIDE */, coName);
     }
     static getOverride(coName) {
       return this.__overrideList.get(coName);
@@ -718,7 +759,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set restartThemes(val) {
       if (this.__restartThemes === val) return;
       this.__restartThemes = val;
-      this.onSettingChangeEvent(11 /* RESTART_THEMES */);
+      this.onSettingChangeEvent("restartThemes" /* RESTART_THEMES */, val);
     }
     static get autoplayOnOtherPages() {
       return this.__autoplayOnOtherPages;
@@ -726,28 +767,44 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set autoplayOnOtherPages(val) {
       if (this.__autoplayOnOtherPages === val) return;
       this.__autoplayOnOtherPages = val;
-      this.onSettingChangeEvent(12 /* AUTOPLAY_ON_OTHER_PAGES */);
+      this.onSettingChangeEvent("autoplayOnOtherPages" /* AUTOPLAY_ON_OTHER_PAGES */, val);
     }
     static get excludedRandomThemes() {
       return this.__excludedRandomThemes;
     }
     static set excludedRandomThemes(val) {
       this.__excludedRandomThemes = val;
-      this.onSettingChangeEvent(13 /* EXCLUDED_RANDOM_THEMES */);
+      this.onSettingChangeEvent("excludedRandomThemes" /* EXCLUDED_RANDOM_THEMES */, val);
     }
     static addExcludedRandomTheme(theme) {
       this.__excludedRandomThemes.add(theme);
-      this.onSettingChangeEvent(19 /* ADD_EXCLUDED */);
+      this.onSettingChangeEvent("addExcluded" /* ADD_EXCLUDED */, theme);
     }
     static removeExcludedRandomTheme(theme) {
       this.__excludedRandomThemes.delete(theme);
-      this.onSettingChangeEvent(20 /* REMOVE_EXCLUDED */);
+      this.onSettingChangeEvent("removeExcluded" /* REMOVE_EXCLUDED */, theme);
+    }
+    static get loopRandomSongsUntilTurnChange() {
+      return this.__loopRandomSongsUntilTurnChange;
+    }
+    static set loopRandomSongsUntilTurnChange(val) {
+      if (this.__loopRandomSongsUntilTurnChange === val) return;
+      this.__loopRandomSongsUntilTurnChange = val;
+      this.onSettingChangeEvent("loopRandomSongsUntilTurnChange" /* LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE */, val);
+    }
+    static get sfxOnOtherPages() {
+      return this.__sfxOnOtherPages;
+    }
+    static set sfxOnOtherPages(val) {
+      if (this.__sfxOnOtherPages === val) return;
+      this.__sfxOnOtherPages = val;
+      this.onSettingChangeEvent("sfxOnOtherPages" /* SFX_ON_OTHER_PAGES */, val);
     }
     // ************* Non-user configurable settings from here on
     static set themeType(val) {
       if (this.__themeType === val) return;
       this.__themeType = val;
-      this.onSettingChangeEvent(14 /* THEME_TYPE */);
+      this.onSettingChangeEvent("themeType" /* THEME_TYPE */, val);
     }
     static get themeType() {
       return this.__themeType;
@@ -755,7 +812,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set randomThemesType(val) {
       if (this.__randomThemesType === val) return;
       this.__randomThemesType = val;
-      this.onSettingChangeEvent(7 /* RANDOM_THEMES_TYPE */);
+      this.onSettingChangeEvent("randomThemesType" /* RANDOM_THEMES_TYPE */, val);
     }
     static get randomThemesType() {
       return this.__randomThemesType;
@@ -764,6 +821,9 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       if (!this.__currentRandomCO || this.__currentRandomCO == "") this.randomizeCO();
       return this.__currentRandomCO;
     }
+    static get currentRandomGameType() {
+      return this.__currentRandomGameType;
+    }
     static randomizeCO() {
       const excludedCOs = /* @__PURE__ */ new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
       this.__currentRandomCO = getRandomCO(excludedCOs);
@@ -771,13 +831,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const excludedSoundtracks = /* @__PURE__ */ new Set();
       if (isPower) excludedSoundtracks.add("AW1" /* AW1 */);
       this.__currentRandomGameType = getRandomGameType(excludedSoundtracks);
-      this.onSettingChangeEvent(15 /* CURRENT_RANDOM_CO */);
+      this.onSettingChangeEvent("currentRandomCO" /* CURRENT_RANDOM_CO */, null);
     }
-    static onSettingChangeEvent(key) {
-      onSettingsChangeListeners.forEach((fn) => fn(key, !this.__isLoaded));
-    }
-    static get currentRandomGameType() {
-      return this.__currentRandomGameType;
+    static onSettingChangeEvent(key, value) {
+      onSettingsChangeListeners.forEach((fn) => fn(key, value, !this.isLoaded));
     }
   }
   // User configurable settings
@@ -795,33 +852,109 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   __publicField$1(musicSettings, "__restartThemes", false);
   __publicField$1(musicSettings, "__autoplayOnOtherPages", true);
   __publicField$1(musicSettings, "__excludedRandomThemes", /* @__PURE__ */ new Set());
+  __publicField$1(musicSettings, "__loopRandomSongsUntilTurnChange", false);
+  __publicField$1(musicSettings, "__sfxOnOtherPages", true);
   // Non-user configurable settings
   __publicField$1(musicSettings, "__themeType", "REGULAR" /* REGULAR */);
   __publicField$1(musicSettings, "__currentRandomCO", "");
   __publicField$1(musicSettings, "__currentRandomGameType", "DS" /* DS */);
-  __publicField$1(musicSettings, "__isLoaded", false);
+  __publicField$1(musicSettings, "isLoaded", false);
+  __publicField$1(musicSettings, "saveChanges", false);
   function loadSettingsFromLocalStorage() {
     let storageData = localStorage.getItem(STORAGE_KEY);
     if (!storageData || storageData === "undefined") {
       logInfo("No saved settings found, storing defaults");
-      storageData = updateSettingsInLocalStorage();
+      updateSettingsInLocalStorage();
+      storageData = localStorage.getItem(STORAGE_KEY);
+      if (!storageData) {
+        logError("Failed to store default settings in local storage");
+        return;
+      }
     }
     musicSettings.fromJSON(storageData);
-    onSettingsChangeListeners.forEach((fn) => fn(16 /* ALL */, true));
+    onSettingsChangeListeners.forEach((fn) => fn("all" /* ALL */, null, true));
     logDebug("Settings loaded from storage:", storageData);
-  }
-  function allowSettingsToBeSaved() {
     addSettingsChangeListener(onSettingsChange$2);
   }
-  function onSettingsChange$2(key, _isFirstLoad) {
-    if (key === 14 /* THEME_TYPE */ || key === 15 /* CURRENT_RANDOM_CO */) return "";
-    updateSettingsInLocalStorage();
+  function allowSettingsToBeSaved() {
+    musicSettings.saveChanges = true;
   }
-  function updateSettingsInLocalStorage() {
+  function onSettingsChange$2(key, value, _isFirstLoad) {
+    if (key === "themeType" /* THEME_TYPE */ || key === "currentRandomCO" /* CURRENT_RANDOM_CO */) return;
+    if (!musicSettings.saveChanges) return;
+    updateSettingsInLocalStorage();
+    broadcastChannel.postMessage({ type: "settings", key, value });
+  }
+  const updateSettingsInLocalStorage = debounce(500, __updateSettingsInLocalStorage);
+  function __updateSettingsInLocalStorage() {
     const jsonSettings = musicSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
     logDebug("Saving settings...", jsonSettings);
-    return jsonSettings;
+    return;
+  }
+  function onStorageBroadcast(event) {
+    if (event.data.type !== "settings") return;
+    const key = event.data.key;
+    const value = event.data.value;
+    logDebug("Received settings change:", key, value);
+    musicSettings.runWithoutSavingSettings(() => {
+      switch (key) {
+        case "volume" /* VOLUME */:
+          musicSettings.volume = value;
+          break;
+        case "sfxVolume" /* SFX_VOLUME */:
+          musicSettings.sfxVolume = value;
+          break;
+        case "uiVolume" /* UI_VOLUME */:
+          musicSettings.uiVolume = value;
+          break;
+        case "themeType" /* THEME_TYPE */:
+          musicSettings.themeType = value;
+          break;
+        case "gameType" /* GAME_TYPE */:
+          musicSettings.gameType = value;
+          break;
+        case "alternateThemes" /* ALTERNATE_THEMES */:
+          musicSettings.alternateThemes = value;
+          break;
+        case "alternateThemeDay" /* ALTERNATE_THEME_DAY */:
+          musicSettings.alternateThemeDay = value;
+          break;
+        case "randomThemesType" /* RANDOM_THEMES_TYPE */:
+          musicSettings.randomThemesType = value;
+          break;
+        case "captureProgressSFX" /* CAPTURE_PROGRESS_SFX */:
+          musicSettings.captureProgressSFX = value;
+          break;
+        case "pipeSeamSFX" /* PIPE_SEAM_SFX */:
+          musicSettings.pipeSeamSFX = value;
+          break;
+        case "restartThemes" /* RESTART_THEMES */:
+          musicSettings.restartThemes = value;
+          break;
+        case "autoplayOnOtherPages" /* AUTOPLAY_ON_OTHER_PAGES */:
+          musicSettings.autoplayOnOtherPages = value;
+          break;
+        case "addOverride" /* ADD_OVERRIDE */:
+          musicSettings.addOverride(value[0], value[1]);
+          break;
+        case "removeOverride" /* REMOVE_OVERRIDE */:
+          musicSettings.removeOverride(value);
+          break;
+        case "addExcluded" /* ADD_EXCLUDED */:
+          musicSettings.addExcludedRandomTheme(value);
+          break;
+        case "removeExcluded" /* REMOVE_EXCLUDED */:
+          musicSettings.removeExcludedRandomTheme(value);
+          break;
+        case "loopRandomSongsUntilTurnChange" /* LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE */:
+          musicSettings.loopRandomSongsUntilTurnChange = value;
+          break;
+        case "sfxOnOtherPages" /* SFX_ON_OTHER_PAGES */:
+          musicSettings.sfxOnOtherPages = value;
+          break;
+      }
+    });
   }
 
   const BASE_URL = "https://developerjose.netlify.app";
@@ -1027,7 +1160,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player" /* MusicPlayer */, "5.0.0"],
+    ["music_player" /* MusicPlayer */, "5.0.2"],
     ["highlight_cursor_coordinates" /* HighlightCursorCoordinates */, "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1182,7 +1315,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       this.setNodeID(btnImg, "button-image" /* Button_Image */);
       const contextMenu = document.createElement("div");
       contextMenu.classList.add("cls-settings-menu");
-      contextMenu.style.zIndex = "200";
+      contextMenu.style.zIndex = "30";
       this.parent.appendChild(contextMenu);
       this.setNodeID(contextMenu, "settings" /* Settings */);
       const contextMenuBoxesContainer = document.createElement("div");
@@ -1454,8 +1587,8 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     createInput(name, inputBox) {
       const input = document.createElement("input");
       const label = document.createElement("label");
-      label.innerText = name;
-      inputBox.appendChild(input);
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(name));
       inputBox.appendChild(label);
       label.addEventListener("click", () => input.click());
       this.inputElements.push(input);
@@ -1575,7 +1708,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const selectorInnerHTML = `<table><tr>${allColumnsHTML}</tr></table>`;
       const selectorTitle = `<img src=terrain/ani/blankred.gif height=16 width=1 align=absmiddle>Select CO`;
       coSelector.onclick = () => {
-        return overlib(selectorInnerHTML, STICKY, CAPTION, selectorTitle, OFFSETY, 25, OFFSETX, -322, CLOSECLICK);
+        const ret = overlib(selectorInnerHTML, STICKY, CAPTION, selectorTitle, OFFSETY, 25, OFFSETX, -322, CLOSECLICK);
+        const overdiv = document.querySelector("#overDiv");
+        if (overdiv) overdiv.style.zIndex = "1000";
+        return ret;
       };
       addCOSelectorListener((coName) => this.onCOSelectorClick(coName));
       addCOSelectorListener(onClickFn);
@@ -1593,6 +1729,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const imgCaret = document.createElement("img");
       imgCaret.classList.add("co_caret");
       imgCaret.src = "terrain/co_down_caret.gif";
+      imgCaret.style.zIndex = "300";
       return imgCaret;
     }
     createCOPortraitImage(coName) {
@@ -1651,7 +1788,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function onMusicBtnClick(_event) {
     musicSettings.isPlaying = !musicSettings.isPlaying;
   }
-  function onSettingsChange$1(key, isFirstLoad) {
+  function onSettingsChange$1(key, _value, isFirstLoad) {
     if (isFirstLoad) {
       if (volumeSlider) volumeSlider.value = musicSettings.volume.toString();
       if (sfxVolumeSlider) sfxVolumeSlider.value = musicSettings.sfxVolume.toString();
@@ -1665,6 +1802,8 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       pipeSeamBox.checked = musicSettings.pipeSeamSFX;
       restartThemesBox.checked = musicSettings.restartThemes;
       autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
+      loopToggle.checked = musicSettings.loopRandomSongsUntilTurnChange;
+      uiSFXPagesBox.checked = musicSettings.sfxOnOtherPages;
       alternateThemesBox.checked = musicSettings.alternateThemes;
       musicPlayerUI.updateAllInputLabels();
     }
@@ -1715,7 +1854,12 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     Description2["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
     Description2["Restart_Themes"] =
       "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.";
-    Description2["Autoplay_Pages"] = "Autoplay music on other pages like your games or during maintenance.";
+    Description2["Autoplay_Pages"] =
+      "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.";
+    Description2["SFX_Pages"] =
+      "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.";
+    Description2["Random_Loop_Toggle"] =
+      "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.";
     Description2["Alternate_Themes"] =
       "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.";
     Description2["Alternate_Day"] =
@@ -1753,29 +1897,29 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units." /* UI_Volume */,
     LEFT,
   );
-  const soundtrackGroup = "Soundtrack";
-  musicPlayerUI.addGroup(soundtrackGroup, GroupType.Horizontal, LEFT);
+  const soundtrackGroupID = "Soundtrack";
+  musicPlayerUI.addGroup(soundtrackGroupID, GroupType.Horizontal, LEFT);
   const gameTypeRadioMap = /* @__PURE__ */ new Map();
   for (const gameType of Object.values(GameType)) {
     const description = Description[gameType];
-    const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroup, description);
+    const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroupID, description);
     gameTypeRadioMap.set(gameType, radio);
   }
-  const randomGroup = "Random Themes";
-  musicPlayerUI.addGroup(randomGroup, GroupType.Horizontal, LEFT);
+  const randomGroupID = "Random Themes";
+  musicPlayerUI.addGroup(randomGroupID, GroupType.Horizontal, LEFT);
   const radioNormal = musicPlayerUI.addRadioButton(
     "Off" /* No_Random */,
-    randomGroup,
+    randomGroupID,
     "Play the music depending on who the current CO is." /* No_Random */,
   );
   const radioAllRandom = musicPlayerUI.addRadioButton(
     "All Soundtracks" /* All_Random */,
-    randomGroup,
+    randomGroupID,
     "Play random music every turn from all soundtracks." /* All_Random */,
   );
   const radioCurrentRandom = musicPlayerUI.addRadioButton(
     "Current Soundtrack" /* Current_Random */,
-    randomGroup,
+    randomGroupID,
     "Play random music every turn from the current soundtrack." /* Current_Random */,
   );
   const randomRadioMap = /* @__PURE__ */ new Map([
@@ -1785,34 +1929,46 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   ]);
   const shuffleBtn = musicPlayerUI.addButton(
     "Shuffle" /* Shuffle */,
-    randomGroup,
+    randomGroupID,
     "Changes the current theme to a new random one." /* Shuffle */,
   );
-  const toggleGroup = "Extra Options";
-  musicPlayerUI.addGroup(toggleGroup, GroupType.Vertical, LEFT);
+  const sfxGroupID = "Sound Effect (SFX) Options";
+  musicPlayerUI.addGroup(sfxGroupID, GroupType.Vertical, LEFT);
+  const uiSFXPagesBox = musicPlayerUI.addCheckbox(
+    "Play Sound Effects Outside Of Game Pages" /* SFX_Pages */,
+    sfxGroupID,
+    "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance." /* SFX_Pages */,
+  );
   const captProgressBox = musicPlayerUI.addCheckbox(
     "Capture Progress SFX" /* Capture_Progress */,
-    toggleGroup,
+    sfxGroupID,
     "Play a sound effect when a unit makes progress capturing a property." /* Capture_Progress */,
   );
   const pipeSeamBox = musicPlayerUI.addCheckbox(
     "Pipe Seam Attack SFX" /* Pipe_Seam_SFX */,
-    toggleGroup,
+    sfxGroupID,
     "Play a sound effect when a pipe seam is attacked." /* Pipe_Seam_SFX */,
+  );
+  const musicGroupID = "Music Options";
+  musicPlayerUI.addGroup(musicGroupID, GroupType.Vertical, LEFT);
+  const autoplayPagesBox = musicPlayerUI.addCheckbox(
+    "Autoplay Music Outside Of Game Pages" /* Autoplay_Pages */,
+    musicGroupID,
+    "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance." /* Autoplay_Pages */,
   );
   const restartThemesBox = musicPlayerUI.addCheckbox(
     "Restart Themes Every Turn" /* Restart_Themes */,
-    toggleGroup,
+    musicGroupID,
     "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously." /* Restart_Themes */,
   );
-  const autoplayPagesBox = musicPlayerUI.addCheckbox(
-    "Autoplay Music On Other Pages" /* Autoplay_Pages */,
-    toggleGroup,
-    "Autoplay music on other pages like your games or during maintenance." /* Autoplay_Pages */,
+  const loopToggle = musicPlayerUI.addCheckbox(
+    "Loop Random Songs Until Turn Changes" /* Random_Loop_Toggle */,
+    musicGroupID,
+    "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet." /* Random_Loop_Toggle */,
   );
   const alternateThemesBox = musicPlayerUI.addCheckbox(
     "Alternate Themes" /* Alternate_Themes */,
-    toggleGroup,
+    musicGroupID,
     "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start." /* Alternate_Themes */,
   );
   const daySlider = musicPlayerUI.addSlider(
@@ -1824,24 +1980,22 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     LEFT,
   );
   const RIGHT = NodeID.Settings_Right;
-  const addOverrideGroup = "Override Themes";
-  musicPlayerUI.addGroup(addOverrideGroup, GroupType.Horizontal, RIGHT);
+  const addOverrideGroupID = "Override Themes";
+  musicPlayerUI.addGroup(addOverrideGroupID, GroupType.Horizontal, RIGHT);
   let currentSelectedCO = "andy";
   function onCOSelectorClick(coName) {
     currentSelectedCO = coName;
   }
-  if (getCurrentPageType() === PageType.ActiveGame) {
-    musicPlayerUI.addCOSelector(
-      addOverrideGroup,
-      "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes." /* Add_Override */,
-      onCOSelectorClick,
-    );
-  }
+  musicPlayerUI.addCOSelector(
+    addOverrideGroupID,
+    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes." /* Add_Override */,
+    onCOSelectorClick,
+  );
   const overrideGameTypeRadioMap = /* @__PURE__ */ new Map();
   for (const gameType of Object.values(GameType)) {
     const radio = musicPlayerUI.addRadioButton(
       gameType,
-      addOverrideGroup,
+      addOverrideGroupID,
       "Only play songs from " /* Override_Radio */ + gameType,
     );
     overrideGameTypeRadioMap.set(gameType, radio);
@@ -1849,16 +2003,16 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   }
   const excludeRadio = musicPlayerUI.addRadioButton(
     "Exclude Random",
-    addOverrideGroup,
+    addOverrideGroupID,
     "Add an override for a specific CO to exclude their themes when playing random themes." /* Add_Excluded */,
   );
   const overrideBtn = musicPlayerUI.addButton(
     "Add" /* Add_Override */,
-    addOverrideGroup,
+    addOverrideGroupID,
     "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes." /* Add_Override */,
   );
-  const overrideListGroup = "Current Overrides (Click to Remove)";
-  musicPlayerUI.addGroup(overrideListGroup, GroupType.Horizontal, RIGHT);
+  const overrideListGroupID = "Current Overrides (Click to Remove)";
+  musicPlayerUI.addGroup(overrideListGroupID, GroupType.Horizontal, RIGHT);
   const overrideDivMap = /* @__PURE__ */ new Map();
   const tableRows = 4;
   const tableCols = 7;
@@ -1866,7 +2020,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     "Overrides" /* Override_Table */,
     tableRows,
     tableCols,
-    overrideListGroup,
+    overrideListGroupID,
     "Removes the override for this specific CO." /* Remove_Override */,
   );
   function addOverrideDisplayDiv(coName, gameType) {
@@ -1886,14 +2040,14 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       addOverrideDisplayDiv(coName, gameType);
     }
   }
-  const excludedListGroup = "Themes Excluded From Randomizer (Click to Remove)";
-  musicPlayerUI.addGroup(excludedListGroup, GroupType.Horizontal, RIGHT);
+  const excludedListGroupID = "Themes Excluded From Randomizer (Click to Remove)";
+  musicPlayerUI.addGroup(excludedListGroupID, GroupType.Horizontal, RIGHT);
   const excludedListDivMap = /* @__PURE__ */ new Map();
   musicPlayerUI.addTable(
     "Excluded Random Themes" /* Excluded_Table */,
     tableRows,
     tableCols,
-    excludedListGroup,
+    excludedListGroupID,
     "Removes the override for this specific CO." /* Remove_Override */,
   );
   function addExcludedDisplayDiv(coName) {
@@ -1912,6 +2066,18 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
   }
   musicPlayerUI.addVersion();
+  musicPlayerUI.addButton("DebugAdd", musicGroupID, "").addEventListener("click", () => {
+    for (const coName of getAllCONames()) {
+      musicSettings.addOverride(coName, GameType.AW1);
+      musicSettings.addExcludedRandomTheme(coName);
+    }
+  });
+  musicPlayerUI.addButton("DebugClear", musicGroupID, "").addEventListener("click", () => {
+    for (const coName of getAllCONames()) {
+      musicSettings.removeOverride(coName);
+      musicSettings.removeExcludedRandomTheme(coName);
+    }
+  });
   function initializeMusicPlayerUI() {
     musicPlayerUI.setProgress(100);
     let prepend = false;
@@ -1957,6 +2123,8 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
     restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
     autoplayPagesBox.addEventListener("click", (_e) => (musicSettings.autoplayOnOtherPages = autoplayPagesBox.checked));
+    loopToggle.addEventListener("click", (_e) => (musicSettings.loopRandomSongsUntilTurnChange = loopToggle.checked));
+    uiSFXPagesBox.addEventListener("click", (_e) => (musicSettings.sfxOnOtherPages = uiSFXPagesBox.checked));
     alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
     daySlider?.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
     overrideBtn.addEventListener("click", (_e) => {
@@ -2361,7 +2529,8 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       audioIDMap.set(srcURL, newID);
     }
   }
-  function playThemeSong() {
+  const playThemeSong = debounce(300, __playThemeSongInternal);
+  function __playThemeSongInternal() {
     if (!musicSettings.isPlaying) return;
     if (currentlyDelaying) return;
     let gameType = undefined;
@@ -2406,6 +2575,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function onThemePlay(audio, srcURL) {
     currentLoops = 0;
     audio.volume(getVolumeForURL(srcURL));
+    broadcastChannel.postMessage("pause");
     const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
     const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
@@ -2438,20 +2608,12 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
       if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
     }
-    if (musicSettings.randomThemesType !== RandomThemeType.NONE) {
+    if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
       musicSettings.randomizeCO();
       playThemeSong();
     }
   }
-  function playOrPauseWhenWindowFocusChanges() {
-    window.addEventListener("blur", () => {
-      if (musicSettings.isPlaying) stopAllSounds();
-    });
-    window.addEventListener("focus", () => {
-      if (musicSettings.isPlaying) playThemeSong();
-    });
-  }
-  function onSettingsChange(key, isFirstLoad) {
+  function onSettingsChange(key, _value, isFirstLoad) {
     if (isFirstLoad) return;
     switch (key) {
       case SettingsKey.ADD_OVERRIDE:
@@ -2488,7 +2650,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
             const currentTheme2 = audioMap.get(currentThemeURL);
             if (currentTheme2) {
               currentTheme2.volume(musicSettings.volume);
-              clearInterval(intervalID);
+              window.clearInterval(intervalID);
             }
           });
         }
@@ -2533,7 +2695,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   }
 
   const CURSOR_THRESHOLD_MS = 25;
-  let lastCursorCall = Date.now();
+  let lastCursorCall$1 = Date.now();
   let lastCursorX = -1;
   let lastCursorY = -1;
   let currentMenuType = "None"; /* None */
@@ -2657,11 +2819,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     const dx = Math.abs(cursorX - lastCursorX);
     const dy = Math.abs(cursorY - lastCursorY);
     const cursorMoved = dx >= 1 || dy >= 1;
-    const timeSinceLastCursorCall = Date.now() - lastCursorCall;
+    const timeSinceLastCursorCall = Date.now() - lastCursorCall$1;
     if (timeSinceLastCursorCall < CURSOR_THRESHOLD_MS) return;
     if (cursorMoved) {
       playSFX(GameSFX.uiCursorMove);
-      lastCursorCall = Date.now();
+      lastCursorCall$1 = Date.now();
     }
     lastCursorX = cursorX;
     lastCursorY = cursorY;
@@ -3020,10 +3182,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const box = popup.querySelector(".flex.row.hv-center");
       if (!box) return false;
       musicPlayerUI.addToAWBWPage(box, true);
-      musicSettings.randomThemesType = RandomThemeType.NONE;
       playMusicURL(SpecialTheme.COSelect);
-      allowSettingsToBeSaved();
-      playOrPauseWhenWindowFocusChanges();
       return true;
     };
     const checkStillActiveFn = () => {
@@ -3032,14 +3191,14 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     };
     const addPlayerIntervalID = window.setInterval(() => {
       if (getCurrentPageType() !== PageType.LiveQueue) {
-        clearInterval(addPlayerIntervalID);
+        window.clearInterval(addPlayerIntervalID);
         return;
       }
       if (!addMusicFn()) return;
-      clearInterval(addPlayerIntervalID);
+      window.clearInterval(addPlayerIntervalID);
       const checkInterval = window.setInterval(() => {
         if (getCurrentPageType() !== PageType.LiveQueue) {
-          clearInterval(checkInterval);
+          window.clearInterval(checkInterval);
           playThemeSong();
           return;
         }
@@ -3056,7 +3215,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       musicSettings.themeType = getCurrentThemeType();
       musicPlayerUI.updateAllInputLabels();
       playThemeSong();
-      setTimeout(playThemeSong, 500);
+      window.setTimeout(playThemeSong, 500);
       if (!setHashesTimeoutID) {
         const checkHashesMS = 1e3 * 60 * 1;
         const checkHashesFn = () => {
@@ -3070,27 +3229,76 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       musicPlayerUI.checkIfNewVersionAvailable();
     });
   }
+  let lastCursorCall = Date.now();
   function initializeMusicPlayer() {
     const currentPageType = getCurrentPageType();
-    if (currentPageType === PageType.LiveQueue) return onLiveQueue();
     if (currentPageType !== PageType.ActiveGame) musicSettings.isPlaying = musicSettings.autoplayOnOtherPages;
     switch (currentPageType) {
+      case PageType.LiveQueue:
+        onLiveQueue();
+        break;
       case PageType.Maintenance:
         musicPlayerUI.openContextMenu();
         break;
       case PageType.MovePlanner:
         musicSettings.isPlaying = true;
         break;
-      case PageType.ActiveGame:
-        break;
     }
     preloadThemes();
     allowSettingsToBeSaved();
     initializeMusicPlayerUI();
     addHandlers();
+    const iframe = document.getElementById(IFRAME_ID);
+    iframe?.addEventListener("focus", () => {
+      if (musicSettings.isPlaying) playThemeSong();
+    });
+    window.addEventListener("focus", () => {
+      if (musicSettings.isPlaying) playThemeSong();
+    });
+    broadcastChannel.onmessage = (ev) => {
+      logDebug("Received message from another tab:", ev.data);
+      if (ev.data === "pause") stopThemeSong();
+      else if (ev.data === "play") playThemeSong();
+    };
+    const fn = (_e) => {
+      const timeSinceLastCursorCall = Date.now() - lastCursorCall;
+      if (!musicSettings.sfxOnOtherPages) return;
+      if (timeSinceLastCursorCall < 80) return;
+      playSFX(GameSFX.uiMenuMove);
+      lastCursorCall = Date.now();
+    };
+    const addSFXToPage = () => {
+      getCurrentDocument()
+        .querySelectorAll("a")
+        .forEach((link) =>
+          link.addEventListener("click", () => {
+            if (!musicSettings.sfxOnOtherPages) return;
+            playSFX(GameSFX.uiMenuOpen);
+          }),
+        );
+      const hoverElements = Array.from(
+        getCurrentDocument().querySelectorAll("li, ul, .dropdown-menu, .co_portrait, a, input, button"),
+      );
+      hoverElements.forEach((menu) => menu.addEventListener("mouseenter", fn));
+    };
+    addSFXToPage();
+    let overDiv = document.querySelector("#overDiv");
+    if (!overDiv) {
+      overDiv = document.createElement("div");
+      overDiv.id = "overDiv";
+      overDiv.style.visibility = "hidden";
+      overDiv.style.position = "absolute";
+      overDiv.style.zIndex = "2000";
+      document.appendChild(overDiv);
+    }
+    const overDivObserver = new MutationObserver(() => {
+      if (overDiv.style.visibility === "visible") addSFXToPage();
+    });
+    overDivObserver.observe(overDiv, { attributes: true });
   }
   let autoplayChecked = false;
   function checkAutoplayThenInitialize() {
+    logDebug("Checking if we can autoplay then initializing the music player.");
     if (autoplayChecked) {
       initializeMusicPlayer();
       return;
@@ -3100,21 +3308,29 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       initializeMusicPlayer();
     };
     const ifCannotAutoplay = () => {
-      musicPlayerUI.addEventListener("click", () => initializeMusicPlayer(), { once: true });
-      document.querySelector("body")?.addEventListener("click", () => initializeMusicPlayer(), { once: true });
+      const initfn = () => {
+        window.clearInterval(autoplayIntervalID);
+        initializeMusicPlayer();
+      };
+      musicPlayerUI.addEventListener("click", initfn, { once: true });
+      document.querySelector("body")?.addEventListener("click", initfn, { once: true });
     };
-    canAutoplay
-      .audio()
-      .then((response) => {
-        const result = response.result;
-        logDebug("Script starting, does your browser allow you to auto-play:", result);
-        if (result) ifCanAutoplay();
-        else ifCannotAutoplay();
-      })
-      .catch((reason) => {
-        logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
-        ifCannotAutoplay();
-      });
+    const autoplayIntervalID = window.setInterval(() => {
+      canAutoplay
+        .audio()
+        .then((response) => {
+          const result = response.result;
+          logDebug("Script starting, does your browser allow you to auto-play:", result);
+          if (result) {
+            ifCanAutoplay();
+            window.clearInterval(autoplayIntervalID);
+          } else ifCannotAutoplay();
+        })
+        .catch((reason) => {
+          logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
+          ifCannotAutoplay();
+        });
+    }, 100);
   }
   function main() {
     if (self !== top) return;

@@ -191,7 +191,7 @@ function main() {
       if (designMapEditor.loaded) {
         ahResizeMap = getResizeMapFn();
         main();
-        clearInterval(interval);
+        window.clearInterval(interval);
       }
     }, 1000);
     return;

@@ -39,3 +39,41 @@ export function logDebug(message: any, ...args: any[]): void {
 export function isFirefox() {
   return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
 }
+
+/**
+ * Makes it so multiple successive calls to a function within a specified period of time only call the function once.
+ * https://stackoverflow.com/questions/72205837/safe-type-debounce-function-in-typescript
+ * @param ms - The number of milliseconds within which to debounce the function.
+ * @param callback - The function to debounce.
+ * @param immediate - Whether to call the function immediately or after the debounce period.
+ * @returns - The debounced function.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: any[]) => void>(ms: number, callback: T, immediate = false) {
+  // This is a number in the browser and an object in Node.js,
+  // so we'll use the ReturnType utility to cover both cases.
+  let timeout: ReturnType<typeof window.setTimeout> | number | null;
+
+  return function <U>(this: U, ...args: Parameters<typeof callback>) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const context = this;
+    const later = () => {
+      timeout = null;
+
+      if (!immediate) {
+        callback.apply(context, args);
+      }
+    };
+    const callNow = immediate && !timeout;
+
+    if (typeof timeout === "number") {
+      window.clearTimeout(timeout);
+    }
+
+    timeout = window.setTimeout(later, ms);
+
+    if (callNow) {
+      callback.apply(context, args);
+    }
+  };
+}

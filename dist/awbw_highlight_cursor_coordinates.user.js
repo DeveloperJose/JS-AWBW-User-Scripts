@@ -23,6 +23,7 @@
   }
 
   const IFRAME_NAME = "music-player-iframe";
+  new BroadcastChannel("awbw-music-player");
   function isIFrameActive() {
     const iframe = document.querySelector("#" + IFRAME_NAME);
     if (!iframe) return false;

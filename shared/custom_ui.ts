@@ -150,7 +150,7 @@ export class CustomMenuSettingsUI {
     const contextMenu = document.createElement("div");
     // contextMenu.id = `${prefix}-settings`;
     contextMenu.classList.add("cls-settings-menu");
-    contextMenu.style.zIndex = "200";
+    contextMenu.style.zIndex = "30";
     this.parent.appendChild(contextMenu);
     this.setNodeID(contextMenu, NodeID.Settings);
 
@@ -509,10 +509,10 @@ export class CustomMenuSettingsUI {
     // Create the input and a label for it
     const input = document.createElement("input");
     const label = document.createElement("label");
-    label.innerText = name;
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(name));
 
-    // Input first, then label
-    inputBox.appendChild(input);
+    // inputBox.appendChild(input);
     inputBox.appendChild(label);
 
     // Propagate label clicks to the input
@@ -674,7 +674,10 @@ export class CustomMenuSettingsUI {
 
     // Make the CO selector that will appear when the user clicks on the CO portrait
     coSelector.onclick = () => {
-      return overlib(selectorInnerHTML, STICKY, CAPTION, selectorTitle, OFFSETY, 25, OFFSETX, -322, CLOSECLICK);
+      const ret = overlib(selectorInnerHTML, STICKY, CAPTION, selectorTitle, OFFSETY, 25, OFFSETX, -322, CLOSECLICK);
+      const overdiv = document.querySelector("#overDiv") as HTMLDivElement;
+      if (overdiv) overdiv.style.zIndex = "1000";
+      return ret;
     };
 
     // Listen for clicks on the CO selector
@@ -707,6 +710,7 @@ export class CustomMenuSettingsUI {
     const imgCaret = document.createElement("img");
     imgCaret.classList.add("co_caret");
     imgCaret.src = "terrain/co_down_caret.gif";
+    imgCaret.style.zIndex = "300";
     return imgCaret;
   }
 

@@ -2,6 +2,7 @@
  * @file Constants, functions, and variables related to the game state in Advance Wars By Web.
  *  A lot of useful information came from game.js and the code at the bottom of each game page.
  */
+import { getCurrentDocument } from "../music_player/iframe";
 import { areAnimationsEnabled } from "./awbw_globals";
 import { getReplayControls, getConnectionErrorDiv, PageType, getCurrentPageType } from "./awbw_page";
 
@@ -49,7 +50,7 @@ export const attackDelayMS = areAnimationsEnabled() ? 1000 : 0;
  * Gets the username of the person logged in to the website.
  */
 export function getMyUsername() {
-  const document = window.document.querySelector("iframe")?.contentDocument ?? window.document;
+  const document = getCurrentDocument();
   const profileMenu = document.querySelector("#profile-menu");
   if (!profileMenu) return null;
   const link = profileMenu.getElementsByClassName("dropdown-menu-link")[0] as HTMLAnchorElement;

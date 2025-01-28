@@ -7,10 +7,11 @@ import { addDatabaseReplacementListener } from "../db";
 import { addSettingsChangeListener, musicSettings, RandomThemeType, SettingsKey, ThemeType } from "../music_settings";
 import { getMusicURL, hasSpecialLoop, SpecialTheme } from "../resources";
 import { SpecialCOs } from "../../shared/awbw_game";
-import { logInfo, logDebug, logError } from "../utils";
+import { logInfo, logDebug, logError, debounce } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
 import { preloadURL, promiseMap, urlQueue } from "./preloading";
 import { stopAllMovementSounds } from "./unit_movement";
+import { broadcastChannel } from "../iframe";
 
 /**
  * The URL of the current theme that is playing.
@@ -75,9 +76,9 @@ export async function playMusicURL(srcURL: string) {
 /**
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
- * @param startFromBeginning - Whether to start the song from the beginning or resume from the previous spot.
  */
-export function playThemeSong() {
+export const playThemeSong = debounce(300, __playThemeSongInternal);
+function __playThemeSongInternal() {
   if (!musicSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -164,6 +165,9 @@ export function onThemePlay(audio: Howl, srcURL: string) {
   currentLoops = 0;
   audio.volume(getVolumeForURL(srcURL));
 
+  // Tell all other music players to pause
+  broadcastChannel.postMessage("pause");
+
   // We start from the beginning if any of these conditions are met:
   // 1. The user wants to restart themes
   // 2. It's a power theme
@@ -216,31 +220,21 @@ export function onThemeEndOrLoop(srcURL: string) {
     if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
   }
 
-  // The song ended and we are playing random themes, so switch to the next random theme
-  if (musicSettings.randomThemesType !== RandomThemeType.NONE) {
+  // The song ended and we are playing random themes, so switch to the next random theme if
+  // the user does not want to loop the current song until the turn changes
+  if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
     musicSettings.randomizeCO();
     playThemeSong();
   }
 }
 
 /**
- * Adds event listeners to play or pause the music when the window focus changes.
- */
-export function playOrPauseWhenWindowFocusChanges() {
-  window.addEventListener("blur", () => {
-    if (musicSettings.isPlaying) stopAllSounds();
-  });
-  window.addEventListener("focus", () => {
-    if (musicSettings.isPlaying) playThemeSong();
-  });
-}
-
-/**
  * Updates the internal audio components to match the current music player settings when the settings change.
  * @param key - Key of the setting which has been changed.
+ * @param _value - New value of the setting.
  * @param isFirstLoad - Whether this is the first time the settings are being loaded.
  */
-function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
+function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolean) {
   // Don't do anything if this is the first time the settings are being loaded
   if (isFirstLoad) return;
 
@@ -292,7 +286,7 @@ function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
           const currentTheme = audioMap.get(currentThemeURL);
           if (currentTheme) {
             currentTheme.volume(musicSettings.volume);
-            clearInterval(intervalID);
+            window.clearInterval(intervalID);
           }
         });
       }
@@ -307,6 +301,9 @@ function onSettingsChange(key: SettingsKey, isFirstLoad: boolean) {
   }
 }
 
+/**
+ * Adds listeners for settings changes and database updates.
+ */
 export function addThemeListeners() {
   // Listen for setting changes to update the internal variables accordingly
   addSettingsChangeListener(onSettingsChange);

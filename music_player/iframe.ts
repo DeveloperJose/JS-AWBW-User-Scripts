@@ -10,14 +10,20 @@ import { logError } from "./utils";
 /**
  * The name of the iframe element used for page navigation outside of the game.php pages.
  */
-export const IFRAME_NAME = "music-player-iframe";
+export const IFRAME_ID = "music-player-iframe";
+
+/**
+ * The broadcast channel used to communicate with other tabs.
+ * This is used to sync settings between tabs and to only have one tab play music at a time.
+ */
+export const broadcastChannel = new BroadcastChannel("awbw-music-player");
 
 /**
  * Whether the iframe is currently active and displaying a page.
  * @returns True if the iframe is active, false otherwise.
  */
 export function isIFrameActive() {
-  const iframe = document.querySelector("#" + IFRAME_NAME) as HTMLIFrameElement;
+  const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
   if (!iframe) return false;
 
   const href = iframe.contentDocument?.location.href ?? iframe.src;
@@ -30,7 +36,8 @@ export function isIFrameActive() {
  */
 export function getCurrentWindow() {
   if (!isIFrameActive()) return window;
-  return document.querySelector("iframe")?.contentWindow ?? window;
+  const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
+  return iframe?.contentWindow ?? window;
 }
 
 /**
@@ -39,7 +46,8 @@ export function getCurrentWindow() {
  */
 export function getCurrentDocument() {
   if (!isIFrameActive()) return window.document;
-  return document.querySelector("iframe")?.contentDocument ?? window.document;
+  const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
+  return iframe?.contentDocument ?? window.document;
 }
 
 /**
@@ -47,13 +55,13 @@ export function getCurrentDocument() {
  * @param init_fn - The function to run when the iframe loads a new page.
  */
 export function initializeIFrame(init_fn: () => void) {
-  const hasFrame = document.querySelector("iframe");
+  const hasFrame = document.getElementById(IFRAME_ID);
   if (hasFrame) return;
 
   const iframe = document.createElement("iframe");
   iframe.style.display = "none";
-  iframe.id = IFRAME_NAME;
-  iframe.name = IFRAME_NAME;
+  iframe.id = IFRAME_ID;
+  iframe.name = IFRAME_ID;
   document.body.appendChild(iframe);
 
   // When the page changes, hijack the links so they change the iframe instead of opening a new page
@@ -65,7 +73,7 @@ export function initializeIFrame(init_fn: () => void) {
   window.addEventListener("popstate", (event) => {
     // logDebug("Popstate event", window.location);
     const href = window.location.href;
-    const iframe = document.querySelector("iframe");
+    const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
     if (!iframe || href.includes("game.php")) {
       window.location.reload();
       return;
@@ -91,7 +99,11 @@ function onIFrameLoad(event: Event, initFn: () => void) {
   if (href === null || href === "" || href === "about:blank") return;
 
   // Remove all other elements from the page
-  for (const child of Array.from(document.body.children)) if (child !== iframe) child.remove();
+  for (const child of Array.from(document.body.children)) {
+    if (child === iframe) continue;
+    if (child.id === "overDiv") continue;
+    child.remove();
+  }
 
   // The iframe is now the page
   iframe.style.display = "block";
@@ -136,7 +148,10 @@ function hijackLinks(doc: Document | null) {
     const isGamePageLink =
       link.href.includes("game.php") || (link.classList.contains("anchor") && link.name.includes("game_"));
 
-    if (isGamePageLink) link.target = "_top";
-    else link.target = IFRAME_NAME;
+    const isJSLink = link.href.startsWith("javascript:");
+    if (isJSLink) continue;
+    else if (link.href === "") continue;
+    else if (isGamePageLink) link.target = "_top";
+    else link.target = IFRAME_ID;
   }
 }
