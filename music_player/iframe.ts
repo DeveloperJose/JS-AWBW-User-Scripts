@@ -147,10 +147,11 @@ function hijackLinks(doc: Document | null) {
     // Game links will not be hijacked
     const isGamePageLink =
       link.href.includes("game.php") || (link.classList.contains("anchor") && link.name.includes("game_"));
+    const isMovePlannerLink = link.href.includes("moveplanner.php");
 
     const isJSLink = link.href.startsWith("javascript:");
     if (isJSLink) continue;
-    else if (link.href === "") continue;
+    else if (link.href === "" || isMovePlannerLink) continue;
     else if (isGamePageLink) link.target = "_top";
     else link.target = IFRAME_ID;
   }
