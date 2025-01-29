@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.0.2
+// @version         5.0.3
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -1160,7 +1160,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player" /* MusicPlayer */, "5.0.2"],
+    ["music_player" /* MusicPlayer */, "5.0.3"],
     ["highlight_cursor_coordinates" /* HighlightCursorCoordinates */, "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1590,7 +1590,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       label.appendChild(input);
       label.appendChild(document.createTextNode(name));
       inputBox.appendChild(label);
-      label.addEventListener("click", () => input.click());
       this.inputElements.push(input);
       return input;
     }
@@ -2529,7 +2528,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       audioIDMap.set(srcURL, newID);
     }
   }
-  const playThemeSong = debounce(300, __playThemeSongInternal);
+  const playThemeSong = debounce(300, __playThemeSongInternal, true);
   function __playThemeSongInternal() {
     if (!musicSettings.isPlaying) return;
     if (currentlyDelaying) return;

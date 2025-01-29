@@ -77,7 +77,7 @@ export async function playMusicURL(srcURL: string) {
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
  */
-export const playThemeSong = debounce(300, __playThemeSongInternal);
+export const playThemeSong = debounce(300, __playThemeSongInternal, true);
 function __playThemeSongInternal() {
   if (!musicSettings.isPlaying) return;
 

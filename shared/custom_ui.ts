@@ -515,8 +515,6 @@ export class CustomMenuSettingsUI {
     // inputBox.appendChild(input);
     inputBox.appendChild(label);
 
-    // Propagate label clicks to the input
-    label.addEventListener("click", () => input.click());
     this.inputElements.push(input as HTMLInputElement);
     return input;
   }
