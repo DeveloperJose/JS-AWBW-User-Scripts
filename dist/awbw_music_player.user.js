@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.0.0
+// @version         5.1.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -324,6 +324,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     SpecialCOs2["Maintenance"] = "maintenance";
     SpecialCOs2["MapEditor"] = "map-editor";
     SpecialCOs2["MainPage"] = "main-page";
+    SpecialCOs2["LiveQueue"] = "live-queue";
     SpecialCOs2["Default"] = "default";
     SpecialCOs2["Victory"] = "victory";
     SpecialCOs2["Defeat"] = "defeat";
@@ -419,12 +420,14 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (!hasGameEnded()) return false;
     const serverTimezone2 = parseInt(getServerTimeZone());
     const endDate = new Date(gameEndDate);
+    endDate.setHours(23, 59, 59);
     const now = /* @__PURE__ */ new Date();
     const timezoneOffset = now.getTimezoneOffset() / 60;
     const difference = +serverTimezone2 + timezoneOffset;
     const nowAdjustedToServer = new Date(now.getTime() + difference * 36e5);
+    const endDateAdjustedToServer = new Date(endDate.getTime() + difference * 36e5);
     const oneDayMilliseconds = 24 * 60 * 60 * 1e3;
-    return nowAdjustedToServer.getTime() - endDate.getTime() < oneDayMilliseconds;
+    return nowAdjustedToServer.getTime() - endDateAdjustedToServer.getTime() < oneDayMilliseconds;
   }
   function getCurrentGameDay() {
     if (getCurrentPageType() !== PageType.ActiveGame) return 1;
@@ -1103,7 +1106,12 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
     if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
     if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
-    if (coName === SpecialCOs.ModeSelect || coName === SpecialCOs.MainPage || coName === SpecialCOs.Default)
+    if (
+      coName === SpecialCOs.ModeSelect ||
+      coName === SpecialCOs.MainPage ||
+      coName === SpecialCOs.LiveQueue ||
+      coName === SpecialCOs.Default
+    )
       return SpecialTheme.ModeSelect;
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
@@ -1163,7 +1171,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player" /* MusicPlayer */, "5.0.0"],
+    ["music_player" /* MusicPlayer */, "5.1.0"],
     ["highlight_cursor_coordinates" /* HighlightCursorCoordinates */, "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1852,14 +1860,14 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     Description2["All_Random"] = "Play random music every turn from all soundtracks.";
     Description2["Current_Random"] = "Play random music every turn from the current soundtrack.";
     Description2["Shuffle"] = "Changes the current theme to a new random one.";
-    Description2["Capture_Progress"] = "Play a sound effect when a unit makes progress capturing a property.";
-    Description2["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
-    Description2["Restart_Themes"] =
-      "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.";
-    Description2["Autoplay_Pages"] =
-      "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.";
     Description2["SFX_Pages"] =
       "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.";
+    Description2["Capture_Progress"] = "Play a sound effect when a unit makes progress capturing a property.";
+    Description2["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
+    Description2["Autoplay_Pages"] =
+      "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.";
+    Description2["Restart_Themes"] =
+      "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.";
     Description2["Random_Loop_Toggle"] =
       "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.";
     Description2["Alternate_Themes"] =
@@ -2525,9 +2533,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     let gameType = undefined;
     let coName = currentPlayer.coName;
     if (getCurrentPageType() === PageType.Maintenance) coName = SpecialCOs.Maintenance;
-    if (getCurrentPageType() === PageType.MapEditor) coName = SpecialCOs.MapEditor;
-    if (getCurrentPageType() === PageType.MainPage) coName = SpecialCOs.MainPage;
-    if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
+    else if (getCurrentPageType() === PageType.MapEditor) coName = SpecialCOs.MapEditor;
+    else if (getCurrentPageType() === PageType.MainPage) coName = SpecialCOs.MainPage;
+    else if (getCurrentPageType() === PageType.LiveQueue) coName = SpecialCOs.LiveQueue;
+    else if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
     const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat;
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
     if (isRandomTheme && !isEndTheme) {
@@ -2595,7 +2604,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       playThemeSong();
     }
     if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
-      if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
+      if (currentLoops >= 3) playMusicURL(SpecialTheme.COSelect);
     }
     if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
       musicSettings.randomizeCO();
@@ -2651,6 +2660,16 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       }
     }
   }
+  const restartTheme = debounce(300, __restartTheme, true);
+  function __restartTheme() {
+    const currentTheme = audioMap.get(currentThemeURL);
+    if (!currentTheme) return;
+    currentTheme.seek(0);
+  }
+  function clearThemeDelay() {
+    currentlyDelaying = false;
+    playThemeSong();
+  }
   function addThemeListeners() {
     addSettingsChangeListener(onSettingsChange);
     addDatabaseReplacementListener((url) => {
@@ -2681,6 +2700,13 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     const newID = audio.play();
     if (!newID) return;
     audioIDMap.set(sfxURL, newID);
+  }
+  function stopSFX(sfx) {
+    if (!musicSettings.isPlaying) return;
+    const sfxURL = getSoundEffectURL(sfx);
+    const audio = audioMap.get(sfxURL);
+    if (!audio || !audio.playing()) return;
+    audio.stop();
   }
 
   const CURSOR_THRESHOLD_MS = 25;
@@ -2739,6 +2765,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
     window.setTimeout(() => {
+      musicSettings.themeType = getCurrentThemeType();
       playThemeSong();
     }, 500);
   }
@@ -2748,6 +2775,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     musicSettings.themeType = getCurrentThemeType();
     window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
+      if (musicSettings.restartThemes) restartTheme();
       playThemeSong();
       window.setTimeout(playThemeSong, 350);
     }, playDelayMS);
@@ -2770,6 +2798,20 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
     replayOpenBtn.addEventListener("click", stopAllMovementSounds);
     replayCloseBtn.addEventListener("click", stopAllMovementSounds);
+    replayForwardBtn.addEventListener("click", clearThemeDelay);
+    replayBackwardActionBtn.addEventListener("click", clearThemeDelay);
+    replayBackwardBtn.addEventListener("click", clearThemeDelay);
+    const stopExtraSFX = () => {
+      stopSFX(GameSFX.powerActivateAW1COP);
+      stopSFX(GameSFX.powerActivateAllyCOP);
+      stopSFX(GameSFX.powerActivateAllySCOP);
+      stopSFX(GameSFX.powerActivateBHCOP);
+      stopSFX(GameSFX.powerActivateBHSCOP);
+    };
+    replayBackwardActionBtn.addEventListener("click", stopExtraSFX);
+    replayForwardBtn.addEventListener("click", stopExtraSFX);
+    replayBackwardBtn.addEventListener("click", stopExtraSFX);
+    replayCloseBtn.addEventListener("click", stopExtraSFX);
     replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
   }
   function addGameHandlers() {
@@ -3130,10 +3172,17 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     const coName = data.coName;
     const isBH = isBlackHoleCO(coName);
     const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
+    stopSFX(GameSFX.powerCOPAvailable);
+    stopSFX(GameSFX.powerSCOPAvailable);
+    window.setTimeout(() => {
+      stopSFX(GameSFX.powerCOPAvailable);
+      stopSFX(GameSFX.powerSCOPAvailable);
+    }, 755);
     musicSettings.themeType = isSuperCOPower ? ThemeType.SUPER_CO_POWER : ThemeType.CO_POWER;
     switch (musicSettings.gameType) {
       case GameType.AW1:
         playSFX(GameSFX.powerActivateAW1COP);
+        stopThemeSong(4500);
         return;
       case GameType.AW2:
       case GameType.DS:

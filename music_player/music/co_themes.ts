@@ -7,7 +7,7 @@ import { addDatabaseReplacementListener } from "../db";
 import { addSettingsChangeListener, musicSettings, RandomThemeType, SettingsKey, ThemeType } from "../music_settings";
 import { getMusicURL, hasSpecialLoop, SpecialTheme } from "../resources";
 import { SpecialCOs } from "../../shared/awbw_game";
-import { logInfo, logDebug, logError } from "../utils";
+import { logInfo, logDebug, logError, debounce } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
 import { preloadURL, promiseMap, urlQueue } from "./preloading";
 import { stopAllMovementSounds } from "./unit_movement";
@@ -88,9 +88,10 @@ export function playThemeSong() {
   let coName = currentPlayer.coName;
 
   if (getCurrentPageType() === PageType.Maintenance) coName = SpecialCOs.Maintenance;
-  if (getCurrentPageType() === PageType.MapEditor) coName = SpecialCOs.MapEditor;
-  if (getCurrentPageType() === PageType.MainPage) coName = SpecialCOs.MainPage;
-  if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
+  else if (getCurrentPageType() === PageType.MapEditor) coName = SpecialCOs.MapEditor;
+  else if (getCurrentPageType() === PageType.MainPage) coName = SpecialCOs.MainPage;
+  else if (getCurrentPageType() === PageType.LiveQueue) coName = SpecialCOs.LiveQueue;
+  else if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
 
   // Don't randomize during victory and defeat themes
   const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat;
@@ -216,7 +217,7 @@ export function onThemeEndOrLoop(srcURL: string) {
   }
 
   if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
-    if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
+    if (currentLoops >= 3) playMusicURL(SpecialTheme.COSelect);
   }
 
   // The song ended and we are playing random themes, so switch to the next random theme if
@@ -298,6 +299,19 @@ function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolea
       return;
     }
   }
+}
+
+export const restartTheme = debounce(300, __restartTheme, true);
+function __restartTheme() {
+  const currentTheme = audioMap.get(currentThemeURL);
+  if (!currentTheme) return;
+
+  currentTheme.seek(0);
+}
+
+export function clearThemeDelay() {
+  currentlyDelaying = false;
+  playThemeSong();
 }
 
 /**

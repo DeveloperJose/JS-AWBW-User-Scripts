@@ -16,6 +16,7 @@ export const enum SpecialCOs {
   Maintenance = "maintenance",
   MapEditor = "map-editor",
   MainPage = "main-page",
+  LiveQueue = "live-queue",
   Default = "default",
 
   Victory = "victory",
@@ -214,6 +215,7 @@ export function didGameEndToday() {
 
   // In server time
   const endDate = new Date(gameEndDate);
+  endDate.setHours(23, 59, 59);
 
   // Convert now to the server timezone
   // https://stackoverflow.com/questions/68500998/converting-to-local-time-using-utc-time-zone-format-in-javascript
@@ -222,11 +224,12 @@ export function didGameEndToday() {
 
   const difference = +serverTimezone + timezoneOffset;
   const nowAdjustedToServer = new Date(now.getTime() + difference * 3600000);
+  const endDateAdjustedToServer = new Date(endDate.getTime() + difference * 3600000);
 
-  // Check if more than 24 hours have passed since the game ended
-  const oneDayMilliseconds = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  // Check if more than X hours have passed since the game ended
+  const oneDayMilliseconds = 24 * 60 * 60 * 1000; // X hours in milliseconds
   // logDebug(nowAdjustedToServer.getTime() - endDate.getTime(), oneDayMilliseconds);
-  return nowAdjustedToServer.getTime() - endDate.getTime() < oneDayMilliseconds;
+  return nowAdjustedToServer.getTime() - endDateAdjustedToServer.getTime() < oneDayMilliseconds;
 }
 
 /**

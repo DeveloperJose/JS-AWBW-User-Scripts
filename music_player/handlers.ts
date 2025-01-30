@@ -71,8 +71,8 @@ import {
   getUnloadFn,
   getWaitFn,
 } from "../shared/awbw_handlers";
-import { playThemeSong, stopThemeSong } from "./music/co_themes";
-import { playSFX } from "./music/sound_effects";
+import { clearThemeDelay, playThemeSong, restartTheme, stopThemeSong } from "./music/co_themes";
+import { playSFX, stopSFX } from "./music/sound_effects";
 import { stopAllMovementSounds, stopMovementSound, playMovementSound } from "./music/unit_movement";
 import { getCurrentDocument } from "./iframe";
 
@@ -211,6 +211,7 @@ function syncMusic() {
 
   playThemeSong();
   window.setTimeout(() => {
+    musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
   }, 500);
 }
@@ -227,6 +228,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
 
   window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
+    if (musicSettings.restartThemes) restartTheme();
     playThemeSong();
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);
@@ -259,10 +261,23 @@ function addReplayHandlers() {
   replayOpenBtn.addEventListener("click", stopAllMovementSounds);
   replayCloseBtn.addEventListener("click", stopAllMovementSounds);
 
-  // Fix for shortcut keys not triggering music change
-  // replayBackwardActionBtn.addEventListener("click", () => refreshMusicForNextTurn(250));
-  // replayForwardActionBtn.addEventListener("click", () => refreshMusicForNextTurn(250));
-  // replayOpenBtn.addEventListener("click", () => refreshMusicForNextTurn(250));
+  // Remove theme pauses when the user is going through a replay
+  replayForwardBtn.addEventListener("click", clearThemeDelay);
+  replayBackwardActionBtn.addEventListener("click", clearThemeDelay);
+  replayBackwardBtn.addEventListener("click", clearThemeDelay);
+
+  // Remove extra sound effects if we are moving through the replay quickly
+  const stopExtraSFX = () => {
+    stopSFX(GameSFX.powerActivateAW1COP);
+    stopSFX(GameSFX.powerActivateAllyCOP);
+    stopSFX(GameSFX.powerActivateAllySCOP);
+    stopSFX(GameSFX.powerActivateBHCOP);
+    stopSFX(GameSFX.powerActivateBHSCOP);
+  };
+  replayBackwardActionBtn.addEventListener("click", stopExtraSFX);
+  replayForwardBtn.addEventListener("click", stopExtraSFX);
+  replayBackwardBtn.addEventListener("click", stopExtraSFX);
+  replayCloseBtn.addEventListener("click", stopExtraSFX);
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
   replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
@@ -807,13 +822,21 @@ function onPower(data: PowerData) {
   const isBH = isBlackHoleCO(coName);
   const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
+  // Stop the power charge SFX
+  stopSFX(GameSFX.powerCOPAvailable);
+  stopSFX(GameSFX.powerSCOPAvailable);
+  window.setTimeout(() => {
+    stopSFX(GameSFX.powerCOPAvailable);
+    stopSFX(GameSFX.powerSCOPAvailable);
+  }, 755);
+
   // Update the theme type
   musicSettings.themeType = isSuperCOPower ? ThemeType.SUPER_CO_POWER : ThemeType.CO_POWER;
   switch (musicSettings.gameType) {
     case GameType.AW1:
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);
-      // stopThemeSong(4500);
+      stopThemeSong(4500);
       return;
     case GameType.AW2:
     case GameType.DS:

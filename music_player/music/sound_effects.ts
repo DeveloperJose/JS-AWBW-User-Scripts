@@ -28,9 +28,21 @@ export async function playSFX(sfx: GameSFX) {
 
   // No need to start another instance if it's already playing
   if (audio.playing()) return;
+
   const newID = audio.play();
 
   if (!newID) return;
   audioIDMap.set(sfxURL, newID);
   // audio.fade(0, musicSettings.sfxVolume, audio.duration() * 1000);
+}
+
+export function stopSFX(sfx: GameSFX) {
+  if (!musicSettings.isPlaying) return;
+  const sfxURL = getSoundEffectURL(sfx);
+  const audio = audioMap.get(sfxURL);
+
+  // Can't stop if it's not playing
+  if (!audio || !audio.playing()) return;
+
+  audio.stop();
 }

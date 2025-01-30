@@ -283,7 +283,12 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
   if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
   if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
-  if (coName === SpecialCOs.ModeSelect || coName === SpecialCOs.MainPage || coName === SpecialCOs.Default)
+  if (
+    coName === SpecialCOs.ModeSelect ||
+    coName === SpecialCOs.MainPage ||
+    coName === SpecialCOs.LiveQueue ||
+    coName === SpecialCOs.Default
+  )
     return SpecialTheme.ModeSelect;
 
   // First apply player overrides, that way we can override their overrides later...

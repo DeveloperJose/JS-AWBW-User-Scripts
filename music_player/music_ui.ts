@@ -176,11 +176,12 @@ enum Description {
   Current_Random = "Play random music every turn from the current soundtrack.",
   Shuffle = "Changes the current theme to a new random one.",
 
+  SFX_Pages = "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.",
   Capture_Progress = "Play a sound effect when a unit makes progress capturing a property.",
   Pipe_Seam_SFX = "Play a sound effect when a pipe seam is attacked.",
-  Restart_Themes = "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
+
   Autoplay_Pages = "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.",
-  SFX_Pages = "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.",
+  Restart_Themes = "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
   Random_Loop_Toggle = "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
 
   Alternate_Themes = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
@@ -231,14 +232,14 @@ const randomRadioMap = new Map<RandomThemeType, HTMLInputElement>([
 // Random theme shuffle button
 const shuffleBtn = musicPlayerUI.addButton(Name.Shuffle, randomGroupID, Description.Shuffle);
 
-/* **** Group: Options **** */
+/* **** Group: SFX Options **** */
 const sfxGroupID = "Sound Effect (SFX) Options";
 musicPlayerUI.addGroup(sfxGroupID, GroupType.Vertical, LEFT);
 const uiSFXPagesBox = musicPlayerUI.addCheckbox(Name.SFX_Pages, sfxGroupID, Description.SFX_Pages);
 const captProgressBox = musicPlayerUI.addCheckbox(Name.Capture_Progress, sfxGroupID, Description.Capture_Progress);
 const pipeSeamBox = musicPlayerUI.addCheckbox(Name.Pipe_Seam_SFX, sfxGroupID, Description.Pipe_Seam_SFX);
 
-/* **** Group: Extra Options **** */
+/* **** Group: Music Options **** */
 const musicGroupID = "Music Options";
 musicPlayerUI.addGroup(musicGroupID, GroupType.Vertical, LEFT);
 
