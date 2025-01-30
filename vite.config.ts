@@ -1,18 +1,20 @@
 import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue2";
+
 import { metablock } from "vite-plugin-userscript";
 import { libInjectCss } from "vite-plugin-lib-inject-css";
-import vue from "@vitejs/plugin-vue2";
 
 import path from "path";
 import { versions } from "./shared/config.js";
 
 export default defineConfig((_commandLineArgs: object) => {
-  let inputDir = "music_player";
+  // Get the inputDir from the command line arguments
+  let inputDir = "";
   process.argv.forEach((arg) => {
     if (!arg.startsWith("--inputDir=")) return;
     inputDir = arg.slice("--inputDir=".length);
   });
-  console.log(inputDir);
+  // console.log(inputDir);
 
   return {
     build: {
