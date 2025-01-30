@@ -309,6 +309,7 @@ export abstract class musicSettings {
   }
 
   static removeOverride(coName: string) {
+    if (!this.__overrideList.has(coName)) return;
     this.__overrideList.delete(coName);
     this.__overrideList = new Map([...this.__overrideList.entries()].sort());
     this.onSettingChangeEvent(SettingsKey.REMOVE_OVERRIDE, coName);
@@ -353,6 +354,7 @@ export abstract class musicSettings {
   }
 
   static removeExcludedRandomTheme(theme: string) {
+    if (!this.__excludedRandomThemes.has(theme)) return;
     this.__excludedRandomThemes.delete(theme);
     this.onSettingChangeEvent(SettingsKey.REMOVE_EXCLUDED, theme);
   }

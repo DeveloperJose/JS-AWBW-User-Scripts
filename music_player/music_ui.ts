@@ -13,7 +13,6 @@ import { NodeID, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { ScriptName } from "../shared/config";
 import { getCurrentPageType, PageType } from "../shared/awbw_page";
 import { getCurrentDocument } from "./iframe";
-import { getAllCONames } from "../shared/awbw_globals";
 
 /**
  * Where should we place the music player UI?
@@ -338,18 +337,6 @@ function clearAndRepopulateExcludedList() {
 
 /* ************************************ Version ************************************ */
 musicPlayerUI.addVersion();
-musicPlayerUI.addButton("DebugAdd", musicGroupID, "").addEventListener("click", () => {
-  for (const coName of getAllCONames()) {
-    musicSettings.addOverride(coName, GameType.AW1);
-    musicSettings.addExcludedRandomTheme(coName);
-  }
-});
-musicPlayerUI.addButton("DebugClear", musicGroupID, "").addEventListener("click", () => {
-  for (const coName of getAllCONames()) {
-    musicSettings.removeOverride(coName);
-    musicSettings.removeExcludedRandomTheme(coName);
-  }
-});
 
 /* ************************************ Event Listeners ************************************ */
 

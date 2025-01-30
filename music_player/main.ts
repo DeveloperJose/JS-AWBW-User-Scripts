@@ -27,12 +27,14 @@ import { addThemeListeners, playMusicURL, playThemeSong, stopThemeSong } from ".
 import { preloadAllCommonAudio } from "./music/preloading";
 import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } from "./iframe";
 import { playSFX } from "./music/sound_effects";
+import { toggleDebugOverrides } from "./debugging";
 
 /******************************************************************
  * MODULE EXPORTS
  ******************************************************************/
 // Exporting this function is necessary for the CO Selector to work
 export { notifyCOSelectorListeners as notifyCOSelectorListeners };
+export { toggleDebugOverrides as toggleDebugOverrides };
 
 /******************************************************************
  * Functions

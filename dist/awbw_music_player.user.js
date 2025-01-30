@@ -747,6 +747,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       this.onSettingChangeEvent("addOverride" /* ADD_OVERRIDE */, [coName, gameType]);
     }
     static removeOverride(coName) {
+      if (!this.__overrideList.has(coName)) return;
       this.__overrideList.delete(coName);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
       this.onSettingChangeEvent("removeOverride" /* REMOVE_OVERRIDE */, coName);
@@ -782,6 +783,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       this.onSettingChangeEvent("addExcluded" /* ADD_EXCLUDED */, theme);
     }
     static removeExcludedRandomTheme(theme) {
+      if (!this.__excludedRandomThemes.has(theme)) return;
       this.__excludedRandomThemes.delete(theme);
       this.onSettingChangeEvent("removeExcluded" /* REMOVE_EXCLUDED */, theme);
     }
@@ -2066,18 +2068,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
   }
   musicPlayerUI.addVersion();
-  musicPlayerUI.addButton("DebugAdd", musicGroupID, "").addEventListener("click", () => {
-    for (const coName of getAllCONames()) {
-      musicSettings.addOverride(coName, GameType.AW1);
-      musicSettings.addExcludedRandomTheme(coName);
-    }
-  });
-  musicPlayerUI.addButton("DebugClear", musicGroupID, "").addEventListener("click", () => {
-    for (const coName of getAllCONames()) {
-      musicSettings.removeOverride(coName);
-      musicSettings.removeExcludedRandomTheme(coName);
-    }
-  });
   function initializeMusicPlayerUI() {
     musicPlayerUI.setProgress(100);
     let prepend = false;
@@ -3171,6 +3161,22 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (closeMsg.includes("connected to another game")) stopThemeSong();
   }
 
+  let debugOverrides = false;
+  function toggleDebugOverrides() {
+    debugOverrides = !debugOverrides;
+    if (debugOverrides) {
+      for (const coName of getAllCONames()) {
+        musicSettings.addOverride(coName, GameType.AW1);
+        musicSettings.addExcludedRandomTheme(coName);
+      }
+    } else {
+      for (const coName of getAllCONames()) {
+        musicSettings.removeOverride(coName);
+        musicSettings.removeExcludedRandomTheme(coName);
+      }
+    }
+  }
+
   function onLiveQueue() {
     const addMusicFn = () => {
       const blockerPopup = getLiveQueueBlockerPopup();
@@ -3358,6 +3364,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   exports.checkAutoplayThenInitialize = checkAutoplayThenInitialize;
   exports.initializeMusicPlayer = initializeMusicPlayer;
   exports.notifyCOSelectorListeners = notifyCOSelectorListeners;
+  exports.toggleDebugOverrides = toggleDebugOverrides;
 
   return exports;
 })({}, canAutoplay, SparkMD5);

@@ -28,7 +28,7 @@ I use ```npm run build:dev``` to build a single project in the repo, the one I'm
 ## 1. Improved AWBW Music Player
 Directory: **music_player/**
 
-Adds a music player to Advance Wars by Web that comes with all the CO themes and game sound effects, just like in the cartridge! Look for the CD icon next to the "Menu" at the gamebar on top of the game map.
+Adds a music player to Advance Wars by Web that comes with all the CO themes and game sound effects, just like in the cartridge! Look for the CD icon next to the "Menu" at the gamebar on top of the game map or on the top-left of the page next to "Games".
 
 This is a major code refactoring and update to twiggy_'s original AWBW Music Player 2.0.8 script (https://greasyfork.org/en/scripts/459630-awbw-music-player). I have rewritten the original code fully in Typescript with some improvements, split the code into modules, and documented everything more in depth.
 
@@ -43,12 +43,14 @@ Below are the changes from the original script:
 * Song are able to continue where they left off the last time they played instead of always starting at the beginning depending on how you set the new setting: **Restart Themes Every Turn**. This means when a turn change happens, if the next CO is the same as the previous CO the music won't restart. Note that this feature is disabled when using the random theme setting.
 * Fixed issues where some replay controls weren't updating the music properly.
 * Added cursor moving sound effects to design map page. 
-* Added music to maintenance, your games, and live queue pages. You can disable the autoplay for these songs in the settings: **Autoplay Music On Other Pages**.
+* Added music and sound effects to ALL website pages including but not limited to the maintenance, your games, and live queue pages. You can disable the autoplay for these songs in the settings: **Autoplay Music On Other Pages**.
 * Music will stop in the current game page if you disconnect from it and connect to another game.
 * Downloaded music will be stored [locally in your browser](https://javascript.info/indexeddb) for faster loading. The script will also check if new versions of the music have been uploaded to the server and update your local copy.
 * The music should be more seamless now on Chrome and other browsers as I have updated to a [more advanced sound API](https://howlerjs.com/).
 
-![Picture of the music player icon on the page](./Improved_Music_Player_Icon.png)
+![Picture of the music player icon on a game page](./Improved_Music_Player_Icon.png)
+
+![Picture of the music player icon on other pages](./Improved_Music_Player_Icon2.png)
 
 ![Picture of the music player settings](./Improved_Music_Player_Settings.png)
 
