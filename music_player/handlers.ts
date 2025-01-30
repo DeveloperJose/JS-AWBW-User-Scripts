@@ -228,7 +228,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
 
   window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
-    if (musicSettings.restartThemes) restartTheme();
+    if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
     playThemeSong();
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);

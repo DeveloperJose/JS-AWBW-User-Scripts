@@ -29,8 +29,8 @@ import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } fro
 import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
 
-import Vue from "vue";
-import MusicPlayer from "./music_player.vue";
+// import Vue from "vue";
+// import MusicPlayer from "./music_player.vue";
 
 /******************************************************************
  * MODULE EXPORTS
@@ -318,10 +318,11 @@ function main() {
  ******************************************************************/
 main();
 
-const vueElement = document.createElement("div");
-vueElement.id = "music_player_vue";
-document.body.appendChild(vueElement);
+// TODO: Vue
+// const vueElement = document.createElement("div");
+// vueElement.id = "music_player_vue";
+// document.body.appendChild(vueElement);
 
-new Vue({
-  render: h => h(MusicPlayer),
-}).$mount("#music_player_vue");
+// new Vue({
+//   render: h => h(MusicPlayer),
+// }).$mount("#music_player_vue");

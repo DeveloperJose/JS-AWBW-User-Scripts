@@ -105,6 +105,7 @@ export enum SettingsKey {
   EXCLUDED_RANDOM_THEMES = "excludedRandomThemes",
   LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE = "loopRandomSongsUntilTurnChange",
   SFX_ON_OTHER_PAGES = "sfxOnOtherPages",
+  SEAMLESS_LOOPS_IN_MIRRORS = "seamlessLoopsInMirrors",
 
   // Non-user configurable settings
   THEME_TYPE = "themeType",
@@ -140,6 +141,7 @@ export abstract class musicSettings {
   private static __excludedRandomThemes = new Set<string>();
   private static __loopRandomSongsUntilTurnChange = false;
   private static __sfxOnOtherPages = true;
+  private static __seamlessLoopsInMirrors = true;
 
   // Non-user configurable settings
   private static __themeType = ThemeType.REGULAR;
@@ -166,6 +168,7 @@ export abstract class musicSettings {
       excludedRandomThemes: Array.from(this.__excludedRandomThemes),
       loopRandomSongsUntilTurnChange: this.__loopRandomSongsUntilTurnChange,
       sfxOnOtherPages: this.__sfxOnOtherPages,
+      seamlessLoopsInMirrors: this.__seamlessLoopsInMirrors,
     });
   }
 
@@ -196,6 +199,9 @@ export abstract class musicSettings {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this as any)[key] = savedSettings[key];
         // debug("Loading", key, "as", savedSettings[key]);
+      }
+      else {
+        logDebug("Tried to load an invalid settings key:", key);
       }
     }
     this.isLoaded = true;
@@ -379,6 +385,15 @@ export abstract class musicSettings {
     this.onSettingChangeEvent(SettingsKey.SFX_ON_OTHER_PAGES, val);
   }
 
+  static get seamlessLoopsInMirrors() {
+    return this.__seamlessLoopsInMirrors;
+  }
+
+  static set seamlessLoopsInMirrors(val: boolean) {
+    if (this.__seamlessLoopsInMirrors === val) return;
+    this.__seamlessLoopsInMirrors = val;
+  }
+
   // ************* Non-user configurable settings from here on
 
   static set themeType(val: ThemeType) {
@@ -547,12 +562,17 @@ function onStorageBroadcast(event: MessageEvent) {
       case SettingsKey.SFX_ON_OTHER_PAGES:
         musicSettings.sfxOnOtherPages = value as boolean;
         break;
+      case SettingsKey.SEAMLESS_LOOPS_IN_MIRRORS:
+        musicSettings.seamlessLoopsInMirrors = value as boolean;
+        break;
       case SettingsKey.IS_PLAYING:
       case SettingsKey.OVERRIDE_LIST:
       case SettingsKey.EXCLUDED_RANDOM_THEMES:
       case SettingsKey.ALL:
       case SettingsKey.CURRENT_RANDOM_CO:
         break;
+      default:
+        logError("Forgot to handle a settings key:", key);
     }
   });
 }
