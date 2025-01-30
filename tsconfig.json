@@ -1,6 +1,6 @@
 {
   // "extends": "@vue/tsconfig/tsconfig.json",
-  "include": ["**/*.ts", "rollup.config.ts"],
+  "include": ["**/*.ts", "**/*.vue", "**/*.d.ts", "vite.config.ts"],
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],
@@ -20,5 +20,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "typeRoots": ["node_modules/@types"],
+    // "paths": { "@/*": ["./*"]}
   },
 }

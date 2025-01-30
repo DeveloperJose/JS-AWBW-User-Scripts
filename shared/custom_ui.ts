@@ -227,11 +227,11 @@ export class CustomMenuSettingsUI {
   }
 
   setNodeID(node: HTMLElement, id: NodeID) {
-    node.id = `${this.prefix}-${id}`;
+    node.id = `${this.prefix}_${id}`;
   }
 
   getNodeByID(id: NodeID) {
-    const fullID = `${this.prefix}-${id}`;
+    const fullID = `${this.prefix}_${id}`;
     const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
     if (!node) {
       if (id !== NodeID.CO_Selector) console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
