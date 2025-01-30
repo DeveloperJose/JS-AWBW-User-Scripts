@@ -144,7 +144,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.1.0"],
+    ["music_player", "5.2.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -353,10 +353,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       });
     }
     setNodeID(node, id) {
-      node.id = `${this.prefix}-${id}`;
+      node.id = `${this.prefix}_${id}`;
     }
     getNodeByID(id) {
-      const fullID = `${this.prefix}-${id}`;
+      const fullID = `${this.prefix}_${id}`;
       const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
       if (!node) {
         if (id !== "co-selector") console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);

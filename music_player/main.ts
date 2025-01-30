@@ -301,11 +301,34 @@ function main() {
         checkAutoplayThenInitialize();
 
         // The site is currently down for daily maintenance. Please try again in 2m 24s.
+        // const el = document.createElement("div"); el.id = "server-maintenance-alert"; el.textContent = "The site is currently down for daily maintenance. Please try again in 12m 24s."; document.body.appendChild(el);
+        const startTime = Date.now();
         const maintenanceDiv = document.querySelector("#server-maintenance-alert");
-        const currentText = maintenanceDiv?.textContent;
-        const minutes = currentText?.match(/\d+m/)?.[0].replace("m", "") ?? 0;
-        const seconds = currentText?.match(/\d+s/)?.[0].replace("s", "") ?? 0;
-        logInfo("Maintenance page detected. Will try again in", minutes, "minutes and", seconds, "seconds.");
+        if (!maintenanceDiv) return;
+        const currentText = maintenanceDiv.textContent;
+        const minutesStr = currentText?.match(/\d+m/)?.[0].replace("m", "");
+        const secondsStr = currentText?.match(/\d+s/)?.[0].replace("s", "");
+
+        if (!minutesStr || !secondsStr) return;
+        const minutes = parseInt(minutesStr);
+        const totalSeconds = parseInt(secondsStr) + minutes * 60;
+
+        const ID = window.setInterval(() => {
+          const elapsedMS = Date.now() - startTime;
+          const elapsedSeconds = elapsedMS / 1000;
+
+          const secondsLeft = totalSeconds - elapsedSeconds;
+
+          const displayMinutes = Math.floor(secondsLeft / 60);
+          const displaySeconds = Math.floor(secondsLeft % 60);
+          const displayMS = Math.floor((secondsLeft % 1) * 1000);
+          maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. This automatically updating message is brought to you by the AWBW Improved Music Player.`;
+
+          if (secondsLeft <= 0) {
+            window.clearInterval(ID);
+            maintenanceDiv.textContent = "The site is back up! Please refresh the page to continue.";
+          }
+        }, 10);
         return;
       }
 

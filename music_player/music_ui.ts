@@ -187,7 +187,6 @@ enum Description {
   Seamless_Loops = "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.",
   Random_Loop_Toggle = "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
 
-
   Alternate_Themes = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
   Alternate_Day = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
 

@@ -199,8 +199,7 @@ export abstract class musicSettings {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this as any)[key] = savedSettings[key];
         // debug("Loading", key, "as", savedSettings[key]);
-      }
-      else {
+      } else {
         logDebug("Tried to load an invalid settings key:", key);
       }
     }
