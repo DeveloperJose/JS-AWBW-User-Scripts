@@ -7,7 +7,7 @@ import { addDatabaseReplacementListener } from "../db";
 import { addSettingsChangeListener, musicSettings, RandomThemeType, SettingsKey, ThemeType } from "../music_settings";
 import { getMusicURL, hasSpecialLoop, SpecialTheme } from "../resources";
 import { SpecialCOs } from "../../shared/awbw_game";
-import { logInfo, logDebug, logError, debounce } from "../utils";
+import { logInfo, logDebug, logError } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
 import { preloadURL, promiseMap, urlQueue } from "./preloading";
 import { stopAllMovementSounds } from "./unit_movement";
@@ -77,8 +77,7 @@ export async function playMusicURL(srcURL: string) {
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
  */
-export const playThemeSong = debounce(300, __playThemeSongInternal, true);
-function __playThemeSongInternal() {
+export function playThemeSong() {
   if (!musicSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
