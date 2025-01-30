@@ -6,9 +6,11 @@
 
 import canAutoplay, { CheckResponse } from "can-autoplay";
 
-// Add our CSS to the page using rollup-plugin-postcss
+// Add our CSS to the page
 import "../shared/style.css";
 import "../shared/style_sliders.css";
+
+import "./music_player.vue";
 
 import { initializeMusicPlayerUI, musicPlayerUI } from "./music_ui";
 import {

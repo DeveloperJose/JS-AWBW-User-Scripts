@@ -16,47 +16,19 @@
 // @unwrap
 // @grant           none
 // ==/UserScript==
-
-var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
+var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   "use strict";
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) =>
+    key in obj
+      ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value })
+      : (obj[key] = value);
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
-  function styleInject(css, ref) {
-    if (ref === undefined) ref = {};
-    var insertAt = ref.insertAt;
-
-    if (!css || typeof document === "undefined") {
-      return;
-    }
-
-    var head = document.head || document.getElementsByTagName("head")[0];
-    var style = document.createElement("style");
-    style.type = "text/css";
-
-    if (insertAt === "top") {
-      if (head.firstChild) {
-        head.insertBefore(style, head.firstChild);
-      } else {
-        head.appendChild(style);
-      }
-    } else {
-      head.appendChild(style);
-    }
-
-    if (style.styleSheet) {
-      style.styleSheet.cssText = css;
-    } else {
-      style.appendChild(document.createTextNode(css));
-    }
-  }
-
-  var css_248z$1 =
-    '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n';
-  styleInject(css_248z$1);
-
-  var css_248z =
-    '/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n';
-  styleInject(css_248z);
-
+  var __vite_style__ = document.createElement("style");
+  __vite_style__.textContent =
+    '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n/*$vite$:1*/';
+  document.head.appendChild(__vite_style__);
   function logInfo(message, ...args) {
     console.log("[AWBW Improved Music Player]", message, ...args);
   }
@@ -86,19 +58,19 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       }
     };
   }
-
   const IFRAME_ID = "music-player-iframe";
   const broadcastChannel = new BroadcastChannel("awbw-music-player");
   function isIFrameActive() {
+    var _a;
     const iframe = document.getElementById(IFRAME_ID);
     if (!iframe) return false;
-    const href = iframe.contentDocument?.location.href ?? iframe.src;
+    const href = ((_a = iframe.contentDocument) == null ? void 0 : _a.location.href) ?? iframe.src;
     return href !== null && href !== "" && href !== "about:blank";
   }
   function getCurrentDocument() {
     if (!isIFrameActive()) return window.document;
     const iframe = document.getElementById(IFRAME_ID);
-    return iframe?.contentDocument ?? window.document;
+    return (iframe == null ? void 0 : iframe.contentDocument) ?? window.document;
   }
   function initializeIFrame(init_fn) {
     const hasFrame = document.getElementById(IFRAME_ID);
@@ -171,7 +143,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       else link.target = IFRAME_ID;
     }
   }
-
   var PageType = /* @__PURE__ */ ((PageType2) => {
     PageType2["Maintenance"] = "Maintenance";
     PageType2["ActiveGame"] = "ActiveGame";
@@ -185,13 +156,13 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function getCurrentPageType() {
     const doc = getCurrentDocument();
     const isMaintenance = doc.querySelector("#server-maintenance-alert") !== null;
-    if (isMaintenance) return "Maintenance" /* Maintenance */;
-    if (doc.location.href.indexOf("game.php") > -1) return "ActiveGame" /* ActiveGame */;
-    if (doc.location.href.indexOf("editmap.php?") > -1) return "MapEditor" /* MapEditor */;
-    if (doc.location.href.indexOf("moveplanner.php") > -1) return "MovePlanner" /* MovePlanner */;
-    if (doc.location.href.indexOf("live_queue.php") > -1) return "LiveQueue" /* LiveQueue */;
-    if (doc.location.href === "https://awbw.amarriner.com/") return "MainPage" /* MainPage */;
-    return "Default" /* Default */;
+    if (isMaintenance) return "Maintenance";
+    if (doc.location.href.indexOf("game.php") > -1) return "ActiveGame";
+    if (doc.location.href.indexOf("editmap.php?") > -1) return "MapEditor";
+    if (doc.location.href.indexOf("moveplanner.php") > -1) return "MovePlanner";
+    if (doc.location.href.indexOf("live_queue.php") > -1) return "LiveQueue";
+    if (doc.location.href === "https://awbw.amarriner.com/") return "MainPage";
+    return "Default";
   }
   function getCoordsDiv() {
     return getCurrentDocument().querySelector("#coords");
@@ -237,22 +208,23 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   }
   const moveAnimationDelayMS = 5;
   function moveDivToOffset(div, dx, dy, steps, ...followUpAnimations) {
+    var _a;
     if (steps <= 1) {
       if (!followUpAnimations || followUpAnimations.length === 0) return;
-      const nextSet = followUpAnimations.shift()?.then;
+      const nextSet = (_a = followUpAnimations.shift()) == null ? void 0 : _a.then;
       if (!nextSet) return;
       moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
       return;
     }
     window.setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations), moveAnimationDelayMS);
     let left = parseFloat(div.style.left);
-    let top = parseFloat(div.style.top);
+    let top2 = parseFloat(div.style.top);
     left += dx;
-    top += dy;
+    top2 += dy;
     div.style.left = left + "px";
-    div.style.top = top + "px";
+    div.style.top = top2 + "px";
   }
-  function addUpdateCursorObserver(onCursorMove) {
+  function addUpdateCursorObserver(onCursorMove2) {
     const coordsDiv = getCoordsDiv();
     if (!coordsDiv) return;
     const observer = new MutationObserver((mutationsList) => {
@@ -265,12 +237,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
         const splitCoords = coordsText.split(",");
         const cursorX = Number(splitCoords[0]);
         const cursorY = Number(splitCoords[1]);
-        onCursorMove(cursorX, cursorY);
+        onCursorMove2(cursorX, cursorY);
       }
     });
     observer.observe(coordsDiv, { childList: true });
   }
-
   const ORANGE_STAR_COs = /* @__PURE__ */ new Set(["andy", "max", "sami", "nell", "hachi", "jake", "rachel"]);
   const BLUE_MOON_COs = /* @__PURE__ */ new Set(["olaf", "grit", "colin", "sasha"]);
   const GREEN_EARTH_COs = /* @__PURE__ */ new Set(["eagle", "drake", "jess", "javier"]);
@@ -319,7 +290,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (COs.size === 1) return [...COs][0];
     return [...COs][Math.floor(Math.random() * COs.size)];
   }
-
   var SpecialCOs = /* @__PURE__ */ ((SpecialCOs2) => {
     SpecialCOs2["Maintenance"] = "maintenance";
     SpecialCOs2["MapEditor"] = "map-editor";
@@ -341,8 +311,8 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   const siloDelayMS = areAnimationsEnabled() ? 3e3 : 0;
   const attackDelayMS = areAnimationsEnabled() ? 1e3 : 0;
   function getMyUsername() {
-    const document = getCurrentDocument();
-    const profileMenu = document.querySelector("#profile-menu");
+    const document2 = getCurrentDocument();
+    const profileMenu = document2.querySelector("#profile-menu");
     if (!profileMenu) return null;
     const link = profileMenu.getElementsByClassName("dropdown-menu-link")[0];
     return link.href.split("username=")[1];
@@ -455,23 +425,25 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      */
     static get isPowerActivated() {
       if (getCurrentPageType() !== PageType.ActiveGame) return false;
-      return this?.coPowerState !== "N" /* NoPower */;
+      return (this == null ? void 0 : this.coPowerState) !== "N";
     }
     /**
      * Gets state of the CO Power for the current player represented as a single letter.
      * @returns - The state of the CO Power for the current player.
      */
     static get coPowerState() {
-      if (getCurrentPageType() !== PageType.ActiveGame) return "N" /* NoPower */;
-      return this.info?.players_co_power_on;
+      var _a;
+      if (getCurrentPageType() !== PageType.ActiveGame) return "N";
+      return (_a = this.info) == null ? void 0 : _a.players_co_power_on;
     }
     /**
      * Determine if the current player has been eliminated from the game.
      * @returns - True if the current player has been eliminated.
      */
     static get isEliminated() {
+      var _a;
       if (getCurrentPageType() !== PageType.ActiveGame) return false;
-      return this.info?.players_eliminated === "Y";
+      return ((_a = this.info) == null ? void 0 : _a.players_eliminated) === "Y";
     }
     /**
      * Gets the name of the CO for the current player.
@@ -480,21 +452,22 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * @returns - The name of the CO for the current player.
      */
     static get coName() {
+      var _a;
       if (getCurrentPageType() !== PageType.ActiveGame) return null;
       const myID2 = getMyID();
       const myInfo = getPlayerInfo(myID2);
-      const myWin = myInfo?.players_eliminated === "N";
-      const myLoss = myInfo?.players_eliminated === "Y";
+      const myWin = (myInfo == null ? void 0 : myInfo.players_eliminated) === "N";
+      const myLoss = (myInfo == null ? void 0 : myInfo.players_eliminated) === "Y";
       const endedToday = didGameEndToday();
       const isSpectator = isPlayerSpectator(myID2);
-      const endGameTheme = isSpectator || myWin ? "victory" /* Victory */ : "defeat"; /* Defeat */
+      const endGameTheme = isSpectator || myWin ? "victory" : "defeat";
       if (hasGameEnded()) {
         if (endedToday) return endGameTheme;
-        if (!isReplayActive()) return "co-select" /* COSelect */;
+        if (!isReplayActive()) return "co-select";
         return endGameTheme;
       }
-      if (myLoss) return "defeat" /* Defeat */;
-      return this.info?.co_name;
+      if (myLoss) return "defeat";
+      return (_a = this.info) == null ? void 0 : _a.co_name;
     }
   }
   function getAllPlayingCONames() {
@@ -519,8 +492,9 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return unitsInfo[unitId];
   }
   function getUnitName(unitId) {
+    var _a;
     if (getCurrentPageType() !== PageType.ActiveGame) return null;
-    return getUnitInfo(unitId)?.units_name;
+    return (_a = getUnitInfo(unitId)) == null ? void 0 : _a.units_name;
   }
   function getUnitInfoFromCoords(x, y) {
     if (getCurrentPageType() !== PageType.ActiveGame) return null;
@@ -532,13 +506,14 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function isValidUnit(unitId) {
     if (getCurrentPageType() !== PageType.ActiveGame) return false;
     if (typeof unitsInfo === "undefined") return false;
-    return unitId !== undefined && unitsInfo[unitId] !== undefined;
+    return unitId !== void 0 && unitsInfo[unitId] !== void 0;
   }
   function hasUnitMovedThisTurn(unitId) {
+    var _a;
     if (getCurrentPageType() !== PageType.ActiveGame) return false;
-    return isValidUnit(unitId) && getUnitInfo(unitId)?.units_moved === 1;
+    return isValidUnit(unitId) && ((_a = getUnitInfo(unitId)) == null ? void 0 : _a.units_moved) === 1;
   }
-  function addConnectionErrorObserver(onConnectionError) {
+  function addConnectionErrorObserver(onConnectionError2) {
     const connectionErrorDiv = getConnectionErrorDiv();
     if (!connectionErrorDiv) return;
     const observer = new MutationObserver((mutationsList) => {
@@ -547,18 +522,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
         if (!mutation.target) return;
         if (!mutation.target.textContent) return;
         const closeMsg = mutation.target.textContent;
-        onConnectionError(closeMsg);
+        onConnectionError2(closeMsg);
       }
     });
     observer.observe(connectionErrorDiv, { childList: true });
   }
-
-  var __defProp$1 = Object.defineProperty;
-  var __defNormalProp$1 = (obj, key, value) =>
-    key in obj
-      ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value })
-      : (obj[key] = value);
-  var __publicField$1 = (obj, key, value) => __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
   var GameType = /* @__PURE__ */ ((GameType2) => {
     GameType2["AW1"] = "AW1";
     GameType2["AW2"] = "AW2";
@@ -579,10 +547,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return RandomThemeType2;
   })(RandomThemeType || {});
   function getCurrentThemeType() {
-    const currentPowerState = currentPlayer?.coPowerState;
-    if (currentPowerState === "Y") return "CO_POWER" /* CO_POWER */;
-    if (currentPowerState === "S") return "SUPER_CO_POWER" /* SUPER_CO_POWER */;
-    return "REGULAR" /* REGULAR */;
+    const currentPowerState = currentPlayer == null ? void 0 : currentPlayer.coPowerState;
+    if (currentPowerState === "Y") return "CO_POWER";
+    if (currentPowerState === "S") return "SUPER_CO_POWER";
+    return "REGULAR";
   }
   function getRandomGameType(excludedGameTypes = /* @__PURE__ */ new Set()) {
     const gameTypes = Object.values(GameType).filter((gameType) => !excludedGameTypes.has(gameType));
@@ -669,7 +637,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set isPlaying(val) {
       if (this.__isPlaying === val) return;
       this.__isPlaying = val;
-      this.onSettingChangeEvent("isPlaying" /* IS_PLAYING */, val);
+      this.onSettingChangeEvent("isPlaying", val);
     }
     static get isPlaying() {
       return this.__isPlaying;
@@ -677,7 +645,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set volume(val) {
       if (this.__volume === val) return;
       this.__volume = val;
-      this.onSettingChangeEvent("volume" /* VOLUME */, val);
+      this.onSettingChangeEvent("volume", val);
     }
     static get volume() {
       return this.__volume;
@@ -685,7 +653,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set sfxVolume(val) {
       if (this.__sfxVolume === val) return;
       this.__sfxVolume = val;
-      this.onSettingChangeEvent("sfxVolume" /* SFX_VOLUME */, val);
+      this.onSettingChangeEvent("sfxVolume", val);
     }
     static get sfxVolume() {
       return this.__sfxVolume;
@@ -693,7 +661,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set uiVolume(val) {
       if (this.__uiVolume === val) return;
       this.__uiVolume = val;
-      this.onSettingChangeEvent("uiVolume" /* UI_VOLUME */, val);
+      this.onSettingChangeEvent("uiVolume", val);
     }
     static get uiVolume() {
       return this.__uiVolume;
@@ -702,7 +670,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       if (this.__gameType === val) return;
       this.__gameType = val;
       this.__currentRandomGameType = val;
-      this.onSettingChangeEvent("gameType" /* GAME_TYPE */, val);
+      this.onSettingChangeEvent("gameType", val);
     }
     static get gameType() {
       return this.__gameType;
@@ -710,7 +678,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set alternateThemes(val) {
       if (this.__alternateThemes === val) return;
       this.__alternateThemes = val;
-      this.onSettingChangeEvent("alternateThemes" /* ALTERNATE_THEMES */, val);
+      this.onSettingChangeEvent("alternateThemes", val);
     }
     static get alternateThemes() {
       return this.__alternateThemes;
@@ -718,28 +686,28 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set alternateThemeDay(val) {
       if (this.__alternateThemeDay === val) return;
       this.__alternateThemeDay = val;
-      this.onSettingChangeEvent("alternateThemeDay" /* ALTERNATE_THEME_DAY */, val);
+      this.onSettingChangeEvent("alternateThemeDay", val);
     }
     static get alternateThemeDay() {
       return this.__alternateThemeDay;
     }
     static set captureProgressSFX(val) {
       this.__captureProgressSFX = val;
-      this.onSettingChangeEvent("captureProgressSFX" /* CAPTURE_PROGRESS_SFX */, val);
+      this.onSettingChangeEvent("captureProgressSFX", val);
     }
     static get captureProgressSFX() {
       return this.__captureProgressSFX;
     }
     static set pipeSeamSFX(val) {
       this.__pipeSeamSFX = val;
-      this.onSettingChangeEvent("pipeSeamSFX" /* PIPE_SEAM_SFX */, val);
+      this.onSettingChangeEvent("pipeSeamSFX", val);
     }
     static get pipeSeamSFX() {
       return this.__pipeSeamSFX;
     }
     static set overrideList(val) {
       this.__overrideList = new Map([...val.entries()].sort());
-      this.onSettingChangeEvent("overrideList" /* OVERRIDE_LIST */, val);
+      this.onSettingChangeEvent("overrideList", val);
     }
     static get overrideList() {
       return this.__overrideList;
@@ -747,13 +715,13 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static addOverride(coName, gameType) {
       this.__overrideList.set(coName, gameType);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-      this.onSettingChangeEvent("addOverride" /* ADD_OVERRIDE */, [coName, gameType]);
+      this.onSettingChangeEvent("addOverride", [coName, gameType]);
     }
     static removeOverride(coName) {
       if (!this.__overrideList.has(coName)) return;
       this.__overrideList.delete(coName);
       this.__overrideList = new Map([...this.__overrideList.entries()].sort());
-      this.onSettingChangeEvent("removeOverride" /* REMOVE_OVERRIDE */, coName);
+      this.onSettingChangeEvent("removeOverride", coName);
     }
     static getOverride(coName) {
       return this.__overrideList.get(coName);
@@ -764,7 +732,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set restartThemes(val) {
       if (this.__restartThemes === val) return;
       this.__restartThemes = val;
-      this.onSettingChangeEvent("restartThemes" /* RESTART_THEMES */, val);
+      this.onSettingChangeEvent("restartThemes", val);
     }
     static get autoplayOnOtherPages() {
       return this.__autoplayOnOtherPages;
@@ -772,23 +740,23 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set autoplayOnOtherPages(val) {
       if (this.__autoplayOnOtherPages === val) return;
       this.__autoplayOnOtherPages = val;
-      this.onSettingChangeEvent("autoplayOnOtherPages" /* AUTOPLAY_ON_OTHER_PAGES */, val);
+      this.onSettingChangeEvent("autoplayOnOtherPages", val);
     }
     static get excludedRandomThemes() {
       return this.__excludedRandomThemes;
     }
     static set excludedRandomThemes(val) {
       this.__excludedRandomThemes = val;
-      this.onSettingChangeEvent("excludedRandomThemes" /* EXCLUDED_RANDOM_THEMES */, val);
+      this.onSettingChangeEvent("excludedRandomThemes", val);
     }
     static addExcludedRandomTheme(theme) {
       this.__excludedRandomThemes.add(theme);
-      this.onSettingChangeEvent("addExcluded" /* ADD_EXCLUDED */, theme);
+      this.onSettingChangeEvent("addExcluded", theme);
     }
     static removeExcludedRandomTheme(theme) {
       if (!this.__excludedRandomThemes.has(theme)) return;
       this.__excludedRandomThemes.delete(theme);
-      this.onSettingChangeEvent("removeExcluded" /* REMOVE_EXCLUDED */, theme);
+      this.onSettingChangeEvent("removeExcluded", theme);
     }
     static get loopRandomSongsUntilTurnChange() {
       return this.__loopRandomSongsUntilTurnChange;
@@ -796,7 +764,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set loopRandomSongsUntilTurnChange(val) {
       if (this.__loopRandomSongsUntilTurnChange === val) return;
       this.__loopRandomSongsUntilTurnChange = val;
-      this.onSettingChangeEvent("loopRandomSongsUntilTurnChange" /* LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE */, val);
+      this.onSettingChangeEvent("loopRandomSongsUntilTurnChange", val);
     }
     static get sfxOnOtherPages() {
       return this.__sfxOnOtherPages;
@@ -804,13 +772,13 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set sfxOnOtherPages(val) {
       if (this.__sfxOnOtherPages === val) return;
       this.__sfxOnOtherPages = val;
-      this.onSettingChangeEvent("sfxOnOtherPages" /* SFX_ON_OTHER_PAGES */, val);
+      this.onSettingChangeEvent("sfxOnOtherPages", val);
     }
     // ************* Non-user configurable settings from here on
     static set themeType(val) {
       if (this.__themeType === val) return;
       this.__themeType = val;
-      this.onSettingChangeEvent("themeType" /* THEME_TYPE */, val);
+      this.onSettingChangeEvent("themeType", val);
     }
     static get themeType() {
       return this.__themeType;
@@ -818,7 +786,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static set randomThemesType(val) {
       if (this.__randomThemesType === val) return;
       this.__randomThemesType = val;
-      this.onSettingChangeEvent("randomThemesType" /* RANDOM_THEMES_TYPE */, val);
+      this.onSettingChangeEvent("randomThemesType", val);
     }
     static get randomThemesType() {
       return this.__randomThemesType;
@@ -833,39 +801,43 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     static randomizeCO() {
       const excludedCOs = /* @__PURE__ */ new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
       this.__currentRandomCO = getRandomCO(excludedCOs);
-      const isPower = this.themeType !== "REGULAR"; /* REGULAR */
+      const isPower = this.themeType !== "REGULAR";
       const excludedSoundtracks = /* @__PURE__ */ new Set();
-      if (isPower) excludedSoundtracks.add("AW1" /* AW1 */);
+      if (isPower)
+        excludedSoundtracks.add(
+          "AW1",
+          /* AW1 */
+        );
       this.__currentRandomGameType = getRandomGameType(excludedSoundtracks);
-      this.onSettingChangeEvent("currentRandomCO" /* CURRENT_RANDOM_CO */, null);
+      this.onSettingChangeEvent("currentRandomCO", null);
     }
     static onSettingChangeEvent(key, value) {
       onSettingsChangeListeners.forEach((fn) => fn(key, value, !this.isLoaded));
     }
   }
   // User configurable settings
-  __publicField$1(musicSettings, "__isPlaying", false);
-  __publicField$1(musicSettings, "__volume", 0.5);
-  __publicField$1(musicSettings, "__sfxVolume", 0.4);
-  __publicField$1(musicSettings, "__uiVolume", 0.4);
-  __publicField$1(musicSettings, "__gameType", "DS" /* DS */);
-  __publicField$1(musicSettings, "__alternateThemes", true);
-  __publicField$1(musicSettings, "__alternateThemeDay", 15);
-  __publicField$1(musicSettings, "__randomThemesType", "NONE" /* NONE */);
-  __publicField$1(musicSettings, "__captureProgressSFX", true);
-  __publicField$1(musicSettings, "__pipeSeamSFX", true);
-  __publicField$1(musicSettings, "__overrideList", /* @__PURE__ */ new Map());
-  __publicField$1(musicSettings, "__restartThemes", false);
-  __publicField$1(musicSettings, "__autoplayOnOtherPages", true);
-  __publicField$1(musicSettings, "__excludedRandomThemes", /* @__PURE__ */ new Set());
-  __publicField$1(musicSettings, "__loopRandomSongsUntilTurnChange", false);
-  __publicField$1(musicSettings, "__sfxOnOtherPages", true);
+  __publicField(musicSettings, "__isPlaying", false);
+  __publicField(musicSettings, "__volume", 0.5);
+  __publicField(musicSettings, "__sfxVolume", 0.4);
+  __publicField(musicSettings, "__uiVolume", 0.4);
+  __publicField(musicSettings, "__gameType", "DS");
+  __publicField(musicSettings, "__alternateThemes", true);
+  __publicField(musicSettings, "__alternateThemeDay", 15);
+  __publicField(musicSettings, "__randomThemesType", "NONE");
+  __publicField(musicSettings, "__captureProgressSFX", true);
+  __publicField(musicSettings, "__pipeSeamSFX", true);
+  __publicField(musicSettings, "__overrideList", /* @__PURE__ */ new Map());
+  __publicField(musicSettings, "__restartThemes", false);
+  __publicField(musicSettings, "__autoplayOnOtherPages", true);
+  __publicField(musicSettings, "__excludedRandomThemes", /* @__PURE__ */ new Set());
+  __publicField(musicSettings, "__loopRandomSongsUntilTurnChange", false);
+  __publicField(musicSettings, "__sfxOnOtherPages", true);
   // Non-user configurable settings
-  __publicField$1(musicSettings, "__themeType", "REGULAR" /* REGULAR */);
-  __publicField$1(musicSettings, "__currentRandomCO", "");
-  __publicField$1(musicSettings, "__currentRandomGameType", "DS" /* DS */);
-  __publicField$1(musicSettings, "isLoaded", false);
-  __publicField$1(musicSettings, "saveChanges", false);
+  __publicField(musicSettings, "__themeType", "REGULAR");
+  __publicField(musicSettings, "__currentRandomCO", "");
+  __publicField(musicSettings, "__currentRandomGameType", "DS");
+  __publicField(musicSettings, "isLoaded", false);
+  __publicField(musicSettings, "saveChanges", false);
   function loadSettingsFromLocalStorage() {
     let storageData = localStorage.getItem(STORAGE_KEY);
     if (!storageData || storageData === "undefined") {
@@ -878,7 +850,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       }
     }
     musicSettings.fromJSON(storageData);
-    onSettingsChangeListeners.forEach((fn) => fn("all" /* ALL */, null, true));
+    onSettingsChangeListeners.forEach((fn) => fn("all", null, true));
     logDebug("Settings loaded from storage:", storageData);
     addSettingsChangeListener(onSettingsChange$2);
   }
@@ -886,7 +858,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     musicSettings.saveChanges = true;
   }
   function onSettingsChange$2(key, value, _isFirstLoad) {
-    if (key === "themeType" /* THEME_TYPE */ || key === "currentRandomCO" /* CURRENT_RANDOM_CO */) return;
+    if (key === "themeType" || key === "currentRandomCO") return;
     if (!musicSettings.saveChanges) return;
     updateSettingsInLocalStorage();
     broadcastChannel.postMessage({ type: "settings", key, value });
@@ -905,64 +877,63 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     logDebug("Received settings change:", key, value);
     musicSettings.runWithoutSavingSettings(() => {
       switch (key) {
-        case "volume" /* VOLUME */:
+        case "volume":
           musicSettings.volume = value;
           break;
-        case "sfxVolume" /* SFX_VOLUME */:
+        case "sfxVolume":
           musicSettings.sfxVolume = value;
           break;
-        case "uiVolume" /* UI_VOLUME */:
+        case "uiVolume":
           musicSettings.uiVolume = value;
           break;
-        case "themeType" /* THEME_TYPE */:
+        case "themeType":
           musicSettings.themeType = value;
           break;
-        case "gameType" /* GAME_TYPE */:
+        case "gameType":
           musicSettings.gameType = value;
           break;
-        case "alternateThemes" /* ALTERNATE_THEMES */:
+        case "alternateThemes":
           musicSettings.alternateThemes = value;
           break;
-        case "alternateThemeDay" /* ALTERNATE_THEME_DAY */:
+        case "alternateThemeDay":
           musicSettings.alternateThemeDay = value;
           break;
-        case "randomThemesType" /* RANDOM_THEMES_TYPE */:
+        case "randomThemesType":
           musicSettings.randomThemesType = value;
           break;
-        case "captureProgressSFX" /* CAPTURE_PROGRESS_SFX */:
+        case "captureProgressSFX":
           musicSettings.captureProgressSFX = value;
           break;
-        case "pipeSeamSFX" /* PIPE_SEAM_SFX */:
+        case "pipeSeamSFX":
           musicSettings.pipeSeamSFX = value;
           break;
-        case "restartThemes" /* RESTART_THEMES */:
+        case "restartThemes":
           musicSettings.restartThemes = value;
           break;
-        case "autoplayOnOtherPages" /* AUTOPLAY_ON_OTHER_PAGES */:
+        case "autoplayOnOtherPages":
           musicSettings.autoplayOnOtherPages = value;
           break;
-        case "addOverride" /* ADD_OVERRIDE */:
+        case "addOverride":
           musicSettings.addOverride(value[0], value[1]);
           break;
-        case "removeOverride" /* REMOVE_OVERRIDE */:
+        case "removeOverride":
           musicSettings.removeOverride(value);
           break;
-        case "addExcluded" /* ADD_EXCLUDED */:
+        case "addExcluded":
           musicSettings.addExcludedRandomTheme(value);
           break;
-        case "removeExcluded" /* REMOVE_EXCLUDED */:
+        case "removeExcluded":
           musicSettings.removeExcludedRandomTheme(value);
           break;
-        case "loopRandomSongsUntilTurnChange" /* LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE */:
+        case "loopRandomSongsUntilTurnChange":
           musicSettings.loopRandomSongsUntilTurnChange = value;
           break;
-        case "sfxOnOtherPages" /* SFX_ON_OTHER_PAGES */:
+        case "sfxOnOtherPages":
           musicSettings.sfxOnOtherPages = value;
           break;
       }
     });
   }
-
   const BASE_URL = "https://developerjose.netlify.app";
   const BASE_MUSIC_URL = BASE_URL + "/music";
   const BASE_SFX_URL = BASE_MUSIC_URL + "/sfx";
@@ -1011,49 +982,213 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return GameSFX2;
   })(GameSFX || {});
   const onMovementStartMap = /* @__PURE__ */ new Map([
-    ["APC", "move-tread-light" /* moveTreadLightLoop */],
-    ["Anti-Air", "move-tread-light" /* moveTreadLightLoop */],
-    ["Artillery", "move-tread-light" /* moveTreadLightLoop */],
-    ["B-Copter", "move-bcopter" /* moveBCopterLoop */],
-    ["Battleship", "move-naval" /* moveNavalLoop */],
-    ["Black Boat", "move-naval" /* moveNavalLoop */],
-    ["Black Bomb", "move-plane" /* movePlaneLoop */],
-    ["Bomber", "move-plane" /* movePlaneLoop */],
-    ["Carrier", "move-naval" /* moveNavalLoop */],
-    ["Cruiser", "move-naval" /* moveNavalLoop */],
-    ["Fighter", "move-plane" /* movePlaneLoop */],
-    ["Infantry", "move-inf" /* moveInfLoop */],
-    ["Lander", "move-naval" /* moveNavalLoop */],
-    ["Md.Tank", "move-tread-heavy" /* moveTreadHeavyLoop */],
-    ["Mech", "move-mech" /* moveMechLoop */],
-    ["Mega Tank", "move-tread-heavy" /* moveTreadHeavyLoop */],
-    ["Missile", "move-tires-heavy" /* moveTiresHeavyLoop */],
-    ["Neotank", "move-tread-heavy" /* moveTreadHeavyLoop */],
-    ["Piperunner", "move-piperunner" /* movePiperunnerLoop */],
-    ["Recon", "move-tires-light" /* moveTiresLightLoop */],
-    ["Rocket", "move-tires-heavy" /* moveTiresHeavyLoop */],
-    ["Stealth", "move-plane" /* movePlaneLoop */],
-    ["Sub", "move-sub" /* moveSubLoop */],
-    ["T-Copter", "move-tcopter" /* moveTCopterLoop */],
-    ["Tank", "move-tread-light" /* moveTreadLightLoop */],
+    [
+      "APC",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+    [
+      "Anti-Air",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+    [
+      "Artillery",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+    [
+      "B-Copter",
+      "move-bcopter",
+      /* moveBCopterLoop */
+    ],
+    [
+      "Battleship",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Black Boat",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Black Bomb",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Bomber",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Carrier",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Cruiser",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Fighter",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Infantry",
+      "move-inf",
+      /* moveInfLoop */
+    ],
+    [
+      "Lander",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Md.Tank",
+      "move-tread-heavy",
+      /* moveTreadHeavyLoop */
+    ],
+    [
+      "Mech",
+      "move-mech",
+      /* moveMechLoop */
+    ],
+    [
+      "Mega Tank",
+      "move-tread-heavy",
+      /* moveTreadHeavyLoop */
+    ],
+    [
+      "Missile",
+      "move-tires-heavy",
+      /* moveTiresHeavyLoop */
+    ],
+    [
+      "Neotank",
+      "move-tread-heavy",
+      /* moveTreadHeavyLoop */
+    ],
+    [
+      "Piperunner",
+      "move-piperunner",
+      /* movePiperunnerLoop */
+    ],
+    [
+      "Recon",
+      "move-tires-light",
+      /* moveTiresLightLoop */
+    ],
+    [
+      "Rocket",
+      "move-tires-heavy",
+      /* moveTiresHeavyLoop */
+    ],
+    [
+      "Stealth",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Sub",
+      "move-sub",
+      /* moveSubLoop */
+    ],
+    [
+      "T-Copter",
+      "move-tcopter",
+      /* moveTCopterLoop */
+    ],
+    [
+      "Tank",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
   ]);
   const onMovementRolloffMap = /* @__PURE__ */ new Map([
-    ["APC", "move-tread-light-rolloff" /* moveTreadLightOneShot */],
-    ["Anti-Air", "move-tread-light-rolloff" /* moveTreadLightOneShot */],
-    ["Artillery", "move-tread-light-rolloff" /* moveTreadLightOneShot */],
-    ["B-Copter", "move-bcopter-rolloff" /* moveBCopterOneShot */],
-    ["Black Bomb", "move-plane-rolloff" /* movePlaneOneShot */],
-    ["Bomber", "move-plane-rolloff" /* movePlaneOneShot */],
-    ["Fighter", "move-plane-rolloff" /* movePlaneOneShot */],
-    ["Md. Tank", "move-tread-heavy-rolloff" /* moveTreadHeavyOneShot */],
-    ["Mega Tank", "move-tread-heavy-rolloff" /* moveTreadHeavyOneShot */],
-    ["Missile", "move-tires-heavy-rolloff" /* moveTiresHeavyOneShot */],
-    ["Neotank", "move-tread-heavy-rolloff" /* moveTreadHeavyOneShot */],
-    ["Recon", "move-tires-light-rolloff" /* moveTiresLightOneShot */],
-    ["Rocket", "move-tires-heavy-rolloff" /* moveTiresHeavyOneShot */],
-    ["Stealth", "move-plane-rolloff" /* movePlaneOneShot */],
-    ["T-Copter", "move-tcopter-rolloff" /* moveTCopterOneShot */],
-    ["Tank", "move-tread-light-rolloff" /* moveTreadLightOneShot */],
+    [
+      "APC",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+    [
+      "Anti-Air",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+    [
+      "Artillery",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+    [
+      "B-Copter",
+      "move-bcopter-rolloff",
+      /* moveBCopterOneShot */
+    ],
+    [
+      "Black Bomb",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "Bomber",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "Fighter",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "Md. Tank",
+      "move-tread-heavy-rolloff",
+      /* moveTreadHeavyOneShot */
+    ],
+    [
+      "Mega Tank",
+      "move-tread-heavy-rolloff",
+      /* moveTreadHeavyOneShot */
+    ],
+    [
+      "Missile",
+      "move-tires-heavy-rolloff",
+      /* moveTiresHeavyOneShot */
+    ],
+    [
+      "Neotank",
+      "move-tread-heavy-rolloff",
+      /* moveTreadHeavyOneShot */
+    ],
+    [
+      "Recon",
+      "move-tires-light-rolloff",
+      /* moveTiresLightOneShot */
+    ],
+    [
+      "Rocket",
+      "move-tires-heavy-rolloff",
+      /* moveTiresHeavyOneShot */
+    ],
+    [
+      "Stealth",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "T-Copter",
+      "move-tcopter-rolloff",
+      /* moveTCopterOneShot */
+    ],
+    [
+      "Tank",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
   ]);
   const alternateThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set(["sturm"])],
@@ -1070,7 +1205,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (gameType === GameType.RBC && isPowerActive) {
       return `t-${faction}-${themeType}`;
     }
-    if (!alternateThemesSet?.has(coName) || isPowerActive) {
+    if (!(alternateThemesSet == null ? void 0 : alternateThemesSet.has(coName)) || isPowerActive) {
       return;
     }
     if (coName === "andy" && gameType == GameType.RBC) {
@@ -1096,9 +1231,9 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return `t-${faction}-${themeType}`;
   }
   function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
-    if (gameType === null || gameType === undefined) gameType = musicSettings.gameType;
-    if (themeType === null || themeType === undefined) themeType = musicSettings.themeType;
-    if (useAlternateTheme === null || useAlternateTheme === undefined) {
+    if (gameType === null || gameType === void 0) gameType = musicSettings.gameType;
+    if (themeType === null || themeType === void 0) themeType = musicSettings.themeType;
+    if (useAlternateTheme === null || useAlternateTheme === void 0) {
       useAlternateTheme = getCurrentGameDay() >= musicSettings.alternateThemeDay && musicSettings.alternateThemes;
     }
     coName = coName.toLowerCase().replaceAll(" ", "");
@@ -1163,7 +1298,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     });
     return audioList;
   }
-
   var ScriptName = /* @__PURE__ */ ((ScriptName2) => {
     ScriptName2["None"] = "none";
     ScriptName2["MusicPlayer"] = "music_player";
@@ -1171,29 +1305,23 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player" /* MusicPlayer */, "5.1.0"],
-    ["highlight_cursor_coordinates" /* HighlightCursorCoordinates */, "2.3.0"],
+    ["music_player", "5.1.0"],
+    ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
+    ["music_player", "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js"],
     [
-      "music_player" /* MusicPlayer */,
-      "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js",
-    ],
-    [
-      "highlight_cursor_coordinates" /* HighlightCursorCoordinates */,
+      "highlight_cursor_coordinates",
       "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js",
     ],
   ]);
   const homepageURLs = /* @__PURE__ */ new Map([
-    ["music_player" /* MusicPlayer */, "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
-    [
-      "highlight_cursor_coordinates" /* HighlightCursorCoordinates */,
-      "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates",
-    ],
+    ["music_player", "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
+    ["highlight_cursor_coordinates", "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates"],
   ]);
   function checkIfUpdateIsAvailable(scriptName) {
     const isGreater = (a, b) => {
-      return a.localeCompare(b, undefined, { numeric: true }) === 1;
+      return a.localeCompare(b, void 0, { numeric: true }) === 1;
     };
     return new Promise((resolve, reject) => {
       const updateURL = updateURLs.get(scriptName);
@@ -1201,8 +1329,9 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       return fetch(updateURL)
         .then((response) => response.text())
         .then((text) => {
+          var _a;
           if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
-          const latestVersion = text.match(/@version\s+([0-9.]+)/)?.[1];
+          const latestVersion = (_a = text.match(/@version\s+([0-9.]+)/)) == null ? void 0 : _a[1];
           if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
           const currentVersion = versions.get(scriptName);
           if (!currentVersion) return reject(`Failed to get the current version of the script.`);
@@ -1217,13 +1346,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
         .catch((reason) => reject(reason));
     });
   }
-
-  var __defProp = Object.defineProperty;
-  var __defNormalProp = (obj, key, value) =>
-    key in obj
-      ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value })
-      : (obj[key] = value);
-  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   var GroupType = /* @__PURE__ */ ((GroupType2) => {
     GroupType2["Vertical"] = "cls-vertical-box";
     GroupType2["Horizontal"] = "cls-horizontal-box";
@@ -1304,17 +1426,29 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       this.parent.classList.add("game-tools-btn");
       this.parent.style.width = "34px";
       this.parent.style.height = "30px";
-      this.setNodeID(this.parent, "parent" /* Parent */);
+      this.setNodeID(
+        this.parent,
+        "parent",
+        /* Parent */
+      );
       const hoverSpan = document.createElement("span");
       hoverSpan.classList.add("game-tools-btn-text", "small_text");
       hoverSpan.innerText = hoverText;
       this.parent.appendChild(hoverSpan);
-      this.setNodeID(hoverSpan, "hover" /* Hover */);
+      this.setNodeID(
+        hoverSpan,
+        "hover",
+        /* Hover */
+      );
       const bgDiv = document.createElement("div");
       bgDiv.classList.add("game-tools-bg");
       bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
       this.parent.appendChild(bgDiv);
-      this.setNodeID(bgDiv, "background" /* Background */);
+      this.setNodeID(
+        bgDiv,
+        "background",
+        /* Background */
+      );
       bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
       bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
       const btnLink = document.createElement("a");
@@ -1323,12 +1457,20 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const btnImg = document.createElement("img");
       btnImg.src = buttonImageURL;
       btnLink.appendChild(btnImg);
-      this.setNodeID(btnImg, "button-image" /* Button_Image */);
+      this.setNodeID(
+        btnImg,
+        "button-image",
+        /* Button_Image */
+      );
       const contextMenu = document.createElement("div");
       contextMenu.classList.add("cls-settings-menu");
       contextMenu.style.zIndex = "30";
       this.parent.appendChild(contextMenu);
-      this.setNodeID(contextMenu, "settings" /* Settings */);
+      this.setNodeID(
+        contextMenu,
+        "settings",
+        /* Settings */
+      );
       const contextMenuBoxesContainer = document.createElement("div");
       contextMenuBoxesContainer.classList.add("cls-horizontal-box");
       contextMenu.appendChild(contextMenuBoxesContainer);
@@ -1336,17 +1478,29 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       leftBox.classList.add("cls-settings-menu-box");
       leftBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(leftBox);
-      this.setNodeID(leftBox, "settings-left" /* Settings_Left */);
+      this.setNodeID(
+        leftBox,
+        "settings-left",
+        /* Settings_Left */
+      );
       const centerBox = document.createElement("div");
       centerBox.classList.add("cls-settings-menu-box");
       centerBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(centerBox);
-      this.setNodeID(centerBox, "settings-center" /* Settings_Center */);
+      this.setNodeID(
+        centerBox,
+        "settings-center",
+        /* Settings_Center */
+      );
       const rightBox = document.createElement("div");
       rightBox.classList.add("cls-settings-menu-box");
       rightBox.style.display = "none";
       contextMenuBoxesContainer.appendChild(rightBox);
-      this.setNodeID(rightBox, "settings-right" /* Settings_Right */);
+      this.setNodeID(
+        rightBox,
+        "settings-right",
+        /* Settings_Right */
+      );
       document.addEventListener("contextmenu", (event) => {
         const element = event.target;
         if (!element.id.startsWith(this.prefix)) return;
@@ -1379,13 +1533,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const fullID = `${this.prefix}-${id}`;
       const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
       if (!node) {
-        if (id !== "co-selector" /* CO_Selector */) console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
+        if (id !== "co-selector") console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
         return null;
       }
-      const isSettingsSubMenu =
-        id === "settings-left" /* Settings_Left */ ||
-        id === "settings-center" /* Settings_Center */ ||
-        id === "settings-right"; /* Settings_Right */
+      const isSettingsSubMenu = id === "settings-left" || id === "settings-center" || id === "settings-right";
       const isHidden = node.style.display === "none";
       const hasChildren = node.children.length > 0;
       if (isSettingsSubMenu && isHidden && hasChildren) {
@@ -1410,9 +1561,28 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       this.parent.style.borderRight = "none";
     }
     hasSettings() {
-      const hasLeftMenu = this.getNodeByID("settings-left" /* Settings_Left */)?.style.display !== "none";
-      const hasCenterMenu = this.getNodeByID("settings-center" /* Settings_Center */)?.style.display !== "none";
-      const hasRightMenu = this.getNodeByID("settings-right" /* Settings_Right */)?.style.display !== "none";
+      var _a, _b, _c;
+      const hasLeftMenu =
+        ((_a = this.getNodeByID(
+          "settings-left",
+          /* Settings_Left */
+        )) == null
+          ? void 0
+          : _a.style.display) !== "none";
+      const hasCenterMenu =
+        ((_b = this.getNodeByID(
+          "settings-center",
+          /* Settings_Center */
+        )) == null
+          ? void 0
+          : _b.style.display) !== "none";
+      const hasRightMenu =
+        ((_c = this.getNodeByID(
+          "settings-right",
+          /* Settings_Right */
+        )) == null
+          ? void 0
+          : _c.style.display) !== "none";
       return hasLeftMenu || hasCenterMenu || hasRightMenu;
     }
     getGroup(groupName) {
@@ -1424,7 +1594,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * @param replaceParent - Whether to replace the current hover text for the main button or not.
      */
     setHoverText(text, replaceParent = false) {
-      const hoverSpan = this.getNodeByID("hover" /* Hover */);
+      const hoverSpan = this.getNodeByID(
+        "hover",
+        /* Hover */
+      );
       if (!hoverSpan) return;
       if (replaceParent) this.parentHoverText = text;
       if (this.isUpdateAvailable) text += " (New Update Available!)";
@@ -1436,7 +1609,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
      */
     setProgress(progress) {
-      const bgDiv = this.getNodeByID("background" /* Background */);
+      const bgDiv = this.getNodeByID(
+        "background",
+        /* Background */
+      );
       if (!bgDiv) return;
       if (progress <= 0 || progress >= 100) {
         bgDiv.style.backgroundImage = "";
@@ -1449,7 +1625,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * @param imageURL - The URL of the image to be used on the button.
      */
     setImage(imageURL) {
-      const btnImg = this.getNodeByID("button-image" /* Button_Image */);
+      const btnImg = this.getNodeByID(
+        "button-image",
+        /* Button_Image */
+      );
       btnImg.src = imageURL;
     }
     /**
@@ -1458,16 +1637,29 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * @param listener - The function to be called when the event is triggered.
      */
     addEventListener(type, listener, options = false) {
-      const div = this.getNodeByID("background" /* Background */);
-      div?.addEventListener(type, listener, options);
+      const div = this.getNodeByID(
+        "background",
+        /* Background */
+      );
+      div == null ? void 0 : div.addEventListener(type, listener, options);
     }
     /**
      * Opens the context (right-click) menu.
      */
     openContextMenu() {
-      const contextMenu = this.getNodeByID("settings" /* Settings */);
+      var _a;
+      const contextMenu = this.getNodeByID(
+        "settings",
+        /* Settings */
+      );
       if (!contextMenu) return;
-      const hasVersion = this.getNodeByID("version" /* Version */)?.style.display !== "none";
+      const hasVersion =
+        ((_a = this.getNodeByID(
+          "version",
+          /* Version */
+        )) == null
+          ? void 0
+          : _a.style.display) !== "none";
       if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
@@ -1476,12 +1668,19 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * Closes the context (right-click) menu.
      */
     closeContextMenu() {
-      const contextMenu = this.getNodeByID("settings" /* Settings */);
+      const contextMenu = this.getNodeByID(
+        "settings",
+        /* Settings */
+      );
       if (!contextMenu) return;
       contextMenu.style.display = "none";
       this.isSettingsMenuOpen = false;
       const overDiv = document.querySelector("#overDiv");
-      const hasCOSelector = this.getNodeByID("co-selector" /* CO_Selector */) !== null;
+      const hasCOSelector =
+        this.getNodeByID(
+          "co-selector",
+          /* CO_Selector */
+        ) !== null;
       const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
       if (overDiv && hasCOSelector && isGamePageAndActive) {
         overDiv.style.visibility = "hidden";
@@ -1497,15 +1696,15 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
      * @param position - The position of the slider in the context menu.
      * @returns - The slider element.
      */
-    addSlider(name, min, max, step, hoverText = "", position = "settings-center" /* Settings_Center */) {
+    addSlider(name, min, max, step, hoverText = "", position = "settings-center") {
       const submenu = this.getNodeByID(position);
       if (!submenu) return;
       const sliderBox = document.createElement("div");
       sliderBox.classList.add("cls-vertical-box");
       sliderBox.classList.add("cls-group-box");
-      submenu?.appendChild(sliderBox);
+      submenu == null ? void 0 : submenu.appendChild(sliderBox);
       const label = document.createElement("label");
-      sliderBox?.appendChild(label);
+      sliderBox == null ? void 0 : sliderBox.appendChild(label);
       const slider = document.createElement("input");
       slider.id = `${this.prefix}-${sanitize(name)}`;
       slider.type = "range";
@@ -1518,43 +1717,57 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
         if (max === 1) displayValue = Math.round(parseFloat(displayValue) * 100) + "%";
         label.innerText = `${name}: ${displayValue}`;
       });
-      sliderBox?.appendChild(slider);
+      sliderBox == null ? void 0 : sliderBox.appendChild(slider);
       slider.title = hoverText;
       slider.addEventListener("mouseover", () => this.setHoverText(hoverText));
       slider.addEventListener("mouseout", () => this.setHoverText(""));
       return slider;
     }
-    addGroup(
-      groupName,
-      type = "cls-horizontal-box" /* Horizontal */,
-      position = "settings-center" /* Settings_Center */,
-    ) {
+    addGroup(groupName, type = "cls-horizontal-box", position = "settings-center") {
       const submenu = this.getNodeByID(position);
       if (!submenu) return;
       if (this.groups.has(groupName)) return this.groups.get(groupName);
       const groupBox = document.createElement("div");
       groupBox.classList.add("cls-vertical-box");
       groupBox.classList.add("cls-group-box");
-      submenu?.appendChild(groupBox);
+      submenu == null ? void 0 : submenu.appendChild(groupBox);
       const groupLabel = document.createElement("label");
       groupLabel.innerText = groupName;
-      groupBox?.appendChild(groupLabel);
+      groupBox == null ? void 0 : groupBox.appendChild(groupLabel);
       const group = document.createElement("div");
       group.id = `${this.prefix}-${sanitize(groupName)}`;
       group.classList.add(type);
-      groupBox?.appendChild(group);
+      groupBox == null ? void 0 : groupBox.appendChild(group);
       this.groups.set(groupName, group);
       this.groupTypes.set(groupName, type);
       return group;
     }
     addRadioButton(name, groupName, hoverText = "") {
-      return this.addInput(name, groupName, hoverText, "radio" /* Radio */);
+      return this.addInput(
+        name,
+        groupName,
+        hoverText,
+        "radio",
+        /* Radio */
+      );
     }
     addCheckbox(name, groupName, hoverText = "") {
-      return this.addInput(name, groupName, hoverText, "checkbox" /* Checkbox */);
+      return this.addInput(
+        name,
+        groupName,
+        hoverText,
+        "checkbox",
+        /* Checkbox */
+      );
     }
     addButton(name, groupName, hoverText = "") {
-      return this.addInput(name, groupName, hoverText, "button" /* Button */);
+      return this.addInput(
+        name,
+        groupName,
+        hoverText,
+        "button",
+        /* Button */
+      );
     }
     /**
      * Adds an input to the context menu in a specific group.
@@ -1569,17 +1782,14 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       const groupType = this.groupTypes.get(groupName);
       if (!groupDiv || !groupType) return;
       const inputBox = document.createElement("div");
-      const otherType =
-        groupType === "cls-horizontal-box" /* Horizontal */
-          ? "cls-vertical-box" /* Vertical */
-          : "cls-horizontal-box"; /* Horizontal */
+      const otherType = groupType === "cls-horizontal-box" ? "cls-vertical-box" : "cls-horizontal-box";
       inputBox.classList.add(otherType);
       groupDiv.appendChild(inputBox);
       inputBox.title = hoverText;
       inputBox.addEventListener("mouseover", () => this.setHoverText(hoverText));
       inputBox.addEventListener("mouseout", () => this.setHoverText(""));
       let input;
-      if (type === "button" /* Button */) {
+      if (type === "button") {
         input = this.createButton(name, inputBox);
       } else {
         input = this.createInput(name, inputBox);
@@ -1611,11 +1821,18 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     addVersion() {
       const version = versions.get(this.prefix);
       if (!version) return;
-      const contextMenu = this.getNodeByID("settings" /* Settings */);
+      const contextMenu = this.getNodeByID(
+        "settings",
+        /* Settings */
+      );
       const versionDiv = document.createElement("label");
       versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
-      contextMenu?.appendChild(versionDiv);
-      this.setNodeID(versionDiv, "version" /* Version */);
+      contextMenu == null ? void 0 : contextMenu.appendChild(versionDiv);
+      this.setNodeID(
+        versionDiv,
+        "version",
+        /* Version */
+      );
     }
     checkIfNewVersionAvailable() {
       const currentVersion = versions.get(this.prefix);
@@ -1627,14 +1844,17 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
           this.isUpdateAvailable = isUpdateAvailable;
           console.log("[DeveloperJose] Checking if a new version is available...", isUpdateAvailable);
           if (!isUpdateAvailable) return;
-          const contextMenu = this.getNodeByID("settings" /* Settings */);
+          const contextMenu = this.getNodeByID(
+            "settings",
+            /* Settings */
+          );
           const versionDiv = document.createElement("a");
           versionDiv.id = this.prefix + "-update";
           versionDiv.href = homepageURL;
           versionDiv.target = "_blank";
           versionDiv.innerText = `(!) Update Available: Please click here to open the update page in a new tab. (!)`;
-          contextMenu?.append(versionDiv.cloneNode(true));
-          if (this.hasSettings()) contextMenu?.prepend(versionDiv);
+          contextMenu == null ? void 0 : contextMenu.append(versionDiv.cloneNode(true));
+          if (this.hasSettings()) contextMenu == null ? void 0 : contextMenu.prepend(versionDiv);
         })
         .catch((error) => console.error(error));
     }
@@ -1703,9 +1923,17 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       coSelector.title = hoverText;
       coSelector.addEventListener("mouseover", () => this.setHoverText(hoverText));
       coSelector.addEventListener("mouseout", () => this.setHoverText(""));
-      this.setNodeID(coSelector, "co-selector" /* CO_Selector */);
-      this.setNodeID(imgCO, "co-portrait" /* CO_Portrait */);
-      groupDiv?.appendChild(coSelector);
+      this.setNodeID(
+        coSelector,
+        "co-selector",
+        /* CO_Selector */
+      );
+      this.setNodeID(
+        imgCO,
+        "co-portrait",
+        /* CO_Portrait */
+      );
+      groupDiv == null ? void 0 : groupDiv.appendChild(coSelector);
       const allCOs = getAllCONames(true).sort();
       let allColumnsHTML = "";
       for (let i = 0; i < 7; i++) {
@@ -1765,7 +1993,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     onCOSelectorClick(coName) {
       const overDiv = document.querySelector("#overDiv");
       overDiv.style.visibility = "hidden";
-      const imgCO = this.getNodeByID("co-portrait" /* CO_Portrait */);
+      const imgCO = this.getNodeByID(
+        "co-portrait",
+        /* CO_Portrait */
+      );
       const coPrefix = getCOImagePrefix();
       imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
     }
@@ -1777,8 +2008,8 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function notifyCOSelectorListeners(coName) {
     coSelectorListeners.forEach((listener) => listener(coName));
   }
-
   function getMenu() {
+    var _a;
     const doc = getCurrentDocument();
     switch (getCurrentPageType()) {
       case PageType.Maintenance:
@@ -1788,7 +2019,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       case PageType.MovePlanner:
         return doc.querySelector("#map-controls-container");
       case PageType.ActiveGame:
-        return doc.querySelector("#game-map-menu")?.parentNode;
+        return (_a = doc.querySelector("#game-map-menu")) == null ? void 0 : _a.parentNode;
       // case PageType.LiveQueue:
       // case PageType.MainPage:
       default:
@@ -1821,17 +2052,18 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       clearAndRepopulateOverrideList();
       if (musicSettings.overrideList.size === 0) {
         const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
-        musicPlayerUI.addItemToTable("Overrides" /* Override_Table */, noOverrides);
+        musicPlayerUI.addItemToTable("Overrides", noOverrides);
       }
     }
     if (key === SettingsKey.ALL || key === SettingsKey.ADD_EXCLUDED || key === SettingsKey.REMOVE_EXCLUDED) {
       clearAndRepopulateExcludedList();
       if (musicSettings.excludedRandomThemes.size === 0) {
         const noExcluded = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No themes excluded yet...");
-        musicPlayerUI.addItemToTable("Excluded Random Themes" /* Excluded_Table */, noExcluded);
+        musicPlayerUI.addItemToTable("Excluded Random Themes", noExcluded);
       }
     }
-    const canUpdateDaySlider = daySlider?.parentElement && getCurrentPageType() === PageType.ActiveGame;
+    const canUpdateDaySlider =
+      (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
     if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
     const currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
@@ -1884,27 +2116,27 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   })(Description || {});
   const LEFT = NodeID.Settings_Left;
   const volumeSlider = musicPlayerUI.addSlider(
-    "Music Volume" /* Volume */,
+    "Music Volume",
     0,
     1,
     5e-3,
-    "Adjust the volume of the CO theme music, power activations, and power themes." /* Volume */,
+    "Adjust the volume of the CO theme music, power activations, and power themes.",
     LEFT,
   );
   const sfxVolumeSlider = musicPlayerUI.addSlider(
-    "SFX Volume" /* SFX_Volume */,
+    "SFX Volume",
     0,
     1,
     5e-3,
-    "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds." /* SFX_Volume */,
+    "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
     LEFT,
   );
   const uiVolumeSlider = musicPlayerUI.addSlider(
-    "UI Volume" /* UI_Volume */,
+    "UI Volume",
     0,
     1,
     5e-3,
-    "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units." /* UI_Volume */,
+    "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
     LEFT,
   );
   const soundtrackGroupID = "Soundtrack";
@@ -1918,19 +2150,22 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   const randomGroupID = "Random Themes";
   musicPlayerUI.addGroup(randomGroupID, GroupType.Horizontal, LEFT);
   const radioNormal = musicPlayerUI.addRadioButton(
-    "Off" /* No_Random */,
+    "Off",
     randomGroupID,
-    "Play the music depending on who the current CO is." /* No_Random */,
+    "Play the music depending on who the current CO is.",
+    /* No_Random */
   );
   const radioAllRandom = musicPlayerUI.addRadioButton(
-    "All Soundtracks" /* All_Random */,
+    "All Soundtracks",
     randomGroupID,
-    "Play random music every turn from all soundtracks." /* All_Random */,
+    "Play random music every turn from all soundtracks.",
+    /* All_Random */
   );
   const radioCurrentRandom = musicPlayerUI.addRadioButton(
-    "Current Soundtrack" /* Current_Random */,
+    "Current Soundtrack",
     randomGroupID,
-    "Play random music every turn from the current soundtrack." /* Current_Random */,
+    "Play random music every turn from the current soundtrack.",
+    /* Current_Random */
   );
   const randomRadioMap = /* @__PURE__ */ new Map([
     [RandomThemeType.NONE, radioNormal],
@@ -1938,55 +2173,63 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     [RandomThemeType.CURRENT_SOUNDTRACK, radioCurrentRandom],
   ]);
   const shuffleBtn = musicPlayerUI.addButton(
-    "Shuffle" /* Shuffle */,
+    "Shuffle",
     randomGroupID,
-    "Changes the current theme to a new random one." /* Shuffle */,
+    "Changes the current theme to a new random one.",
+    /* Shuffle */
   );
   const sfxGroupID = "Sound Effect (SFX) Options";
   musicPlayerUI.addGroup(sfxGroupID, GroupType.Vertical, LEFT);
   const uiSFXPagesBox = musicPlayerUI.addCheckbox(
-    "Play Sound Effects Outside Of Game Pages" /* SFX_Pages */,
+    "Play Sound Effects Outside Of Game Pages",
     sfxGroupID,
-    "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance." /* SFX_Pages */,
+    "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.",
+    /* SFX_Pages */
   );
   const captProgressBox = musicPlayerUI.addCheckbox(
-    "Capture Progress SFX" /* Capture_Progress */,
+    "Capture Progress SFX",
     sfxGroupID,
-    "Play a sound effect when a unit makes progress capturing a property." /* Capture_Progress */,
+    "Play a sound effect when a unit makes progress capturing a property.",
+    /* Capture_Progress */
   );
   const pipeSeamBox = musicPlayerUI.addCheckbox(
-    "Pipe Seam Attack SFX" /* Pipe_Seam_SFX */,
+    "Pipe Seam Attack SFX",
     sfxGroupID,
-    "Play a sound effect when a pipe seam is attacked." /* Pipe_Seam_SFX */,
+    "Play a sound effect when a pipe seam is attacked.",
+    /* Pipe_Seam_SFX */
   );
   const musicGroupID = "Music Options";
   musicPlayerUI.addGroup(musicGroupID, GroupType.Vertical, LEFT);
   const autoplayPagesBox = musicPlayerUI.addCheckbox(
-    "Autoplay Music Outside Of Game Pages" /* Autoplay_Pages */,
+    "Autoplay Music Outside Of Game Pages",
     musicGroupID,
-    "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance." /* Autoplay_Pages */,
+    "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.",
+    /* Autoplay_Pages */
   );
   const restartThemesBox = musicPlayerUI.addCheckbox(
-    "Restart Themes Every Turn" /* Restart_Themes */,
+    "Restart Themes Every Turn",
     musicGroupID,
-    "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously." /* Restart_Themes */,
+    "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
+    /* Restart_Themes */
   );
   const loopToggle = musicPlayerUI.addCheckbox(
-    "Loop Random Songs Until Turn Changes" /* Random_Loop_Toggle */,
+    "Loop Random Songs Until Turn Changes",
     musicGroupID,
-    "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet." /* Random_Loop_Toggle */,
+    "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
+    /* Random_Loop_Toggle */
   );
   const alternateThemesBox = musicPlayerUI.addCheckbox(
-    "Alternate Themes" /* Alternate_Themes */,
+    "Alternate Themes",
     musicGroupID,
-    "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start." /* Alternate_Themes */,
+    "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
+    /* Alternate_Themes */
   );
   const daySlider = musicPlayerUI.addSlider(
-    "Alternate Themes Start On Day" /* Alternate_Day */,
+    "Alternate Themes Start On Day",
     0,
     30,
     1,
-    "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?" /* Alternate_Day */,
+    "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
     LEFT,
   );
   const RIGHT = NodeID.Settings_Right;
@@ -1998,28 +2241,26 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   }
   musicPlayerUI.addCOSelector(
     addOverrideGroupID,
-    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes." /* Add_Override */,
+    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
     onCOSelectorClick,
   );
   const overrideGameTypeRadioMap = /* @__PURE__ */ new Map();
   for (const gameType of Object.values(GameType)) {
-    const radio = musicPlayerUI.addRadioButton(
-      gameType,
-      addOverrideGroupID,
-      "Only play songs from " /* Override_Radio */ + gameType,
-    );
+    const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroupID, "Only play songs from " + gameType);
     overrideGameTypeRadioMap.set(gameType, radio);
     radio.checked = true;
   }
   const excludeRadio = musicPlayerUI.addRadioButton(
     "Exclude Random",
     addOverrideGroupID,
-    "Add an override for a specific CO to exclude their themes when playing random themes." /* Add_Excluded */,
+    "Add an override for a specific CO to exclude their themes when playing random themes.",
+    /* Add_Excluded */
   );
   const overrideBtn = musicPlayerUI.addButton(
-    "Add" /* Add_Override */,
+    "Add",
     addOverrideGroupID,
-    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes." /* Add_Override */,
+    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
+    /* Add_Override */
   );
   const overrideListGroupID = "Current Overrides (Click to Remove)";
   musicPlayerUI.addGroup(overrideListGroupID, GroupType.Horizontal, RIGHT);
@@ -2027,11 +2268,12 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   const tableRows = 4;
   const tableCols = 7;
   musicPlayerUI.addTable(
-    "Overrides" /* Override_Table */,
+    "Overrides",
     tableRows,
     tableCols,
     overrideListGroupID,
-    "Removes the override for this specific CO." /* Remove_Override */,
+    "Removes the override for this specific CO.",
+    /* Remove_Override */
   );
   function addOverrideDisplayDiv(coName, gameType) {
     const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, gameType);
@@ -2039,13 +2281,16 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       musicSettings.removeOverride(coName);
     });
     overrideDivMap.set(coName, displayDiv);
-    musicPlayerUI.addItemToTable("Overrides" /* Override_Table */, displayDiv);
+    musicPlayerUI.addItemToTable("Overrides", displayDiv);
     return displayDiv;
   }
   function clearAndRepopulateOverrideList() {
     overrideDivMap.forEach((div) => div.remove());
     overrideDivMap.clear();
-    musicPlayerUI.clearTable("Overrides" /* Override_Table */);
+    musicPlayerUI.clearTable(
+      "Overrides",
+      /* Override_Table */
+    );
     for (const [coName, gameType] of musicSettings.overrideList) {
       addOverrideDisplayDiv(coName, gameType);
     }
@@ -2054,11 +2299,12 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   musicPlayerUI.addGroup(excludedListGroupID, GroupType.Horizontal, RIGHT);
   const excludedListDivMap = /* @__PURE__ */ new Map();
   musicPlayerUI.addTable(
-    "Excluded Random Themes" /* Excluded_Table */,
+    "Excluded Random Themes",
     tableRows,
     tableCols,
     excludedListGroupID,
-    "Removes the override for this specific CO." /* Remove_Override */,
+    "Removes the override for this specific CO.",
+    /* Remove_Override */
   );
   function addExcludedDisplayDiv(coName) {
     const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, "");
@@ -2066,13 +2312,16 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       musicSettings.removeExcludedRandomTheme(coName);
     });
     excludedListDivMap.set(coName, displayDiv);
-    musicPlayerUI.addItemToTable("Excluded Random Themes" /* Excluded_Table */, displayDiv);
+    musicPlayerUI.addItemToTable("Excluded Random Themes", displayDiv);
     return displayDiv;
   }
   function clearAndRepopulateExcludedList() {
     excludedListDivMap.forEach((div) => div.remove());
     excludedListDivMap.clear();
-    musicPlayerUI.clearTable("Excluded Random Themes" /* Excluded_Table */);
+    musicPlayerUI.clearTable(
+      "Excluded Random Themes",
+      /* Excluded_Table */
+    );
     for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
   }
   musicPlayerUI.addVersion();
@@ -2103,9 +2352,15 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function addMusicUIListeners() {
     musicPlayerUI.addEventListener("click", onMusicBtnClick);
     addSettingsChangeListener(onSettingsChange$1);
-    volumeSlider?.addEventListener("input", (event) => (musicSettings.volume = parseInputFloat(event)));
-    sfxVolumeSlider?.addEventListener("input", (event) => (musicSettings.sfxVolume = parseInputFloat(event)));
-    uiVolumeSlider?.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
+    volumeSlider == null
+      ? void 0
+      : volumeSlider.addEventListener("input", (event) => (musicSettings.volume = parseInputFloat(event)));
+    sfxVolumeSlider == null
+      ? void 0
+      : sfxVolumeSlider.addEventListener("input", (event) => (musicSettings.sfxVolume = parseInputFloat(event)));
+    uiVolumeSlider == null
+      ? void 0
+      : uiVolumeSlider.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
     radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.NONE));
     radioAllRandom.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.ALL_THEMES));
     radioCurrentRandom.addEventListener(
@@ -2114,7 +2369,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     );
     for (const gameType of Object.values(GameType)) {
       const radio = gameTypeRadioMap.get(gameType);
-      radio?.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
+      radio == null ? void 0 : radio.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
     }
     shuffleBtn.addEventListener("click", (_e) => musicSettings.randomizeCO());
     captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
@@ -2124,7 +2379,9 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     loopToggle.addEventListener("click", (_e) => (musicSettings.loopRandomSongsUntilTurnChange = loopToggle.checked));
     uiSFXPagesBox.addEventListener("click", (_e) => (musicSettings.sfxOnOtherPages = uiSFXPagesBox.checked));
     alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
-    daySlider?.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
+    daySlider == null
+      ? void 0
+      : daySlider.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
     overrideBtn.addEventListener("click", (_e) => {
       if (excludeRadio.checked) {
         musicSettings.addExcludedRandomTheme(currentSelectedCO);
@@ -2139,7 +2396,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     });
   }
   addMusicUIListeners();
-
   function getQueryTurnFn() {
     return typeof queryTurn !== "undefined" ? queryTurn : null;
   }
@@ -2227,7 +2483,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function getResignFn() {
     return typeof actionHandlers !== "undefined" ? actionHandlers.Resign : null;
   }
-
   let db = null;
   const dbName = "awbw_music_player";
   const dbVersion = 1;
@@ -2312,8 +2567,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (!event?.target?.result) return reject("FileReader did not load the blob.");
-        const md5 = SparkMD5.ArrayBuffer.hash(event.target.result);
+        var _a;
+        if (!((_a = event == null ? void 0 : event.target) == null ? void 0 : _a.result))
+          return reject("FileReader did not load the blob.");
+        const md5 = SparkMD52.ArrayBuffer.hash(event.target.result);
         resolve(md5);
       };
       reader.onerror = (event) => reject(event);
@@ -2348,7 +2605,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       };
     });
   }
-
   const audioMap = /* @__PURE__ */ new Map();
   const audioIDMap = /* @__PURE__ */ new Map();
   function playOneShotURL(srcURL, volume) {
@@ -2370,7 +2626,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     }
     return musicSettings.volume;
   }
-
   const urlQueue = /* @__PURE__ */ new Set();
   const promiseMap = /* @__PURE__ */ new Map();
   function createNewAudio(srcURL, cacheURL) {
@@ -2455,7 +2710,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     promiseMap.set(srcURL, promise);
     return promise;
   }
-
   const unitIDAudioMap = /* @__PURE__ */ new Map();
   function playMovementSound(unitId) {
     if (!musicSettings.isPlaying) return;
@@ -2502,7 +2756,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function whenAudioLoadsPauseIt(event) {
     event.target.pause();
   }
-
   let currentThemeURL = "";
   let currentLoops = 0;
   const specialLoopMap = /* @__PURE__ */ new Map();
@@ -2530,7 +2783,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   function playThemeSong() {
     if (!musicSettings.isPlaying) return;
     if (currentlyDelaying) return;
-    let gameType = undefined;
+    let gameType = void 0;
     let coName = currentPlayer.coName;
     if (getCurrentPageType() === PageType.Maintenance) coName = SpecialCOs.Maintenance;
     else if (getCurrentPageType() === PageType.MapEditor) coName = SpecialCOs.MapEditor;
@@ -2687,7 +2940,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     });
   }
   addThemeListeners();
-
   async function playSFX(sfx) {
     if (!musicSettings.isPlaying) return;
     if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
@@ -2708,12 +2960,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     if (!audio || !audio.playing()) return;
     audio.stop();
   }
-
   const CURSOR_THRESHOLD_MS = 25;
   let lastCursorCall$1 = Date.now();
   let lastCursorX = -1;
   let lastCursorY = -1;
-  let currentMenuType = "None"; /* None */
+  let currentMenuType = "None";
   const visibilityMap = /* @__PURE__ */ new Map();
   const movementResponseMap = /* @__PURE__ */ new Map();
   const clickedDamageSquaresMap = /* @__PURE__ */ new Map();
@@ -2859,14 +3110,15 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     lastCursorX = cursorX;
     lastCursorY = cursorY;
   }
-  function onQueryTurn(gameId, turn, turnPId, turnDay, replay, initial) {
-    const result = ahQueryTurn?.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay, initial]);
+  function onQueryTurn(gameId, turn, turnPId, turnDay, replay2, initial) {
+    const result =
+      ahQueryTurn == null ? void 0 : ahQueryTurn.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay2, initial]);
     if (!musicSettings.isPlaying) return result;
     refreshMusicForNextTurn(250);
     return result;
   }
   function onShowEventScreen(event) {
-    ahShowEventScreen?.apply(ahShowEventScreen, [event]);
+    ahShowEventScreen == null ? void 0 : ahShowEventScreen.apply(ahShowEventScreen, [event]);
     if (!musicSettings.isPlaying) return;
     if (hasGameEnded()) {
       refreshMusicForNextTurn();
@@ -2876,47 +3128,57 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     window.setTimeout(playThemeSong, 500);
   }
   function onShowEndGameScreen(event) {
-    ahShowEndGameScreen?.apply(ahShowEndGameScreen, [event]);
+    ahShowEndGameScreen == null ? void 0 : ahShowEndGameScreen.apply(ahShowEndGameScreen, [event]);
     if (!musicSettings.isPlaying) return;
     refreshMusicForNextTurn();
   }
   function onOpenMenu(menu, x, y) {
-    ahOpenMenu?.apply(openMenu, [menu, x, y]);
+    ahOpenMenu == null ? void 0 : ahOpenMenu.apply(openMenu, [menu, x, y]);
     if (!musicSettings.isPlaying) return;
-    currentMenuType = "Regular" /* Regular */;
+    currentMenuType = "Regular";
     playSFX(GameSFX.uiMenuOpen);
     const menuOptions = getCurrentDocument().getElementsByClassName("menu-option");
     for (let i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
       menuOptions[i].addEventListener("click", (event) => {
+        var _a, _b, _c, _d, _e, _f;
         const target = event.target;
         if (!target) return;
         if (
           target.classList.contains("forbidden") ||
-          target.parentElement?.classList.contains("forbidden") ||
-          target.parentElement?.parentElement?.classList.contains("forbidden") ||
-          target.parentElement?.parentElement?.parentElement?.classList.contains("forbidden")
+          ((_a = target.parentElement) == null ? void 0 : _a.classList.contains("forbidden")) ||
+          ((_c = (_b = target.parentElement) == null ? void 0 : _b.parentElement) == null
+            ? void 0
+            : _c.classList.contains("forbidden")) ||
+          ((_f =
+            (_e = (_d = target.parentElement) == null ? void 0 : _d.parentElement) == null
+              ? void 0
+              : _e.parentElement) == null
+            ? void 0
+            : _f.classList.contains("forbidden"))
         ) {
           playSFX(GameSFX.uiInvalid);
           return;
         }
-        currentMenuType = "None" /* None */;
+        currentMenuType = "None";
         playSFX(GameSFX.uiMenuOpen);
       });
     }
   }
   function onCloseMenu() {
-    ahCloseMenu?.apply(closeMenu, []);
+    ahCloseMenu == null ? void 0 : ahCloseMenu.apply(closeMenu, []);
     if (!musicSettings.isPlaying) return;
-    const isMenuOpen = currentMenuType !== "None"; /* None */
+    const isMenuOpen = currentMenuType !== "None";
     if (isMenuOpen) {
       playSFX(GameSFX.uiMenuClose);
       clickedDamageSquaresMap.clear();
-      currentMenuType = "None" /* None */;
+      currentMenuType = "None";
     }
   }
   function onCreateDamageSquares(attackerUnit, unitsInRange, movementInfo, movingUnit) {
-    ahCreateDamageSquares?.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
+    ahCreateDamageSquares == null
+      ? void 0
+      : ahCreateDamageSquares.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
     if (!musicSettings.isPlaying) return;
     for (const damageSquare of getAllDamageSquares()) {
       damageSquare.addEventListener("click", (event) => {
@@ -2924,44 +3186,44 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
         const targetSpan = event.target;
         playSFX(GameSFX.uiMenuOpen);
         if (clickedDamageSquaresMap.has(targetSpan)) {
-          currentMenuType = "None" /* None */;
+          currentMenuType = "None";
           clickedDamageSquaresMap.clear();
           return;
         }
-        currentMenuType = "DamageSquare" /* DamageSquare */;
+        currentMenuType = "DamageSquare";
         clickedDamageSquaresMap.set(targetSpan, true);
       });
     }
   }
   function onUnitClick(clicked) {
-    ahUnitClick?.apply(unitClickHandler, [clicked]);
+    ahUnitClick == null ? void 0 : ahUnitClick.apply(unitClickHandler, [clicked]);
     if (!musicSettings.isPlaying) return;
     const unitInfo = getUnitInfo(Number(clicked.id));
     if (!unitInfo) return;
-    const myID = getMyID();
+    const myID2 = getMyID();
     const isUnitWaited = hasUnitMovedThisTurn(unitInfo.units_id);
-    const isMyUnit = unitInfo?.units_players_id === myID;
-    const isMyTurn = currentTurn === myID;
+    const isMyUnit = (unitInfo == null ? void 0 : unitInfo.units_players_id) === myID2;
+    const isMyTurn = currentTurn === myID2;
     const canActionsBeTaken = !isUnitWaited && isMyUnit && isMyTurn && !isReplayActive();
-    currentMenuType = canActionsBeTaken ? "UnitSelect" /* UnitSelect */ : "None" /* None */;
+    currentMenuType = canActionsBeTaken ? "UnitSelect" : "None";
     playSFX(GameSFX.uiUnitSelect);
   }
   function onUnitWait(unitId) {
-    ahWait?.apply(waitUnit, [unitId]);
+    ahWait == null ? void 0 : ahWait.apply(waitUnit, [unitId]);
     if (!musicSettings.isPlaying) return;
     if (movementResponseMap.has(unitId)) {
       const response = movementResponseMap.get(unitId);
-      if (response?.trapped) {
+      if (response == null ? void 0 : response.trapped) {
         playSFX(GameSFX.unitTrap);
       }
-      stopMovementSound(unitId, !response?.trapped);
+      stopMovementSound(unitId, !(response == null ? void 0 : response.trapped));
       movementResponseMap.delete(unitId);
       return;
     }
     stopMovementSound(unitId);
   }
   function onAnimUnit(path, unitId, unitSpan, unitTeam, viewerTeam, i) {
-    ahAnimUnit?.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
+    ahAnimUnit == null ? void 0 : ahAnimUnit.apply(animUnit, [path, unitId, unitSpan, unitTeam, viewerTeam, i]);
     if (!musicSettings.isPlaying) return;
     if (!isValidUnit(unitId) || !path || !i) return;
     if (i >= path.length) return;
@@ -2973,7 +3235,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     }
   }
   function onAnimExplosion(unit) {
-    ahAnimExplosion?.apply(animExplosion, [unit]);
+    ahAnimExplosion == null ? void 0 : ahAnimExplosion.apply(animExplosion, [unit]);
     if (!musicSettings.isPlaying) return;
     const unitId = unit.units_id;
     const unitFuel = unit.units_fuel;
@@ -2985,7 +3247,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     stopMovementSound(unitId, false);
   }
   function onFogUpdate(x, y, mType, neighbours, unitVisible, change, delay) {
-    ahFog?.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
+    ahFog == null ? void 0 : ahFog.apply(updateAirUnitFogOnMove, [x, y, mType, neighbours, unitVisible, change, delay]);
     if (!musicSettings.isPlaying) return;
     const unitInfo = getUnitInfoFromCoords(x, y);
     if (!unitInfo) return;
@@ -2995,7 +3257,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
   }
   function onFire(response) {
     if (!musicSettings.isPlaying) {
-      ahFire?.apply(actionHandlers.Fire, [response]);
+      ahFire == null ? void 0 : ahFire.apply(actionHandlers.Fire, [response]);
       return;
     }
     const attackerID = response.copValues.attacker.playerId;
@@ -3004,7 +3266,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     const couldAttackerActivateCOPBefore = canPlayerActivateCOPower(attackerID);
     const couldDefenderActivateSCOPBefore = canPlayerActivateSuperCOPower(defenderID);
     const couldDefenderActivateCOPBefore = canPlayerActivateCOPower(defenderID);
-    ahFire?.apply(actionHandlers.Fire, [response]);
+    ahFire == null ? void 0 : ahFire.apply(actionHandlers.Fire, [response]);
     const delay = areAnimationsEnabled() ? 750 : 0;
     const canAttackerActivateSCOPAfter = canPlayerActivateSuperCOPower(attackerID);
     const canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
@@ -3047,7 +3309,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     window.setTimeout(wiggleAnimation, startDelay);
   }
   function onAttackSeam(response) {
-    ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
+    ahAttackSeam == null ? void 0 : ahAttackSeam.apply(actionHandlers.AttackSeam, [response]);
     if (!musicSettings.isPlaying) return;
     const seamWasDestroyed = response.seamHp <= 0;
     if (areAnimationsEnabled()) {
@@ -3067,7 +3329,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     window.setTimeout(() => playSFX(GameSFX.unitAttackPipeSeam), attackDelayMS);
   }
   function onMove(response, loadFlag) {
-    ahMove?.apply(actionHandlers.Move, [response, loadFlag]);
+    ahMove == null ? void 0 : ahMove.apply(actionHandlers.Move, [response, loadFlag]);
     if (!musicSettings.isPlaying) return;
     const unitId = response.unit.units_id;
     movementResponseMap.set(unitId, response);
@@ -3078,73 +3340,73 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     }
   }
   function onCapture(data) {
-    ahCapt?.apply(actionHandlers.Capt, [data]);
+    ahCapt == null ? void 0 : ahCapt.apply(actionHandlers.Capt, [data]);
     if (!musicSettings.isPlaying) return;
     const finishedCapture = data.newIncome != null;
     if (!finishedCapture) {
       playSFX(GameSFX.unitCaptureProgress);
       return;
     }
-    const myID = getMyID();
-    const isSpectator = isPlayerSpectator(myID);
-    const isMyCapture = data.buildingInfo.buildings_team === myID.toString() || isSpectator;
+    const myID2 = getMyID();
+    const isSpectator = isPlayerSpectator(myID2);
+    const isMyCapture = data.buildingInfo.buildings_team === myID2.toString() || isSpectator;
     const sfx = isMyCapture ? GameSFX.unitCaptureAlly : GameSFX.unitCaptureEnemy;
     playSFX(sfx);
   }
   function onBuild(data) {
-    ahBuild?.apply(actionHandlers.Build, [data]);
+    ahBuild == null ? void 0 : ahBuild.apply(actionHandlers.Build, [data]);
     if (!musicSettings.isPlaying) return;
-    const myID = getMyID();
-    const isMyBuild = data.newUnit.units_players_id == myID;
+    const myID2 = getMyID();
+    const isMyBuild = data.newUnit.units_players_id == myID2;
     const isReplay = isReplayActive();
     if (!isMyBuild || isReplay) playSFX(GameSFX.unitSupply);
   }
   function onLoad(data) {
-    ahLoad?.apply(actionHandlers.Load, [data]);
+    ahLoad == null ? void 0 : ahLoad.apply(actionHandlers.Load, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitLoad);
   }
   function onUnload(data) {
-    ahUnload?.apply(actionHandlers.Unload, [data]);
+    ahUnload == null ? void 0 : ahUnload.apply(actionHandlers.Unload, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitUnload);
   }
   function onSupply(data) {
-    ahSupply?.apply(actionHandlers.Supply, [data]);
+    ahSupply == null ? void 0 : ahSupply.apply(actionHandlers.Supply, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitSupply);
   }
   function onRepair(data) {
-    ahRepair?.apply(actionHandlers.Repair, [data]);
+    ahRepair == null ? void 0 : ahRepair.apply(actionHandlers.Repair, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitSupply);
   }
   function onHide(data) {
-    ahHide?.apply(actionHandlers.Hide, [data]);
+    ahHide == null ? void 0 : ahHide.apply(actionHandlers.Hide, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitHide);
     stopMovementSound(data.unitId);
   }
   function onUnhide(data) {
-    ahUnhide?.apply(actionHandlers.Unhide, [data]);
+    ahUnhide == null ? void 0 : ahUnhide.apply(actionHandlers.Unhide, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitUnhide);
     stopMovementSound(data.unitId);
   }
   function onJoin(data) {
-    ahJoin?.apply(actionHandlers.Join, [data]);
+    ahJoin == null ? void 0 : ahJoin.apply(actionHandlers.Join, [data]);
     if (!musicSettings.isPlaying) return;
     stopMovementSound(data.joinID);
     stopMovementSound(data.joinedUnit.units_id);
   }
   function onLaunch(data) {
-    ahLaunch?.apply(actionHandlers.Launch, [data]);
+    ahLaunch == null ? void 0 : ahLaunch.apply(actionHandlers.Launch, [data]);
     if (!musicSettings.isPlaying) return;
     playSFX(GameSFX.unitMissileSend);
     window.setTimeout(() => playSFX(GameSFX.unitMissileHit), siloDelayMS);
   }
   function onNextTurn(data) {
-    ahNextTurn?.apply(actionHandlers.NextTurn, [data]);
+    ahNextTurn == null ? void 0 : ahNextTurn.apply(actionHandlers.NextTurn, [data]);
     if (!musicSettings.isPlaying) return;
     if (data.swapCos) {
       playSFX(GameSFX.tagSwap);
@@ -3152,22 +3414,22 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     refreshMusicForNextTurn();
   }
   function onElimination(data) {
-    ahElimination?.apply(actionHandlers.Elimination, [data]);
+    ahElimination == null ? void 0 : ahElimination.apply(actionHandlers.Elimination, [data]);
     if (!musicSettings.isPlaying) return;
     refreshMusicForNextTurn();
   }
   function onGameOver() {
-    ahGameOver?.apply(actionHandlers.GameOver, []);
+    ahGameOver == null ? void 0 : ahGameOver.apply(actionHandlers.GameOver, []);
     if (!musicSettings.isPlaying) return;
     refreshMusicForNextTurn();
   }
   function onResign(data) {
-    ahResign?.apply(actionHandlers.Resign, [data]);
+    ahResign == null ? void 0 : ahResign.apply(actionHandlers.Resign, [data]);
     if (!musicSettings.isPlaying) return;
     refreshMusicForNextTurn();
   }
   function onPower(data) {
-    ahPower?.apply(actionHandlers.Power, [data]);
+    ahPower == null ? void 0 : ahPower.apply(actionHandlers.Power, [data]);
     if (!musicSettings.isPlaying) return;
     const coName = data.coName;
     const isBH = isBlackHoleCO(coName);
@@ -3209,7 +3471,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     closeMsg = closeMsg.toLowerCase();
     if (closeMsg.includes("connected to another game")) stopThemeSong();
   }
-
   let debugOverrides = false;
   function toggleDebugOverrides() {
     debugOverrides = !debugOverrides;
@@ -3225,7 +3486,6 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       }
     }
   }
-
   function onLiveQueue() {
     const addMusicFn = () => {
       const blockerPopup = getLiveQueueBlockerPopup();
@@ -3241,7 +3501,7 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     };
     const checkStillActiveFn = () => {
       const blockerPopup = getLiveQueueBlockerPopup();
-      return blockerPopup?.style.display !== "none";
+      return (blockerPopup == null ? void 0 : blockerPopup.style.display) !== "none";
     };
     const addPlayerIntervalID = window.setInterval(() => {
       if (getCurrentPageType() !== PageType.LiveQueue) {
@@ -3303,9 +3563,11 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
     initializeMusicPlayerUI();
     addHandlers();
     const iframe = document.getElementById(IFRAME_ID);
-    iframe?.addEventListener("focus", () => {
-      if (musicSettings.isPlaying) playThemeSong();
-    });
+    iframe == null
+      ? void 0
+      : iframe.addEventListener("focus", () => {
+          if (musicSettings.isPlaying) playThemeSong();
+        });
     window.addEventListener("focus", () => {
       if (musicSettings.isPlaying) playThemeSong();
     });
@@ -3362,15 +3624,16 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       initializeMusicPlayer();
     };
     const ifCannotAutoplay = () => {
+      var _a;
       const initfn = () => {
         window.clearInterval(autoplayIntervalID);
         initializeMusicPlayer();
       };
       musicPlayerUI.addEventListener("click", initfn, { once: true });
-      document.querySelector("body")?.addEventListener("click", initfn, { once: true });
+      (_a = document.querySelector("body")) == null ? void 0 : _a.addEventListener("click", initfn, { once: true });
     };
     const autoplayIntervalID = window.setInterval(() => {
-      canAutoplay
+      canAutoplay2
         .audio()
         .then((response) => {
           const result = response.result;
@@ -3396,12 +3659,19 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       .then(() => logInfo("Database opened successfully. Ready to cache music files."))
       .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
       .finally(() => {
+        var _a, _b;
         if (getCurrentPageType() === PageType.Maintenance) {
           checkAutoplayThenInitialize();
           const maintenanceDiv = document.querySelector("#server-maintenance-alert");
-          const currentText = maintenanceDiv?.textContent;
-          const minutes = currentText?.match(/\d+m/)?.[0].replace("m", "") ?? 0;
-          const seconds = currentText?.match(/\d+s/)?.[0].replace("s", "") ?? 0;
+          const currentText = maintenanceDiv == null ? void 0 : maintenanceDiv.textContent;
+          const minutes =
+            ((_a = currentText == null ? void 0 : currentText.match(/\d+m/)) == null
+              ? void 0
+              : _a[0].replace("m", "")) ?? 0;
+          const seconds =
+            ((_b = currentText == null ? void 0 : currentText.match(/\d+s/)) == null
+              ? void 0
+              : _b[0].replace("s", "")) ?? 0;
           logInfo("Maintenance page detected. Will try again in", minutes, "minutes and", seconds, "seconds.");
           return;
         }
@@ -3409,11 +3679,10 @@ var awbw_music_player = (function (exports, canAutoplay, SparkMD5) {
       });
   }
   main();
-
   exports.checkAutoplayThenInitialize = checkAutoplayThenInitialize;
   exports.initializeMusicPlayer = initializeMusicPlayer;
   exports.notifyCOSelectorListeners = notifyCOSelectorListeners;
   exports.toggleDebugOverrides = toggleDebugOverrides;
-
+  Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
   return exports;
 })({}, canAutoplay, SparkMD5);
