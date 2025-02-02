@@ -5,8 +5,8 @@ iframe {
 }
 
 .cls-settings-menu {
-  /* display: none; */
-  display: flex;
+  display: none;
+  /* display: flex; */
   top: 40px;
   flex-direction: column;
   width: 750px;
