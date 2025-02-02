@@ -30,7 +30,21 @@ import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
 
 // import Vue from "vue";
-// import MusicPlayer from "./music_player.vue";
+// import MusicPlayer from "./components/music_player.vue";
+
+/******************************************************************
+ * Vue
+ ******************************************************************/
+// const vueElement = document.createElement("div");
+// vueElement.id = "music_player_vue";
+// document.body.appendChild(vueElement);
+
+// const musicPlayerVue = new Vue({
+//   el: "#music_player_vue",
+//   render: (h) => h(MusicPlayer),
+// });
+
+// musicPlayerVue.$emit("initialize");
 
 /******************************************************************
  * MODULE EXPORTS
@@ -62,6 +76,7 @@ function onLiveQueue() {
     if (!box) return false;
 
     // Prepend the music player UI to the box
+    // TODO
     musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
     playMusicURL(SpecialTheme.COSelect);
     return true;
@@ -118,6 +133,7 @@ function preloadThemes() {
     // Set dynamic settings based on the current game state
     // Lastly, update the UI to reflect the current settings
     musicSettings.themeType = getCurrentThemeType();
+    // TODO:
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
     window.setTimeout(playThemeSong, 500);
@@ -134,7 +150,9 @@ function preloadThemes() {
       };
       checkHashesFn();
     }
+    // TODO:
     musicPlayerUI.checkIfNewVersionAvailable();
+    // musicPlayerVue.$emit("initialize");
 
     // preloadAllAudio(() => {
     //   log("All other audio has been pre-loaded!");
@@ -158,6 +176,7 @@ export function initializeMusicPlayer() {
       onLiveQueue();
       break;
     case PageType.Maintenance:
+      // TODO
       musicPlayerUI.openContextMenu();
       break;
     case PageType.MovePlanner:
@@ -167,6 +186,7 @@ export function initializeMusicPlayer() {
   preloadThemes();
   allowSettingsToBeSaved();
   initializeMusicPlayerUI();
+  // musicPlayerUI.$emit("initialize");
   addHandlers();
 
   const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
@@ -251,6 +271,7 @@ export function checkAutoplayThenInitialize() {
       initializeMusicPlayer();
     };
     // Listen for any clicks
+    // TODO:
     musicPlayerUI.addEventListener("click", initfn, { once: true });
     document.querySelector("body")?.addEventListener("click", initfn, { once: true });
   };
@@ -340,12 +361,3 @@ function main() {
  * SCRIPT ENTRY
  ******************************************************************/
 main();
-
-// TODO: Vue
-// const vueElement = document.createElement("div");
-// vueElement.id = "music_player_vue";
-// document.body.appendChild(vueElement);
-
-// new Vue({
-//   render: h => h(MusicPlayer),
-// }).$mount("#music_player_vue");

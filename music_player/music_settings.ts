@@ -144,9 +144,9 @@ export abstract class musicSettings {
   private static __seamlessLoopsInMirrors = true;
 
   // Non-user configurable settings
-  private static __themeType = ThemeType.REGULAR;
-  private static __currentRandomCO: string = "";
-  private static __currentRandomGameType = GameType.DS;
+  private static ___themeType = ThemeType.REGULAR;
+  private static ___currentRandomCO: string = "";
+  private static ___currentRandomGameType = GameType.DS;
   public static isLoaded = false;
   public static saveChanges = false;
 
@@ -183,22 +183,26 @@ export abstract class musicSettings {
   static fromJSON(json: string) {
     // Only keep and set settings that are in the current version of musicPlayerSettings
     const savedSettings = JSON.parse(json);
-    for (let key in this) {
-      key = key.substring(2); // Remove the __ prefix
-      if (Object.hasOwn(savedSettings, key)) {
+    for (const key in this) {
+      // Skip non-configurable keys
+      if (!key.startsWith("__")) continue;
+      if (key.startsWith("___")) continue;
+
+      const key_sub = key.substring(2); // Remove the __ prefix
+      if (Object.hasOwn(savedSettings, key_sub)) {
         // Special case for the overrideList, it's a Map
-        if (key === "overrideList") {
-          this.__overrideList = new Map(savedSettings[key]);
+        if (key_sub === "overrideList") {
+          this.__overrideList = new Map(savedSettings[key_sub]);
           continue;
         }
-        if (key === "excludedRandomThemes") {
-          this.__excludedRandomThemes = new Set(savedSettings[key]);
+        if (key_sub === "excludedRandomThemes") {
+          this.__excludedRandomThemes = new Set(savedSettings[key_sub]);
           continue;
         }
         // For all other settings, just set them with the setter function
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this as any)[key] = savedSettings[key];
-        // debug("Loading", key, "as", savedSettings[key]);
+        (this as any)[key_sub] = savedSettings[key_sub];
+        // logDebug("Loading", key_sub, "as", savedSettings[key_sub]);
       } else {
         logDebug("Tried to load an invalid settings key:", key);
       }
@@ -251,7 +255,7 @@ export abstract class musicSettings {
     if (this.__gameType === val) return;
     this.__gameType = val;
     // The user wants this game type, so override whatever random game type we had before
-    this.__currentRandomGameType = val;
+    this.___currentRandomGameType = val;
     this.onSettingChangeEvent(SettingsKey.GAME_TYPE, val);
   }
   static get gameType() {
@@ -391,18 +395,19 @@ export abstract class musicSettings {
   static set seamlessLoopsInMirrors(val: boolean) {
     if (this.__seamlessLoopsInMirrors === val) return;
     this.__seamlessLoopsInMirrors = val;
+    this.onSettingChangeEvent(SettingsKey.SEAMLESS_LOOPS_IN_MIRRORS, val);
   }
 
   // ************* Non-user configurable settings from here on
 
   static set themeType(val: ThemeType) {
-    if (this.__themeType === val) return;
-    this.__themeType = val;
+    if (this.___themeType === val) return;
+    this.___themeType = val;
     this.onSettingChangeEvent(SettingsKey.THEME_TYPE, val);
   }
 
   static get themeType() {
-    return this.__themeType;
+    return this.___themeType;
   }
 
   static set randomThemesType(val: RandomThemeType) {
@@ -416,23 +421,23 @@ export abstract class musicSettings {
   }
 
   static get currentRandomCO() {
-    if (!this.__currentRandomCO || this.__currentRandomCO == "") this.randomizeCO();
-    return this.__currentRandomCO as string;
+    if (!this.___currentRandomCO || this.___currentRandomCO == "") this.randomizeCO();
+    return this.___currentRandomCO as string;
   }
 
   static get currentRandomGameType() {
-    return this.__currentRandomGameType;
+    return this.___currentRandomGameType;
   }
 
   static randomizeCO() {
-    const excludedCOs = new Set([...this.__excludedRandomThemes, this.__currentRandomCO]);
-    this.__currentRandomCO = getRandomCO(excludedCOs);
+    const excludedCOs = new Set([...this.__excludedRandomThemes, this.___currentRandomCO]);
+    this.___currentRandomCO = getRandomCO(excludedCOs);
 
     // Randomize soundtrack EXCEPT we don't allow AW1 during power themes
     const isPower = this.themeType !== ThemeType.REGULAR;
     const excludedSoundtracks = new Set<GameType>();
     if (isPower) excludedSoundtracks.add(GameType.AW1);
-    this.__currentRandomGameType = getRandomGameType(excludedSoundtracks);
+    this.___currentRandomGameType = getRandomGameType(excludedSoundtracks);
 
     this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO, null);
   }
