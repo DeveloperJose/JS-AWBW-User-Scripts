@@ -19,6 +19,7 @@
     "allowUmdGlobalAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noImplicitThis": true,
     "typeRoots": ["node_modules/@types"],
     // "paths": { "@/*": ["./*"]}
   },

@@ -20,7 +20,6 @@ import {
 import { addHandlers } from "./handlers";
 import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
 import { GameSFX, SpecialTheme } from "./resources";
-import { notifyCOSelectorListeners } from "../shared/custom_ui";
 import { logDebug, logInfo, logError } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
 import { addThemeListeners, playMusicURL, playThemeSong, stopThemeSong } from "./music/co_themes";
@@ -29,22 +28,30 @@ import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } fro
 import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
 
-// import Vue from "vue";
+import Vue from "vue";
 // import MusicPlayer from "./components/music_player.vue";
+import COSelector from "../shared/components/co_selector.vue";
+import { notifyCOSelectorListeners } from "../shared/components/co_selector.vue";
 
 /******************************************************************
  * Vue
  ******************************************************************/
-// const vueElement = document.createElement("div");
-// vueElement.id = "music_player_vue";
-// document.body.appendChild(vueElement);
+const vueElement = document.createElement("div");
+vueElement.id = "music_player_vue";
+document.querySelector("#nav-options")?.prepend(vueElement);
 
 // const musicPlayerVue = new Vue({
 //   el: "#music_player_vue",
 //   render: (h) => h(MusicPlayer),
 // });
 
-// musicPlayerVue.$emit("initialize");
+const musicPlayerVue = new Vue({
+  el: "#music_player_vue",
+  render: (h) => h(COSelector),
+});
+
+
+musicPlayerVue.$emit("initialize");
 
 /******************************************************************
  * MODULE EXPORTS
