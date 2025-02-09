@@ -28,30 +28,30 @@ import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } fro
 import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
 
-import Vue from "vue";
+// import Vue from "vue";
 // import MusicPlayer from "./components/music_player.vue";
-import COSelector from "../shared/components/co_selector.vue";
+// import COSelector from "../shared/components/co_selector.vue";
 import { notifyCOSelectorListeners } from "../shared/components/co_selector.vue";
 
 /******************************************************************
  * Vue
  ******************************************************************/
-const vueElement = document.createElement("div");
-vueElement.id = "music_player_vue";
-document.querySelector("#nav-options")?.prepend(vueElement);
+// const vueElement = document.createElement("div");
+// vueElement.id = "music_player_vue";
+// document.querySelector("#nav-options")?.prepend(vueElement);
 
 // const musicPlayerVue = new Vue({
 //   el: "#music_player_vue",
 //   render: (h) => h(MusicPlayer),
 // });
 
-const musicPlayerVue = new Vue({
-  el: "#music_player_vue",
-  render: (h) => h(COSelector),
-});
+// const musicPlayerVue = new Vue({
+//   el: "#music_player_vue",
+//   render: (h) => h(COSelector),
+// });
 
 
-musicPlayerVue.$emit("initialize");
+// musicPlayerVue.$emit("initialize");
 
 /******************************************************************
  * MODULE EXPORTS

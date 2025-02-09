@@ -10,7 +10,7 @@
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @require         https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js
 // @run-at          document-end
-// @version         5.2.4
+// @version         5.2.6
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -22,9 +22,8 @@ var awbw_music_player = function(exports, canAutoplay2, Vue2, SparkMD52) {
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
-  var _a;
   var __vite_style__ = document.createElement("style");
-  __vite_style__.textContent = '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n\n.cls-co-selector .co_caret {\r\n  position: absolute;\r\n  top: 28px;\r\n  left: 25px;\r\n  border: none;\r\n  z-index: 30;\n}\n.cls-co-selector .co_portrait {\r\n  border-color: #009966;\r\n  z-index: 30;\r\n  border: 2px solid;\r\n  vertical-align: middle;\r\n  align-self: center;\n}\r\n/*$vite$:1*/';
+  __vite_style__.textContent = '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n/*$vite$:1*/';
   document.head.appendChild(__vite_style__);
   function logInfo(message, ...args) {
     console.log("[AWBW Improved Music Player]", message, ...args);
@@ -57,11 +56,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   const IFRAME_ID = "music-player-iframe";
   const broadcastChannel = new BroadcastChannel("awbw-music-player");
+  const initialPage = window.location.href;
   function isIFrameActive() {
-    var _a2;
+    var _a;
     const iframe = document.getElementById(IFRAME_ID);
     if (!iframe) return false;
-    const href = ((_a2 = iframe.contentDocument) == null ? void 0 : _a2.location.href) ?? iframe.src;
+    const href = ((_a = iframe.contentDocument) == null ? void 0 : _a.location.href) ?? iframe.src;
     return href !== null && href !== "" && href !== "about:blank";
   }
   function getCurrentDocument() {
@@ -83,7 +83,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     window.addEventListener("popstate", (event) => {
       const href = window.location.href;
       const iframe2 = document.getElementById(IFRAME_ID);
-      if (!iframe2 || href.includes("game.php")) {
+      if (!iframe2 || href.includes("game.php") || initialPage.includes("yourturn.php")) {
         window.location.reload();
         return;
       }
@@ -120,6 +120,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     initFn();
   }
   function hijackLinks(doc) {
+    if (initialPage.includes("yourturn.php")) return;
     if (!doc) {
       logError("Could not find the document to hijack links.");
       return;
@@ -131,10 +132,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     for (const link of Array.from(links)) {
       const isGamePageLink = link.href.includes("game.php") || link.classList.contains("anchor") && link.name.includes("game_");
-      const isMovePlannerLink = link.href.includes("moveplanner.php");
       const isJSLink = link.href.startsWith("javascript:");
-      if (isJSLink) continue;
-      else if (link.href === "" || isMovePlannerLink) continue;
+      if (link.target === "_blank") continue;
+      else if (isJSLink) continue;
+      else if (link.href === "") continue;
       else if (isGamePageLink) link.target = "_top";
       else link.target = IFRAME_ID;
     }
@@ -204,10 +205,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   const moveAnimationDelayMS = 5;
   function moveDivToOffset(div, dx, dy, steps, ...followUpAnimations) {
-    var _a2;
+    var _a;
     if (steps <= 1) {
       if (!followUpAnimations || followUpAnimations.length === 0) return;
-      const nextSet = (_a2 = followUpAnimations.shift()) == null ? void 0 : _a2.then;
+      const nextSet = (_a = followUpAnimations.shift()) == null ? void 0 : _a.then;
       if (!nextSet) return;
       moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
       return;
@@ -416,18 +417,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * @returns - The state of the CO Power for the current player.
      */
     static get coPowerState() {
-      var _a2;
+      var _a;
       if (getCurrentPageType() !== PageType.ActiveGame) return "N";
-      return (_a2 = this.info) == null ? void 0 : _a2.players_co_power_on;
+      return (_a = this.info) == null ? void 0 : _a.players_co_power_on;
     }
     /**
      * Determine if the current player has been eliminated from the game.
      * @returns - True if the current player has been eliminated.
      */
     static get isEliminated() {
-      var _a2;
+      var _a;
       if (getCurrentPageType() !== PageType.ActiveGame) return false;
-      return ((_a2 = this.info) == null ? void 0 : _a2.players_eliminated) === "Y";
+      return ((_a = this.info) == null ? void 0 : _a.players_eliminated) === "Y";
     }
     /**
      * Gets the name of the CO for the current player.
@@ -436,7 +437,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * @returns - The name of the CO for the current player.
      */
     static get coName() {
-      var _a2;
+      var _a;
       if (getCurrentPageType() !== PageType.ActiveGame) return null;
       const myID2 = getMyID();
       const myInfo = getPlayerInfo(myID2);
@@ -451,7 +452,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         return endGameTheme;
       }
       if (myLoss) return "defeat";
-      return (_a2 = this.info) == null ? void 0 : _a2.co_name;
+      return (_a = this.info) == null ? void 0 : _a.co_name;
     }
   }
   function getAllPlayingCONames() {
@@ -476,9 +477,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return unitsInfo[unitId];
   }
   function getUnitName(unitId) {
-    var _a2;
+    var _a;
     if (getCurrentPageType() !== PageType.ActiveGame) return null;
-    return (_a2 = getUnitInfo(unitId)) == null ? void 0 : _a2.units_name;
+    return (_a = getUnitInfo(unitId)) == null ? void 0 : _a.units_name;
   }
   function getUnitInfoFromCoords(x, y) {
     if (getCurrentPageType() !== PageType.ActiveGame) return null;
@@ -491,9 +492,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return unitId !== void 0 && unitsInfo[unitId] !== void 0;
   }
   function hasUnitMovedThisTurn(unitId) {
-    var _a2;
+    var _a;
     if (getCurrentPageType() !== PageType.ActiveGame) return false;
-    return isValidUnit(unitId) && ((_a2 = getUnitInfo(unitId)) == null ? void 0 : _a2.units_moved) === 1;
+    return isValidUnit(unitId) && ((_a = getUnitInfo(unitId)) == null ? void 0 : _a.units_moved) === 1;
   }
   function addConnectionErrorObserver(onConnectionError2) {
     const connectionErrorDiv = getConnectionErrorDiv();
@@ -1300,7 +1301,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     });
     return audioList;
   }
-  const _sfc_main = Vue2.extend({
+  Vue2.extend({
     name: "COSelector",
     data() {
       return {
@@ -1389,30 +1390,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function notifyCOSelectorListeners(coName) {
     coSelectorListeners.forEach((listener) => listener(coName));
   }
-  function normalizeComponent(scriptExports, render, staticRenderFns, functionalTemplate, injectStyles, scopeId, moduleIdentifier, shadowMode) {
-    var options = typeof scriptExports === "function" ? scriptExports.options : scriptExports;
-    {
-      options.render = render;
-      options.staticRenderFns = staticRenderFns;
-      options._compiled = true;
-    }
-    return {
-      exports: scriptExports,
-      options
-    };
-  }
-  var _sfc_render = function render() {
-    var _vm = this, _c = _vm._self._c;
-    _vm._self._setupProxy;
-    return _c("div", { staticClass: "cls-co-selector" }, [_c("a", { staticClass: "game-tools-btn", attrs: { "href": "javascript:void(0)" }, on: { "click": _vm.onClick } }, [_c("img", { staticClass: "co_caret", staticStyle: { "z-index": "300" }, attrs: { "src": _vm.caretURL } }), _c("img", { staticClass: "co_portrait", attrs: { "src": _vm.baseURL + _vm.coPrefix + _vm.coName + ".png?v=1" } })])]);
-  };
-  var _sfc_staticRenderFns = [];
-  var __component__ = /* @__PURE__ */ normalizeComponent(
-    _sfc_main,
-    _sfc_render,
-    _sfc_staticRenderFns
-  );
-  const COSelector = __component__.exports;
   var ScriptName = /* @__PURE__ */ ((ScriptName2) => {
     ScriptName2["None"] = "none";
     ScriptName2["MusicPlayer"] = "music_player";
@@ -1420,7 +1397,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.2.4"],
+    ["music_player", "5.2.6"],
     ["highlight_cursor_coordinates", "2.3.0"]
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1442,9 +1419,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const updateURL = updateURLs.get(scriptName);
       if (!updateURL) return reject(`Failed to get the update URL for the script.`);
       return fetch(updateURL).then((response) => response.text()).then((text) => {
-        var _a2;
+        var _a;
         if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
-        const latestVersion = (_a2 = text.match(/@version\s+([0-9.]+)/)) == null ? void 0 : _a2[1];
+        const latestVersion = (_a = text.match(/@version\s+([0-9.]+)/)) == null ? void 0 : _a[1];
         if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
         const currentVersion = versions.get(scriptName);
         if (!currentVersion) return reject(`Failed to get the current version of the script.`);
@@ -1673,11 +1650,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.parent.style.borderRight = "none";
     }
     hasSettings() {
-      var _a2, _b, _c;
-      const hasLeftMenu = ((_a2 = this.getNodeByID(
+      var _a, _b, _c;
+      const hasLeftMenu = ((_a = this.getNodeByID(
         "settings-left"
         /* Settings_Left */
-      )) == null ? void 0 : _a2.style.display) !== "none";
+      )) == null ? void 0 : _a.style.display) !== "none";
       const hasCenterMenu = ((_b = this.getNodeByID(
         "settings-center"
         /* Settings_Center */
@@ -1750,16 +1727,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * Opens the context (right-click) menu.
      */
     openContextMenu() {
-      var _a2;
+      var _a;
       const contextMenu = this.getNodeByID(
         "settings"
         /* Settings */
       );
       if (!contextMenu) return;
-      const hasVersion = ((_a2 = this.getNodeByID(
+      const hasVersion = ((_a = this.getNodeByID(
         "version"
         /* Version */
-      )) == null ? void 0 : _a2.style.display) !== "none";
+      )) == null ? void 0 : _a.style.display) !== "none";
       if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
@@ -2099,7 +2076,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
   }
   function getMenu() {
-    var _a2;
+    var _a;
     const doc = getCurrentDocument();
     switch (getCurrentPageType()) {
       case PageType.Maintenance:
@@ -2109,7 +2086,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       case PageType.MovePlanner:
         return doc.querySelector("#map-controls-container");
       case PageType.ActiveGame:
-        return (_a2 = doc.querySelector("#game-map-menu")) == null ? void 0 : _a2.parentNode;
+        return (_a = doc.querySelector("#game-map-menu")) == null ? void 0 : _a.parentNode;
       // case PageType.LiveQueue:
       // case PageType.MainPage:
       default:
@@ -2609,8 +2586,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        var _a2;
-        if (!((_a2 = event == null ? void 0 : event.target) == null ? void 0 : _a2.result)) return reject("FileReader did not load the blob.");
+        var _a;
+        if (!((_a = event == null ? void 0 : event.target) == null ? void 0 : _a.result)) return reject("FileReader did not load the blob.");
         const md5 = SparkMD52.ArrayBuffer.hash(event.target.result);
         resolve(md5);
       };
@@ -3176,10 +3153,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     for (let i = 0; i < menuOptions.length; i++) {
       menuOptions[i].addEventListener("mouseenter", (_e) => playSFX(GameSFX.uiMenuMove));
       menuOptions[i].addEventListener("click", (event) => {
-        var _a2, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f;
         const target = event.target;
         if (!target) return;
-        if (target.classList.contains("forbidden") || ((_a2 = target.parentElement) == null ? void 0 : _a2.classList.contains("forbidden")) || ((_c = (_b = target.parentElement) == null ? void 0 : _b.parentElement) == null ? void 0 : _c.classList.contains("forbidden")) || ((_f = (_e = (_d = target.parentElement) == null ? void 0 : _d.parentElement) == null ? void 0 : _e.parentElement) == null ? void 0 : _f.classList.contains("forbidden"))) {
+        if (target.classList.contains("forbidden") || ((_a = target.parentElement) == null ? void 0 : _a.classList.contains("forbidden")) || ((_c = (_b = target.parentElement) == null ? void 0 : _b.parentElement) == null ? void 0 : _c.classList.contains("forbidden")) || ((_f = (_e = (_d = target.parentElement) == null ? void 0 : _d.parentElement) == null ? void 0 : _e.parentElement) == null ? void 0 : _f.classList.contains("forbidden"))) {
           playSFX(GameSFX.uiInvalid);
           return;
         }
@@ -3503,14 +3480,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     }
   }
-  const vueElement = document.createElement("div");
-  vueElement.id = "music_player_vue";
-  (_a = document.querySelector("#nav-options")) == null ? void 0 : _a.prepend(vueElement);
-  const musicPlayerVue = new Vue2({
-    el: "#music_player_vue",
-    render: (h) => h(COSelector)
-  });
-  musicPlayerVue.$emit("initialize");
   function onLiveQueue() {
     const addMusicFn = () => {
       const blockerPopup = getLiveQueueBlockerPopup();
@@ -3643,13 +3612,13 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       initializeMusicPlayer();
     };
     const ifCannotAutoplay = () => {
-      var _a2;
+      var _a;
       const initfn = () => {
         window.clearInterval(autoplayIntervalID);
         initializeMusicPlayer();
       };
       musicPlayerUI.addEventListener("click", initfn, { once: true });
-      (_a2 = document.querySelector("body")) == null ? void 0 : _a2.addEventListener("click", initfn, { once: true });
+      (_a = document.querySelector("body")) == null ? void 0 : _a.addEventListener("click", initfn, { once: true });
     };
     const autoplayIntervalID = window.setInterval(() => {
       canAutoplay2.audio().then((response) => {
@@ -3672,14 +3641,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     loadSettingsFromLocalStorage();
     logInfo("Opening database to cache music files.");
     openDB().then(() => logInfo("Database opened successfully. Ready to cache music files.")).catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`)).finally(() => {
-      var _a2, _b;
+      var _a, _b;
       if (getCurrentPageType() === PageType.Maintenance) {
         checkAutoplayThenInitialize();
         const startTime = Date.now();
         const maintenanceDiv = document.querySelector("#server-maintenance-alert");
         if (!maintenanceDiv) return;
         const currentText = maintenanceDiv.textContent;
-        const minutesStr = (_a2 = currentText == null ? void 0 : currentText.match(/\d+m/)) == null ? void 0 : _a2[0].replace("m", "");
+        const minutesStr = (_a = currentText == null ? void 0 : currentText.match(/\d+m/)) == null ? void 0 : _a[0].replace("m", "");
         const secondsStr = (_b = currentText == null ? void 0 : currentText.match(/\d+s/)) == null ? void 0 : _b[0].replace("s", "");
         if (!minutesStr || !secondsStr) return;
         const minutes = parseInt(minutesStr);

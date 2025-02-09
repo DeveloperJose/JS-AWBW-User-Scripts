@@ -18,6 +18,8 @@ export const IFRAME_ID = "music-player-iframe";
  */
 export const broadcastChannel = new BroadcastChannel("awbw-music-player");
 
+const initialPage = window.location.href;
+
 /**
  * Whether the iframe is currently active and displaying a page.
  * @returns True if the iframe is active, false otherwise.
@@ -74,7 +76,7 @@ export function initializeIFrame(init_fn: () => void) {
     // logDebug("Popstate event", window.location);
     const href = window.location.href;
     const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
-    if (!iframe || href.includes("game.php")) {
+    if (!iframe || href.includes("game.php") || initialPage.includes("yourturn.php")) {
       window.location.reload();
       return;
     }
@@ -132,6 +134,9 @@ function onIFrameLoad(event: Event, initFn: () => void) {
  * @param doc - The document to hijack the links in.
  */
 function hijackLinks(doc: Document | null) {
+  // TODO: Temporary fix for yourturn refresh issue
+  if (initialPage.includes("yourturn.php")) return;
+
   if (!doc) {
     logError("Could not find the document to hijack links.");
     return;
@@ -147,11 +152,11 @@ function hijackLinks(doc: Document | null) {
     // Game links will not be hijacked
     const isGamePageLink =
       link.href.includes("game.php") || (link.classList.contains("anchor") && link.name.includes("game_"));
-    const isMovePlannerLink = link.href.includes("moveplanner.php");
-
     const isJSLink = link.href.startsWith("javascript:");
-    if (isJSLink) continue;
-    else if (link.href === "" || isMovePlannerLink) continue;
+
+    if (link.target === "_blank") continue;
+    else if (isJSLink) continue;
+    else if (link.href === "") continue;
     else if (isGamePageLink) link.target = "_top";
     else link.target = IFRAME_ID;
   }
