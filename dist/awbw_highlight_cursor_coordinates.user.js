@@ -20,7 +20,7 @@ var __defNormalProp = (obj, key, value) =>
     ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value })
     : (obj[key] = value);
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-(function () {
+(function (Vue2) {
   "use strict";
   var __vite_style__ = document.createElement("style");
   __vite_style__.textContent =
@@ -144,7 +144,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.2.2"],
+    ["music_player", "5.3.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -191,6 +191,87 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (typeof coTheme === "undefined") return "aw2";
     return coTheme;
   }
+  Vue2.extend({
+    name: "COSelector",
+    data() {
+      return {
+        coPrefix: getCOImagePrefix(),
+        coName: "andy",
+        isOpen: false,
+        baseURL: "https://awbw.amarriner.com/terrain/ani/",
+        caretURL: "https://awbw.amarriner.com/terrain/co_down_caret.gif",
+      };
+    },
+    methods: {
+      changeCO(name, prefix) {
+        this.coName = name;
+        if (!prefix) prefix = getCOImagePrefix();
+        this.coPrefix = prefix;
+      },
+      onClick() {
+        this.isOpen = !this.isOpen;
+        if (this.isOpen) {
+          this.showOverlib();
+        } else {
+          this.hideOverlib();
+        }
+      },
+      createOverlibHTML() {
+        const allCOs = getAllCONames(true).sort();
+        let allColumnsHTML = "";
+        for (let i = 0; i < 7; i++) {
+          const startIDX = i * 4;
+          const endIDX = startIDX + 4;
+          const templateFn = (coName) => this.createOverlibItemHTML(coName);
+          const currentColumnHTML = allCOs.slice(startIDX, endIDX).map(templateFn).join("");
+          allColumnsHTML += `<td><table>${currentColumnHTML}</table></td>`;
+        }
+        const selectorInnerHTML = `<table><tr>${allColumnsHTML}</tr></table>`;
+        const selectorTitle = `<img src=terrain/ani/blankred.gif height=16 width=1 align=absmiddle>Select CO`;
+        return overlib(selectorInnerHTML, STICKY, CAPTION, selectorTitle, OFFSETY, 25, OFFSETX, -322, CLOSECLICK);
+      },
+      createOverlibItemHTML(coName) {
+        const location = "javascript:void(0)";
+        const internalName = coName.toLowerCase().replaceAll(" ", "");
+        const imgSrc = `terrain/ani/${this.coPrefix}${internalName}.png?v=1`;
+        const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
+        return `<tr><td class=borderwhite><img class=co_portrait src=${imgSrc}></td><td class=borderwhite align=center valign=center><span class=small_text><a onclick="${onClickFn}" href=${location}>${coName}</a></b></span></td></tr>`;
+      },
+      createOverDiv() {
+        let overDiv = document.querySelector("#overDiv");
+        if (overDiv) return overDiv;
+        overDiv = document.createElement("div");
+        overDiv.id = "overDiv";
+        overDiv.style.visibility = "hidden";
+        overDiv.style.position = "absolute";
+        overDiv.style.zIndex = "2000";
+        document.body.prepend(overDiv);
+        return overDiv;
+      },
+      showOverlib() {
+        const ret = this.createOverlibHTML();
+        const overdiv = document.querySelector("#overDiv");
+        if (overdiv) overdiv.style.zIndex = "1000";
+        return ret;
+      },
+      hideOverlib() {
+        const overDiv = document.querySelector("#overDiv");
+        overDiv.style.visibility = "hidden";
+      },
+      onCOSelected(coName) {
+        this.hideOverlib();
+        this.changeCO(coName);
+      },
+    },
+    mounted() {
+      const overDiv = this.createOverDiv();
+      const overDivObserver = new MutationObserver(() => {
+        if (overDiv.style.visibility === "visible") this.isOpen = true;
+        else this.isOpen = false;
+      });
+      overDivObserver.observe(overDiv, { attributes: true });
+    },
+  });
   function sanitize(str) {
     return str.toLowerCase().replaceAll(" ", "-");
   }
@@ -777,8 +858,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         if (overdiv) overdiv.style.zIndex = "1000";
         return ret;
       };
-      addCOSelectorListener((coName) => this.onCOSelectorClick(coName));
-      addCOSelectorListener(onClickFn);
       return coSelector;
     }
     createCOSelectorItem(coName) {
@@ -826,10 +905,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const coPrefix = getCOImagePrefix();
       imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
     }
-  }
-  const coSelectorListeners = [];
-  function addCOSelectorListener(listener) {
-    coSelectorListeners.push(listener);
   }
   function getMaximizeBtn() {
     return document.getElementsByClassName("AWBWMaxmiseButton")[0];
@@ -1001,4 +1076,4 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     console.log("[AWBW Highlight Cursor Coordinates] Script loaded!");
   }
   main();
-})();
+})(Vue);

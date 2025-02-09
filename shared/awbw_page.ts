@@ -150,56 +150,6 @@ export function getAllDamageSquares() {
 }
 
 /**
- * How much time in milliseconds to let pass between animation steps for {@link moveDivToOffset}.
- * The lower, the faster the "animation" will play.
- * @constant
- */
-const moveAnimationDelayMS = 5;
-
-/**
- * A follow-up animation to play after the current one finishes.
- */
-interface FollowUpAnimation {
-  /**
-   * The next animation to play, as [dx, dy, steps].
-   */
-  then: [number, number, number];
-}
-
-/**
- * Animates the movement of a div element through moving it by a certain number of pixels in each direction at each step.
- * @param div - The div element to animate.
- * @param dx - Number of pixels to move left/right (column) at each step
- * @param dy - Number of pixels to move up/down (row) at each step
- * @param steps - Number of steps to take
- * @param followUpAnimations - Any additional animations to play after this one finishes.
- */
-
-export function moveDivToOffset(
-  div: HTMLDivElement,
-  dx: number,
-  dy: number,
-  steps: number,
-  ...followUpAnimations: FollowUpAnimation[]
-) {
-  if (steps <= 1) {
-    if (!followUpAnimations || followUpAnimations.length === 0) return;
-    const nextSet = followUpAnimations.shift()?.then;
-    if (!nextSet) return;
-    moveDivToOffset(div, nextSet[0], nextSet[1], nextSet[2], ...followUpAnimations);
-    return;
-  }
-
-  window.setTimeout(() => moveDivToOffset(div, dx, dy, steps - 1, ...followUpAnimations), moveAnimationDelayMS);
-  let left = parseFloat(div.style.left);
-  let top = parseFloat(div.style.top);
-  left += dx;
-  top += dy;
-  div.style.left = left + "px";
-  div.style.top = top + "px";
-}
-
-/**
  * Adds an observer to the cursor coordinates so we can replicate the "updateCursor" function outside of game.php
  * @param onCursorMove - The function to call when the cursor moves.
  */

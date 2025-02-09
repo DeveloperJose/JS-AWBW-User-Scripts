@@ -8,7 +8,6 @@ import {
   isPlayerSpectator,
   siloDelayMS,
   attackDelayMS,
-  getBuildingInfo,
   isValidUnit,
   getUnitName,
   getUnitInfoFromCoords,
@@ -28,12 +27,10 @@ import {
   getReplayDaySelectorCheckBox,
   getReplayForwardActionBtn,
   getReplayForwardBtn,
-  moveDivToOffset,
   getReplayOpenBtn,
   getCurrentPageType,
   PageType,
 } from "../shared/awbw_page";
-import { getBuildingDiv } from "../shared/awbw_page";
 
 import { areAnimationsEnabled } from "../shared/awbw_globals";
 
@@ -600,55 +597,12 @@ function onFire(response: FireResponse) {
   }, delay);
 }
 
-/**
- * Moves a div back and forth to create a wiggle effect.
- * @param div - The div to wiggle.
- * @param startDelay - The delay in milliseconds before the wiggle starts.
- */
-function wiggleTile(div: HTMLDivElement, startDelay = 0) {
-  const stepsX = 12;
-  const stepsY = 4;
-  const deltaX = 0.2;
-  const deltaY = 0.05;
-  const wiggleAnimation = () => {
-    moveDivToOffset(
-      div,
-      deltaX,
-      0,
-      stepsX,
-      { then: [0, -deltaY, stepsY] },
-      { then: [-deltaX * 2, 0, stepsX] },
-      { then: [deltaX * 2, 0, stepsX] },
-      { then: [0, -deltaY, stepsY] },
-      { then: [-deltaX * 2, 0, stepsX] },
-      { then: [deltaX * 2, 0, stepsX] },
-      { then: [0, deltaY, stepsY] },
-      { then: [-deltaX * 2, 0, stepsX] },
-      { then: [deltaX, 0, stepsX] },
-      { then: [0, deltaY, stepsY] },
-    );
-  };
-  window.setTimeout(wiggleAnimation, startDelay);
-}
-
 function onAttackSeam(response: SeamResponse) {
   ahAttackSeam?.apply(actionHandlers.AttackSeam, [response]);
   if (!musicSettings.isPlaying) return;
   // debug("AttackSeam", response);
   const seamWasDestroyed = response.seamHp <= 0;
 
-  // Pipe wiggle animation
-  if (areAnimationsEnabled()) {
-    const x = response.seamX;
-    const y = response.seamY;
-    const pipeSeamInfo = getBuildingInfo(x, y);
-    if (!pipeSeamInfo) return;
-    const pipeSeamDiv = getBuildingDiv(pipeSeamInfo.buildings_id);
-
-    // Subtract how long the wiggle takes so it matches the sound a bit better
-    const wiggleDelay = seamWasDestroyed ? 0 : attackDelayMS;
-    wiggleTile(pipeSeamDiv, wiggleDelay);
-  }
   if (seamWasDestroyed) {
     playSFX(GameSFX.unitAttackPipeSeam);
     playSFX(GameSFX.unitExplode);
