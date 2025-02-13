@@ -27,11 +27,12 @@ import { preloadAllCommonAudio } from "./music/preloading";
 import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } from "./iframe";
 import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
+import { notifyCOSelectorListeners } from "../shared/custom_ui";
 
 // import Vue from "vue";
 // import MusicPlayer from "./components/music_player.vue";
 // import COSelector from "../shared/components/co_selector.vue";
-import { notifyCOSelectorListeners } from "../shared/components/co_selector.vue";
+// import { notifyCOSelectorListeners } from "../shared/components/co_selector.vue";
 
 /******************************************************************
  * Vue

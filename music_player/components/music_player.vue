@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 import { getCurrentPageType, PageType } from "../../shared/awbw_page";
 import { getCurrentDocument } from "../iframe";
 
@@ -291,4 +291,4 @@ function get_awbw_menu() {
       <label id="music_player_version">Version: 5.2.0 (DeveloperJose Edition)</label>
     </div>
   </div>
-</template> -->
+</template> --> -->

@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="cls-co-selector">
     <a class="game-tools-btn" href="javascript:void(0)" @click="onClick">
       <img class="co_caret" :src="caretURL" style="z-index: 300" />
@@ -137,4 +137,4 @@ export function notifyCOSelectorListeners(coName: string) {
   vertical-align: middle;
   align-self: center;
 }
-</style>
+</style> -->

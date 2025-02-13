@@ -5,7 +5,6 @@ import { getCurrentDocument } from "../music_player/iframe";
 import { getCOImagePrefix } from "./awbw_game";
 import { getAllCONames } from "./awbw_globals";
 import { getCurrentPageType, PageType } from "./awbw_page";
-import { addCOSelectorListener } from "./components/co_selector.vue";
 import { checkIfUpdateIsAvailable, homepageURLs, ScriptName, updateURLs, versions } from "./config";
 
 export enum CustomInputType {
@@ -754,13 +753,13 @@ export class CustomMenuSettingsUI {
   }
 }
 
-// type COSelectorListener = (coName: string) => void;
+type COSelectorListener = (coName: string) => void;
 
-// const coSelectorListeners: COSelectorListener[] = [];
-// export function addCOSelectorListener(listener: COSelectorListener) {
-//   coSelectorListeners.push(listener);
-// }
+const coSelectorListeners: COSelectorListener[] = [];
+export function addCOSelectorListener(listener: COSelectorListener) {
+  coSelectorListeners.push(listener);
+}
 
-// export function notifyCOSelectorListeners(coName: string) {
-//   coSelectorListeners.forEach((listener) => listener(coName));
-// }
+export function notifyCOSelectorListeners(coName: string) {
+  coSelectorListeners.forEach((listener) => listener(coName));
+}
