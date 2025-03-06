@@ -791,6 +791,7 @@ function onPower(data: PowerData) {
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);
       stopThemeSong(4500);
+      window.setTimeout(() => playThemeSong(), 4500);
       return;
     case GameType.AW2:
     case GameType.DS:
@@ -801,6 +802,7 @@ function onPower(data: PowerData) {
         const delay = isBH ? 1916 : 1100;
         playSFX(sfx);
         stopThemeSong(delay);
+        window.setTimeout(() => playThemeSong(), delay);
         break;
       }
       // Regular CO Power
@@ -808,6 +810,7 @@ function onPower(data: PowerData) {
       const delay = isBH ? 1019 : 881;
       playSFX(sfx);
       stopThemeSong(delay);
+      window.setTimeout(() => playThemeSong(), delay);
       break;
     }
   }

@@ -252,18 +252,24 @@ export class CustomMenuSettingsUI {
   /**
    * Adds the custom menu to the AWBW page.
    */
-  addToAWBWPage(div: HTMLElement, prepend = false) {
+  addToAWBWPage(div: HTMLElement, prependOrIndex: Number | Boolean = false) {
     if (!div) {
       console.error("[DeveloperJose] Parent div is null, cannot add custom menu to the page.");
       return;
     }
 
-    if (!prepend) {
+    if (!prependOrIndex) {
       div.appendChild(this.parent);
       this.parent.style.borderLeft = "none";
       return;
     }
 
+    if (typeof prependOrIndex === "number") {
+      div.insertBefore(this.parent, div.children[prependOrIndex]);
+      this.parent.style.borderLeft = "none";
+      return;
+    }
+    
     div.prepend(this.parent);
     this.parent.style.borderRight = "none";
   }

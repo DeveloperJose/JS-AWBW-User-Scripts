@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue2";
+// import babel from "@rollup/plugin-babel";
 
 import { metablock } from "vite-plugin-userscript";
 import { libInjectCss } from "vite-plugin-lib-inject-css";
@@ -41,6 +42,9 @@ export default defineConfig((_commandLineArgs: object) => {
       },
     },
     plugins: [
+      // babel({
+      //   presets: [["@babel/preset-env", { targets: "defaults" }]],
+      // }),
       libInjectCss(),
       vue(),
       metablock({

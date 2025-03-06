@@ -107,10 +107,10 @@ function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolea
   // Update player image and hover text
   const currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
   if (musicSettings.isPlaying) {
-    musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
+    musicPlayerUI.setHoverText(`Stop ${currentSounds}\n(Right-Click for Settings)`, true);
     musicPlayerUI.setImage(PLAYING_IMG_URL);
   } else {
-    musicPlayerUI.setHoverText(`Play ${currentSounds}`, true);
+    musicPlayerUI.setHoverText(`Play ${currentSounds}\n(Right-Click for Settings)`, true);
     musicPlayerUI.setImage(NEUTRAL_IMG_URL);
   }
 }
@@ -269,7 +269,6 @@ function onCOSelectorClick(coName: string) {
   currentSelectedCO = coName;
 }
 
-// TODO:
 musicPlayerUI.addCOSelector(addOverrideGroupID, Description.Add_Override, onCOSelectorClick);
 
 // Game type radio buttons
@@ -353,7 +352,7 @@ export function initializeMusicPlayerUI() {
   musicPlayerUI.setProgress(100);
 
   // Make adjustments to the UI based on the page we are on
-  let prepend = false;
+  let prepend : Boolean | Number = false;
   switch (getCurrentPageType()) {
     // case PageType.LiveQueue:
     //   return;
@@ -369,7 +368,7 @@ export function initializeMusicPlayerUI() {
       musicPlayerUI.parent.style.border = "none";
       musicPlayerUI.parent.style.backgroundColor = "#0000";
       musicPlayerUI.setProgress(-1);
-      prepend = true;
+      prepend = 4;
       break;
   }
   // Add the music player UI to the page

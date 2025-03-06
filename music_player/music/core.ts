@@ -5,7 +5,7 @@
 import { musicSettings } from "../music_settings";
 import { logError } from "../utils";
 
-// TODO: DEBUGGING
+// DEBUGGING
 // window.setInterval(() => {
 //   for (const key of audioMap.keys()) {
 //     const audio = audioMap.get(key);

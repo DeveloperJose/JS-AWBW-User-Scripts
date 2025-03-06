@@ -91,7 +91,6 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
 
     // Update UI
     const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
-    // TODO
     musicPlayerUI.setProgress(loadPercentage);
 
     // All the audio from the list has been loaded
@@ -106,7 +105,7 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
       return;
     }
 
-    // TODO: Debugging purposes
+    // DEBUGGING
     // if (hasSpecialLoop(audio.src)) audio.currentTime = audio.duration * 0.94;
 
     if (!audioMap.has(url)) {
