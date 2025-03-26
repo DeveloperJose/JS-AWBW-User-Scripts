@@ -10,7 +10,7 @@
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @require         https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js
 // @run-at          document-end
-// @version         5.3.0
+// @version         5.5.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -239,7 +239,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     "kindle",
     "vonbolt",
   ]);
-  const AW2_ONLY_COs = /* @__PURE__ */ new Set(["hachi", "colin", "sensei", "jess", "flak", "adder", "lash", "hawke"]);
   const AW_DS_ONLY_COs = /* @__PURE__ */ new Set([
     "jake",
     "rachel",
@@ -1196,10 +1195,15 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   const alternateThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set(["sturm"])],
     [GameType.AW2, /* @__PURE__ */ new Set(["sturm"])],
-    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
     [GameType.DS, /* @__PURE__ */ new Set(["sturm", "vonbolt"])],
+    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
   ]);
-  const specialLoops = /* @__PURE__ */ new Set(["vonbolt"]);
+  const introThemes = /* @__PURE__ */ new Map([
+    [GameType.AW1, /* @__PURE__ */ new Set([])],
+    [GameType.AW2, /* @__PURE__ */ new Set(["colin", "hachi", "kanbei", "lash"])],
+    [GameType.DS, /* @__PURE__ */ new Set(["jess"])],
+    [GameType.RBC, /* @__PURE__ */ new Set([])],
+  ]);
   function getAlternateMusicFilename(coName, gameType, themeType) {
     if (!alternateThemes.has(gameType)) return;
     const alternateThemesSet = alternateThemes.get(gameType);
@@ -1217,18 +1221,20 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     return `t-${coName}-2`;
   }
   function getMusicFilename(coName, gameType, themeType, useAlternateTheme) {
+    var _a;
     if (coName === SpecialCOs.MapEditor) return "t-map-editor";
     if (useAlternateTheme) {
       const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
       if (alternateFilename) return alternateFilename;
     }
+    const hasIntro = (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
     const isPowerActive = themeType !== ThemeType.REGULAR;
     if (!isPowerActive || gameType === GameType.AW1) {
-      return `t-${coName}`;
+      return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
     }
     const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
     if (gameType === GameType.RBC && isCOInRBC) {
-      return `t-${coName}-cop`;
+      return `t-${coName}-cop-intro`;
     }
     const faction = isBlackHoleCO(coName) ? "bh" : "ally";
     return `t-${faction}-${themeType}`;
@@ -1255,17 +1261,11 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     if (overrideType) gameType = overrideType;
     const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
     if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
-    if (gameType === GameType.AW1 && AW2_ONLY_COs.has(coName)) gameType = GameType.AW2;
+    if (gameType === GameType.AW1 && coName !== SpecialCOs.MapEditor) gameType = GameType.AW2;
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
     const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
-  }
-  function getCONameFromURL(url) {
-    const parts = url.split("/");
-    const filename = parts[parts.length - 1];
-    const coName = filename.split(".")[0].substring(2);
-    return coName;
   }
   function getSoundEffectURL(sfx) {
     return `${BASE_SFX_URL}/${sfx}.ogg`;
@@ -1281,10 +1281,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function hasMovementRollOff(unitName) {
     return onMovementRolloffMap.has(unitName);
   }
-  function hasSpecialLoop(srcURL) {
-    const coName = getCONameFromURL(srcURL);
-    return specialLoops.has(coName);
-  }
   function getCurrentThemeURLs() {
     const coNames = getAllPlayingCONames();
     const audioList = /* @__PURE__ */ new Set();
@@ -1297,7 +1293,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       audioList.add(alternateURL);
       audioList.add(powerURL);
       audioList.add(superPowerURL);
-      if (specialLoops.has(name)) audioList.add(regularURL.replace(".ogg", "-loop.ogg"));
+      if (name.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
     });
     return audioList;
   }
@@ -1308,7 +1304,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.3.0"],
+    ["music_player", "5.5.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -2784,7 +2780,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       currentThemeURL = srcURL;
     }
     const nextSong = audioMap.get(srcURL) ?? (await preloadURL(srcURL));
-    nextSong.loop(!hasSpecialLoop(srcURL));
+    nextSong.loop(!srcURL.includes("-intro"));
     nextSong.volume(getVolumeForURL(srcURL));
     nextSong.on("play", () => onThemePlay(nextSong, srcURL));
     nextSong.on("load", () => playThemeSong());
@@ -2864,16 +2860,16 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function onThemeEndOrLoop(srcURL) {
     currentLoops++;
     if (currentThemeURL !== srcURL) {
-      logError("Playing more than one theme at a time! Please report this bug!", srcURL);
+      logDebug("Playing more than one theme at a time!", currentThemeURL, "!==", srcURL);
       return;
     }
-    if (hasSpecialLoop(srcURL)) {
-      const loopURL = srcURL.replace(".ogg", "-loop.ogg");
+    if (srcURL.includes("-intro")) {
+      const loopURL = srcURL.replace("-intro", "");
       specialLoopMap.set(srcURL, loopURL);
       playThemeSong();
     }
     if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
-      if (currentLoops >= 3) playMusicURL(SpecialTheme.COSelect);
+      if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
     }
     if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
       musicSettings.randomizeCO();
@@ -3427,6 +3423,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       case GameType.AW1:
         playSFX(GameSFX.powerActivateAW1COP);
         stopThemeSong(4500);
+        window.setTimeout(() => playThemeSong(), 4550);
         return;
       case GameType.AW2:
       case GameType.DS:
@@ -3436,12 +3433,14 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
           const delay2 = isBH ? 1916 : 1100;
           playSFX(sfx2);
           stopThemeSong(delay2);
+          window.setTimeout(() => playThemeSong(), delay2 + 50);
           break;
         }
         const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
         const delay = isBH ? 1019 : 881;
         playSFX(sfx);
         stopThemeSong(delay);
+        window.setTimeout(() => playThemeSong(), delay + 50);
         break;
       }
     }

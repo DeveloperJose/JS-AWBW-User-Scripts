@@ -5,7 +5,7 @@ import { currentPlayer } from "../../shared/awbw_game";
 import { getCurrentPageType, PageType } from "../../shared/awbw_page";
 import { addDatabaseReplacementListener } from "../db";
 import { addSettingsChangeListener, musicSettings, RandomThemeType, SettingsKey, ThemeType } from "../music_settings";
-import { getMusicURL, hasSpecialLoop, SpecialTheme } from "../resources";
+import { getMusicURL, SpecialTheme } from "../resources";
 import { SpecialCOs } from "../../shared/awbw_game";
 import { logInfo, logDebug, logError, debounce } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
@@ -54,8 +54,8 @@ export async function playMusicURL(srcURL: string) {
   // Get the audio player for the song, or preload it if it's not loaded yet
   const nextSong = audioMap.get(srcURL) ?? (await preloadURL(srcURL));
 
-  // Loop all themes except for the special ones
-  nextSong.loop(!hasSpecialLoop(srcURL));
+  // Loop all themes except for the intros
+  nextSong.loop(!srcURL.includes("-intro"));
   nextSong.volume(getVolumeForURL(srcURL));
 
   // Make sure the theme has the proper event handlers
@@ -205,19 +205,19 @@ export function onThemeEndOrLoop(srcURL: string) {
   currentLoops++;
 
   if (currentThemeURL !== srcURL) {
-    logError("Playing more than one theme at a time! Please report this bug!", srcURL);
+    logDebug("Playing more than one theme at a time!", currentThemeURL, "!==", srcURL);
     return;
   }
 
   // The song has a special loop, so mark it in the special loop map as having done one loop
-  if (hasSpecialLoop(srcURL)) {
-    const loopURL = srcURL.replace(".ogg", "-loop.ogg");
+  if (srcURL.includes("-intro")) {
+    const loopURL = srcURL.replace("-intro", "");
     specialLoopMap.set(srcURL, loopURL);
     playThemeSong();
   }
 
   if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
-    if (currentLoops >= 3) playMusicURL(SpecialTheme.COSelect);
+    if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
   }
 
   // The song ended and we are playing random themes, so switch to the next random theme if
