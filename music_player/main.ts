@@ -83,6 +83,7 @@ function onLiveQueue() {
     if (!box) return false;
 
     // Prepend the music player UI to the box
+    // TODO
     musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
     playMusicURL(SpecialTheme.COSelect);
     return true;
@@ -139,6 +140,7 @@ function preloadThemes() {
     // Set dynamic settings based on the current game state
     // Lastly, update the UI to reflect the current settings
     musicSettings.themeType = getCurrentThemeType();
+    // TODO:
     musicPlayerUI.updateAllInputLabels();
     playThemeSong();
     window.setTimeout(playThemeSong, 500);
@@ -155,18 +157,21 @@ function preloadThemes() {
       };
       checkHashesFn();
     }
+    // TODO:
+    musicPlayerUI.checkIfNewVersionAvailable();
+    // musicPlayerVue.$emit("initialize");
+
+    // preloadAllAudio(() => {
+    //   log("All other audio has been pre-loaded!");
+    // });
   });
 }
 let lastCursorCall = Date.now();
 
-let initialized = false;
 /**
  * Initializes the music player script by setting everything up.
  */
 export function initializeMusicPlayer() {
-  if (initialized) return;
-  initialized = true;
-
   const currentPageType = getCurrentPageType();
   // logInfo("Initializing music player for page type:", currentPageType);
 
@@ -178,6 +183,7 @@ export function initializeMusicPlayer() {
       onLiveQueue();
       break;
     case PageType.Maintenance:
+      // TODO
       musicPlayerUI.openContextMenu();
       break;
     case PageType.MovePlanner:
@@ -190,10 +196,10 @@ export function initializeMusicPlayer() {
   // musicPlayerUI.$emit("initialize");
   addHandlers();
 
-  // const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
-  // iframe?.addEventListener("focus", () => {
-  //   if (musicSettings.isPlaying) playThemeSong();
-  // });
+  const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
+  iframe?.addEventListener("focus", () => {
+    if (musicSettings.isPlaying) playThemeSong();
+  });
 
   window.addEventListener("focus", () => {
     if (musicSettings.isPlaying) playThemeSong();
@@ -272,6 +278,7 @@ export function checkAutoplayThenInitialize() {
       initializeMusicPlayer();
     };
     // Listen for any clicks
+    // TODO:
     musicPlayerUI.addEventListener("click", initfn, { once: true });
     document.querySelector("body")?.addEventListener("click", initfn, { once: true });
   };
@@ -293,7 +300,7 @@ export function checkAutoplayThenInitialize() {
         logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
         ifCannotAutoplay();
       });
-  }, 500);
+  }, 100);
 }
 
 /**
@@ -317,8 +324,10 @@ function main() {
     .then(() => logInfo("Database opened successfully. Ready to cache music files."))
     .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
     .finally(() => {
-      checkAutoplayThenInitialize();
+      // Always run maintenance pages without iframes
       if (getCurrentPageType() === PageType.Maintenance) {
+        checkAutoplayThenInitialize();
+
         // The site is currently down for daily maintenance. Please try again in 2m 24s.
         // const el = document.createElement("div"); el.id = "server-maintenance-alert"; el.textContent = "The site is currently down for daily maintenance. Please try again in 12m 24s."; document.body.appendChild(el);
         const startTime = Date.now();
@@ -341,14 +350,17 @@ function main() {
           const displayMinutes = Math.floor(secondsLeft / 60);
           const displaySeconds = Math.floor(secondsLeft % 60);
           const displayMS = Math.floor((secondsLeft % 1) * 1000);
-          maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. <br>This automatically updating message is brought to you by the AWBW Improved Music Player.`;
+          maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. This automatically updating message is brought to you by the AWBW Improved Music Player.`;
 
           if (secondsLeft <= 0) {
             window.clearInterval(ID);
             maintenanceDiv.textContent = "The site is back up! Please refresh the page to continue.";
           }
         }, 10);
+        return;
       }
+
+      initializeIFrame(checkAutoplayThenInitialize);
     });
 }
 
