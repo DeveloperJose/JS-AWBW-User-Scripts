@@ -10,7 +10,7 @@
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @require         https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js
 // @run-at          document-end
-// @version         5.5.0
+// @version         5.6.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -555,6 +555,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     SettingsKey2["LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE"] = "loopRandomSongsUntilTurnChange";
     SettingsKey2["SFX_ON_OTHER_PAGES"] = "sfxOnOtherPages";
     SettingsKey2["SEAMLESS_LOOPS_IN_MIRRORS"] = "seamlessLoopsInMirrors";
+    SettingsKey2["PLAY_INTRO_EVERY_TURN"] = "playIntroEveryTurn";
     SettingsKey2["THEME_TYPE"] = "themeType";
     SettingsKey2["CURRENT_RANDOM_CO"] = "currentRandomCO";
     SettingsKey2["ALL"] = "all";
@@ -764,6 +765,14 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       this.__seamlessLoopsInMirrors = val;
       this.onSettingChangeEvent("seamlessLoopsInMirrors", val);
     }
+    static get playIntroEveryTurn() {
+      return this.__playIntroEveryTurn;
+    }
+    static set playIntroEveryTurn(val) {
+      if (this.__playIntroEveryTurn === val) return;
+      this.__playIntroEveryTurn = val;
+      this.onSettingChangeEvent("playIntroEveryTurn", val);
+    }
     // ************* Non-user configurable settings from here on
     static set themeType(val) {
       if (this.___themeType === val) return;
@@ -823,6 +832,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   __publicField(musicSettings, "__loopRandomSongsUntilTurnChange", false);
   __publicField(musicSettings, "__sfxOnOtherPages", true);
   __publicField(musicSettings, "__seamlessLoopsInMirrors", true);
+  __publicField(musicSettings, "__playIntroEveryTurn", false);
   // Non-user configurable settings
   __publicField(musicSettings, "___themeType", "REGULAR");
   __publicField(musicSettings, "___currentRandomCO", "");
@@ -924,6 +934,9 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
           break;
         case "seamlessLoopsInMirrors":
           musicSettings.seamlessLoopsInMirrors = value;
+          break;
+        case "playIntroEveryTurn":
+          musicSettings.playIntroEveryTurn = value;
           break;
         case "isPlaying":
         case "overrideList":
@@ -1293,7 +1306,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       audioList.add(alternateURL);
       audioList.add(powerURL);
       audioList.add(superPowerURL);
-      if (name.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
+      if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
     });
     return audioList;
   }
@@ -1304,7 +1317,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.5.0"],
+    ["music_player", "5.6.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -2044,6 +2057,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       restartThemesBox.checked = musicSettings.restartThemes;
       autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
       loopToggle.checked = musicSettings.loopRandomSongsUntilTurnChange;
+      introsBox.checked = musicSettings.playIntroEveryTurn;
       uiSFXPagesBox.checked = musicSettings.sfxOnOtherPages;
       alternateThemesBox.checked = musicSettings.alternateThemes;
       musicPlayerUI.updateAllInputLabels();
@@ -2102,6 +2116,8 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.";
     Description2["Seamless_Loops"] =
       "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.";
+    Description2["PlayIntros"] =
+      "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.";
     Description2["Random_Loop_Toggle"] =
       "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.";
     Description2["Alternate_Themes"] =
@@ -2225,6 +2241,12 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     musicGroupID,
     "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
     /* Random_Loop_Toggle */
+  );
+  const introsBox = musicPlayerUI.addCheckbox(
+    "Play CO Intros Every Turn",
+    musicGroupID,
+    "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.",
+    /* PlayIntros */
   );
   const alternateThemesBox = musicPlayerUI.addCheckbox(
     "Alternate Themes",
@@ -2391,6 +2413,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       "click",
       (_e) => (musicSettings.seamlessLoopsInMirrors = seamlessLoopsBox.checked),
     );
+    introsBox.addEventListener("click", (_e) => (musicSettings.playIntroEveryTurn = introsBox.checked));
     daySlider == null
       ? void 0
       : daySlider.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
@@ -2770,10 +2793,10 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   }
   let currentThemeURL = "";
   let currentLoops = 0;
-  const specialLoopMap = /* @__PURE__ */ new Map();
+  const specialIntroMap = /* @__PURE__ */ new Map();
   let currentlyDelaying = false;
   async function playMusicURL(srcURL) {
-    const specialLoopURL = specialLoopMap.get(srcURL);
+    const specialLoopURL = specialIntroMap.get(srcURL);
     if (specialLoopURL) srcURL = specialLoopURL;
     if (srcURL !== currentThemeURL) {
       stopThemeSong();
@@ -2865,7 +2888,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     }
     if (srcURL.includes("-intro")) {
       const loopURL = srcURL.replace("-intro", "");
-      specialLoopMap.set(srcURL, loopURL);
+      specialIntroMap.set(srcURL, loopURL);
       playThemeSong();
     }
     if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
@@ -3039,6 +3062,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
       if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
+      if (musicSettings.playIntroEveryTurn) specialIntroMap.clear();
       playThemeSong();
       window.setTimeout(playThemeSong, 350);
     }, playDelayMS);

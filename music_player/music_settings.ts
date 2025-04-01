@@ -106,6 +106,7 @@ export enum SettingsKey {
   LOOP_RANDOM_SONGS_UNTIL_TURN_CHANGE = "loopRandomSongsUntilTurnChange",
   SFX_ON_OTHER_PAGES = "sfxOnOtherPages",
   SEAMLESS_LOOPS_IN_MIRRORS = "seamlessLoopsInMirrors",
+  PLAY_INTRO_EVERY_TURN = "playIntroEveryTurn",
 
   // Non-user configurable settings
   THEME_TYPE = "themeType",
@@ -142,6 +143,7 @@ export abstract class musicSettings {
   private static __loopRandomSongsUntilTurnChange = false;
   private static __sfxOnOtherPages = true;
   private static __seamlessLoopsInMirrors = true;
+  private static __playIntroEveryTurn = false;
 
   // Non-user configurable settings
   private static ___themeType = ThemeType.REGULAR;
@@ -398,6 +400,16 @@ export abstract class musicSettings {
     this.onSettingChangeEvent(SettingsKey.SEAMLESS_LOOPS_IN_MIRRORS, val);
   }
 
+  static get playIntroEveryTurn() {
+    return this.__playIntroEveryTurn;
+  }
+
+  static set playIntroEveryTurn(val: boolean) {
+    if (this.__playIntroEveryTurn === val) return;
+    this.__playIntroEveryTurn = val;
+    this.onSettingChangeEvent(SettingsKey.PLAY_INTRO_EVERY_TURN, val);
+  }
+
   // ************* Non-user configurable settings from here on
 
   static set themeType(val: ThemeType) {
@@ -568,6 +580,9 @@ function onStorageBroadcast(event: MessageEvent) {
         break;
       case SettingsKey.SEAMLESS_LOOPS_IN_MIRRORS:
         musicSettings.seamlessLoopsInMirrors = value as boolean;
+        break;
+      case SettingsKey.PLAY_INTRO_EVERY_TURN:
+        musicSettings.playIntroEveryTurn = value as boolean;
         break;
       case SettingsKey.IS_PLAYING:
       case SettingsKey.OVERRIDE_LIST:

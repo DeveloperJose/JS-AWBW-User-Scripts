@@ -24,11 +24,11 @@ let currentThemeURL = "";
 let currentLoops = 0;
 
 /**
- * Map containing the special loop URLs for themes that have them. These get added after the original theme ends.
- * The keys are the original theme URLs.
- * The values are the special loop URLs to play after the original theme ends.
+ * Map containing the URLs for themes that have intros. These get added after the original intro ends.
+ * The keys are the intro theme URLs.
+ * The values are the loop URLs to play after the intro ends.
  */
-const specialLoopMap = new Map<string, string>();
+export const specialIntroMap = new Map<string, string>();
 
 /**
  * If set to true, calls to playMusic() will set a timer after which the music will play again.
@@ -42,7 +42,7 @@ let currentlyDelaying = false;
  */
 export async function playMusicURL(srcURL: string) {
   // This song has a special loop, and it's time to play it
-  const specialLoopURL = specialLoopMap.get(srcURL);
+  const specialLoopURL = specialIntroMap.get(srcURL);
   if (specialLoopURL) srcURL = specialLoopURL;
 
   // We want to play a new song, so pause the previous one and save the new current song
@@ -212,7 +212,7 @@ export function onThemeEndOrLoop(srcURL: string) {
   // The song has a special loop, so mark it in the special loop map as having done one loop
   if (srcURL.includes("-intro")) {
     const loopURL = srcURL.replace("-intro", "");
-    specialLoopMap.set(srcURL, loopURL);
+    specialIntroMap.set(srcURL, loopURL);
     playThemeSong();
   }
 

@@ -68,7 +68,7 @@ import {
   getUnloadFn,
   getWaitFn,
 } from "../shared/awbw_handlers";
-import { clearThemeDelay, playThemeSong, restartTheme, stopThemeSong } from "./music/co_themes";
+import { clearThemeDelay, playThemeSong, restartTheme, specialIntroMap, stopThemeSong } from "./music/co_themes";
 import { playSFX, stopSFX } from "./music/sound_effects";
 import { stopAllMovementSounds, stopMovementSound, playMovementSound } from "./music/unit_movement";
 import { getCurrentDocument } from "./iframe";
@@ -226,6 +226,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
   window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
     if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
+    if (musicSettings.playIntroEveryTurn) specialIntroMap.clear();
     playThemeSong();
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);

@@ -75,6 +75,7 @@ function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolea
     restartThemesBox.checked = musicSettings.restartThemes;
     autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
     loopToggle.checked = musicSettings.loopRandomSongsUntilTurnChange;
+    introsBox.checked = musicSettings.playIntroEveryTurn;
     uiSFXPagesBox.checked = musicSettings.sfxOnOtherPages;
     alternateThemesBox.checked = musicSettings.alternateThemes;
 
@@ -154,6 +155,7 @@ enum Name {
   SFX_Pages = "Play Sound Effects Outside Of Game Pages",
   Alternate_Themes = "Alternate Themes",
   Seamless_Loops = "Seamless Loops In Mirror Matches",
+  PlayIntros = "Play CO Intros Every Turn",
 
   Alternate_Day = "Alternate Themes Start On Day",
 
@@ -185,6 +187,7 @@ enum Description {
   Autoplay_Pages = "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.",
   Restart_Themes = "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
   Seamless_Loops = "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.",
+  PlayIntros = "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.",
   Random_Loop_Toggle = "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
 
   Alternate_Themes = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
@@ -251,6 +254,8 @@ const autoplayPagesBox = musicPlayerUI.addCheckbox(Name.Autoplay_Pages, musicGro
 const seamlessLoopsBox = musicPlayerUI.addCheckbox(Name.Seamless_Loops, musicGroupID, Description.Seamless_Loops);
 const restartThemesBox = musicPlayerUI.addCheckbox(Name.Restart_Themes, musicGroupID, Description.Restart_Themes);
 const loopToggle = musicPlayerUI.addCheckbox(Name.Random_Loop_Toggle, musicGroupID, Description.Random_Loop_Toggle);
+const introsBox = musicPlayerUI.addCheckbox(Name.PlayIntros, musicGroupID, Description.PlayIntros);
+
 const alternateThemesBox = musicPlayerUI.addCheckbox(Name.Alternate_Themes, musicGroupID, Description.Alternate_Themes);
 
 /* **** Group: Day slider **** */
@@ -410,6 +415,7 @@ function addMusicUIListeners() {
   uiSFXPagesBox.addEventListener("click", (_e) => (musicSettings.sfxOnOtherPages = uiSFXPagesBox.checked));
   alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
   seamlessLoopsBox.addEventListener("click", (_e) => (musicSettings.seamlessLoopsInMirrors = seamlessLoopsBox.checked));
+  introsBox.addEventListener("click", (_e) => (musicSettings.playIntroEveryTurn = introsBox.checked));
 
   daySlider?.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
 

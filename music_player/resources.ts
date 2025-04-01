@@ -389,7 +389,7 @@ export function getCurrentThemeURLs(): Set<string> {
     audioList.add(alternateURL);
     audioList.add(powerURL);
     audioList.add(superPowerURL);
-    if (name.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
+    if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
   });
   return audioList;
 }
