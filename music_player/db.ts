@@ -209,7 +209,7 @@ function compareHashesAndReplaceIfNeeded(hashesJson: { [key: string]: string }) 
       // logDebug("Checking hash for", url);
 
       if (!serverHash) {
-        logDebug("No hash found in server for", url);
+        //logDebug("No hash found in server for", url);
         return;
       }
 

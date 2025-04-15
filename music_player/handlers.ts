@@ -211,6 +211,11 @@ function syncMusic() {
     musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
   }, 500);
+
+  window.setTimeout(() => {
+    musicSettings.themeType = getCurrentThemeType();
+    playThemeSong();
+  }, 750);
 }
 
 /**
@@ -227,6 +232,11 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
     musicSettings.themeType = getCurrentThemeType();
     if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
     if (musicSettings.playIntroEveryTurn) specialIntroMap.clear();
+    //} else {
+    //  specialIntroMap.forEach((url) => {
+    //    if (url.includes("-cop")) specialIntroMap.delete(url);
+    //  });
+    //}
     playThemeSong();
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);
@@ -246,13 +256,13 @@ function addReplayHandlers() {
   const replayCloseBtn = getReplayCloseBtn();
   const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
-  // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
-  replayBackwardActionBtn.addEventListener("click", syncMusic);
-  replayForwardActionBtn.addEventListener("click", syncMusic);
-  replayForwardBtn.addEventListener("click", syncMusic);
-  replayBackwardBtn.addEventListener("click", syncMusic);
-  replayDaySelectorCheckBox.addEventListener("change", syncMusic);
-  replayCloseBtn.addEventListener("click", syncMusic);
+  window.addEventListener("keydown", function (event) {
+    if (!event.key) return;
+    const key = event.key.toLowerCase();
+    if (key === "arrowleft" || key === "arrowright" || key === "arrowup" || key === "arrowdown") {
+      syncMusic();
+    }
+  });
 
   // Stop all movement sounds when we go backwards on action, open a replay, or close a replay
   replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
@@ -279,6 +289,14 @@ function addReplayHandlers() {
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
   replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+
+  // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
+  replayBackwardActionBtn.addEventListener("click", syncMusic);
+  replayForwardActionBtn.addEventListener("click", syncMusic);
+  replayForwardBtn.addEventListener("click", syncMusic);
+  replayBackwardBtn.addEventListener("click", syncMusic);
+  replayDaySelectorCheckBox.addEventListener("change", syncMusic);
+  replayCloseBtn.addEventListener("click", syncMusic);
 }
 
 /**
@@ -351,6 +369,7 @@ function onQueryTurn(
   if (!musicSettings.isPlaying) return result;
   // log("Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
 
+  syncMusic();
   refreshMusicForNextTurn(250);
   return result;
 }

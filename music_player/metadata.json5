@@ -11,7 +11,6 @@
     "https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js",
     "https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js",
     "https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js",
-    "https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js",
   ],
   "run-at": "document-end"
 }

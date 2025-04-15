@@ -161,9 +161,11 @@ function preloadThemes() {
     musicPlayerUI.checkIfNewVersionAvailable();
     // musicPlayerVue.$emit("initialize");
 
-    // preloadAllAudio(() => {
-    //   log("All other audio has been pre-loaded!");
-    // });
+    //window.setTimeout(() => {
+    //  preloadAllAudio(() => {
+    //    logInfo("All other audio has been pre-loaded!");
+    //  });
+    //}, 5000);
   });
 }
 let lastCursorCall = Date.now();

@@ -50,7 +50,7 @@ export const enum SpecialTheme {
   Defeat = BASE_MUSIC_URL + "/t-defeat.ogg",
   Maintenance = BASE_MUSIC_URL + "/t-maintenance.ogg",
   COSelect = BASE_MUSIC_URL + "/t-co-select.ogg",
-  ModeSelect = BASE_MUSIC_URL + "/t-mode-select.ogg",
+  // ModeSelect = BASE_MUSIC_URL + "/t-mode-select.ogg",
 }
 
 /**
@@ -163,7 +163,7 @@ const onMovementRolloffMap = new Map([
   ["Black Bomb", MovementSFX.movePlaneOneShot],
   ["Bomber", MovementSFX.movePlaneOneShot],
   ["Fighter", MovementSFX.movePlaneOneShot],
-  ["Md. Tank", MovementSFX.moveTreadHeavyOneShot],
+  ["Md.Tank", MovementSFX.moveTreadHeavyOneShot],
   ["Mega Tank", MovementSFX.moveTreadHeavyOneShot],
   ["Missile", MovementSFX.moveTiresHeavyOneShot],
   ["Neotank", MovementSFX.moveTreadHeavyOneShot],
@@ -186,7 +186,7 @@ const alternateThemes = new Map([
 
 const introThemes = new Map([
   [GameType.AW1, new Set([])],
-  [GameType.AW2, new Set(["colin", "hachi", "kanbei", "lash"])],
+  [GameType.AW2, new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"])],
   [GameType.DS, new Set(["jess"])],
   [GameType.RBC, new Set([])],
 ]);
@@ -218,7 +218,7 @@ function getAlternateMusicFilename(coName: string, gameType: GameType, themeType
 
   // Andy -> Clone Andy
   if (coName === "andy" && gameType == GameType.RBC) {
-    return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
+    return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
   }
 
   // All other alternate themes
@@ -233,17 +233,16 @@ function getAlternateMusicFilename(coName: string, gameType: GameType, themeType
  * @returns - The filename of the music to play given the parameters.
  */
 function getMusicFilename(coName: string, gameType: GameType, themeType: ThemeType, useAlternateTheme: boolean) {
+  const hasIntro = introThemes.get(gameType)?.has(coName);
   // Check if we want to play the map editor theme
   if (coName === SpecialCOs.MapEditor) return "t-map-editor";
+  if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
 
   // Check if we need to play an alternate theme
   if (useAlternateTheme) {
     const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
     if (alternateFilename) return alternateFilename;
   }
-
-  // Check if the CO has an intro
-  const hasIntro = introThemes.get(gameType)?.has(coName);
 
   // Regular theme, either no power or we are in AW1 where there's no power themes.
   const isPowerActive = themeType !== ThemeType.REGULAR;
@@ -288,13 +287,14 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
   if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
   if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
+
   if (
     coName === SpecialCOs.ModeSelect ||
     coName === SpecialCOs.MainPage ||
     coName === SpecialCOs.LiveQueue ||
     coName === SpecialCOs.Default
   )
-    return SpecialTheme.ModeSelect;
+    coName = SpecialCOs.ModeSelect;
 
   // First apply player overrides, that way we can override their overrides later...
   const overrideType = musicSettings.getOverride(coName);
@@ -308,8 +308,11 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   // Since we only need the correct gameType for the music directory
   if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
 
-  // All AW1 COs except the map editor will use the AW2 music
-  if (gameType === GameType.AW1 && coName !== SpecialCOs.MapEditor) gameType = GameType.AW2;
+  // These special themes vary depending on the game type
+  const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
+
+  // All AW1 COs except the special COs will use the AW2 music
+  if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
@@ -380,6 +383,8 @@ export function getCurrentThemeURLs(): Set<string> {
   const coNames = getAllPlayingCONames();
   const audioList = new Set<string>();
 
+  coNames.add(SpecialCOs.MapEditor);
+  coNames.add(SpecialCOs.ModeSelect);
   coNames.forEach((name) => {
     const regularURL = getMusicURL(name, musicSettings.gameType, ThemeType.REGULAR, false);
     const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
@@ -390,6 +395,7 @@ export function getCurrentThemeURLs(): Set<string> {
     audioList.add(powerURL);
     audioList.add(superPowerURL);
     if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
+    if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
   });
   return audioList;
 }
@@ -424,11 +430,14 @@ export function getAllAudioURLs() {
   const allSoundURLs = getAllSoundEffectURLs();
 
   // Themes
-  for (const coName of getAllCONames()) {
+  const coNames = getAllCONames();
+  coNames.push(SpecialCOs.MapEditor);
+  coNames.push(SpecialCOs.ModeSelect);
+  for (const coName of coNames) {
     for (const gameType of Object.values(GameType)) {
       for (const themeType of Object.values(ThemeType)) {
         const url = getMusicURL(coName, gameType, themeType, false);
-        if (themeType === ThemeType.REGULAR && url.includes("-intro")) {
+        if (url.includes("-intro")) {
           allSoundURLs.add(url.replace("-intro", ""));
         }
         const alternateURL = getMusicURL(coName, gameType, themeType, true);
@@ -440,7 +449,6 @@ export function getAllAudioURLs() {
 
   // Special themes
   allSoundURLs.add(SpecialTheme.COSelect);
-  allSoundURLs.add(SpecialTheme.ModeSelect);
   allSoundURLs.add(SpecialTheme.Maintenance);
   allSoundURLs.add(SpecialTheme.Victory);
   allSoundURLs.add(SpecialTheme.Defeat);

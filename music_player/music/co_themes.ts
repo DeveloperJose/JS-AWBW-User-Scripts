@@ -43,7 +43,10 @@ let currentlyDelaying = false;
 export async function playMusicURL(srcURL: string) {
   // This song has a special loop, and it's time to play it
   const specialLoopURL = specialIntroMap.get(srcURL);
-  if (specialLoopURL) srcURL = specialLoopURL;
+  if (specialLoopURL) {
+    if (srcURL.includes("-cop")) specialIntroMap.delete(srcURL);
+    srcURL = specialLoopURL;
+  }
 
   // We want to play a new song, so pause the previous one and save the new current song
   if (srcURL !== currentThemeURL) {
@@ -172,10 +175,12 @@ export function onThemePlay(audio: Howl, srcURL: string) {
   // 1. The user wants to restart themes
   // 2. It's a power theme
   // 3. We are starting a new random theme
+  // 4. The song is an intro
   // AND we are on the game page AND the song has played for a bit
-  const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
   const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
-  const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
+  const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
+  const isIntro = srcURL.includes("-intro");
+  const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme || isIntro;
   const currentPosition = audio.seek() as number;
   const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
   if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
@@ -205,7 +210,7 @@ export function onThemeEndOrLoop(srcURL: string) {
   currentLoops++;
 
   if (currentThemeURL !== srcURL) {
-    logDebug("Playing more than one theme at a time!", currentThemeURL, "!==", srcURL);
+    //logDebug("Playing more than one theme at a time!", currentThemeURL, "!==", srcURL);
     return;
   }
 

@@ -28,21 +28,21 @@ export default defineConfig((_commandLineArgs: object) => {
         formats: ["iife"],
       },
       rollupOptions: {
-        external: ["howler", "spark-md5", "can-autoplay", "vue"],
+        external: ["howler", "spark-md5", "can-autoplay"],
         output: {
           format: "iife",
           globals: {
             howler: "Howl",
             "spark-md5": "SparkMD5",
             "can-autoplay": "canAutoplay",
-            vue: "Vue",
+            //vue: "Vue",
           },
         },
       },
     },
     plugins: [
       libInjectCss(),
-      vue(),
+      //vue(),
       metablock({
         file: path.join(inputDir, "metadata.json5"),
         manager: "tampermonkey",

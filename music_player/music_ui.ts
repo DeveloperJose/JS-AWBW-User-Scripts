@@ -13,6 +13,8 @@ import { NodeID, CustomMenuSettingsUI, GroupType } from "../shared/custom_ui";
 import { ScriptName } from "../shared/config";
 import { getCurrentPageType, PageType } from "../shared/awbw_page";
 import { getCurrentDocument } from "./iframe";
+import { preloadAllCommonAudio } from "./music/preloading";
+import { logInfo } from "./utils";
 
 /**
  * Where should we place the music player UI?
@@ -100,6 +102,9 @@ function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolea
     }
   }
 
+  if (key === SettingsKey.GAME_TYPE) {
+    preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
+  }
   // Update UI
   const canUpdateDaySlider = daySlider?.parentElement && getCurrentPageType() === PageType.ActiveGame;
   if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";

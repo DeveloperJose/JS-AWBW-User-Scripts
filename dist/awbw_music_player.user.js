@@ -8,9 +8,8 @@
 // @require         https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
-// @require         https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js
 // @run-at          document-end
-// @version         5.6.0
+// @version         5.9.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -28,7 +27,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
 
   var __vite_style__ = document.createElement("style");
   __vite_style__.textContent =
-    '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n/*$vite$:1*/';
+    '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  left: 50%;\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n/*$vite$:1*/';
   document.head.appendChild(__vite_style__);
   function logInfo(message, ...args) {
     console.log("[AWBW Improved Music Player]", message, ...args);
@@ -960,7 +959,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     SpecialTheme2["Defeat"] = BASE_MUSIC_URL + "/t-defeat.ogg";
     SpecialTheme2["Maintenance"] = BASE_MUSIC_URL + "/t-maintenance.ogg";
     SpecialTheme2["COSelect"] = BASE_MUSIC_URL + "/t-co-select.ogg";
-    SpecialTheme2["ModeSelect"] = BASE_MUSIC_URL + "/t-mode-select.ogg";
     return SpecialTheme2;
   })(SpecialTheme || {});
   var GameSFX = /* @__PURE__ */ ((GameSFX2) => {
@@ -1160,7 +1158,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       /* movePlaneOneShot */
     ],
     [
-      "Md. Tank",
+      "Md.Tank",
       "move-tread-heavy-rolloff",
       /* moveTreadHeavyOneShot */
     ],
@@ -1213,7 +1211,10 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   ]);
   const introThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set([])],
-    [GameType.AW2, /* @__PURE__ */ new Set(["colin", "hachi", "kanbei", "lash"])],
+    [
+      GameType.AW2,
+      /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"]),
+    ],
     [GameType.DS, /* @__PURE__ */ new Set(["jess"])],
     [GameType.RBC, /* @__PURE__ */ new Set([])],
   ]);
@@ -1229,18 +1230,19 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       return;
     }
     if (coName === "andy" && gameType == GameType.RBC) {
-      return isPowerActive ? "t-clone-andy-cop" : "t-clone-andy";
+      return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
     }
     return `t-${coName}-2`;
   }
   function getMusicFilename(coName, gameType, themeType, useAlternateTheme) {
     var _a;
+    const hasIntro = (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
     if (coName === SpecialCOs.MapEditor) return "t-map-editor";
+    if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
     if (useAlternateTheme) {
       const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
       if (alternateFilename) return alternateFilename;
     }
-    const hasIntro = (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
     const isPowerActive = themeType !== ThemeType.REGULAR;
     if (!isPowerActive || gameType === GameType.AW1) {
       return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
@@ -1269,12 +1271,13 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       coName === SpecialCOs.LiveQueue ||
       coName === SpecialCOs.Default
     )
-      return SpecialTheme.ModeSelect;
+      coName = SpecialCOs.ModeSelect;
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
     const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
     if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
-    if (gameType === GameType.AW1 && coName !== SpecialCOs.MapEditor) gameType = GameType.AW2;
+    const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
+    if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
     const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
@@ -1297,6 +1300,8 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function getCurrentThemeURLs() {
     const coNames = getAllPlayingCONames();
     const audioList = /* @__PURE__ */ new Set();
+    coNames.add(SpecialCOs.MapEditor);
+    coNames.add(SpecialCOs.ModeSelect);
     coNames.forEach((name) => {
       const regularURL = getMusicURL(name, musicSettings.gameType, ThemeType.REGULAR, false);
       const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
@@ -1307,6 +1312,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       audioList.add(powerURL);
       audioList.add(superPowerURL);
       if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
+      if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
     });
     return audioList;
   }
@@ -1317,7 +1323,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.6.0"],
+    ["music_player", "5.9.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -2020,6 +2026,232 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function notifyCOSelectorListeners(coName) {
     coSelectorListeners.forEach((listener) => listener(coName));
   }
+  let db = null;
+  const dbName = "awbw_music_player";
+  const dbVersion = 1;
+  const urlQueue$1 = /* @__PURE__ */ new Set();
+  const replacementListeners = /* @__PURE__ */ new Set();
+  function addDatabaseReplacementListener(fn) {
+    replacementListeners.add(fn);
+  }
+  function openDB() {
+    const request = indexedDB.open(dbName, dbVersion);
+    return new Promise((resolve, reject) => {
+      request.onerror = (event) => reject(event);
+      request.onupgradeneeded = (event) => {
+        if (!event.target) return reject("No target for database upgrade.");
+        const newDB = event.target.result;
+        newDB.createObjectStore("music");
+      };
+      request.onsuccess = (event) => {
+        if (!event.target) return reject("No target for database success.");
+        db = event.target.result;
+        db.onerror = (event2) => {
+          reject(`Error accessing database: ${event2}`);
+        };
+        resolve();
+      };
+    });
+  }
+  function loadMusicFromDB(srcURL) {
+    if (!srcURL || srcURL === "") return Promise.reject("Invalid URL.");
+    if (urlQueue$1.has(srcURL)) return Promise.reject("URL is already queued for storage.");
+    urlQueue$1.add(srcURL);
+    return new Promise((resolve, reject) => {
+      if (!db) return reject("Database is not open.");
+      const transaction = db.transaction("music", "readonly");
+      const store = transaction.objectStore("music");
+      const request = store.get(srcURL);
+      request.onsuccess = (event) => {
+        urlQueue$1.delete(srcURL);
+        const blob = event.target.result;
+        if (!blob) {
+          return storeURLInDB(srcURL)
+            .then((blob2) => resolve(URL.createObjectURL(blob2)))
+            .catch((reason) => reject(reason));
+        }
+        const url = URL.createObjectURL(blob);
+        resolve(url);
+      };
+      request.onerror = (event) => {
+        urlQueue$1.delete(srcURL);
+        reject(event);
+      };
+    });
+  }
+  function storeBlobInDB(url, blob) {
+    return new Promise((resolve, reject) => {
+      if (!db) return reject("Database not open.");
+      if (!url || url === "") return reject("Invalid URL.");
+      const transaction = db.transaction("music", "readwrite");
+      const store = transaction.objectStore("music");
+      const request = store.put(blob, url);
+      request.onsuccess = () => {
+        resolve(blob);
+        replacementListeners.forEach((fn) => fn(url));
+      };
+      request.onerror = (event) => reject(event);
+    });
+  }
+  function storeURLInDB(url) {
+    if (!db) return Promise.reject("Database not open.");
+    if (!url || url === "") return Promise.reject("Invalid URL.");
+    return fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => storeBlobInDB(url, blob));
+  }
+  function checkHashesInDB() {
+    if (!db) return Promise.reject("Database not open.");
+    return fetch(HASH_JSON_URL)
+      .then((response) => response.json())
+      .then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
+  }
+  function getBlobMD5(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        var _a;
+        if (!((_a = event == null ? void 0 : event.target) == null ? void 0 : _a.result))
+          return reject("FileReader did not load the blob.");
+        const md5 = SparkMD52.ArrayBuffer.hash(event.target.result);
+        resolve(md5);
+      };
+      reader.onerror = (event) => reject(event);
+      reader.readAsArrayBuffer(blob);
+    });
+  }
+  function compareHashesAndReplaceIfNeeded(hashesJson) {
+    return new Promise((resolve, reject) => {
+      if (!db) return reject("Database not open.");
+      if (!hashesJson) return reject("No hashes found in server.");
+      const transaction = db.transaction("music", "readonly");
+      const store = transaction.objectStore("music");
+      const request = store.openCursor();
+      request.onerror = (event) => reject(event);
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (!cursor) return resolve();
+        const url = cursor.key;
+        const blob = cursor.value;
+        const serverHash = hashesJson[url];
+        cursor.continue();
+        if (!serverHash) {
+          return;
+        }
+        getBlobMD5(blob)
+          .then((hash) => {
+            if (hash === serverHash) return;
+            return storeURLInDB(url);
+          })
+          .catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));
+      };
+    });
+  }
+  const audioMap = /* @__PURE__ */ new Map();
+  const audioIDMap = /* @__PURE__ */ new Map();
+  function playOneShotURL(srcURL, volume) {
+    if (!musicSettings.isPlaying) return;
+    const soundInstance = new Audio(srcURL);
+    soundInstance.currentTime = 0;
+    soundInstance.volume = volume;
+    soundInstance.play();
+  }
+  function getVolumeForURL(url) {
+    if (url.startsWith("blob:") || !url.startsWith("https://")) {
+      logError("Blob URL when trying to get volume for", url);
+      return musicSettings.volume;
+    }
+    if (url.includes("sfx")) {
+      if (url.includes("ui")) return musicSettings.uiVolume;
+      if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
+      return musicSettings.sfxVolume;
+    }
+    return musicSettings.volume;
+  }
+  const urlQueue = /* @__PURE__ */ new Set();
+  const promiseMap = /* @__PURE__ */ new Map();
+  function createNewAudio(srcURL, cacheURL) {
+    const audioInMap = audioMap.get(srcURL);
+    if (audioInMap) {
+      logError("Race Condition! Please report this bug!", srcURL);
+      return audioInMap;
+    }
+    const audio = new Howl({
+      src: [cacheURL],
+      format: ["ogg"],
+      volume: getVolumeForURL(srcURL),
+      // Redundant event listeners to ensure the audio is always at the correct volume
+      onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onseek: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onpause: (_id) => audio.volume(getVolumeForURL(srcURL)),
+      onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
+      onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
+    });
+    audioMap.set(srcURL, audio);
+    return audio;
+  }
+  function preloadAllCommonAudio(afterPreloadFunction) {
+    const audioList = getCurrentThemeURLs();
+    audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
+    audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
+    logDebug("Pre-loading common audio", audioList);
+    preloadAudioList(audioList, afterPreloadFunction);
+  }
+  function preloadAudioList(audioURLs, afterPreloadFunction = () => {}) {
+    let numLoadedAudios = 0;
+    const onAudioPreload = (action, url) => {
+      numLoadedAudios++;
+      const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
+      musicPlayerUI.setProgress(loadPercentage);
+      if (numLoadedAudios >= audioURLs.size) {
+        numLoadedAudios = 0;
+        if (afterPreloadFunction) afterPreloadFunction();
+      }
+      if (action === "error") {
+        logInfo(`Could not pre-load: ${url}. This might not be a problem, the audio may still play normally later.`);
+        audioMap.delete(url);
+        return;
+      }
+      if (!audioMap.has(url)) {
+        logError("Race condition on pre-load! Please report this bug!", url);
+      }
+    };
+    audioURLs.forEach((url) => {
+      if (audioMap.has(url)) {
+        numLoadedAudios++;
+        return;
+      }
+      preloadURL(url)
+        .then((audio) => {
+          audio.once("load", () => onAudioPreload("load", url));
+          audio.once("loaderror", () => onAudioPreload("error", url));
+        })
+        .catch((_reason) => onAudioPreload("error", url));
+    });
+    if (numLoadedAudios >= audioURLs.size) {
+      if (afterPreloadFunction) afterPreloadFunction();
+    }
+  }
+  async function preloadURL(srcURL) {
+    const audio = audioMap.get(srcURL);
+    if (audio) return audio;
+    if (urlQueue.has(srcURL)) {
+      const storedPromise = promiseMap.get(srcURL);
+      if (!storedPromise) return Promise.reject(`No promise found for ${srcURL}, please report this bug!`);
+      return storedPromise;
+    }
+    urlQueue.add(srcURL);
+    const promise = loadMusicFromDB(srcURL).then(
+      (localCacheURL) => createNewAudio(srcURL, localCacheURL),
+      (reason) => {
+        logDebug(reason, srcURL);
+        return createNewAudio(srcURL, srcURL);
+      },
+    );
+    promiseMap.set(srcURL, promise);
+    return promise;
+  }
   function getMenu() {
     var _a;
     const doc = getCurrentDocument();
@@ -2075,6 +2307,9 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         const noExcluded = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No themes excluded yet...");
         musicPlayerUI.addItemToTable("Excluded Random Themes", noExcluded);
       }
+    }
+    if (key === SettingsKey.GAME_TYPE) {
+      preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
     }
     const canUpdateDaySlider =
       (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
@@ -2518,233 +2753,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function getResignFn() {
     return typeof actionHandlers !== "undefined" ? actionHandlers.Resign : null;
   }
-  let db = null;
-  const dbName = "awbw_music_player";
-  const dbVersion = 1;
-  const urlQueue$1 = /* @__PURE__ */ new Set();
-  const replacementListeners = /* @__PURE__ */ new Set();
-  function addDatabaseReplacementListener(fn) {
-    replacementListeners.add(fn);
-  }
-  function openDB() {
-    const request = indexedDB.open(dbName, dbVersion);
-    return new Promise((resolve, reject) => {
-      request.onerror = (event) => reject(event);
-      request.onupgradeneeded = (event) => {
-        if (!event.target) return reject("No target for database upgrade.");
-        const newDB = event.target.result;
-        newDB.createObjectStore("music");
-      };
-      request.onsuccess = (event) => {
-        if (!event.target) return reject("No target for database success.");
-        db = event.target.result;
-        db.onerror = (event2) => {
-          reject(`Error accessing database: ${event2}`);
-        };
-        resolve();
-      };
-    });
-  }
-  function loadMusicFromDB(srcURL) {
-    if (!srcURL || srcURL === "") return Promise.reject("Invalid URL.");
-    if (urlQueue$1.has(srcURL)) return Promise.reject("URL is already queued for storage.");
-    urlQueue$1.add(srcURL);
-    return new Promise((resolve, reject) => {
-      if (!db) return reject("Database is not open.");
-      const transaction = db.transaction("music", "readonly");
-      const store = transaction.objectStore("music");
-      const request = store.get(srcURL);
-      request.onsuccess = (event) => {
-        urlQueue$1.delete(srcURL);
-        const blob = event.target.result;
-        if (!blob) {
-          return storeURLInDB(srcURL)
-            .then((blob2) => resolve(URL.createObjectURL(blob2)))
-            .catch((reason) => reject(reason));
-        }
-        const url = URL.createObjectURL(blob);
-        resolve(url);
-      };
-      request.onerror = (event) => {
-        urlQueue$1.delete(srcURL);
-        reject(event);
-      };
-    });
-  }
-  function storeBlobInDB(url, blob) {
-    return new Promise((resolve, reject) => {
-      if (!db) return reject("Database not open.");
-      if (!url || url === "") return reject("Invalid URL.");
-      const transaction = db.transaction("music", "readwrite");
-      const store = transaction.objectStore("music");
-      const request = store.put(blob, url);
-      request.onsuccess = () => {
-        resolve(blob);
-        replacementListeners.forEach((fn) => fn(url));
-      };
-      request.onerror = (event) => reject(event);
-    });
-  }
-  function storeURLInDB(url) {
-    if (!db) return Promise.reject("Database not open.");
-    if (!url || url === "") return Promise.reject("Invalid URL.");
-    return fetch(url)
-      .then((response) => response.blob())
-      .then((blob) => storeBlobInDB(url, blob));
-  }
-  function checkHashesInDB() {
-    if (!db) return Promise.reject("Database not open.");
-    return fetch(HASH_JSON_URL)
-      .then((response) => response.json())
-      .then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
-  }
-  function getBlobMD5(blob) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        var _a;
-        if (!((_a = event == null ? void 0 : event.target) == null ? void 0 : _a.result))
-          return reject("FileReader did not load the blob.");
-        const md5 = SparkMD52.ArrayBuffer.hash(event.target.result);
-        resolve(md5);
-      };
-      reader.onerror = (event) => reject(event);
-      reader.readAsArrayBuffer(blob);
-    });
-  }
-  function compareHashesAndReplaceIfNeeded(hashesJson) {
-    return new Promise((resolve, reject) => {
-      if (!db) return reject("Database not open.");
-      if (!hashesJson) return reject("No hashes found in server.");
-      const transaction = db.transaction("music", "readonly");
-      const store = transaction.objectStore("music");
-      const request = store.openCursor();
-      request.onerror = (event) => reject(event);
-      request.onsuccess = (event) => {
-        const cursor = event.target.result;
-        if (!cursor) return resolve();
-        const url = cursor.key;
-        const blob = cursor.value;
-        const serverHash = hashesJson[url];
-        cursor.continue();
-        if (!serverHash) {
-          logDebug("No hash found in server for", url);
-          return;
-        }
-        getBlobMD5(blob)
-          .then((hash) => {
-            if (hash === serverHash) return;
-            return storeURLInDB(url);
-          })
-          .catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));
-      };
-    });
-  }
-  const audioMap = /* @__PURE__ */ new Map();
-  const audioIDMap = /* @__PURE__ */ new Map();
-  function playOneShotURL(srcURL, volume) {
-    if (!musicSettings.isPlaying) return;
-    const soundInstance = new Audio(srcURL);
-    soundInstance.currentTime = 0;
-    soundInstance.volume = volume;
-    soundInstance.play();
-  }
-  function getVolumeForURL(url) {
-    if (url.startsWith("blob:") || !url.startsWith("https://")) {
-      logError("Blob URL when trying to get volume for", url);
-      return musicSettings.volume;
-    }
-    if (url.includes("sfx")) {
-      if (url.includes("ui")) return musicSettings.uiVolume;
-      if (url.includes("power") && !url.includes("available")) return musicSettings.volume;
-      return musicSettings.sfxVolume;
-    }
-    return musicSettings.volume;
-  }
-  const urlQueue = /* @__PURE__ */ new Set();
-  const promiseMap = /* @__PURE__ */ new Map();
-  function createNewAudio(srcURL, cacheURL) {
-    const audioInMap = audioMap.get(srcURL);
-    if (audioInMap) {
-      logError("Race Condition! Please report this bug!", srcURL);
-      return audioInMap;
-    }
-    const audio = new Howl({
-      src: [cacheURL],
-      format: ["ogg"],
-      volume: getVolumeForURL(srcURL),
-      // Redundant event listeners to ensure the audio is always at the correct volume
-      onplay: (_id) => audio.volume(getVolumeForURL(srcURL)),
-      onload: (_id) => audio.volume(getVolumeForURL(srcURL)),
-      onseek: (_id) => audio.volume(getVolumeForURL(srcURL)),
-      onpause: (_id) => audio.volume(getVolumeForURL(srcURL)),
-      onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
-      onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
-    });
-    audioMap.set(srcURL, audio);
-    return audio;
-  }
-  function preloadAllCommonAudio(afterPreloadFunction) {
-    const audioList = getCurrentThemeURLs();
-    audioList.add(getSoundEffectURL(GameSFX.uiCursorMove));
-    audioList.add(getSoundEffectURL(GameSFX.uiUnitSelect));
-    logDebug("Pre-loading common audio", audioList);
-    preloadAudioList(audioList, afterPreloadFunction);
-  }
-  function preloadAudioList(audioURLs, afterPreloadFunction = () => {}) {
-    let numLoadedAudios = 0;
-    const onAudioPreload = (action, url) => {
-      numLoadedAudios++;
-      const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
-      musicPlayerUI.setProgress(loadPercentage);
-      if (numLoadedAudios >= audioURLs.size) {
-        numLoadedAudios = 0;
-        if (afterPreloadFunction) afterPreloadFunction();
-      }
-      if (action === "error") {
-        logInfo(`Could not pre-load: ${url}. This might not be a problem, the audio may still play normally later.`);
-        audioMap.delete(url);
-        return;
-      }
-      if (!audioMap.has(url)) {
-        logError("Race condition on pre-load! Please report this bug!", url);
-      }
-    };
-    audioURLs.forEach((url) => {
-      if (audioMap.has(url)) {
-        numLoadedAudios++;
-        return;
-      }
-      preloadURL(url)
-        .then((audio) => {
-          audio.once("load", () => onAudioPreload("load", url));
-          audio.once("loaderror", () => onAudioPreload("error", url));
-        })
-        .catch((_reason) => onAudioPreload("error", url));
-    });
-    if (numLoadedAudios >= audioURLs.size) {
-      if (afterPreloadFunction) afterPreloadFunction();
-    }
-  }
-  async function preloadURL(srcURL) {
-    const audio = audioMap.get(srcURL);
-    if (audio) return audio;
-    if (urlQueue.has(srcURL)) {
-      const storedPromise = promiseMap.get(srcURL);
-      if (!storedPromise) return Promise.reject(`No promise found for ${srcURL}, please report this bug!`);
-      return storedPromise;
-    }
-    urlQueue.add(srcURL);
-    const promise = loadMusicFromDB(srcURL).then(
-      (localCacheURL) => createNewAudio(srcURL, localCacheURL),
-      (reason) => {
-        logDebug(reason, srcURL);
-        return createNewAudio(srcURL, srcURL);
-      },
-    );
-    promiseMap.set(srcURL, promise);
-    return promise;
-  }
   const unitIDAudioMap = /* @__PURE__ */ new Map();
   function playMovementSound(unitId) {
     if (!musicSettings.isPlaying) return;
@@ -2797,7 +2805,10 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   let currentlyDelaying = false;
   async function playMusicURL(srcURL) {
     const specialLoopURL = specialIntroMap.get(srcURL);
-    if (specialLoopURL) srcURL = specialLoopURL;
+    if (specialLoopURL) {
+      if (srcURL.includes("-cop")) specialIntroMap.delete(srcURL);
+      srcURL = specialLoopURL;
+    }
     if (srcURL !== currentThemeURL) {
       stopThemeSong();
       currentThemeURL = srcURL;
@@ -2862,9 +2873,10 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     currentLoops = 0;
     audio.volume(getVolumeForURL(srcURL));
     broadcastChannel.postMessage("pause");
-    const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
-    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
+    const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
+    const isIntro = srcURL.includes("-intro");
+    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme || isIntro;
     const currentPosition = audio.seek();
     const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
     if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
@@ -2883,7 +2895,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function onThemeEndOrLoop(srcURL) {
     currentLoops++;
     if (currentThemeURL !== srcURL) {
-      logDebug("Playing more than one theme at a time!", currentThemeURL, "!==", srcURL);
       return;
     }
     if (srcURL.includes("-intro")) {
@@ -3054,6 +3065,10 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       musicSettings.themeType = getCurrentThemeType();
       playThemeSong();
     }, 500);
+    window.setTimeout(() => {
+      musicSettings.themeType = getCurrentThemeType();
+      playThemeSong();
+    }, 750);
   }
   function refreshMusicForNextTurn(playDelayMS = 0) {
     visibilityMap.clear();
@@ -3076,12 +3091,13 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
-    replayBackwardActionBtn.addEventListener("click", syncMusic);
-    replayForwardActionBtn.addEventListener("click", syncMusic);
-    replayForwardBtn.addEventListener("click", syncMusic);
-    replayBackwardBtn.addEventListener("click", syncMusic);
-    replayDaySelectorCheckBox.addEventListener("change", syncMusic);
-    replayCloseBtn.addEventListener("click", syncMusic);
+    window.addEventListener("keydown", function (event) {
+      if (!event.key) return;
+      const key = event.key.toLowerCase();
+      if (key === "arrowleft" || key === "arrowright" || key === "arrowup" || key === "arrowdown") {
+        syncMusic();
+      }
+    });
     replayBackwardActionBtn.addEventListener("click", stopAllMovementSounds);
     replayOpenBtn.addEventListener("click", stopAllMovementSounds);
     replayCloseBtn.addEventListener("click", stopAllMovementSounds);
@@ -3100,6 +3116,12 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     replayBackwardBtn.addEventListener("click", stopExtraSFX);
     replayCloseBtn.addEventListener("click", stopExtraSFX);
     replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+    replayBackwardActionBtn.addEventListener("click", syncMusic);
+    replayForwardActionBtn.addEventListener("click", syncMusic);
+    replayForwardBtn.addEventListener("click", syncMusic);
+    replayBackwardBtn.addEventListener("click", syncMusic);
+    replayDaySelectorCheckBox.addEventListener("change", syncMusic);
+    replayCloseBtn.addEventListener("click", syncMusic);
   }
   function addGameHandlers() {
     showEventScreen = onShowEventScreen;
@@ -3150,6 +3172,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     const result =
       ahQueryTurn == null ? void 0 : ahQueryTurn.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay2, initial]);
     if (!musicSettings.isPlaying) return result;
+    syncMusic();
     refreshMusicForNextTurn(250);
     return result;
   }
