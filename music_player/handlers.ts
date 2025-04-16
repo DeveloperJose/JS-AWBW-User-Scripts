@@ -297,6 +297,7 @@ function addReplayHandlers() {
   replayBackwardBtn.addEventListener("click", syncMusic);
   replayDaySelectorCheckBox.addEventListener("change", syncMusic);
   replayCloseBtn.addEventListener("click", syncMusic);
+  replayOpenBtn.addEventListener("click", syncMusic);
 }
 
 /**
