@@ -292,6 +292,7 @@ export class CustomMenuSettingsUI {
     if (this.isUpdateAvailable) text += " (New Update Available!)";
     hoverSpan.innerText = text;
     hoverSpan.style.display = text === "" ? "none" : "block";
+    hoverSpan.style.textAlign = "center";
   }
 
   /**

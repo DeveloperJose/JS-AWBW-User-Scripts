@@ -112,7 +112,7 @@ function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolea
 
   // Update player image and hover text
   let currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
-  currentSounds += "(Right-Click for Settings)";
+  currentSounds += "\n(Right-Click for Settings)";
   if (musicSettings.isPlaying) {
     musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
     musicPlayerUI.setImage(PLAYING_IMG_URL);

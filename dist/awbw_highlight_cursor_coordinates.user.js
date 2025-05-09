@@ -144,7 +144,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.9.0"],
+    ["music_player", "5.12.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -359,7 +359,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const fullID = `${this.prefix}_${id}`;
       const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
       if (!node) {
-        if (id !== "co-selector") console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
+        if (id !== "co-selector") console.log(`[DevJ] Node with ID ${fullID} not found.`);
         return null;
       }
       const isSettingsSubMenu = id === "settings-left" || id === "settings-center" || id === "settings-right";
@@ -375,7 +375,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     addToAWBWPage(div, prepend = false) {
       if (!div) {
-        console.error("[DeveloperJose] Parent div is null, cannot add custom menu to the page.");
+        console.error("[DevJ] Parent div is null, cannot add custom menu to the page.");
         return;
       }
       if (!prepend) {
@@ -429,6 +429,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (this.isUpdateAvailable) text += " (New Update Available!)";
       hoverSpan.innerText = text;
       hoverSpan.style.display = text === "" ? "none" : "block";
+      hoverSpan.style.textAlign = "center";
     }
     /**
      * Sets the progress of the UI by coloring the background of the main button.
@@ -652,7 +653,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         /* Settings */
       );
       const versionDiv = document.createElement("label");
-      versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
+      versionDiv.innerText = `Version: ${version} (DevJ Edition)`;
       contextMenu == null ? void 0 : contextMenu.appendChild(versionDiv);
       this.setNodeID(
         versionDiv,
@@ -668,7 +669,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       checkIfUpdateIsAvailable(this.prefix)
         .then((isUpdateAvailable) => {
           this.isUpdateAvailable = isUpdateAvailable;
-          console.log("[DeveloperJose] Checking if a new version is available...", isUpdateAvailable);
+          console.log("[DevJ] Checking if a new version is available...", isUpdateAvailable);
           if (!isUpdateAvailable) return;
           const contextMenu = this.getNodeByID(
             "settings",

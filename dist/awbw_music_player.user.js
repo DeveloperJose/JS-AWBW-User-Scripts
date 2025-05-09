@@ -16,13 +16,18 @@
 // @unwrap
 // @grant           none
 // ==/UserScript==
-var awbw_music_player = function(exports, canAutoplay2, SparkMD52) {
-  "use strict";var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
+  "use strict";
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) =>
+    key in obj
+      ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value })
+      : (obj[key] = value);
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
   var __vite_style__ = document.createElement("style");
-  __vite_style__.textContent = '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  left: 50%;\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n/*$vite$:1*/';
+  __vite_style__.textContent =
+    '/* This file is used to style the music player settings */\n\niframe {\n  border: none;\n}\n\n.cls-settings-menu {\n  display: none;\n  /* display: flex; */\n  left: 50%;\n  top: 40px;\n  flex-direction: column;\n  width: 750px;\n  border: black 1px solid;\n  z-index: 20;\n  text-align: center;\n  align-items: center;\n  font-family: "Nova Square", cursive !important;\n}\n\n.cls-settings-menu label {\n  background-color: white;\n  font-size: 12px;\n}\n\n.cls-settings-menu .cls-group-box > label {\n  width: 100%;\n  font-size: 13px;\n  background-color: #d6e0ed;\n  padding-top: 2px;\n  padding-bottom: 2px;\n}\n\n.cls-settings-menu .cls-vertical-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n.cls-settings-menu .cls-horizontal-box {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-evenly;\n  align-items: center;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  height: 100%;\n  width: 100%;\n  position: relative;\n}\n\n/* Puts the checkbox next to the label */\n.cls-settings-menu .cls-vertical-box[id$="options"] {\n  align-items: center;\n  align-self: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box {\n  width: 100%;\n  justify-content: center;\n}\n\n.cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box input {\n  vertical-align: middle;\n}\n\n/* .cls-settings-menu .cls-vertical-box[id$="options"] .cls-horizontal-box label {\n  display: block;\n  padding-right: 10px;\n  padding-left: 22px;\n  text-indent: -22px;\n} */\n\n/* .cls-settings-menu .cls-horizontal-box[id$="random-themes"],\n.cls-settings-menu .cls-horizontal-box[id$="soundtrack"] {\n  justify-content: center;\n} */\n\n.cls-settings-menu-box {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-evenly;\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 1px;\n  width: 100%;\n}\n\n.cls-settings-menu image {\n  vertical-align: middle;\n}\n\n.cls-settings-menu label[id$="version"] {\n  width: 100%;\n  font-size: 10px;\n  color: #888888;\n  background-color: #f0f0f0;\n}\n\n.cls-settings-menu a[id$="update"] {\n  font-size: 12px;\n  background-color: #ff0000;\n  color: white;\n  width: 100%;\n}\n.cls-settings-menu .co_caret {\n  position: absolute;\n  top: 28px;\n  left: 25px;\n  border: none;\n  z-index: 30;\n}\n\n.cls-settings-menu .co_portrait {\n  border-color: #009966;\n  z-index: 30;\n  border: 2px solid;\n  vertical-align: middle;\n  align-self: center;\n}\n\n.cls-settings-menu input[type="range"][id$="themes-start-on-day"] {\n  --c: rgb(168, 73, 208); /* active color */\n}\n/* \n * CSS Custom Range Slider\n * https://www.sitepoint.com/css-custom-range-slider/ \n */\n\n.cls-settings-menu input[type="range"] {\n  --c: rgb(53 57 60); /* active color */\n  --l: 15px; /* line thickness*/\n  --h: 30px; /* thumb height */\n  --w: 15px; /* thumb width */\n\n  width: 100%;\n  height: var(--h); /* needed for Firefox*/\n  --_c: color-mix(in srgb, var(--c), #000 var(--p, 0%));\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: none;\n  cursor: pointer;\n  overflow: hidden;\n  display: inline-block;\n}\n.cls-settings-menu input:focus-visible,\n.cls-settings-menu input:hover {\n  --p: 25%;\n}\n\n/* chromium */\n.cls-settings-menu input[type="range" i]::-webkit-slider-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n/* Firefox */\n.cls-settings-menu input[type="range"]::-moz-range-thumb {\n  height: var(--h);\n  width: var(--w);\n  background: var(--_c);\n  border-image: linear-gradient(90deg, var(--_c) 50%, #ababab 0) 0 1 / calc(50% - var(--l) / 2) 100vw/0 100vw;\n  -webkit-appearance: none;\n  appearance: none;\n  transition: 0.3s;\n}\n@supports not (color: color-mix(in srgb, red, red)) {\n  .cls-settings-menu input {\n    --_c: var(--c);\n  }\n}\n/*$vite$:1*/';
   document.head.appendChild(__vite_style__);
   function logInfo(message, ...args) {
     console.log("[AWBW Improved Music Player]", message, ...args);
@@ -35,7 +40,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function debounce(ms, callback, immediate = false) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
       const context = this;
       const later = () => {
         timeout = null;
@@ -130,7 +135,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return;
     }
     for (const link of Array.from(links)) {
-      const isGamePageLink = link.href.includes("game.php") || link.classList.contains("anchor") && link.name.includes("game_");
+      const isGamePageLink =
+        link.href.includes("game.php") || (link.classList.contains("anchor") && link.name.includes("game_"));
       const isJSLink = link.href.startsWith("javascript:");
       if (link.target === "_blank") continue;
       else if (isJSLink) continue;
@@ -221,7 +227,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const BLUE_MOON_COs = /* @__PURE__ */ new Set(["olaf", "grit", "colin", "sasha"]);
   const GREEN_EARTH_COs = /* @__PURE__ */ new Set(["eagle", "drake", "jess", "javier"]);
   const YELLOW_COMET_COs = /* @__PURE__ */ new Set(["kanbei", "sonja", "sensei", "grimm"]);
-  const BLACK_HOLE_COs = /* @__PURE__ */ new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
+  const BLACK_HOLE_COs = /* @__PURE__ */ new Set([
+    "flak",
+    "lash",
+    "adder",
+    "hawke",
+    "sturm",
+    "jugger",
+    "koal",
+    "kindle",
+    "vonbolt",
+  ]);
   const AW_DS_ONLY_COs = /* @__PURE__ */ new Set([
     "jake",
     "rachel",
@@ -231,7 +247,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     "kindle",
     "jugger",
     "koal",
-    "vonbolt"
+    "vonbolt",
   ]);
   function getAllCONames(properCase = false) {
     if (!properCase)
@@ -330,7 +346,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function hasGameEnded() {
     if (getCurrentPageType() !== PageType.ActiveGame) return false;
     if (typeof playersInfo === "undefined") return false;
-    const numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
+    const numberOfRemainingPlayers = Object.values(playersInfo).filter(
+      (info) => info.players_eliminated === "N",
+    ).length;
     return numberOfRemainingPlayers === 1;
   }
   function getCOImagePrefix() {
@@ -456,7 +474,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function getUnitInfoFromCoords(x, y) {
     if (getCurrentPageType() !== PageType.ActiveGame) return null;
     if (typeof unitsInfo === "undefined") return null;
-    return Object.values(unitsInfo).filter((info) => info.units_x == x && info.units_y == y).pop();
+    return Object.values(unitsInfo)
+      .filter((info) => info.units_x == x && info.units_y == y)
+      .pop();
   }
   function isValidUnit(unitId) {
     if (getCurrentPageType() !== PageType.ActiveGame) return false;
@@ -563,7 +583,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         excludedRandomThemes: Array.from(this.__excludedRandomThemes),
         loopRandomSongsUntilTurnChange: this.__loopRandomSongsUntilTurnChange,
         sfxOnOtherPages: this.__sfxOnOtherPages,
-        seamlessLoopsInMirrors: this.__seamlessLoopsInMirrors
+        seamlessLoopsInMirrors: this.__seamlessLoopsInMirrors,
       });
     }
     static runWithoutSavingSettings(fn) {
@@ -970,223 +990,226 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const onMovementStartMap = /* @__PURE__ */ new Map([
     [
       "APC",
-      "move-tread-light"
+      "move-tread-light",
       /* moveTreadLightLoop */
     ],
     [
       "Anti-Air",
-      "move-tread-light"
+      "move-tread-light",
       /* moveTreadLightLoop */
     ],
     [
       "Artillery",
-      "move-tread-light"
+      "move-tread-light",
       /* moveTreadLightLoop */
     ],
     [
       "B-Copter",
-      "move-bcopter"
+      "move-bcopter",
       /* moveBCopterLoop */
     ],
     [
       "Battleship",
-      "move-naval"
+      "move-naval",
       /* moveNavalLoop */
     ],
     [
       "Black Boat",
-      "move-naval"
+      "move-naval",
       /* moveNavalLoop */
     ],
     [
       "Black Bomb",
-      "move-plane"
+      "move-plane",
       /* movePlaneLoop */
     ],
     [
       "Bomber",
-      "move-plane"
+      "move-plane",
       /* movePlaneLoop */
     ],
     [
       "Carrier",
-      "move-naval"
+      "move-naval",
       /* moveNavalLoop */
     ],
     [
       "Cruiser",
-      "move-naval"
+      "move-naval",
       /* moveNavalLoop */
     ],
     [
       "Fighter",
-      "move-plane"
+      "move-plane",
       /* movePlaneLoop */
     ],
     [
       "Infantry",
-      "move-inf"
+      "move-inf",
       /* moveInfLoop */
     ],
     [
       "Lander",
-      "move-naval"
+      "move-naval",
       /* moveNavalLoop */
     ],
     [
       "Md.Tank",
-      "move-tread-heavy"
+      "move-tread-heavy",
       /* moveTreadHeavyLoop */
     ],
     [
       "Mech",
-      "move-mech"
+      "move-mech",
       /* moveMechLoop */
     ],
     [
       "Mega Tank",
-      "move-tread-heavy"
+      "move-tread-heavy",
       /* moveTreadHeavyLoop */
     ],
     [
       "Missile",
-      "move-tires-heavy"
+      "move-tires-heavy",
       /* moveTiresHeavyLoop */
     ],
     [
       "Neotank",
-      "move-tread-heavy"
+      "move-tread-heavy",
       /* moveTreadHeavyLoop */
     ],
     [
       "Piperunner",
-      "move-piperunner"
+      "move-piperunner",
       /* movePiperunnerLoop */
     ],
     [
       "Recon",
-      "move-tires-light"
+      "move-tires-light",
       /* moveTiresLightLoop */
     ],
     [
       "Rocket",
-      "move-tires-heavy"
+      "move-tires-heavy",
       /* moveTiresHeavyLoop */
     ],
     [
       "Stealth",
-      "move-plane"
+      "move-plane",
       /* movePlaneLoop */
     ],
     [
       "Sub",
-      "move-sub"
+      "move-sub",
       /* moveSubLoop */
     ],
     [
       "T-Copter",
-      "move-tcopter"
+      "move-tcopter",
       /* moveTCopterLoop */
     ],
     [
       "Tank",
-      "move-tread-light"
+      "move-tread-light",
       /* moveTreadLightLoop */
-    ]
+    ],
   ]);
   const onMovementRolloffMap = /* @__PURE__ */ new Map([
     [
       "APC",
-      "move-tread-light-rolloff"
+      "move-tread-light-rolloff",
       /* moveTreadLightOneShot */
     ],
     [
       "Anti-Air",
-      "move-tread-light-rolloff"
+      "move-tread-light-rolloff",
       /* moveTreadLightOneShot */
     ],
     [
       "Artillery",
-      "move-tread-light-rolloff"
+      "move-tread-light-rolloff",
       /* moveTreadLightOneShot */
     ],
     [
       "B-Copter",
-      "move-bcopter-rolloff"
+      "move-bcopter-rolloff",
       /* moveBCopterOneShot */
     ],
     [
       "Black Bomb",
-      "move-plane-rolloff"
+      "move-plane-rolloff",
       /* movePlaneOneShot */
     ],
     [
       "Bomber",
-      "move-plane-rolloff"
+      "move-plane-rolloff",
       /* movePlaneOneShot */
     ],
     [
       "Fighter",
-      "move-plane-rolloff"
+      "move-plane-rolloff",
       /* movePlaneOneShot */
     ],
     [
       "Md.Tank",
-      "move-tread-heavy-rolloff"
+      "move-tread-heavy-rolloff",
       /* moveTreadHeavyOneShot */
     ],
     [
       "Mega Tank",
-      "move-tread-heavy-rolloff"
+      "move-tread-heavy-rolloff",
       /* moveTreadHeavyOneShot */
     ],
     [
       "Missile",
-      "move-tires-heavy-rolloff"
+      "move-tires-heavy-rolloff",
       /* moveTiresHeavyOneShot */
     ],
     [
       "Neotank",
-      "move-tread-heavy-rolloff"
+      "move-tread-heavy-rolloff",
       /* moveTreadHeavyOneShot */
     ],
     [
       "Recon",
-      "move-tires-light-rolloff"
+      "move-tires-light-rolloff",
       /* moveTiresLightOneShot */
     ],
     [
       "Rocket",
-      "move-tires-heavy-rolloff"
+      "move-tires-heavy-rolloff",
       /* moveTiresHeavyOneShot */
     ],
     [
       "Stealth",
-      "move-plane-rolloff"
+      "move-plane-rolloff",
       /* movePlaneOneShot */
     ],
     [
       "T-Copter",
-      "move-tcopter-rolloff"
+      "move-tcopter-rolloff",
       /* moveTCopterOneShot */
     ],
     [
       "Tank",
-      "move-tread-light-rolloff"
+      "move-tread-light-rolloff",
       /* moveTreadLightOneShot */
-    ]
+    ],
   ]);
   const alternateThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set(["sturm"])],
     [GameType.AW2, /* @__PURE__ */ new Set(["sturm"])],
     [GameType.DS, /* @__PURE__ */ new Set(["sturm", "vonbolt"])],
-    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])]
+    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
   ]);
   const introThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set([])],
-    [GameType.AW2, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"])],
+    [
+      GameType.AW2,
+      /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"]),
+    ],
     [GameType.DS, /* @__PURE__ */ new Set(["jess"])],
-    [GameType.RBC, /* @__PURE__ */ new Set([])]
+    [GameType.RBC, /* @__PURE__ */ new Set([])],
   ]);
   function getAlternateMusicFilename(coName, gameType, themeType) {
     if (!alternateThemes.has(gameType)) return;
@@ -1236,7 +1259,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
     if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
     if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
-    if (coName === SpecialCOs.ModeSelect || coName === SpecialCOs.MainPage || coName === SpecialCOs.LiveQueue || coName === SpecialCOs.Default)
+    if (
+      coName === SpecialCOs.ModeSelect ||
+      coName === SpecialCOs.MainPage ||
+      coName === SpecialCOs.LiveQueue ||
+      coName === SpecialCOs.Default
+    )
       coName = SpecialCOs.ModeSelect;
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
@@ -1290,18 +1318,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
     ["music_player", "5.12.0"],
-    ["highlight_cursor_coordinates", "2.3.0"]
+    ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
     ["music_player", "https://update.greasyfork.org/scripts/518170/Improved%20AWBW%20Music%20Player.meta.js"],
     [
       "highlight_cursor_coordinates",
-      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js"
-    ]
+      "https://update.greasyfork.org/scripts/520884/AWBW%20Highlight%20Cursor%20Coordinates.meta.js",
+    ],
   ]);
   const homepageURLs = /* @__PURE__ */ new Map([
     ["music_player", "https://greasyfork.org/en/scripts/518170-improved-awbw-music-player"],
-    ["highlight_cursor_coordinates", "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates"]
+    ["highlight_cursor_coordinates", "https://greasyfork.org/en/scripts/520884-awbw-highlight-cursor-coordinates"],
   ]);
   function checkIfUpdateIsAvailable(scriptName) {
     const isGreater = (a, b) => {
@@ -1310,21 +1338,24 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return new Promise((resolve, reject) => {
       const updateURL = updateURLs.get(scriptName);
       if (!updateURL) return reject(`Failed to get the update URL for the script.`);
-      return fetch(updateURL).then((response) => response.text()).then((text) => {
-        var _a;
-        if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
-        const latestVersion = (_a = text.match(/@version\s+([0-9.]+)/)) == null ? void 0 : _a[1];
-        if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
-        const currentVersion = versions.get(scriptName);
-        if (!currentVersion) return reject(`Failed to get the current version of the script.`);
-        const currentVersionParts = currentVersion.split(".");
-        const latestVersionParts = latestVersion.split(".");
-        const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
-        if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
-        const isUpdateAvailable = isGreater(latestVersion, currentVersion);
-        logDebug(`Current version: ${currentVersion}, latest: ${latestVersion}, update needed: ${isUpdateAvailable}`);
-        return resolve(isUpdateAvailable);
-      }).catch((reason) => reject(reason));
+      return fetch(updateURL)
+        .then((response) => response.text())
+        .then((text) => {
+          var _a;
+          if (!text) return reject(`Failed to get the HTML from the update URL for the script.`);
+          const latestVersion = (_a = text.match(/@version\s+([0-9.]+)/)) == null ? void 0 : _a[1];
+          if (!latestVersion) return reject(`Failed to get the latest version of the script.`);
+          const currentVersion = versions.get(scriptName);
+          if (!currentVersion) return reject(`Failed to get the current version of the script.`);
+          const currentVersionParts = currentVersion.split(".");
+          const latestVersionParts = latestVersion.split(".");
+          const hasThreeParts = currentVersionParts.length === 3 && latestVersionParts.length === 3;
+          if (!hasThreeParts) return reject(`The version number of the script is not in the correct format.`);
+          const isUpdateAvailable = isGreater(latestVersion, currentVersion);
+          logDebug(`Current version: ${currentVersion}, latest: ${latestVersion}, update needed: ${isUpdateAvailable}`);
+          return resolve(isUpdateAvailable);
+        })
+        .catch((reason) => reject(reason));
     });
   }
   var GroupType = /* @__PURE__ */ ((GroupType2) => {
@@ -1409,7 +1440,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.parent.style.height = "30px";
       this.setNodeID(
         this.parent,
-        "parent"
+        "parent",
         /* Parent */
       );
       const hoverSpan = document.createElement("span");
@@ -1418,7 +1449,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.parent.appendChild(hoverSpan);
       this.setNodeID(
         hoverSpan,
-        "hover"
+        "hover",
         /* Hover */
       );
       const bgDiv = document.createElement("div");
@@ -1427,7 +1458,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.parent.appendChild(bgDiv);
       this.setNodeID(
         bgDiv,
-        "background"
+        "background",
         /* Background */
       );
       bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
@@ -1440,7 +1471,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       btnLink.appendChild(btnImg);
       this.setNodeID(
         btnImg,
-        "button-image"
+        "button-image",
         /* Button_Image */
       );
       const contextMenu = document.createElement("div");
@@ -1449,7 +1480,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this.parent.appendChild(contextMenu);
       this.setNodeID(
         contextMenu,
-        "settings"
+        "settings",
         /* Settings */
       );
       const contextMenuBoxesContainer = document.createElement("div");
@@ -1461,7 +1492,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       contextMenuBoxesContainer.appendChild(leftBox);
       this.setNodeID(
         leftBox,
-        "settings-left"
+        "settings-left",
         /* Settings_Left */
       );
       const centerBox = document.createElement("div");
@@ -1470,7 +1501,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       contextMenuBoxesContainer.appendChild(centerBox);
       this.setNodeID(
         centerBox,
-        "settings-center"
+        "settings-center",
         /* Settings_Center */
       );
       const rightBox = document.createElement("div");
@@ -1479,7 +1510,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       contextMenuBoxesContainer.appendChild(rightBox);
       this.setNodeID(
         rightBox,
-        "settings-right"
+        "settings-right",
         /* Settings_Right */
       );
       document.addEventListener("contextmenu", (event) => {
@@ -1543,18 +1574,27 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     hasSettings() {
       var _a, _b, _c;
-      const hasLeftMenu = ((_a = this.getNodeByID(
-        "settings-left"
-        /* Settings_Left */
-      )) == null ? void 0 : _a.style.display) !== "none";
-      const hasCenterMenu = ((_b = this.getNodeByID(
-        "settings-center"
-        /* Settings_Center */
-      )) == null ? void 0 : _b.style.display) !== "none";
-      const hasRightMenu = ((_c = this.getNodeByID(
-        "settings-right"
-        /* Settings_Right */
-      )) == null ? void 0 : _c.style.display) !== "none";
+      const hasLeftMenu =
+        ((_a = this.getNodeByID(
+          "settings-left",
+          /* Settings_Left */
+        )) == null
+          ? void 0
+          : _a.style.display) !== "none";
+      const hasCenterMenu =
+        ((_b = this.getNodeByID(
+          "settings-center",
+          /* Settings_Center */
+        )) == null
+          ? void 0
+          : _b.style.display) !== "none";
+      const hasRightMenu =
+        ((_c = this.getNodeByID(
+          "settings-right",
+          /* Settings_Right */
+        )) == null
+          ? void 0
+          : _c.style.display) !== "none";
       return hasLeftMenu || hasCenterMenu || hasRightMenu;
     }
     getGroup(groupName) {
@@ -1567,7 +1607,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     setHoverText(text, replaceParent = false) {
       const hoverSpan = this.getNodeByID(
-        "hover"
+        "hover",
         /* Hover */
       );
       if (!hoverSpan) return;
@@ -1575,6 +1615,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (this.isUpdateAvailable) text += " (New Update Available!)";
       hoverSpan.innerText = text;
       hoverSpan.style.display = text === "" ? "none" : "block";
+      hoverSpan.style.textAlign = "center";
     }
     /**
      * Sets the progress of the UI by coloring the background of the main button.
@@ -1582,7 +1623,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     setProgress(progress) {
       const bgDiv = this.getNodeByID(
-        "background"
+        "background",
         /* Background */
       );
       if (!bgDiv) return;
@@ -1598,7 +1639,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     setImage(imageURL) {
       const btnImg = this.getNodeByID(
-        "button-image"
+        "button-image",
         /* Button_Image */
       );
       btnImg.src = imageURL;
@@ -1610,7 +1651,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     addEventListener(type, listener, options = false) {
       const div = this.getNodeByID(
-        "background"
+        "background",
         /* Background */
       );
       div == null ? void 0 : div.addEventListener(type, listener, options);
@@ -1621,14 +1662,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     openContextMenu() {
       var _a;
       const contextMenu = this.getNodeByID(
-        "settings"
+        "settings",
         /* Settings */
       );
       if (!contextMenu) return;
-      const hasVersion = ((_a = this.getNodeByID(
-        "version"
-        /* Version */
-      )) == null ? void 0 : _a.style.display) !== "none";
+      const hasVersion =
+        ((_a = this.getNodeByID(
+          "version",
+          /* Version */
+        )) == null
+          ? void 0
+          : _a.style.display) !== "none";
       if (!this.hasSettings() && !hasVersion) return;
       contextMenu.style.display = "flex";
       this.isSettingsMenuOpen = true;
@@ -1638,17 +1682,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     closeContextMenu() {
       const contextMenu = this.getNodeByID(
-        "settings"
+        "settings",
         /* Settings */
       );
       if (!contextMenu) return;
       contextMenu.style.display = "none";
       this.isSettingsMenuOpen = false;
       const overDiv = document.querySelector("#overDiv");
-      const hasCOSelector = this.getNodeByID(
-        "co-selector"
-        /* CO_Selector */
-      ) !== null;
+      const hasCOSelector =
+        this.getNodeByID(
+          "co-selector",
+          /* CO_Selector */
+        ) !== null;
       const isGamePageAndActive = getCurrentPageType() === PageType.ActiveGame;
       if (overDiv && hasCOSelector && isGamePageAndActive) {
         overDiv.style.visibility = "hidden";
@@ -1715,7 +1760,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         name,
         groupName,
         hoverText,
-        "radio"
+        "radio",
         /* Radio */
       );
     }
@@ -1724,7 +1769,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         name,
         groupName,
         hoverText,
-        "checkbox"
+        "checkbox",
         /* Checkbox */
       );
     }
@@ -1733,7 +1778,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         name,
         groupName,
         hoverText,
-        "button"
+        "button",
         /* Button */
       );
     }
@@ -1790,7 +1835,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const version = versions.get(this.prefix);
       if (!version) return;
       const contextMenu = this.getNodeByID(
-        "settings"
+        "settings",
         /* Settings */
       );
       const versionDiv = document.createElement("label");
@@ -1798,7 +1843,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       contextMenu == null ? void 0 : contextMenu.appendChild(versionDiv);
       this.setNodeID(
         versionDiv,
-        "version"
+        "version",
         /* Version */
       );
     }
@@ -1807,22 +1852,24 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const updateURL = updateURLs.get(this.prefix);
       const homepageURL = homepageURLs.get(this.prefix) || "";
       if (!currentVersion || !updateURL) return;
-      checkIfUpdateIsAvailable(this.prefix).then((isUpdateAvailable) => {
-        this.isUpdateAvailable = isUpdateAvailable;
-        console.log("[DevJ] Checking if a new version is available...", isUpdateAvailable);
-        if (!isUpdateAvailable) return;
-        const contextMenu = this.getNodeByID(
-          "settings"
-          /* Settings */
-        );
-        const versionDiv = document.createElement("a");
-        versionDiv.id = this.prefix + "-update";
-        versionDiv.href = homepageURL;
-        versionDiv.target = "_blank";
-        versionDiv.innerText = `(!) Update Available: Please click here to open the update page in a new tab. (!)`;
-        contextMenu == null ? void 0 : contextMenu.append(versionDiv.cloneNode(true));
-        if (this.hasSettings()) contextMenu == null ? void 0 : contextMenu.prepend(versionDiv);
-      }).catch((error) => console.error(error));
+      checkIfUpdateIsAvailable(this.prefix)
+        .then((isUpdateAvailable) => {
+          this.isUpdateAvailable = isUpdateAvailable;
+          console.log("[DevJ] Checking if a new version is available...", isUpdateAvailable);
+          if (!isUpdateAvailable) return;
+          const contextMenu = this.getNodeByID(
+            "settings",
+            /* Settings */
+          );
+          const versionDiv = document.createElement("a");
+          versionDiv.id = this.prefix + "-update";
+          versionDiv.href = homepageURL;
+          versionDiv.target = "_blank";
+          versionDiv.innerText = `(!) Update Available: Please click here to open the update page in a new tab. (!)`;
+          contextMenu == null ? void 0 : contextMenu.append(versionDiv.cloneNode(true));
+          if (this.hasSettings()) contextMenu == null ? void 0 : contextMenu.prepend(versionDiv);
+        })
+        .catch((error) => console.error(error));
     }
     addTable(name, rows, columns, groupName, hoverText = "") {
       const groupDiv = this.getGroup(groupName);
@@ -1836,7 +1883,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const tableData = {
         table,
         rows,
-        columns
+        columns,
       };
       this.tableMap.set(name, tableData);
       return table;
@@ -1891,12 +1938,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       coSelector.addEventListener("mouseout", () => this.setHoverText(""));
       this.setNodeID(
         coSelector,
-        "co-selector"
+        "co-selector",
         /* CO_Selector */
       );
       this.setNodeID(
         imgCO,
-        "co-portrait"
+        "co-portrait",
         /* CO_Portrait */
       );
       groupDiv == null ? void 0 : groupDiv.appendChild(coSelector);
@@ -1960,7 +2007,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const overDiv = document.querySelector("#overDiv");
       overDiv.style.visibility = "hidden";
       const imgCO = this.getNodeByID(
-        "co-portrait"
+        "co-portrait",
         /* CO_Portrait */
       );
       const coPrefix = getCOImagePrefix();
@@ -2014,7 +2061,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         urlQueue$1.delete(srcURL);
         const blob = event.target.result;
         if (!blob) {
-          return storeURLInDB(srcURL).then((blob2) => resolve(URL.createObjectURL(blob2))).catch((reason) => reject(reason));
+          return storeURLInDB(srcURL)
+            .then((blob2) => resolve(URL.createObjectURL(blob2)))
+            .catch((reason) => reject(reason));
         }
         const url = URL.createObjectURL(blob);
         resolve(url);
@@ -2042,18 +2091,23 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function storeURLInDB(url) {
     if (!db) return Promise.reject("Database not open.");
     if (!url || url === "") return Promise.reject("Invalid URL.");
-    return fetch(url).then((response) => response.blob()).then((blob) => storeBlobInDB(url, blob));
+    return fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => storeBlobInDB(url, blob));
   }
   function checkHashesInDB() {
     if (!db) return Promise.reject("Database not open.");
-    return fetch(HASH_JSON_URL).then((response) => response.json()).then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
+    return fetch(HASH_JSON_URL)
+      .then((response) => response.json())
+      .then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
   }
   function getBlobMD5(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         var _a;
-        if (!((_a = event == null ? void 0 : event.target) == null ? void 0 : _a.result)) return reject("FileReader did not load the blob.");
+        if (!((_a = event == null ? void 0 : event.target) == null ? void 0 : _a.result))
+          return reject("FileReader did not load the blob.");
         const md5 = SparkMD52.ArrayBuffer.hash(event.target.result);
         resolve(md5);
       };
@@ -2079,10 +2133,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         if (!serverHash) {
           return;
         }
-        getBlobMD5(blob).then((hash) => {
-          if (hash === serverHash) return;
-          return storeURLInDB(url);
-        }).catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));
+        getBlobMD5(blob)
+          .then((hash) => {
+            if (hash === serverHash) return;
+            return storeURLInDB(url);
+          })
+          .catch((reason) => logError(`Error storing new version of ${url} in database: ${reason}`));
       };
     });
   }
@@ -2125,7 +2181,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       onseek: (_id) => audio.volume(getVolumeForURL(srcURL)),
       onpause: (_id) => audio.volume(getVolumeForURL(srcURL)),
       onloaderror: (_id, error) => logError("Error loading audio:", srcURL, error),
-      onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error)
+      onplayerror: (_id, error) => logError("Error playing audio:", srcURL, error),
     });
     audioMap.set(srcURL, audio);
     return audio;
@@ -2137,12 +2193,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     logDebug("Pre-loading common audio", audioList);
     preloadAudioList(audioList, afterPreloadFunction);
   }
-  function preloadAudioList(audioURLs, afterPreloadFunction = () => {
-  }) {
+  function preloadAudioList(audioURLs, afterPreloadFunction = () => {}) {
     let numLoadedAudios = 0;
     const onAudioPreload = (action, url) => {
       numLoadedAudios++;
-      const loadPercentage = numLoadedAudios / audioURLs.size * 100;
+      const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
       musicPlayerUI.setProgress(loadPercentage);
       if (numLoadedAudios >= audioURLs.size) {
         numLoadedAudios = 0;
@@ -2162,10 +2217,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         numLoadedAudios++;
         return;
       }
-      preloadURL(url).then((audio) => {
-        audio.once("load", () => onAudioPreload("load", url));
-        audio.once("loaderror", () => onAudioPreload("error", url));
-      }).catch((_reason) => onAudioPreload("error", url));
+      preloadURL(url)
+        .then((audio) => {
+          audio.once("load", () => onAudioPreload("load", url));
+          audio.once("loaderror", () => onAudioPreload("error", url));
+        })
+        .catch((_reason) => onAudioPreload("error", url));
     });
     if (numLoadedAudios >= audioURLs.size) {
       if (afterPreloadFunction) afterPreloadFunction();
@@ -2185,7 +2242,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       (reason) => {
         logDebug(reason, srcURL);
         return createNewAudio(srcURL, srcURL);
-      }
+      },
     );
     promiseMap.set(srcURL, promise);
     return promise;
@@ -2249,11 +2306,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (key === SettingsKey.GAME_TYPE) {
       preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
     }
-    const canUpdateDaySlider = (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
+    const canUpdateDaySlider =
+      (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
     if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
     let currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
-    currentSounds += "(Right-Click for Settings)";
+    currentSounds += "\n(Right-Click for Settings)";
     if (musicSettings.isPlaying) {
       musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -2268,35 +2326,68 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   var Description = /* @__PURE__ */ ((Description2) => {
     Description2["Volume"] = "Adjust the volume of the CO theme music, power activations, and power themes.";
     Description2["SFX_Volume"] = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.";
-    Description2["UI_Volume"] = "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.";
+    Description2["UI_Volume"] =
+      "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.";
     Description2["AW1"] = "Play the Advance Wars 1 soundtrack. There are no power themes just like the cartridge!";
     Description2["AW2"] = "Play the Advance Wars 2 soundtrack. Very classy like Md Tanks.";
-    Description2["DS"] = "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.";
+    Description2["DS"] =
+      "Play the Advance Wars: Dual Strike soundtrack. A bit better quality than with the DS speakers though.";
     Description2["RBC"] = "Play the Advance Wars: Re-Boot Camp soundtrack. Even the new power themes are here now!";
     Description2["No_Random"] = "Play the music depending on who the current CO is.";
     Description2["All_Random"] = "Play random music every turn from all soundtracks.";
     Description2["Current_Random"] = "Play random music every turn from the current soundtrack.";
     Description2["Shuffle"] = "Changes the current theme to a new random one.";
-    Description2["SFX_Pages"] = "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.";
+    Description2["SFX_Pages"] =
+      "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.";
     Description2["Capture_Progress"] = "Play a sound effect when a unit makes progress capturing a property.";
     Description2["Pipe_Seam_SFX"] = "Play a sound effect when a pipe seam is attacked.";
-    Description2["Autoplay_Pages"] = "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.";
-    Description2["Restart_Themes"] = "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.";
-    Description2["Seamless_Loops"] = "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.";
-    Description2["PlayIntros"] = "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.";
-    Description2["Random_Loop_Toggle"] = "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.";
-    Description2["Alternate_Themes"] = "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.";
-    Description2["Alternate_Day"] = "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
-    Description2["Add_Override"] = "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.";
+    Description2["Autoplay_Pages"] =
+      "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.";
+    Description2["Restart_Themes"] =
+      "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.";
+    Description2["Seamless_Loops"] =
+      "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.";
+    Description2["PlayIntros"] =
+      "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.";
+    Description2["Random_Loop_Toggle"] =
+      "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.";
+    Description2["Alternate_Themes"] =
+      "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.";
+    Description2["Alternate_Day"] =
+      "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?";
+    Description2["Add_Override"] =
+      "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.";
     Description2["Override_Radio"] = "Only play songs from ";
     Description2["Remove_Override"] = "Removes the override for this specific CO.";
-    Description2["Add_Excluded"] = "Add an override for a specific CO to exclude their themes when playing random themes.";
+    Description2["Add_Excluded"] =
+      "Add an override for a specific CO to exclude their themes when playing random themes.";
     return Description2;
   })(Description || {});
   const LEFT = NodeID.Settings_Left;
-  const volumeSlider = musicPlayerUI.addSlider("Music Volume", 0, 1, 5e-3, "Adjust the volume of the CO theme music, power activations, and power themes.", LEFT);
-  const sfxVolumeSlider = musicPlayerUI.addSlider("SFX Volume", 0, 1, 5e-3, "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.", LEFT);
-  const uiVolumeSlider = musicPlayerUI.addSlider("UI Volume", 0, 1, 5e-3, "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.", LEFT);
+  const volumeSlider = musicPlayerUI.addSlider(
+    "Music Volume",
+    0,
+    1,
+    5e-3,
+    "Adjust the volume of the CO theme music, power activations, and power themes.",
+    LEFT,
+  );
+  const sfxVolumeSlider = musicPlayerUI.addSlider(
+    "SFX Volume",
+    0,
+    1,
+    5e-3,
+    "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
+    LEFT,
+  );
+  const uiVolumeSlider = musicPlayerUI.addSlider(
+    "UI Volume",
+    0,
+    1,
+    5e-3,
+    "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
+    LEFT,
+  );
   const soundtrackGroupID = "Soundtrack";
   musicPlayerUI.addGroup(soundtrackGroupID, GroupType.Horizontal, LEFT);
   const gameTypeRadioMap = /* @__PURE__ */ new Map();
@@ -2310,30 +2401,30 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const radioNormal = musicPlayerUI.addRadioButton(
     "Off",
     randomGroupID,
-    "Play the music depending on who the current CO is."
+    "Play the music depending on who the current CO is.",
     /* No_Random */
   );
   const radioAllRandom = musicPlayerUI.addRadioButton(
     "All Soundtracks",
     randomGroupID,
-    "Play random music every turn from all soundtracks."
+    "Play random music every turn from all soundtracks.",
     /* All_Random */
   );
   const radioCurrentRandom = musicPlayerUI.addRadioButton(
     "Current Soundtrack",
     randomGroupID,
-    "Play random music every turn from the current soundtrack."
+    "Play random music every turn from the current soundtrack.",
     /* Current_Random */
   );
   const randomRadioMap = /* @__PURE__ */ new Map([
     [RandomThemeType.NONE, radioNormal],
     [RandomThemeType.ALL_THEMES, radioAllRandom],
-    [RandomThemeType.CURRENT_SOUNDTRACK, radioCurrentRandom]
+    [RandomThemeType.CURRENT_SOUNDTRACK, radioCurrentRandom],
   ]);
   const shuffleBtn = musicPlayerUI.addButton(
     "Shuffle",
     randomGroupID,
-    "Changes the current theme to a new random one."
+    "Changes the current theme to a new random one.",
     /* Shuffle */
   );
   const sfxGroupID = "Sound Effect (SFX) Options";
@@ -2341,19 +2432,19 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const uiSFXPagesBox = musicPlayerUI.addCheckbox(
     "Play Sound Effects Outside Of Game Pages",
     sfxGroupID,
-    "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance."
+    "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.",
     /* SFX_Pages */
   );
   const captProgressBox = musicPlayerUI.addCheckbox(
     "Capture Progress SFX",
     sfxGroupID,
-    "Play a sound effect when a unit makes progress capturing a property."
+    "Play a sound effect when a unit makes progress capturing a property.",
     /* Capture_Progress */
   );
   const pipeSeamBox = musicPlayerUI.addCheckbox(
     "Pipe Seam Attack SFX",
     sfxGroupID,
-    "Play a sound effect when a pipe seam is attacked."
+    "Play a sound effect when a pipe seam is attacked.",
     /* Pipe_Seam_SFX */
   );
   const musicGroupID = "Music Options";
@@ -2361,40 +2452,47 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const autoplayPagesBox = musicPlayerUI.addCheckbox(
     "Autoplay Music Outside Of Game Pages",
     musicGroupID,
-    "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance."
+    "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.",
     /* Autoplay_Pages */
   );
   const seamlessLoopsBox = musicPlayerUI.addCheckbox(
     "Seamless Loops In Mirror Matches",
     musicGroupID,
-    "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO."
+    "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.",
     /* Seamless_Loops */
   );
   const restartThemesBox = musicPlayerUI.addCheckbox(
     "Restart Themes Every Turn",
     musicGroupID,
-    "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously."
+    "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
     /* Restart_Themes */
   );
   const loopToggle = musicPlayerUI.addCheckbox(
     "Loop Random Songs Until Turn Changes",
     musicGroupID,
-    "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet."
+    "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
     /* Random_Loop_Toggle */
   );
   const introsBox = musicPlayerUI.addCheckbox(
     "Play CO Intros Every Turn",
     musicGroupID,
-    "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game."
+    "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.",
     /* PlayIntros */
   );
   const alternateThemesBox = musicPlayerUI.addCheckbox(
     "Alternate Themes",
     musicGroupID,
-    "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start."
+    "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
     /* Alternate_Themes */
   );
-  const daySlider = musicPlayerUI.addSlider("Alternate Themes Start On Day", 0, 30, 1, "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?", LEFT);
+  const daySlider = musicPlayerUI.addSlider(
+    "Alternate Themes Start On Day",
+    0,
+    30,
+    1,
+    "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
+    LEFT,
+  );
   const RIGHT = NodeID.Settings_Right;
   const addOverrideGroupID = "Override Themes";
   musicPlayerUI.addGroup(addOverrideGroupID, GroupType.Horizontal, RIGHT);
@@ -2402,7 +2500,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function onCOSelectorClick(coName) {
     currentSelectedCO = coName;
   }
-  musicPlayerUI.addCOSelector(addOverrideGroupID, "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.", onCOSelectorClick);
+  musicPlayerUI.addCOSelector(
+    addOverrideGroupID,
+    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
+    onCOSelectorClick,
+  );
   const overrideGameTypeRadioMap = /* @__PURE__ */ new Map();
   for (const gameType of Object.values(GameType)) {
     const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroupID, "Only play songs from " + gameType);
@@ -2412,13 +2514,13 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const excludeRadio = musicPlayerUI.addRadioButton(
     "Exclude Random",
     addOverrideGroupID,
-    "Add an override for a specific CO to exclude their themes when playing random themes."
+    "Add an override for a specific CO to exclude their themes when playing random themes.",
     /* Add_Excluded */
   );
   const overrideBtn = musicPlayerUI.addButton(
     "Add",
     addOverrideGroupID,
-    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes."
+    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
     /* Add_Override */
   );
   const overrideListGroupID = "Current Overrides (Click to Remove)";
@@ -2431,7 +2533,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     tableRows,
     tableCols,
     overrideListGroupID,
-    "Removes the override for this specific CO."
+    "Removes the override for this specific CO.",
     /* Remove_Override */
   );
   function addOverrideDisplayDiv(coName, gameType) {
@@ -2447,7 +2549,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     overrideDivMap.forEach((div) => div.remove());
     overrideDivMap.clear();
     musicPlayerUI.clearTable(
-      "Overrides"
+      "Overrides",
       /* Override_Table */
     );
     for (const [coName, gameType] of musicSettings.overrideList) {
@@ -2462,7 +2564,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     tableRows,
     tableCols,
     excludedListGroupID,
-    "Removes the override for this specific CO."
+    "Removes the override for this specific CO.",
     /* Remove_Override */
   );
   function addExcludedDisplayDiv(coName) {
@@ -2478,7 +2580,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     excludedListDivMap.forEach((div) => div.remove());
     excludedListDivMap.clear();
     musicPlayerUI.clearTable(
-      "Excluded Random Themes"
+      "Excluded Random Themes",
       /* Excluded_Table */
     );
     for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
@@ -2511,30 +2613,41 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function addMusicUIListeners() {
     musicPlayerUI.addEventListener("click", onMusicBtnClick);
     addSettingsChangeListener(onSettingsChange$1);
-    volumeSlider == null ? void 0 : volumeSlider.addEventListener("input", (event) => musicSettings.volume = parseInputFloat(event));
-    sfxVolumeSlider == null ? void 0 : sfxVolumeSlider.addEventListener("input", (event) => musicSettings.sfxVolume = parseInputFloat(event));
-    uiVolumeSlider == null ? void 0 : uiVolumeSlider.addEventListener("input", (event) => musicSettings.uiVolume = parseInputFloat(event));
-    radioNormal.addEventListener("click", (_e) => musicSettings.randomThemesType = RandomThemeType.NONE);
-    radioAllRandom.addEventListener("click", (_e) => musicSettings.randomThemesType = RandomThemeType.ALL_THEMES);
+    volumeSlider == null
+      ? void 0
+      : volumeSlider.addEventListener("input", (event) => (musicSettings.volume = parseInputFloat(event)));
+    sfxVolumeSlider == null
+      ? void 0
+      : sfxVolumeSlider.addEventListener("input", (event) => (musicSettings.sfxVolume = parseInputFloat(event)));
+    uiVolumeSlider == null
+      ? void 0
+      : uiVolumeSlider.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
+    radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.NONE));
+    radioAllRandom.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.ALL_THEMES));
     radioCurrentRandom.addEventListener(
       "click",
-      (_e) => musicSettings.randomThemesType = RandomThemeType.CURRENT_SOUNDTRACK
+      (_e) => (musicSettings.randomThemesType = RandomThemeType.CURRENT_SOUNDTRACK),
     );
     for (const gameType of Object.values(GameType)) {
       const radio = gameTypeRadioMap.get(gameType);
-      radio == null ? void 0 : radio.addEventListener("click", (_e) => musicSettings.gameType = gameType);
+      radio == null ? void 0 : radio.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
     }
     shuffleBtn.addEventListener("click", (_e) => musicSettings.randomizeCO());
-    captProgressBox.addEventListener("click", (_e) => musicSettings.captureProgressSFX = captProgressBox.checked);
-    pipeSeamBox.addEventListener("click", (_e) => musicSettings.pipeSeamSFX = pipeSeamBox.checked);
-    restartThemesBox.addEventListener("click", (_e) => musicSettings.restartThemes = restartThemesBox.checked);
-    autoplayPagesBox.addEventListener("click", (_e) => musicSettings.autoplayOnOtherPages = autoplayPagesBox.checked);
-    loopToggle.addEventListener("click", (_e) => musicSettings.loopRandomSongsUntilTurnChange = loopToggle.checked);
-    uiSFXPagesBox.addEventListener("click", (_e) => musicSettings.sfxOnOtherPages = uiSFXPagesBox.checked);
-    alternateThemesBox.addEventListener("click", (_e) => musicSettings.alternateThemes = alternateThemesBox.checked);
-    seamlessLoopsBox.addEventListener("click", (_e) => musicSettings.seamlessLoopsInMirrors = seamlessLoopsBox.checked);
-    introsBox.addEventListener("click", (_e) => musicSettings.playIntroEveryTurn = introsBox.checked);
-    daySlider == null ? void 0 : daySlider.addEventListener("input", (event) => musicSettings.alternateThemeDay = parseInputInt(event));
+    captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
+    pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
+    restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
+    autoplayPagesBox.addEventListener("click", (_e) => (musicSettings.autoplayOnOtherPages = autoplayPagesBox.checked));
+    loopToggle.addEventListener("click", (_e) => (musicSettings.loopRandomSongsUntilTurnChange = loopToggle.checked));
+    uiSFXPagesBox.addEventListener("click", (_e) => (musicSettings.sfxOnOtherPages = uiSFXPagesBox.checked));
+    alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
+    seamlessLoopsBox.addEventListener(
+      "click",
+      (_e) => (musicSettings.seamlessLoopsInMirrors = seamlessLoopsBox.checked),
+    );
+    introsBox.addEventListener("click", (_e) => (musicSettings.playIntroEveryTurn = introsBox.checked));
+    daySlider == null
+      ? void 0
+      : daySlider.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
     overrideBtn.addEventListener("click", (_e) => {
       if (excludeRadio.checked) {
         musicSettings.addExcludedRandomTheme(currentSelectedCO);
@@ -2700,7 +2813,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       stopThemeSong();
       currentThemeURL = srcURL;
     }
-    const nextSong = audioMap.get(srcURL) ?? await preloadURL(srcURL);
+    const nextSong = audioMap.get(srcURL) ?? (await preloadURL(srcURL));
     nextSong.loop(!srcURL.includes("-intro"));
     nextSong.volume(getVolumeForURL(srcURL));
     nextSong.on("play", () => onThemePlay(nextSong, srcURL));
@@ -2880,7 +2993,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       promiseMap.delete(url);
       audioMap.delete(url);
       audioIDMap.delete(url);
-      preloadURL(url).catch((reason) => logError(reason)).finally(() => playThemeSong());
+      preloadURL(url)
+        .catch((reason) => logError(reason))
+        .finally(() => playThemeSong());
     });
   }
   addThemeListeners();
@@ -2890,7 +3005,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     GameSFX.powerActivateAllySCOP,
     GameSFX.powerActivateBHCOP,
     GameSFX.powerActivateBHSCOP,
-    GameSFX.powerActivateAW1COP
+    GameSFX.powerActivateAW1COP,
   ]);
   async function playSFX(sfx) {
     if (!musicSettings.isPlaying) return;
@@ -2907,7 +3022,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (isActivatingPower) return;
     }
     const sfxURL = getSoundEffectURL(sfx);
-    const audio = audioMap.get(sfxURL) ?? await preloadURL(sfxURL);
+    const audio = audioMap.get(sfxURL) ?? (await preloadURL(sfxURL));
     audio.volume(getVolumeForURL(sfxURL));
     audio.seek(0);
     if (audio.playing()) return;
@@ -3017,7 +3132,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
     const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
-    window.addEventListener("keydown", function(event) {
+    window.addEventListener("keydown", function (event) {
       if (!event.key) return;
       const key = event.key.toLowerCase();
       if (key === "arrowleft" || key === "arrowright" || key === "arrowup" || key === "arrowdown") {
@@ -3098,7 +3213,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     lastCursorY = cursorY;
   }
   function onQueryTurn(gameId, turn, turnPId, turnDay, replay2, initial) {
-    const result = ahQueryTurn == null ? void 0 : ahQueryTurn.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay2, initial]);
+    const result =
+      ahQueryTurn == null ? void 0 : ahQueryTurn.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay2, initial]);
     if (!musicSettings.isPlaying) return result;
     syncMusic();
     refreshMusicForNextTurn(250);
@@ -3130,7 +3246,19 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         var _a, _b, _c, _d, _e, _f;
         const target = event.target;
         if (!target) return;
-        if (target.classList.contains("forbidden") || ((_a = target.parentElement) == null ? void 0 : _a.classList.contains("forbidden")) || ((_c = (_b = target.parentElement) == null ? void 0 : _b.parentElement) == null ? void 0 : _c.classList.contains("forbidden")) || ((_f = (_e = (_d = target.parentElement) == null ? void 0 : _d.parentElement) == null ? void 0 : _e.parentElement) == null ? void 0 : _f.classList.contains("forbidden"))) {
+        if (
+          target.classList.contains("forbidden") ||
+          ((_a = target.parentElement) == null ? void 0 : _a.classList.contains("forbidden")) ||
+          ((_c = (_b = target.parentElement) == null ? void 0 : _b.parentElement) == null
+            ? void 0
+            : _c.classList.contains("forbidden")) ||
+          ((_f =
+            (_e = (_d = target.parentElement) == null ? void 0 : _d.parentElement) == null
+              ? void 0
+              : _e.parentElement) == null
+            ? void 0
+            : _f.classList.contains("forbidden"))
+        ) {
           playSFX(GameSFX.uiInvalid);
           return;
         }
@@ -3150,7 +3278,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
   }
   function onCreateDamageSquares(attackerUnit, unitsInRange, movementInfo, movingUnit) {
-    ahCreateDamageSquares == null ? void 0 : ahCreateDamageSquares.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
+    ahCreateDamageSquares == null
+      ? void 0
+      : ahCreateDamageSquares.apply(createDamageSquares, [attackerUnit, unitsInRange, movementInfo, movingUnit]);
     if (!musicSettings.isPlaying) return;
     for (const damageSquare of getAllDamageSquares()) {
       damageSquare.addEventListener("click", (event) => {
@@ -3244,8 +3374,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const canAttackerActivateCOPAfter = canPlayerActivateCOPower(attackerID);
     const canDefenderActivateSCOPAfter = canPlayerActivateSuperCOPower(defenderID);
     const canDefenderActivateCOPAfter = canPlayerActivateCOPower(defenderID);
-    const madeSCOPAvailable = !couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter || !couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter;
-    const madeCOPAvailable = !couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter || !couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter;
+    const madeSCOPAvailable =
+      (!couldAttackerActivateSCOPBefore && canAttackerActivateSCOPAfter) ||
+      (!couldDefenderActivateSCOPBefore && canDefenderActivateSCOPAfter);
+    const madeCOPAvailable =
+      (!couldAttackerActivateCOPBefore && canAttackerActivateCOPAfter) ||
+      (!couldDefenderActivateCOPBefore && canDefenderActivateCOPAfter);
     window.setTimeout(() => {
       if (madeSCOPAvailable) playSFX(GameSFX.powerSCOPAvailable);
       else if (madeCOPAvailable) playSFX(GameSFX.powerCOPAvailable);
@@ -3467,7 +3601,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (!setHashesTimeoutID) {
         const checkHashesMS = 1e3 * 60 * 1;
         const checkHashesFn = () => {
-          checkHashesInDB().then(() => logInfo("All music files have been checked for updates.")).catch((reason) => logError("Could not check for music file updates:", reason));
+          checkHashesInDB()
+            .then(() => logInfo("All music files have been checked for updates."))
+            .catch((reason) => logError("Could not check for music file updates:", reason));
           setHashesTimeoutID = window.setTimeout(checkHashesFn, checkHashesMS);
         };
         checkHashesFn();
@@ -3495,9 +3631,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     initializeMusicPlayerUI();
     addHandlers();
     const iframe = document.getElementById(IFRAME_ID);
-    iframe == null ? void 0 : iframe.addEventListener("focus", () => {
-      if (musicSettings.isPlaying) playThemeSong();
-    });
+    iframe == null
+      ? void 0
+      : iframe.addEventListener("focus", () => {
+          if (musicSettings.isPlaying) playThemeSong();
+        });
     window.addEventListener("focus", () => {
       if (musicSettings.isPlaying) playThemeSong();
     });
@@ -3514,14 +3652,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       lastCursorCall = Date.now();
     };
     const addSFXToPage = () => {
-      getCurrentDocument().querySelectorAll("a").forEach(
-        (link) => link.addEventListener("click", () => {
-          if (!musicSettings.sfxOnOtherPages) return;
-          playSFX(GameSFX.uiMenuOpen);
-        })
-      );
+      getCurrentDocument()
+        .querySelectorAll("a")
+        .forEach((link) =>
+          link.addEventListener("click", () => {
+            if (!musicSettings.sfxOnOtherPages) return;
+            playSFX(GameSFX.uiMenuOpen);
+          }),
+        );
       const hoverElements = Array.from(
-        getCurrentDocument().querySelectorAll("li, ul, .dropdown-menu, .co_portrait, a, input, button")
+        getCurrentDocument().querySelectorAll("li, ul, .dropdown-menu, .co_portrait, a, input, button"),
       );
       hoverElements.forEach((menu) => menu.addEventListener("mouseenter", fn));
     };
@@ -3561,17 +3701,20 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       (_a = document.querySelector("body")) == null ? void 0 : _a.addEventListener("click", initfn, { once: true });
     };
     const autoplayIntervalID = window.setInterval(() => {
-      canAutoplay2.audio().then((response) => {
-        const result = response.result;
-        logDebug("Script starting, does your browser allow you to auto-play:", result);
-        if (result) {
-          ifCanAutoplay();
-          window.clearInterval(autoplayIntervalID);
-        } else ifCannotAutoplay();
-      }).catch((reason) => {
-        logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
-        ifCannotAutoplay();
-      });
+      canAutoplay2
+        .audio()
+        .then((response) => {
+          const result = response.result;
+          logDebug("Script starting, does your browser allow you to auto-play:", result);
+          if (result) {
+            ifCanAutoplay();
+            window.clearInterval(autoplayIntervalID);
+          } else ifCannotAutoplay();
+        })
+        .catch((reason) => {
+          logDebug("Script starting, could not check your browser allows auto-play so assuming no: ", reason);
+          ifCannotAutoplay();
+        });
     }, 100);
   }
   function main() {
@@ -3580,36 +3723,41 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (!isMainPage && !window.location.href.includes(".php")) return;
     loadSettingsFromLocalStorage();
     logInfo("Opening database to cache music files.");
-    openDB().then(() => logInfo("Database opened successfully. Ready to cache music files.")).catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`)).finally(() => {
-      var _a, _b;
-      if (getCurrentPageType() === PageType.Maintenance) {
-        checkAutoplayThenInitialize();
-        const startTime = Date.now();
-        const maintenanceDiv = document.querySelector("#server-maintenance-alert");
-        if (!maintenanceDiv) return;
-        const currentText = maintenanceDiv.textContent;
-        const minutesStr = (_a = currentText == null ? void 0 : currentText.match(/\d+m/)) == null ? void 0 : _a[0].replace("m", "");
-        const secondsStr = (_b = currentText == null ? void 0 : currentText.match(/\d+s/)) == null ? void 0 : _b[0].replace("s", "");
-        if (!minutesStr || !secondsStr) return;
-        const minutes = parseInt(minutesStr);
-        const totalSeconds = parseInt(secondsStr) + minutes * 60;
-        const ID = window.setInterval(() => {
-          const elapsedMS = Date.now() - startTime;
-          const elapsedSeconds = elapsedMS / 1e3;
-          const secondsLeft = totalSeconds - elapsedSeconds;
-          const displayMinutes = Math.floor(secondsLeft / 60);
-          const displaySeconds = Math.floor(secondsLeft % 60);
-          const displayMS = Math.floor(secondsLeft % 1 * 1e3);
-          maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. This automatically updating message is brought to you by the AWBW Improved Music Player.`;
-          if (secondsLeft <= 0) {
-            window.clearInterval(ID);
-            maintenanceDiv.textContent = "The site is back up! Please refresh the page to continue.";
-          }
-        }, 10);
-        return;
-      }
-      initializeIFrame(checkAutoplayThenInitialize);
-    });
+    openDB()
+      .then(() => logInfo("Database opened successfully. Ready to cache music files."))
+      .catch((reason) => logDebug(`Database Error: ${reason}. Will not be able to cache music files locally.`))
+      .finally(() => {
+        var _a, _b;
+        if (getCurrentPageType() === PageType.Maintenance) {
+          checkAutoplayThenInitialize();
+          const startTime = Date.now();
+          const maintenanceDiv = document.querySelector("#server-maintenance-alert");
+          if (!maintenanceDiv) return;
+          const currentText = maintenanceDiv.textContent;
+          const minutesStr =
+            (_a = currentText == null ? void 0 : currentText.match(/\d+m/)) == null ? void 0 : _a[0].replace("m", "");
+          const secondsStr =
+            (_b = currentText == null ? void 0 : currentText.match(/\d+s/)) == null ? void 0 : _b[0].replace("s", "");
+          if (!minutesStr || !secondsStr) return;
+          const minutes = parseInt(minutesStr);
+          const totalSeconds = parseInt(secondsStr) + minutes * 60;
+          const ID = window.setInterval(() => {
+            const elapsedMS = Date.now() - startTime;
+            const elapsedSeconds = elapsedMS / 1e3;
+            const secondsLeft = totalSeconds - elapsedSeconds;
+            const displayMinutes = Math.floor(secondsLeft / 60);
+            const displaySeconds = Math.floor(secondsLeft % 60);
+            const displayMS = Math.floor((secondsLeft % 1) * 1e3);
+            maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. This automatically updating message is brought to you by the AWBW Improved Music Player.`;
+            if (secondsLeft <= 0) {
+              window.clearInterval(ID);
+              maintenanceDiv.textContent = "The site is back up! Please refresh the page to continue.";
+            }
+          }, 10);
+          return;
+        }
+        initializeIFrame(checkAutoplayThenInitialize);
+      });
   }
   main();
   exports.checkAutoplayThenInitialize = checkAutoplayThenInitialize;
@@ -3618,4 +3766,4 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   exports.toggleDebugOverrides = toggleDebugOverrides;
   Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
   return exports;
-}({}, canAutoplay, SparkMD5);
+})({}, canAutoplay, SparkMD5);
