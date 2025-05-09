@@ -34,7 +34,14 @@ import {
 
 import { areAnimationsEnabled } from "../shared/awbw_globals";
 
-import { getCurrentThemeType, musicSettings, GameType, ThemeType } from "./music_settings";
+import {
+  getCurrentThemeType,
+  musicSettings,
+  GameType,
+  ThemeType,
+  RandomThemeType,
+  getRandomGameType,
+} from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
 import {
@@ -204,17 +211,23 @@ function addMovePlannerHandlers() {
  * Syncs the music with the game state. Does not randomize the COs.
  */
 function syncMusic() {
+  const themeTypeBefore = musicSettings.themeType;
   musicSettings.themeType = getCurrentThemeType();
 
   playThemeSong();
-  window.setTimeout(() => {
-    musicSettings.themeType = getCurrentThemeType();
-    playThemeSong();
-  }, 500);
+  //window.setTimeout(() => {
+  //  musicSettings.themeType = getCurrentThemeType();
+  //  playThemeSong();
+  //}, 500);
 
   window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
-    playThemeSong();
+    if (themeTypeBefore !== ThemeType.REGULAR && musicSettings.themeType === ThemeType.REGULAR) {
+      specialIntroMap.forEach((_introURL, loopURL) => {
+        if (loopURL.includes("-cop")) specialIntroMap.delete(loopURL);
+      });
+    }
+    //playThemeSong();
   }, 750);
 }
 
@@ -231,12 +244,15 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
   window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
     if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
-    if (musicSettings.playIntroEveryTurn) specialIntroMap.clear();
-    //} else {
-    //  specialIntroMap.forEach((url) => {
-    //    if (url.includes("-cop")) specialIntroMap.delete(url);
-    //  });
-    //}
+    if (musicSettings.playIntroEveryTurn) {
+      specialIntroMap.clear();
+    } else {
+      specialIntroMap.forEach((_, url) => {
+        if (url.includes("-cop")) {
+          specialIntroMap.delete(url);
+        }
+      });
+    }
     playThemeSong();
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);
@@ -289,6 +305,8 @@ function addReplayHandlers() {
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
   replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+  replayForwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+  replayBackwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
 
   // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
   replayBackwardActionBtn.addEventListener("click", syncMusic);
@@ -386,7 +404,7 @@ function onShowEventScreen(event: ShowEventScreenData) {
   }
 
   playThemeSong();
-  window.setTimeout(playThemeSong, 500);
+  //window.setTimeout(playThemeSong, 500);
 }
 
 function onShowEndGameScreen(event: ShowEndGameScreenData) {
@@ -797,22 +815,23 @@ function onPower(data: PowerData) {
   const isBH = isBlackHoleCO(coName);
   const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
-  // Stop the power charge SFX
+  // Stop the power charge SFX if they're playing
   stopSFX(GameSFX.powerCOPAvailable);
   stopSFX(GameSFX.powerSCOPAvailable);
-  window.setTimeout(() => {
-    stopSFX(GameSFX.powerCOPAvailable);
-    stopSFX(GameSFX.powerSCOPAvailable);
-  }, 755);
 
   // Update the theme type
   musicSettings.themeType = isSuperCOPower ? ThemeType.SUPER_CO_POWER : ThemeType.CO_POWER;
-  switch (musicSettings.gameType) {
+
+  // If random themes are enabled, them randomly decide
+  let gameType = musicSettings.gameType;
+  if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) {
+    gameType = musicSettings.currentRandomGameType;
+  }
+  switch (gameType) {
     case GameType.AW1:
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);
       stopThemeSong(4500);
-      window.setTimeout(() => playThemeSong(), 4550);
       return;
     case GameType.AW2:
     case GameType.DS:
@@ -823,7 +842,6 @@ function onPower(data: PowerData) {
         const delay = isBH ? 1916 : 1100;
         playSFX(sfx);
         stopThemeSong(delay);
-        window.setTimeout(() => playThemeSong(), delay + 50);
         break;
       }
       // Regular CO Power
@@ -831,7 +849,6 @@ function onPower(data: PowerData) {
       const delay = isBH ? 1019 : 881;
       playSFX(sfx);
       stopThemeSong(delay);
-      window.setTimeout(() => playThemeSong(), delay + 50);
       break;
     }
   }

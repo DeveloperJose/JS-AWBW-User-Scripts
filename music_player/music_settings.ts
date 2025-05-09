@@ -444,12 +444,7 @@ export abstract class musicSettings {
   static randomizeCO() {
     const excludedCOs = new Set([...this.__excludedRandomThemes, this.___currentRandomCO]);
     this.___currentRandomCO = getRandomCO(excludedCOs);
-
-    // Randomize soundtrack EXCEPT we don't allow AW1 during power themes
-    const isPower = this.themeType !== ThemeType.REGULAR;
-    const excludedSoundtracks = new Set<GameType>();
-    if (isPower) excludedSoundtracks.add(GameType.AW1);
-    this.___currentRandomGameType = getRandomGameType(excludedSoundtracks);
+    this.___currentRandomGameType = getRandomGameType();
 
     this.onSettingChangeEvent(SettingsKey.CURRENT_RANDOM_CO, null);
   }

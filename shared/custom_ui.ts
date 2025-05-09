@@ -234,7 +234,7 @@ export class CustomMenuSettingsUI {
     const fullID = `${this.prefix}_${id}`;
     const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
     if (!node) {
-      if (id !== NodeID.CO_Selector) console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
+      if (id !== NodeID.CO_Selector) console.log(`[DevJ] Node with ID ${fullID} not found.`);
       return null;
     }
 
@@ -254,7 +254,7 @@ export class CustomMenuSettingsUI {
    */
   addToAWBWPage(div: HTMLElement, prepend = false) {
     if (!div) {
-      console.error("[DeveloperJose] Parent div is null, cannot add custom menu to the page.");
+      console.error("[DevJ] Parent div is null, cannot add custom menu to the page.");
       return;
     }
 
@@ -530,7 +530,7 @@ export class CustomMenuSettingsUI {
     const contextMenu = this.getNodeByID(NodeID.Settings);
     const versionDiv = document.createElement("label");
     // versionDiv.id = this.prefix + "-version";
-    versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
+    versionDiv.innerText = `Version: ${version} (DevJ Edition)`;
     contextMenu?.appendChild(versionDiv);
     // this.groups.set("version", versionDiv);
     this.setNodeID(versionDiv, NodeID.Version);
@@ -545,7 +545,7 @@ export class CustomMenuSettingsUI {
     checkIfUpdateIsAvailable(this.prefix)
       .then((isUpdateAvailable) => {
         this.isUpdateAvailable = isUpdateAvailable;
-        console.log("[DeveloperJose] Checking if a new version is available...", isUpdateAvailable);
+        console.log("[DevJ] Checking if a new version is available...", isUpdateAvailable);
         if (!isUpdateAvailable) return;
 
         const contextMenu = this.getNodeByID(NodeID.Settings);

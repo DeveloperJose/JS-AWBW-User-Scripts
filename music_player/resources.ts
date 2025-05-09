@@ -3,7 +3,7 @@
  */
 import { getAllPlayingCONames, getCurrentGameDay, SpecialCOs } from "../shared/awbw_game";
 import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
-import { GameType, ThemeType, musicSettings } from "./music_settings";
+import { GameType, RandomThemeType, ThemeType, musicSettings } from "./music_settings";
 
 /**
  * Base URL where all the files needed for this script are located.
@@ -245,8 +245,10 @@ function getMusicFilename(coName: string, gameType: GameType, themeType: ThemeTy
   }
 
   // Regular theme, either no power or we are in AW1 where there's no power themes.
+  // We only skip if AW1 mode is enabled and there's no random themes
   const isPowerActive = themeType !== ThemeType.REGULAR;
-  if (!isPowerActive || gameType === GameType.AW1) {
+  const skipPowerTheme = gameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+  if (!isPowerActive || skipPowerTheme) {
     return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
   }
 

@@ -34,6 +34,7 @@ export const specialIntroMap = new Map<string, string>();
  * If set to true, calls to playMusic() will set a timer after which the music will play again.
  */
 let currentlyDelaying = false;
+let currentDelayTimeoutID = -1;
 
 /**
  * Changes the current song to the given new song, stopping the old song if necessary.
@@ -41,15 +42,21 @@ let currentlyDelaying = false;
  * @param startFromBeginning - Whether to start from the beginning.
  */
 export async function playMusicURL(srcURL: string) {
-  // This song has a special loop, and it's time to play it
+  // This song has an intro, preload the full song
+  if (srcURL.includes("-intro")) {
+    await preloadURL(srcURL.replace("-intro", ""));
+  }
+
+  // This song has an intro that finished playing
   const specialLoopURL = specialIntroMap.get(srcURL);
   if (specialLoopURL) {
-    if (srcURL.includes("-cop")) specialIntroMap.delete(srcURL);
+    //if (srcURL.includes("-cop")) specialIntroMap.delete(srcURL);
     srcURL = specialLoopURL;
   }
 
+  const sameSongRequest = srcURL === currentThemeURL;
   // We want to play a new song, so pause the previous one and save the new current song
-  if (srcURL !== currentThemeURL) {
+  if (!sameSongRequest) {
     stopThemeSong();
     currentThemeURL = srcURL;
   }
@@ -67,13 +74,16 @@ export async function playMusicURL(srcURL: string) {
   nextSong.on("end", () => onThemeEndOrLoop(srcURL));
 
   // Play the song if it's not already playing
-  if (!nextSong.playing() && musicSettings.isPlaying) {
-    logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
-    const newID = nextSong.play();
+  if (!musicSettings.isPlaying) return;
+  if (nextSong.playing()) return;
 
-    if (!newID) return;
-    audioIDMap.set(srcURL, newID);
+  if (!sameSongRequest) {
+    logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
   }
+
+  const newID = nextSong.play();
+  if (!newID) return;
+  audioIDMap.set(srcURL, newID);
 }
 
 /**
@@ -126,12 +136,12 @@ export function playThemeSong() {
 export function stopThemeSong(delayMS: number = 0) {
   // Delay the next theme if needed
   if (delayMS > 0) {
-    // Delay until I say so
-    window.setTimeout(() => {
-      currentlyDelaying = false;
-      playThemeSong();
-    }, delayMS);
+    if (currentlyDelaying) {
+      clearTimeout(currentDelayTimeoutID);
+    }
     currentlyDelaying = true;
+    // Delay until I say so
+    currentDelayTimeoutID = window.setTimeout(() => clearThemeDelay(), delayMS);
   }
 
   // Can't stop if there's no loaded music
@@ -221,6 +231,15 @@ export function onThemeEndOrLoop(srcURL: string) {
     playThemeSong();
   }
 
+  let hasIntro = false;
+  specialIntroMap.values().forEach((val) => {
+    if (val == srcURL) hasIntro = true;
+  });
+
+  if (hasIntro && srcURL.includes("-cop")) {
+    specialIntroMap.delete(srcURL);
+  }
+
   if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
     if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
   }
@@ -228,6 +247,10 @@ export function onThemeEndOrLoop(srcURL: string) {
   // The song ended and we are playing random themes, so switch to the next random theme if
   // the user does not want to loop the current song until the turn changes
   if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
+    // This is an intro, so we won't play a random theme yet
+    if (srcURL.includes("-intro")) {
+      return;
+    }
     musicSettings.randomizeCO();
     playThemeSong();
   }
@@ -316,6 +339,7 @@ function __restartTheme() {
 
 export function clearThemeDelay() {
   currentlyDelaying = false;
+  clearTimeout(currentDelayTimeoutID);
   playThemeSong();
 }
 

@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.10.0
+// @version         5.12.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -779,13 +779,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     static randomizeCO() {
       const excludedCOs = /* @__PURE__ */ new Set([...this.__excludedRandomThemes, this.___currentRandomCO]);
       this.___currentRandomCO = getRandomCO(excludedCOs);
-      const isPower = this.themeType !== "REGULAR";
-      const excludedSoundtracks = /* @__PURE__ */ new Set();
-      if (isPower) excludedSoundtracks.add(
-        "AW1"
-        /* AW1 */
-      );
-      this.___currentRandomGameType = getRandomGameType(excludedSoundtracks);
+      this.___currentRandomGameType = getRandomGameType();
       this.onSettingChangeEvent("currentRandomCO", null);
     }
     static onSettingChangeEvent(key, value) {
@@ -1220,7 +1214,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (alternateFilename) return alternateFilename;
     }
     const isPowerActive = themeType !== ThemeType.REGULAR;
-    if (!isPowerActive || gameType === GameType.AW1) {
+    const skipPowerTheme = gameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+    if (!isPowerActive || skipPowerTheme) {
       return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
     }
     const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
@@ -1294,7 +1289,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.10.0"],
+    ["music_player", "5.12.0"],
     ["highlight_cursor_coordinates", "2.3.0"]
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1519,7 +1514,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const fullID = `${this.prefix}_${id}`;
       const node = getCurrentDocument().getElementById(fullID) ?? this.parent.querySelector(`#${fullID}`);
       if (!node) {
-        if (id !== "co-selector") console.log(`[DeveloperJose] Node with ID ${fullID} not found.`);
+        if (id !== "co-selector") console.log(`[DevJ] Node with ID ${fullID} not found.`);
         return null;
       }
       const isSettingsSubMenu = id === "settings-left" || id === "settings-center" || id === "settings-right";
@@ -1535,7 +1530,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      */
     addToAWBWPage(div, prepend = false) {
       if (!div) {
-        console.error("[DeveloperJose] Parent div is null, cannot add custom menu to the page.");
+        console.error("[DevJ] Parent div is null, cannot add custom menu to the page.");
         return;
       }
       if (!prepend) {
@@ -1799,7 +1794,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         /* Settings */
       );
       const versionDiv = document.createElement("label");
-      versionDiv.innerText = `Version: ${version} (DeveloperJose Edition)`;
+      versionDiv.innerText = `Version: ${version} (DevJ Edition)`;
       contextMenu == null ? void 0 : contextMenu.appendChild(versionDiv);
       this.setNodeID(
         versionDiv,
@@ -1814,7 +1809,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (!currentVersion || !updateURL) return;
       checkIfUpdateIsAvailable(this.prefix).then((isUpdateAvailable) => {
         this.isUpdateAvailable = isUpdateAvailable;
-        console.log("[DeveloperJose] Checking if a new version is available...", isUpdateAvailable);
+        console.log("[DevJ] Checking if a new version is available...", isUpdateAvailable);
         if (!isUpdateAvailable) return;
         const contextMenu = this.getNodeByID(
           "settings"
@@ -2257,7 +2252,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const canUpdateDaySlider = (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
     if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
     if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
-    const currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
+    let currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
+    currentSounds += "(Right-Click for Settings)";
     if (musicSettings.isPlaying) {
       musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
       musicPlayerUI.setImage(PLAYING_IMG_URL);
@@ -2690,13 +2686,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   let currentLoops = 0;
   const specialIntroMap = /* @__PURE__ */ new Map();
   let currentlyDelaying = false;
+  let currentDelayTimeoutID = -1;
   async function playMusicURL(srcURL) {
+    if (srcURL.includes("-intro")) {
+      await preloadURL(srcURL.replace("-intro", ""));
+    }
     const specialLoopURL = specialIntroMap.get(srcURL);
     if (specialLoopURL) {
-      if (srcURL.includes("-cop")) specialIntroMap.delete(srcURL);
       srcURL = specialLoopURL;
     }
-    if (srcURL !== currentThemeURL) {
+    const sameSongRequest = srcURL === currentThemeURL;
+    if (!sameSongRequest) {
       stopThemeSong();
       currentThemeURL = srcURL;
     }
@@ -2706,12 +2706,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     nextSong.on("play", () => onThemePlay(nextSong, srcURL));
     nextSong.on("load", () => playThemeSong());
     nextSong.on("end", () => onThemeEndOrLoop(srcURL));
-    if (!nextSong.playing() && musicSettings.isPlaying) {
+    if (!musicSettings.isPlaying) return;
+    if (nextSong.playing()) return;
+    if (!sameSongRequest) {
       logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
-      const newID = nextSong.play();
-      if (!newID) return;
-      audioIDMap.set(srcURL, newID);
     }
+    const newID = nextSong.play();
+    if (!newID) return;
+    audioIDMap.set(srcURL, newID);
   }
   function playThemeSong() {
     if (!musicSettings.isPlaying) return;
@@ -2738,11 +2740,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function stopThemeSong(delayMS = 0) {
     if (delayMS > 0) {
-      window.setTimeout(() => {
-        currentlyDelaying = false;
-        playThemeSong();
-      }, delayMS);
+      if (currentlyDelaying) {
+        clearTimeout(currentDelayTimeoutID);
+      }
       currentlyDelaying = true;
+      currentDelayTimeoutID = window.setTimeout(() => clearThemeDelay(), delayMS);
     }
     const currentTheme = audioMap.get(currentThemeURL);
     if (!currentTheme) return;
@@ -2789,10 +2791,20 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       specialIntroMap.set(srcURL, loopURL);
       playThemeSong();
     }
+    let hasIntro = false;
+    specialIntroMap.values().forEach((val) => {
+      if (val == srcURL) hasIntro = true;
+    });
+    if (hasIntro && srcURL.includes("-cop")) {
+      specialIntroMap.delete(srcURL);
+    }
     if (srcURL === SpecialTheme.Victory || srcURL === SpecialTheme.Defeat) {
       if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
     }
     if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
+      if (srcURL.includes("-intro")) {
+        return;
+      }
       musicSettings.randomizeCO();
       playThemeSong();
     }
@@ -2854,6 +2866,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function clearThemeDelay() {
     currentlyDelaying = false;
+    clearTimeout(currentDelayTimeoutID);
     playThemeSong();
   }
   function addThemeListeners() {
@@ -2871,10 +2884,28 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     });
   }
   addThemeListeners();
+  const currentPlayingSFX = /* @__PURE__ */ new Map();
+  const powerActivationSFX = /* @__PURE__ */ new Set([
+    GameSFX.powerActivateAllyCOP,
+    GameSFX.powerActivateAllySCOP,
+    GameSFX.powerActivateBHCOP,
+    GameSFX.powerActivateBHSCOP,
+    GameSFX.powerActivateAW1COP
+  ]);
   async function playSFX(sfx) {
     if (!musicSettings.isPlaying) return;
     if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
     if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
+    currentPlayingSFX.forEach((valAudio, valType) => {
+      if (!valAudio.playing()) currentPlayingSFX.delete(valType);
+    });
+    if (sfx === GameSFX.powerCOPAvailable || sfx === GameSFX.powerSCOPAvailable) {
+      let isActivatingPower = false;
+      currentPlayingSFX.forEach((valAudio, valType) => {
+        if (valAudio.playing() && powerActivationSFX.has(valType)) isActivatingPower = true;
+      });
+      if (isActivatingPower) return;
+    }
     const sfxURL = getSoundEffectURL(sfx);
     const audio = audioMap.get(sfxURL) ?? await preloadURL(sfxURL);
     audio.volume(getVolumeForURL(sfxURL));
@@ -2883,6 +2914,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const newID = audio.play();
     if (!newID) return;
     audioIDMap.set(sfxURL, newID);
+    currentPlayingSFX.set(sfx, audio);
   }
   function stopSFX(sfx) {
     if (!musicSettings.isPlaying) return;
@@ -2944,15 +2976,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
   }
   function syncMusic() {
+    const themeTypeBefore = musicSettings.themeType;
     musicSettings.themeType = getCurrentThemeType();
     playThemeSong();
     window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
-      playThemeSong();
-    }, 500);
-    window.setTimeout(() => {
-      musicSettings.themeType = getCurrentThemeType();
-      playThemeSong();
+      if (themeTypeBefore !== ThemeType.REGULAR && musicSettings.themeType === ThemeType.REGULAR) {
+        specialIntroMap.forEach((_introURL, loopURL) => {
+          if (loopURL.includes("-cop")) specialIntroMap.delete(loopURL);
+        });
+      }
     }, 750);
   }
   function refreshMusicForNextTurn(playDelayMS = 0) {
@@ -2962,7 +2995,15 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
       if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
-      if (musicSettings.playIntroEveryTurn) specialIntroMap.clear();
+      if (musicSettings.playIntroEveryTurn) {
+        specialIntroMap.clear();
+      } else {
+        specialIntroMap.forEach((_, url) => {
+          if (url.includes("-cop")) {
+            specialIntroMap.delete(url);
+          }
+        });
+      }
       playThemeSong();
       window.setTimeout(playThemeSong, 350);
     }, playDelayMS);
@@ -3001,6 +3042,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     replayBackwardBtn.addEventListener("click", stopExtraSFX);
     replayCloseBtn.addEventListener("click", stopExtraSFX);
     replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+    replayForwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+    replayBackwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
     replayBackwardActionBtn.addEventListener("click", syncMusic);
     replayForwardActionBtn.addEventListener("click", syncMusic);
     replayForwardBtn.addEventListener("click", syncMusic);
@@ -3069,7 +3112,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return;
     }
     playThemeSong();
-    window.setTimeout(playThemeSong, 500);
   }
   function onShowEndGameScreen(event) {
     ahShowEndGameScreen == null ? void 0 : ahShowEndGameScreen.apply(ahShowEndGameScreen, [event]);
@@ -3328,16 +3370,15 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     stopSFX(GameSFX.powerCOPAvailable);
     stopSFX(GameSFX.powerSCOPAvailable);
-    window.setTimeout(() => {
-      stopSFX(GameSFX.powerCOPAvailable);
-      stopSFX(GameSFX.powerSCOPAvailable);
-    }, 755);
     musicSettings.themeType = isSuperCOPower ? ThemeType.SUPER_CO_POWER : ThemeType.CO_POWER;
-    switch (musicSettings.gameType) {
+    let gameType = musicSettings.gameType;
+    if (musicSettings.randomThemesType === RandomThemeType.ALL_THEMES) {
+      gameType = musicSettings.currentRandomGameType;
+    }
+    switch (gameType) {
       case GameType.AW1:
         playSFX(GameSFX.powerActivateAW1COP);
         stopThemeSong(4500);
-        window.setTimeout(() => playThemeSong(), 4550);
         return;
       case GameType.AW2:
       case GameType.DS:
@@ -3347,14 +3388,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           const delay2 = isBH ? 1916 : 1100;
           playSFX(sfx2);
           stopThemeSong(delay2);
-          window.setTimeout(() => playThemeSong(), delay2 + 50);
           break;
         }
         const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
         const delay = isBH ? 1019 : 881;
         playSFX(sfx);
         stopThemeSong(delay);
-        window.setTimeout(() => playThemeSong(), delay + 50);
         break;
       }
     }

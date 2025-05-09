@@ -7,6 +7,15 @@ import { GameSFX, getSoundEffectURL } from "../resources";
 import { audioMap, getVolumeForURL, audioIDMap } from "./core";
 import { preloadURL } from "./preloading";
 
+const currentPlayingSFX = new Map<GameSFX, Howl>();
+const powerActivationSFX = new Set([
+  GameSFX.powerActivateAllyCOP,
+  GameSFX.powerActivateAllySCOP,
+  GameSFX.powerActivateBHCOP,
+  GameSFX.powerActivateBHSCOP,
+  GameSFX.powerActivateAW1COP,
+]);
+
 /**
  * Plays the given sound effect.
  * @param sfx - Specific {@link GameSFX} to play.
@@ -17,6 +26,20 @@ export async function playSFX(sfx: GameSFX) {
   // Check the user settings to see if we should play this sound effect
   if (!musicSettings.captureProgressSFX && sfx === GameSFX.unitCaptureProgress) return;
   if (!musicSettings.pipeSeamSFX && sfx === GameSFX.unitAttackPipeSeam) return;
+
+  // Clear up finished SFXs from list
+  currentPlayingSFX.forEach((valAudio, valType) => {
+    if (!valAudio.playing()) currentPlayingSFX.delete(valType);
+  });
+
+  // Don't play power available if we are activating a power
+  if (sfx === GameSFX.powerCOPAvailable || sfx === GameSFX.powerSCOPAvailable) {
+    let isActivatingPower = false;
+    currentPlayingSFX.forEach((valAudio, valType) => {
+      if (valAudio.playing() && powerActivationSFX.has(valType)) isActivatingPower = true;
+    });
+    if (isActivatingPower) return;
+  }
 
   const sfxURL = getSoundEffectURL(sfx);
 
@@ -33,6 +56,7 @@ export async function playSFX(sfx: GameSFX) {
 
   if (!newID) return;
   audioIDMap.set(sfxURL, newID);
+  currentPlayingSFX.set(sfx, audio);
   // audio.fade(0, musicSettings.sfxVolume, audio.duration() * 1000);
 }
 
