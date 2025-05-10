@@ -8,6 +8,7 @@
     "*/*.css"
   ],
   "scripts": {
+    "watch:dev": "vite build --mode development --watch -- --inputDir=music_player",
     "build:dev": "vite build --mode development  -- --inputDir=music_player",
     "build:music_player": "vite build -- --inputDir=music_player",
     "build:highlight_cursor_coordinates": "vite build -- --inputDir=highlight_cursor_coordinates",

@@ -7,7 +7,7 @@ import { loadMusicFromDB } from "../db";
 import { getCurrentThemeURLs, getSoundEffectURL, GameSFX, getAllAudioURLs } from "../resources";
 import { logError, logDebug } from "../utils";
 import { audioMap, getVolumeForURL } from "./core";
-import { musicPlayerUI } from "../music_ui";
+import { getMusicPlayerUI } from "../music_ui";
 
 /**
  * Set of URLs that are queued to be pre-loaded.
@@ -92,7 +92,7 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
     // Update UI
     const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
     // TODO
-    musicPlayerUI.setProgress(loadPercentage);
+    getMusicPlayerUI().setProgress(loadPercentage);
 
     // All the audio from the list has been loaded
     if (numLoadedAudios >= audioURLs.size) {

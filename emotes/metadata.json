@@ -1,8 +1,0 @@
-{
-  "name": "AWBW Emotes",
-  "description": "",
-  "author": "DeveloperJose",
-  "match": ["https://awbw.amarriner.com/game.php*"],
-  "icon": "",
-  "namespace": "https://awbw.amarriner.com/"
-}

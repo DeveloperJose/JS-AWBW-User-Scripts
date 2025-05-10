@@ -6,51 +6,61 @@ import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_glo
 import { GameType, RandomThemeType, ThemeType, musicSettings } from "./music_settings";
 
 /**
+ * List of possible URLs to download music files from
+ */
+
+const CANDIDATE_BASE_URLS = ["https://developerjose.netlify.app", "https://awbw-devj.duckdns.org"];
+
+/**
  * Base URL where all the files needed for this script are located.
- * @constant {string}
  */
-const BASE_URL = "https://developerjose.netlify.app";
+let BASE_URL: string;
 
 /**
- * Base URL where all the music files are located.
- * @constant {string}
+ * Finds a working base URL from a list of candidates
  */
-const BASE_MUSIC_URL = BASE_URL + "/music";
+export async function getWorkingBaseURL() {
+  for (const url of CANDIDATE_BASE_URLS) {
+    try {
+      const res = await fetch(`${url}/img/music-player-icon.png`, { method: "HEAD" });
+      if (res.ok) {
+        BASE_URL = url;
+        return url;
+      }
+    } catch {
+      // ignore errors and try next
+    }
+  }
+  return false;
+}
 
-/**
- * Base URL where all sound effect files are located.
- * @constant {string}
- */
-const BASE_SFX_URL = BASE_MUSIC_URL + "/sfx";
+const getURLForMusicFile = (fname: string) => `${BASE_URL}/music/${fname}`;
 
 /**
  * Image URL for static music player icon
- * @constant {string}
  */
-export const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
+export const getNeutralImgURL = () => `${BASE_URL}/img/music-player-icon.png`;
 
 /**
  * Image URL for animated music player icon.
- * @constant {string}
  */
-export const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
+export const getPlayingImgURL = () => `${BASE_URL}/img/music-player-playing.gif`;
 
 /**
  * URL for the JSON file containing the hashes for all the music files.
- * @constant {string}
  */
-export const HASH_JSON_URL = BASE_MUSIC_URL + "/hashes.json";
+export const getHashesJSONURL = () => `${BASE_URL}/music/hashes.json`;
 
 /**
  * URLs for the special themes that are not related to specific COs.
  * @enum {string}
  */
 export const enum SpecialTheme {
-  Victory = BASE_MUSIC_URL + "/t-victory.ogg",
-  Defeat = BASE_MUSIC_URL + "/t-defeat.ogg",
-  Maintenance = BASE_MUSIC_URL + "/t-maintenance.ogg",
-  COSelect = BASE_MUSIC_URL + "/t-co-select.ogg",
-  // ModeSelect = BASE_MUSIC_URL + "/t-mode-select.ogg",
+  Victory = "t-victory.ogg",
+  Defeat = "t-defeat.ogg",
+  Maintenance = "t-maintenance.ogg",
+  COSelect = "t-co-select.ogg",
+  // ModeSelect = "t-mode-select.ogg",
 }
 
 /**
@@ -285,10 +295,10 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   coName = coName.toLowerCase().replaceAll(" ", "");
 
   // Check if we want to play a special theme;
-  if (coName === SpecialCOs.Victory) return SpecialTheme.Victory;
-  if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
-  if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
-  if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
+  if (coName === SpecialCOs.Victory) return getURLForMusicFile(SpecialTheme.Victory);
+  if (coName === SpecialCOs.Defeat) return getURLForMusicFile(SpecialTheme.Defeat);
+  if (coName === SpecialCOs.Maintenance) return getURLForMusicFile(SpecialTheme.Maintenance);
+  if (coName === SpecialCOs.COSelect) return getURLForMusicFile(SpecialTheme.COSelect);
 
   if (
     coName === SpecialCOs.ModeSelect ||
@@ -319,7 +329,7 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
 
-  const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
+  const url = getURLForMusicFile(`${gameDir}/${filename}.ogg`);
   return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
 }
 
@@ -343,7 +353,7 @@ export function getCONameFromURL(url: string) {
  * @returns - The URL of the given sound effect.
  */
 export function getSoundEffectURL(sfx: GameSFX) {
-  return `${BASE_SFX_URL}/${sfx}.ogg`;
+  return `${BASE_URL}/music/sfx/${sfx}.ogg`;
 }
 
 /**
@@ -355,7 +365,7 @@ export function getMovementSoundURL(unitName: string) {
   const sfx = onMovementStartMap.get(unitName);
   if (!sfx) return "";
 
-  return `${BASE_SFX_URL}/${onMovementStartMap.get(unitName)}.ogg`;
+  return `${BASE_URL}/music/sfx/${onMovementStartMap.get(unitName)}.ogg`;
 }
 
 /**
@@ -364,7 +374,7 @@ export function getMovementSoundURL(unitName: string) {
  * @returns - The URL of the given unit's movement stop sound, if any, or null otherwise.
  */
 export function getMovementRollOffURL(unitName: string) {
-  return `${BASE_SFX_URL}/${onMovementRolloffMap.get(unitName)}.ogg`;
+  return `${BASE_URL}/music/sfx/${onMovementRolloffMap.get(unitName)}.ogg`;
 }
 
 /**

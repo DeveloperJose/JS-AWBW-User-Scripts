@@ -2,8 +2,8 @@
  * @file IndexedDB database for caching music files.
  */
 import SparkMD5 from "spark-md5";
-import { HASH_JSON_URL } from "./resources";
-import { logDebug, logError } from "./utils";
+import { logError } from "./utils";
+import { getHashesJSONURL } from "./resources";
 
 /**
  * The IndexedDB database for caching music files.
@@ -155,7 +155,7 @@ export function checkHashesInDB() {
 
   // Get the hashes stored in the server
   // logDebug("Fetching hashes from server to compare against local music files.");
-  return fetch(HASH_JSON_URL)
+  return fetch(getHashesJSONURL())
     .then((response) => response.json())
     .then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
   // .catch((reason) => logError("Error fetching hashes from server:", reason));

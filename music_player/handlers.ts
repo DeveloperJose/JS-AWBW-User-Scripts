@@ -34,14 +34,7 @@ import {
 
 import { areAnimationsEnabled } from "../shared/awbw_globals";
 
-import {
-  getCurrentThemeType,
-  musicSettings,
-  GameType,
-  ThemeType,
-  RandomThemeType,
-  getRandomGameType,
-} from "./music_settings";
+import { getCurrentThemeType, musicSettings, GameType, ThemeType, RandomThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
 import { isBlackHoleCO } from "../shared/awbw_globals";
 import {

@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.12.0
+// @version         5.14.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -584,6 +584,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         loopRandomSongsUntilTurnChange: this.__loopRandomSongsUntilTurnChange,
         sfxOnOtherPages: this.__sfxOnOtherPages,
         seamlessLoopsInMirrors: this.__seamlessLoopsInMirrors,
+        playIntroEveryTurn: this.__playIntroEveryTurn,
       });
     }
     static runWithoutSavingSettings(fn) {
@@ -835,11 +836,11 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     let storageData = localStorage.getItem(STORAGE_KEY);
     if (!storageData || storageData === "undefined") {
       logInfo("No saved settings found, storing defaults");
-      updateSettingsInLocalStorage();
+      const jsonSettings = __updateSettingsInLocalStorage();
       storageData = localStorage.getItem(STORAGE_KEY);
       if (!storageData) {
-        logError("Failed to store default settings in local storage");
-        return;
+        logError("Possibly failed to store default settings in local storage");
+        storageData = jsonSettings;
       }
     }
     musicSettings.fromJSON(storageData);
@@ -861,7 +862,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     const jsonSettings = musicSettings.toJSON();
     localStorage.setItem(STORAGE_KEY, jsonSettings);
     logDebug("Saving settings...", jsonSettings);
-    return;
+    return jsonSettings;
   }
   function onStorageBroadcast(event) {
     if (event.data.type !== "settings") return;
@@ -941,375 +942,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       }
     });
   }
-  const BASE_URL = "https://developerjose.netlify.app";
-  const BASE_MUSIC_URL = BASE_URL + "/music";
-  const BASE_SFX_URL = BASE_MUSIC_URL + "/sfx";
-  const NEUTRAL_IMG_URL = BASE_URL + "/img/music-player-icon.png";
-  const PLAYING_IMG_URL = BASE_URL + "/img/music-player-playing.gif";
-  const HASH_JSON_URL = BASE_MUSIC_URL + "/hashes.json";
-  var SpecialTheme = ((SpecialTheme2) => {
-    SpecialTheme2["Victory"] = BASE_MUSIC_URL + "/t-victory.ogg";
-    SpecialTheme2["Defeat"] = BASE_MUSIC_URL + "/t-defeat.ogg";
-    SpecialTheme2["Maintenance"] = BASE_MUSIC_URL + "/t-maintenance.ogg";
-    SpecialTheme2["COSelect"] = BASE_MUSIC_URL + "/t-co-select.ogg";
-    return SpecialTheme2;
-  })(SpecialTheme || {});
-  var GameSFX = /* @__PURE__ */ ((GameSFX2) => {
-    GameSFX2["coGoldRush"] = "co-gold-rush";
-    GameSFX2["powerActivateAllyCOP"] = "power-activate-ally-cop";
-    GameSFX2["powerActivateAllySCOP"] = "power-activate-ally-scop";
-    GameSFX2["powerActivateBHCOP"] = "power-activate-bh-cop";
-    GameSFX2["powerActivateBHSCOP"] = "power-activate-bh-scop";
-    GameSFX2["powerActivateAW1COP"] = "power-activate-aw1-cop";
-    GameSFX2["powerSCOPAvailable"] = "power-scop-available";
-    GameSFX2["powerCOPAvailable"] = "power-cop-available";
-    GameSFX2["tagBreakAlly"] = "tag-break-ally";
-    GameSFX2["tagBreakBH"] = "tag-break-bh";
-    GameSFX2["tagSwap"] = "tag-swap";
-    GameSFX2["unitAttackPipeSeam"] = "unit-attack-pipe-seam";
-    GameSFX2["unitCaptureAlly"] = "unit-capture-ally";
-    GameSFX2["unitCaptureEnemy"] = "unit-capture-enemy";
-    GameSFX2["unitCaptureProgress"] = "unit-capture-progress";
-    GameSFX2["unitMissileHit"] = "unit-missile-hit";
-    GameSFX2["unitMissileSend"] = "unit-missile-send";
-    GameSFX2["unitHide"] = "unit-hide";
-    GameSFX2["unitUnhide"] = "unit-unhide";
-    GameSFX2["unitSupply"] = "unit-supply";
-    GameSFX2["unitTrap"] = "unit-trap";
-    GameSFX2["unitLoad"] = "unit-load";
-    GameSFX2["unitUnload"] = "unit-unload";
-    GameSFX2["unitExplode"] = "unit-explode";
-    GameSFX2["uiCursorMove"] = "ui-cursor-move";
-    GameSFX2["uiInvalid"] = "ui-invalid";
-    GameSFX2["uiMenuOpen"] = "ui-menu-open";
-    GameSFX2["uiMenuClose"] = "ui-menu-close";
-    GameSFX2["uiMenuMove"] = "ui-menu-move";
-    GameSFX2["uiUnitSelect"] = "ui-unit-select";
-    return GameSFX2;
-  })(GameSFX || {});
-  const onMovementStartMap = /* @__PURE__ */ new Map([
-    [
-      "APC",
-      "move-tread-light",
-      /* moveTreadLightLoop */
-    ],
-    [
-      "Anti-Air",
-      "move-tread-light",
-      /* moveTreadLightLoop */
-    ],
-    [
-      "Artillery",
-      "move-tread-light",
-      /* moveTreadLightLoop */
-    ],
-    [
-      "B-Copter",
-      "move-bcopter",
-      /* moveBCopterLoop */
-    ],
-    [
-      "Battleship",
-      "move-naval",
-      /* moveNavalLoop */
-    ],
-    [
-      "Black Boat",
-      "move-naval",
-      /* moveNavalLoop */
-    ],
-    [
-      "Black Bomb",
-      "move-plane",
-      /* movePlaneLoop */
-    ],
-    [
-      "Bomber",
-      "move-plane",
-      /* movePlaneLoop */
-    ],
-    [
-      "Carrier",
-      "move-naval",
-      /* moveNavalLoop */
-    ],
-    [
-      "Cruiser",
-      "move-naval",
-      /* moveNavalLoop */
-    ],
-    [
-      "Fighter",
-      "move-plane",
-      /* movePlaneLoop */
-    ],
-    [
-      "Infantry",
-      "move-inf",
-      /* moveInfLoop */
-    ],
-    [
-      "Lander",
-      "move-naval",
-      /* moveNavalLoop */
-    ],
-    [
-      "Md.Tank",
-      "move-tread-heavy",
-      /* moveTreadHeavyLoop */
-    ],
-    [
-      "Mech",
-      "move-mech",
-      /* moveMechLoop */
-    ],
-    [
-      "Mega Tank",
-      "move-tread-heavy",
-      /* moveTreadHeavyLoop */
-    ],
-    [
-      "Missile",
-      "move-tires-heavy",
-      /* moveTiresHeavyLoop */
-    ],
-    [
-      "Neotank",
-      "move-tread-heavy",
-      /* moveTreadHeavyLoop */
-    ],
-    [
-      "Piperunner",
-      "move-piperunner",
-      /* movePiperunnerLoop */
-    ],
-    [
-      "Recon",
-      "move-tires-light",
-      /* moveTiresLightLoop */
-    ],
-    [
-      "Rocket",
-      "move-tires-heavy",
-      /* moveTiresHeavyLoop */
-    ],
-    [
-      "Stealth",
-      "move-plane",
-      /* movePlaneLoop */
-    ],
-    [
-      "Sub",
-      "move-sub",
-      /* moveSubLoop */
-    ],
-    [
-      "T-Copter",
-      "move-tcopter",
-      /* moveTCopterLoop */
-    ],
-    [
-      "Tank",
-      "move-tread-light",
-      /* moveTreadLightLoop */
-    ],
-  ]);
-  const onMovementRolloffMap = /* @__PURE__ */ new Map([
-    [
-      "APC",
-      "move-tread-light-rolloff",
-      /* moveTreadLightOneShot */
-    ],
-    [
-      "Anti-Air",
-      "move-tread-light-rolloff",
-      /* moveTreadLightOneShot */
-    ],
-    [
-      "Artillery",
-      "move-tread-light-rolloff",
-      /* moveTreadLightOneShot */
-    ],
-    [
-      "B-Copter",
-      "move-bcopter-rolloff",
-      /* moveBCopterOneShot */
-    ],
-    [
-      "Black Bomb",
-      "move-plane-rolloff",
-      /* movePlaneOneShot */
-    ],
-    [
-      "Bomber",
-      "move-plane-rolloff",
-      /* movePlaneOneShot */
-    ],
-    [
-      "Fighter",
-      "move-plane-rolloff",
-      /* movePlaneOneShot */
-    ],
-    [
-      "Md.Tank",
-      "move-tread-heavy-rolloff",
-      /* moveTreadHeavyOneShot */
-    ],
-    [
-      "Mega Tank",
-      "move-tread-heavy-rolloff",
-      /* moveTreadHeavyOneShot */
-    ],
-    [
-      "Missile",
-      "move-tires-heavy-rolloff",
-      /* moveTiresHeavyOneShot */
-    ],
-    [
-      "Neotank",
-      "move-tread-heavy-rolloff",
-      /* moveTreadHeavyOneShot */
-    ],
-    [
-      "Recon",
-      "move-tires-light-rolloff",
-      /* moveTiresLightOneShot */
-    ],
-    [
-      "Rocket",
-      "move-tires-heavy-rolloff",
-      /* moveTiresHeavyOneShot */
-    ],
-    [
-      "Stealth",
-      "move-plane-rolloff",
-      /* movePlaneOneShot */
-    ],
-    [
-      "T-Copter",
-      "move-tcopter-rolloff",
-      /* moveTCopterOneShot */
-    ],
-    [
-      "Tank",
-      "move-tread-light-rolloff",
-      /* moveTreadLightOneShot */
-    ],
-  ]);
-  const alternateThemes = /* @__PURE__ */ new Map([
-    [GameType.AW1, /* @__PURE__ */ new Set(["sturm"])],
-    [GameType.AW2, /* @__PURE__ */ new Set(["sturm"])],
-    [GameType.DS, /* @__PURE__ */ new Set(["sturm", "vonbolt"])],
-    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
-  ]);
-  const introThemes = /* @__PURE__ */ new Map([
-    [GameType.AW1, /* @__PURE__ */ new Set([])],
-    [
-      GameType.AW2,
-      /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"]),
-    ],
-    [GameType.DS, /* @__PURE__ */ new Set(["jess"])],
-    [GameType.RBC, /* @__PURE__ */ new Set([])],
-  ]);
-  function getAlternateMusicFilename(coName, gameType, themeType) {
-    if (!alternateThemes.has(gameType)) return;
-    const alternateThemesSet = alternateThemes.get(gameType);
-    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-    const isPowerActive = themeType !== ThemeType.REGULAR;
-    if (gameType === GameType.RBC && isPowerActive) {
-      return `t-${faction}-${themeType}`;
-    }
-    if (!(alternateThemesSet == null ? void 0 : alternateThemesSet.has(coName)) || isPowerActive) {
-      return;
-    }
-    if (coName === "andy" && gameType == GameType.RBC) {
-      return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
-    }
-    return `t-${coName}-2`;
-  }
-  function getMusicFilename(coName, gameType, themeType, useAlternateTheme) {
-    var _a;
-    const hasIntro = (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
-    if (coName === SpecialCOs.MapEditor) return "t-map-editor";
-    if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
-    if (useAlternateTheme) {
-      const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
-      if (alternateFilename) return alternateFilename;
-    }
-    const isPowerActive = themeType !== ThemeType.REGULAR;
-    const skipPowerTheme = gameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
-    if (!isPowerActive || skipPowerTheme) {
-      return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
-    }
-    const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-    if (gameType === GameType.RBC && isCOInRBC) {
-      return `t-${coName}-cop-intro`;
-    }
-    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-    return `t-${faction}-${themeType}`;
-  }
-  function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
-    if (gameType === null || gameType === void 0) gameType = musicSettings.gameType;
-    if (themeType === null || themeType === void 0) themeType = musicSettings.themeType;
-    if (useAlternateTheme === null || useAlternateTheme === void 0) {
-      useAlternateTheme = getCurrentGameDay() >= musicSettings.alternateThemeDay && musicSettings.alternateThemes;
-    }
-    coName = coName.toLowerCase().replaceAll(" ", "");
-    if (coName === SpecialCOs.Victory) return SpecialTheme.Victory;
-    if (coName === SpecialCOs.Defeat) return SpecialTheme.Defeat;
-    if (coName === SpecialCOs.Maintenance) return SpecialTheme.Maintenance;
-    if (coName === SpecialCOs.COSelect) return SpecialTheme.COSelect;
-    if (
-      coName === SpecialCOs.ModeSelect ||
-      coName === SpecialCOs.MainPage ||
-      coName === SpecialCOs.LiveQueue ||
-      coName === SpecialCOs.Default
-    )
-      coName = SpecialCOs.ModeSelect;
-    const overrideType = musicSettings.getOverride(coName);
-    if (overrideType) gameType = overrideType;
-    const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
-    if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
-    const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
-    if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
-    let gameDir = gameType;
-    if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
-    const url = `${BASE_MUSIC_URL}/${gameDir}/${filename}.ogg`;
-    return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
-  }
-  function getSoundEffectURL(sfx) {
-    return `${BASE_SFX_URL}/${sfx}.ogg`;
-  }
-  function getMovementSoundURL(unitName) {
-    const sfx = onMovementStartMap.get(unitName);
-    if (!sfx) return "";
-    return `${BASE_SFX_URL}/${onMovementStartMap.get(unitName)}.ogg`;
-  }
-  function getMovementRollOffURL(unitName) {
-    return `${BASE_SFX_URL}/${onMovementRolloffMap.get(unitName)}.ogg`;
-  }
-  function hasMovementRollOff(unitName) {
-    return onMovementRolloffMap.has(unitName);
-  }
-  function getCurrentThemeURLs() {
-    const coNames = getAllPlayingCONames();
-    const audioList = /* @__PURE__ */ new Set();
-    coNames.add(SpecialCOs.MapEditor);
-    coNames.add(SpecialCOs.ModeSelect);
-    coNames.forEach((name) => {
-      const regularURL = getMusicURL(name, musicSettings.gameType, ThemeType.REGULAR, false);
-      const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
-      const superPowerURL = getMusicURL(name, musicSettings.gameType, ThemeType.SUPER_CO_POWER, false);
-      const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
-      audioList.add(regularURL);
-      audioList.add(alternateURL);
-      audioList.add(powerURL);
-      audioList.add(superPowerURL);
-      if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
-      if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
-    });
-    return audioList;
-  }
   var ScriptName = /* @__PURE__ */ ((ScriptName2) => {
     ScriptName2["None"] = "none";
     ScriptName2["MusicPlayer"] = "music_player";
@@ -1317,7 +949,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.12.0"],
+    ["music_player", "5.14.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -2021,6 +1653,403 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   function notifyCOSelectorListeners(coName) {
     coSelectorListeners.forEach((listener) => listener(coName));
   }
+  const CANDIDATE_BASE_URLS = ["https://developerjose.netlify.app", "https://awbw-devj.duckdns.org"];
+  let BASE_URL;
+  async function getWorkingBaseURL() {
+    for (const url of CANDIDATE_BASE_URLS) {
+      try {
+        const res = await fetch(`${url}/img/music-player-icon.png`, { method: "HEAD" });
+        if (res.ok) {
+          BASE_URL = url;
+          return url;
+        }
+      } catch {}
+    }
+    return false;
+  }
+  const getURLForMusicFile = (fname) => `${BASE_URL}/music/${fname}`;
+  const getNeutralImgURL = () => `${BASE_URL}/img/music-player-icon.png`;
+  const getPlayingImgURL = () => `${BASE_URL}/img/music-player-playing.gif`;
+  const getHashesJSONURL = () => `${BASE_URL}/music/hashes.json`;
+  var SpecialTheme = /* @__PURE__ */ ((SpecialTheme2) => {
+    SpecialTheme2["Victory"] = "t-victory.ogg";
+    SpecialTheme2["Defeat"] = "t-defeat.ogg";
+    SpecialTheme2["Maintenance"] = "t-maintenance.ogg";
+    SpecialTheme2["COSelect"] = "t-co-select.ogg";
+    return SpecialTheme2;
+  })(SpecialTheme || {});
+  var GameSFX = /* @__PURE__ */ ((GameSFX2) => {
+    GameSFX2["coGoldRush"] = "co-gold-rush";
+    GameSFX2["powerActivateAllyCOP"] = "power-activate-ally-cop";
+    GameSFX2["powerActivateAllySCOP"] = "power-activate-ally-scop";
+    GameSFX2["powerActivateBHCOP"] = "power-activate-bh-cop";
+    GameSFX2["powerActivateBHSCOP"] = "power-activate-bh-scop";
+    GameSFX2["powerActivateAW1COP"] = "power-activate-aw1-cop";
+    GameSFX2["powerSCOPAvailable"] = "power-scop-available";
+    GameSFX2["powerCOPAvailable"] = "power-cop-available";
+    GameSFX2["tagBreakAlly"] = "tag-break-ally";
+    GameSFX2["tagBreakBH"] = "tag-break-bh";
+    GameSFX2["tagSwap"] = "tag-swap";
+    GameSFX2["unitAttackPipeSeam"] = "unit-attack-pipe-seam";
+    GameSFX2["unitCaptureAlly"] = "unit-capture-ally";
+    GameSFX2["unitCaptureEnemy"] = "unit-capture-enemy";
+    GameSFX2["unitCaptureProgress"] = "unit-capture-progress";
+    GameSFX2["unitMissileHit"] = "unit-missile-hit";
+    GameSFX2["unitMissileSend"] = "unit-missile-send";
+    GameSFX2["unitHide"] = "unit-hide";
+    GameSFX2["unitUnhide"] = "unit-unhide";
+    GameSFX2["unitSupply"] = "unit-supply";
+    GameSFX2["unitTrap"] = "unit-trap";
+    GameSFX2["unitLoad"] = "unit-load";
+    GameSFX2["unitUnload"] = "unit-unload";
+    GameSFX2["unitExplode"] = "unit-explode";
+    GameSFX2["uiCursorMove"] = "ui-cursor-move";
+    GameSFX2["uiInvalid"] = "ui-invalid";
+    GameSFX2["uiMenuOpen"] = "ui-menu-open";
+    GameSFX2["uiMenuClose"] = "ui-menu-close";
+    GameSFX2["uiMenuMove"] = "ui-menu-move";
+    GameSFX2["uiUnitSelect"] = "ui-unit-select";
+    return GameSFX2;
+  })(GameSFX || {});
+  const onMovementStartMap = /* @__PURE__ */ new Map([
+    [
+      "APC",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+    [
+      "Anti-Air",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+    [
+      "Artillery",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+    [
+      "B-Copter",
+      "move-bcopter",
+      /* moveBCopterLoop */
+    ],
+    [
+      "Battleship",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Black Boat",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Black Bomb",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Bomber",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Carrier",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Cruiser",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Fighter",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Infantry",
+      "move-inf",
+      /* moveInfLoop */
+    ],
+    [
+      "Lander",
+      "move-naval",
+      /* moveNavalLoop */
+    ],
+    [
+      "Md.Tank",
+      "move-tread-heavy",
+      /* moveTreadHeavyLoop */
+    ],
+    [
+      "Mech",
+      "move-mech",
+      /* moveMechLoop */
+    ],
+    [
+      "Mega Tank",
+      "move-tread-heavy",
+      /* moveTreadHeavyLoop */
+    ],
+    [
+      "Missile",
+      "move-tires-heavy",
+      /* moveTiresHeavyLoop */
+    ],
+    [
+      "Neotank",
+      "move-tread-heavy",
+      /* moveTreadHeavyLoop */
+    ],
+    [
+      "Piperunner",
+      "move-piperunner",
+      /* movePiperunnerLoop */
+    ],
+    [
+      "Recon",
+      "move-tires-light",
+      /* moveTiresLightLoop */
+    ],
+    [
+      "Rocket",
+      "move-tires-heavy",
+      /* moveTiresHeavyLoop */
+    ],
+    [
+      "Stealth",
+      "move-plane",
+      /* movePlaneLoop */
+    ],
+    [
+      "Sub",
+      "move-sub",
+      /* moveSubLoop */
+    ],
+    [
+      "T-Copter",
+      "move-tcopter",
+      /* moveTCopterLoop */
+    ],
+    [
+      "Tank",
+      "move-tread-light",
+      /* moveTreadLightLoop */
+    ],
+  ]);
+  const onMovementRolloffMap = /* @__PURE__ */ new Map([
+    [
+      "APC",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+    [
+      "Anti-Air",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+    [
+      "Artillery",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+    [
+      "B-Copter",
+      "move-bcopter-rolloff",
+      /* moveBCopterOneShot */
+    ],
+    [
+      "Black Bomb",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "Bomber",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "Fighter",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "Md.Tank",
+      "move-tread-heavy-rolloff",
+      /* moveTreadHeavyOneShot */
+    ],
+    [
+      "Mega Tank",
+      "move-tread-heavy-rolloff",
+      /* moveTreadHeavyOneShot */
+    ],
+    [
+      "Missile",
+      "move-tires-heavy-rolloff",
+      /* moveTiresHeavyOneShot */
+    ],
+    [
+      "Neotank",
+      "move-tread-heavy-rolloff",
+      /* moveTreadHeavyOneShot */
+    ],
+    [
+      "Recon",
+      "move-tires-light-rolloff",
+      /* moveTiresLightOneShot */
+    ],
+    [
+      "Rocket",
+      "move-tires-heavy-rolloff",
+      /* moveTiresHeavyOneShot */
+    ],
+    [
+      "Stealth",
+      "move-plane-rolloff",
+      /* movePlaneOneShot */
+    ],
+    [
+      "T-Copter",
+      "move-tcopter-rolloff",
+      /* moveTCopterOneShot */
+    ],
+    [
+      "Tank",
+      "move-tread-light-rolloff",
+      /* moveTreadLightOneShot */
+    ],
+  ]);
+  const alternateThemes = /* @__PURE__ */ new Map([
+    [GameType.AW1, /* @__PURE__ */ new Set(["sturm"])],
+    [GameType.AW2, /* @__PURE__ */ new Set(["sturm"])],
+    [GameType.DS, /* @__PURE__ */ new Set(["sturm", "vonbolt"])],
+    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
+  ]);
+  const introThemes = /* @__PURE__ */ new Map([
+    [GameType.AW1, /* @__PURE__ */ new Set([])],
+    [
+      GameType.AW2,
+      /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"]),
+    ],
+    [GameType.DS, /* @__PURE__ */ new Set(["jess"])],
+    [GameType.RBC, /* @__PURE__ */ new Set([])],
+  ]);
+  function getAlternateMusicFilename(coName, gameType, themeType) {
+    if (!alternateThemes.has(gameType)) return;
+    const alternateThemesSet = alternateThemes.get(gameType);
+    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
+    const isPowerActive = themeType !== ThemeType.REGULAR;
+    if (gameType === GameType.RBC && isPowerActive) {
+      return `t-${faction}-${themeType}`;
+    }
+    if (!(alternateThemesSet == null ? void 0 : alternateThemesSet.has(coName)) || isPowerActive) {
+      return;
+    }
+    if (coName === "andy" && gameType == GameType.RBC) {
+      return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
+    }
+    return `t-${coName}-2`;
+  }
+  function getMusicFilename(coName, gameType, themeType, useAlternateTheme) {
+    var _a;
+    const hasIntro = (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
+    if (coName === SpecialCOs.MapEditor) return "t-map-editor";
+    if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
+    if (useAlternateTheme) {
+      const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+      if (alternateFilename) return alternateFilename;
+    }
+    const isPowerActive = themeType !== ThemeType.REGULAR;
+    const skipPowerTheme = gameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+    if (!isPowerActive || skipPowerTheme) {
+      return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
+    }
+    const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+    if (gameType === GameType.RBC && isCOInRBC) {
+      return `t-${coName}-cop-intro`;
+    }
+    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
+    return `t-${faction}-${themeType}`;
+  }
+  function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
+    if (gameType === null || gameType === void 0) gameType = musicSettings.gameType;
+    if (themeType === null || themeType === void 0) themeType = musicSettings.themeType;
+    if (useAlternateTheme === null || useAlternateTheme === void 0) {
+      useAlternateTheme = getCurrentGameDay() >= musicSettings.alternateThemeDay && musicSettings.alternateThemes;
+    }
+    coName = coName.toLowerCase().replaceAll(" ", "");
+    if (coName === SpecialCOs.Victory)
+      return getURLForMusicFile(
+        "t-victory.ogg",
+        /* Victory */
+      );
+    if (coName === SpecialCOs.Defeat)
+      return getURLForMusicFile(
+        "t-defeat.ogg",
+        /* Defeat */
+      );
+    if (coName === SpecialCOs.Maintenance)
+      return getURLForMusicFile(
+        "t-maintenance.ogg",
+        /* Maintenance */
+      );
+    if (coName === SpecialCOs.COSelect)
+      return getURLForMusicFile(
+        "t-co-select.ogg",
+        /* COSelect */
+      );
+    if (
+      coName === SpecialCOs.ModeSelect ||
+      coName === SpecialCOs.MainPage ||
+      coName === SpecialCOs.LiveQueue ||
+      coName === SpecialCOs.Default
+    )
+      coName = SpecialCOs.ModeSelect;
+    const overrideType = musicSettings.getOverride(coName);
+    if (overrideType) gameType = overrideType;
+    const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+    if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+    const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
+    if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
+    let gameDir = gameType;
+    if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
+    const url = getURLForMusicFile(`${gameDir}/${filename}.ogg`);
+    return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
+  }
+  function getSoundEffectURL(sfx) {
+    return `${BASE_URL}/music/sfx/${sfx}.ogg`;
+  }
+  function getMovementSoundURL(unitName) {
+    const sfx = onMovementStartMap.get(unitName);
+    if (!sfx) return "";
+    return `${BASE_URL}/music/sfx/${onMovementStartMap.get(unitName)}.ogg`;
+  }
+  function getMovementRollOffURL(unitName) {
+    return `${BASE_URL}/music/sfx/${onMovementRolloffMap.get(unitName)}.ogg`;
+  }
+  function hasMovementRollOff(unitName) {
+    return onMovementRolloffMap.has(unitName);
+  }
+  function getCurrentThemeURLs() {
+    const coNames = getAllPlayingCONames();
+    const audioList = /* @__PURE__ */ new Set();
+    coNames.add(SpecialCOs.MapEditor);
+    coNames.add(SpecialCOs.ModeSelect);
+    coNames.forEach((name) => {
+      const regularURL = getMusicURL(name, musicSettings.gameType, ThemeType.REGULAR, false);
+      const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
+      const superPowerURL = getMusicURL(name, musicSettings.gameType, ThemeType.SUPER_CO_POWER, false);
+      const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
+      audioList.add(regularURL);
+      audioList.add(alternateURL);
+      audioList.add(powerURL);
+      audioList.add(superPowerURL);
+      if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
+      if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
+    });
+    return audioList;
+  }
   let db = null;
   const dbName = "awbw_music_player";
   const dbVersion = 1;
@@ -2097,7 +2126,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
   }
   function checkHashesInDB() {
     if (!db) return Promise.reject("Database not open.");
-    return fetch(HASH_JSON_URL)
+    return fetch(getHashesJSONURL())
       .then((response) => response.json())
       .then((hashes) => compareHashesAndReplaceIfNeeded(hashes));
   }
@@ -2198,7 +2227,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     const onAudioPreload = (action, url) => {
       numLoadedAudios++;
       const loadPercentage = (numLoadedAudios / audioURLs.size) * 100;
-      musicPlayerUI.setProgress(loadPercentage);
+      getMusicPlayerUI().setProgress(loadPercentage);
       if (numLoadedAudios >= audioURLs.size) {
         numLoadedAudios = 0;
         if (afterPreloadFunction) afterPreloadFunction();
@@ -2247,82 +2276,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     promiseMap.set(srcURL, promise);
     return promise;
   }
-  function getMenu() {
-    var _a;
-    const doc = getCurrentDocument();
-    switch (getCurrentPageType()) {
-      case PageType.Maintenance:
-        return doc.querySelector("#main");
-      case PageType.MapEditor:
-        return doc.querySelector("#replay-misc-controls");
-      case PageType.MovePlanner:
-        return doc.querySelector("#map-controls-container");
-      case PageType.ActiveGame:
-        return (_a = doc.querySelector("#game-map-menu")) == null ? void 0 : _a.parentNode;
-      // case PageType.LiveQueue:
-      // case PageType.MainPage:
-      default:
-        return doc.querySelector("#nav-options");
-    }
-  }
-  function onMusicBtnClick(_event) {
-    musicSettings.isPlaying = !musicSettings.isPlaying;
-  }
-  function onSettingsChange$1(key, _value, isFirstLoad) {
-    if (isFirstLoad) {
-      if (volumeSlider) volumeSlider.value = musicSettings.volume.toString();
-      if (sfxVolumeSlider) sfxVolumeSlider.value = musicSettings.sfxVolume.toString();
-      if (uiVolumeSlider) uiVolumeSlider.value = musicSettings.uiVolume.toString();
-      if (daySlider) daySlider.value = musicSettings.alternateThemeDay.toString();
-      const selectedGameTypeRadio = gameTypeRadioMap.get(musicSettings.gameType);
-      if (selectedGameTypeRadio) selectedGameTypeRadio.checked = true;
-      const selectedRandomTypeRadio = randomRadioMap.get(musicSettings.randomThemesType);
-      if (selectedRandomTypeRadio) selectedRandomTypeRadio.checked = true;
-      captProgressBox.checked = musicSettings.captureProgressSFX;
-      pipeSeamBox.checked = musicSettings.pipeSeamSFX;
-      seamlessLoopsBox.checked = musicSettings.seamlessLoopsInMirrors;
-      restartThemesBox.checked = musicSettings.restartThemes;
-      autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
-      loopToggle.checked = musicSettings.loopRandomSongsUntilTurnChange;
-      introsBox.checked = musicSettings.playIntroEveryTurn;
-      uiSFXPagesBox.checked = musicSettings.sfxOnOtherPages;
-      alternateThemesBox.checked = musicSettings.alternateThemes;
-      musicPlayerUI.updateAllInputLabels();
-    }
-    if (key === SettingsKey.ALL || key === SettingsKey.ADD_OVERRIDE || key === SettingsKey.REMOVE_OVERRIDE) {
-      clearAndRepopulateOverrideList();
-      if (musicSettings.overrideList.size === 0) {
-        const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
-        musicPlayerUI.addItemToTable("Overrides", noOverrides);
-      }
-    }
-    if (key === SettingsKey.ALL || key === SettingsKey.ADD_EXCLUDED || key === SettingsKey.REMOVE_EXCLUDED) {
-      clearAndRepopulateExcludedList();
-      if (musicSettings.excludedRandomThemes.size === 0) {
-        const noExcluded = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No themes excluded yet...");
-        musicPlayerUI.addItemToTable("Excluded Random Themes", noExcluded);
-      }
-    }
-    if (key === SettingsKey.GAME_TYPE) {
-      preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
-    }
-    const canUpdateDaySlider =
-      (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
-    if (canUpdateDaySlider) daySlider.parentElement.style.display = alternateThemesBox.checked ? "flex" : "none";
-    if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
-    let currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
-    currentSounds += "\n(Right-Click for Settings)";
-    if (musicSettings.isPlaying) {
-      musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
-      musicPlayerUI.setImage(PLAYING_IMG_URL);
-    } else {
-      musicPlayerUI.setHoverText(`Play ${currentSounds}`, true);
-      musicPlayerUI.setImage(NEUTRAL_IMG_URL);
-    }
-  }
-  const parseInputFloat = (event) => parseFloat(event.target.value);
-  const parseInputInt = (event) => parseInt(event.target.value);
-  const musicPlayerUI = new CustomMenuSettingsUI(ScriptName.MusicPlayer, NEUTRAL_IMG_URL, "Play Tunes");
   var Description = /* @__PURE__ */ ((Description2) => {
     Description2["Volume"] = "Adjust the volume of the CO theme music, power activations, and power themes.";
     Description2["SFX_Volume"] = "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.";
@@ -2363,230 +2316,304 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       "Add an override for a specific CO to exclude their themes when playing random themes.";
     return Description2;
   })(Description || {});
-  const LEFT = NodeID.Settings_Left;
-  const volumeSlider = musicPlayerUI.addSlider(
-    "Music Volume",
-    0,
-    1,
-    5e-3,
-    "Adjust the volume of the CO theme music, power activations, and power themes.",
-    LEFT,
-  );
-  const sfxVolumeSlider = musicPlayerUI.addSlider(
-    "SFX Volume",
-    0,
-    1,
-    5e-3,
-    "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
-    LEFT,
-  );
-  const uiVolumeSlider = musicPlayerUI.addSlider(
-    "UI Volume",
-    0,
-    1,
-    5e-3,
-    "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
-    LEFT,
-  );
-  const soundtrackGroupID = "Soundtrack";
-  musicPlayerUI.addGroup(soundtrackGroupID, GroupType.Horizontal, LEFT);
-  const gameTypeRadioMap = /* @__PURE__ */ new Map();
-  for (const gameType of Object.values(GameType)) {
-    const description = Description[gameType];
-    const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroupID, description);
-    gameTypeRadioMap.set(gameType, radio);
+  function getMenu() {
+    var _a;
+    const doc = getCurrentDocument();
+    switch (getCurrentPageType()) {
+      case PageType.Maintenance:
+        return doc.querySelector("#main");
+      case PageType.MapEditor:
+        return doc.querySelector("#replay-misc-controls");
+      case PageType.MovePlanner:
+        return doc.querySelector("#map-controls-container");
+      case PageType.ActiveGame:
+        return (_a = doc.querySelector("#game-map-menu")) == null ? void 0 : _a.parentNode;
+      // case PageType.LiveQueue:
+      // case PageType.MainPage:
+      default:
+        return doc.querySelector("#nav-options");
+    }
   }
-  const randomGroupID = "Random Themes";
-  musicPlayerUI.addGroup(randomGroupID, GroupType.Horizontal, LEFT);
-  const radioNormal = musicPlayerUI.addRadioButton(
-    "Off",
-    randomGroupID,
-    "Play the music depending on who the current CO is.",
-    /* No_Random */
-  );
-  const radioAllRandom = musicPlayerUI.addRadioButton(
-    "All Soundtracks",
-    randomGroupID,
-    "Play random music every turn from all soundtracks.",
-    /* All_Random */
-  );
-  const radioCurrentRandom = musicPlayerUI.addRadioButton(
-    "Current Soundtrack",
-    randomGroupID,
-    "Play random music every turn from the current soundtrack.",
-    /* Current_Random */
-  );
-  const randomRadioMap = /* @__PURE__ */ new Map([
-    [RandomThemeType.NONE, radioNormal],
-    [RandomThemeType.ALL_THEMES, radioAllRandom],
-    [RandomThemeType.CURRENT_SOUNDTRACK, radioCurrentRandom],
-  ]);
-  const shuffleBtn = musicPlayerUI.addButton(
-    "Shuffle",
-    randomGroupID,
-    "Changes the current theme to a new random one.",
-    /* Shuffle */
-  );
-  const sfxGroupID = "Sound Effect (SFX) Options";
-  musicPlayerUI.addGroup(sfxGroupID, GroupType.Vertical, LEFT);
-  const uiSFXPagesBox = musicPlayerUI.addCheckbox(
-    "Play Sound Effects Outside Of Game Pages",
-    sfxGroupID,
-    "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.",
-    /* SFX_Pages */
-  );
-  const captProgressBox = musicPlayerUI.addCheckbox(
-    "Capture Progress SFX",
-    sfxGroupID,
-    "Play a sound effect when a unit makes progress capturing a property.",
-    /* Capture_Progress */
-  );
-  const pipeSeamBox = musicPlayerUI.addCheckbox(
-    "Pipe Seam Attack SFX",
-    sfxGroupID,
-    "Play a sound effect when a pipe seam is attacked.",
-    /* Pipe_Seam_SFX */
-  );
-  const musicGroupID = "Music Options";
-  musicPlayerUI.addGroup(musicGroupID, GroupType.Vertical, LEFT);
-  const autoplayPagesBox = musicPlayerUI.addCheckbox(
-    "Autoplay Music Outside Of Game Pages",
-    musicGroupID,
-    "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.",
-    /* Autoplay_Pages */
-  );
-  const seamlessLoopsBox = musicPlayerUI.addCheckbox(
-    "Seamless Loops In Mirror Matches",
-    musicGroupID,
-    "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.",
-    /* Seamless_Loops */
-  );
-  const restartThemesBox = musicPlayerUI.addCheckbox(
-    "Restart Themes Every Turn",
-    musicGroupID,
-    "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
-    /* Restart_Themes */
-  );
-  const loopToggle = musicPlayerUI.addCheckbox(
-    "Loop Random Songs Until Turn Changes",
-    musicGroupID,
-    "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
-    /* Random_Loop_Toggle */
-  );
-  const introsBox = musicPlayerUI.addCheckbox(
-    "Play CO Intros Every Turn",
-    musicGroupID,
-    "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.",
-    /* PlayIntros */
-  );
-  const alternateThemesBox = musicPlayerUI.addCheckbox(
-    "Alternate Themes",
-    musicGroupID,
-    "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
-    /* Alternate_Themes */
-  );
-  const daySlider = musicPlayerUI.addSlider(
-    "Alternate Themes Start On Day",
-    0,
-    30,
-    1,
-    "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
-    LEFT,
-  );
-  const RIGHT = NodeID.Settings_Right;
-  const addOverrideGroupID = "Override Themes";
-  musicPlayerUI.addGroup(addOverrideGroupID, GroupType.Horizontal, RIGHT);
+  function onMusicBtnClick(_event) {
+    musicSettings.isPlaying = !musicSettings.isPlaying;
+  }
   let currentSelectedCO = "andy";
   function onCOSelectorClick(coName) {
     currentSelectedCO = coName;
   }
-  musicPlayerUI.addCOSelector(
-    addOverrideGroupID,
-    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
-    onCOSelectorClick,
-  );
-  const overrideGameTypeRadioMap = /* @__PURE__ */ new Map();
-  for (const gameType of Object.values(GameType)) {
-    const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroupID, "Only play songs from " + gameType);
-    overrideGameTypeRadioMap.set(gameType, radio);
-    radio.checked = true;
-  }
-  const excludeRadio = musicPlayerUI.addRadioButton(
-    "Exclude Random",
-    addOverrideGroupID,
-    "Add an override for a specific CO to exclude their themes when playing random themes.",
-    /* Add_Excluded */
-  );
-  const overrideBtn = musicPlayerUI.addButton(
-    "Add",
-    addOverrideGroupID,
-    "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
-    /* Add_Override */
-  );
-  const overrideListGroupID = "Current Overrides (Click to Remove)";
-  musicPlayerUI.addGroup(overrideListGroupID, GroupType.Horizontal, RIGHT);
-  const overrideDivMap = /* @__PURE__ */ new Map();
-  const tableRows = 4;
-  const tableCols = 7;
-  musicPlayerUI.addTable(
-    "Overrides",
-    tableRows,
-    tableCols,
-    overrideListGroupID,
-    "Removes the override for this specific CO.",
-    /* Remove_Override */
-  );
-  function addOverrideDisplayDiv(coName, gameType) {
-    const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, gameType);
-    displayDiv.addEventListener("click", (_event) => {
-      musicSettings.removeOverride(coName);
-    });
-    overrideDivMap.set(coName, displayDiv);
-    musicPlayerUI.addItemToTable("Overrides", displayDiv);
-    return displayDiv;
-  }
-  function clearAndRepopulateOverrideList() {
-    overrideDivMap.forEach((div) => div.remove());
-    overrideDivMap.clear();
-    musicPlayerUI.clearTable(
-      "Overrides",
-      /* Override_Table */
-    );
-    for (const [coName, gameType] of musicSettings.overrideList) {
-      addOverrideDisplayDiv(coName, gameType);
+  function onSettingsChange$1(key, _value, isFirstLoad) {
+    const musicPlayerUI = getMusicPlayerUI();
+    if (isFirstLoad) {
+      if (volumeSlider) volumeSlider.value = musicSettings.volume.toString();
+      if (sfxVolumeSlider) sfxVolumeSlider.value = musicSettings.sfxVolume.toString();
+      if (uiVolumeSlider) uiVolumeSlider.value = musicSettings.uiVolume.toString();
+      if (daySlider) daySlider.value = musicSettings.alternateThemeDay.toString();
+      const selectedGameTypeRadio = gameTypeRadioMap.get(musicSettings.gameType);
+      if (selectedGameTypeRadio) selectedGameTypeRadio.checked = true;
+      const selectedRandomTypeRadio = randomRadioMap.get(musicSettings.randomThemesType);
+      if (selectedRandomTypeRadio) selectedRandomTypeRadio.checked = true;
+      if (captProgressBox) captProgressBox.checked = musicSettings.captureProgressSFX;
+      if (pipeSeamBox) pipeSeamBox.checked = musicSettings.pipeSeamSFX;
+      if (seamlessLoopsBox) seamlessLoopsBox.checked = musicSettings.seamlessLoopsInMirrors;
+      if (restartThemesBox) restartThemesBox.checked = musicSettings.restartThemes;
+      if (autoplayPagesBox) autoplayPagesBox.checked = musicSettings.autoplayOnOtherPages;
+      if (loopToggle) loopToggle.checked = musicSettings.loopRandomSongsUntilTurnChange;
+      if (introsBox) introsBox.checked = musicSettings.playIntroEveryTurn;
+      if (uiSFXPagesBox) uiSFXPagesBox.checked = musicSettings.sfxOnOtherPages;
+      if (alternateThemesBox) alternateThemesBox.checked = musicSettings.alternateThemes;
+      musicPlayerUI.updateAllInputLabels();
+    }
+    if (key === SettingsKey.ALL || key === SettingsKey.ADD_OVERRIDE || key === SettingsKey.REMOVE_OVERRIDE) {
+      clearAndRepopulateOverrideList();
+      if (musicSettings.overrideList.size === 0) {
+        const noOverrides = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No overrides set yet...");
+        musicPlayerUI.addItemToTable("Overrides", noOverrides);
+      }
+    }
+    if (key === SettingsKey.ALL || key === SettingsKey.ADD_EXCLUDED || key === SettingsKey.REMOVE_EXCLUDED) {
+      clearAndRepopulateExcludedList();
+      if (musicSettings.excludedRandomThemes.size === 0) {
+        const noExcluded = musicPlayerUI.createCOPortraitImageWithText("followlist.gif", "No themes excluded yet...");
+        musicPlayerUI.addItemToTable("Excluded Random Themes", noExcluded);
+      }
+    }
+    if (key === SettingsKey.GAME_TYPE) {
+      preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
+    }
+    const canUpdateDaySlider =
+      (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
+    if (canUpdateDaySlider && (daySlider == null ? void 0 : daySlider.parentElement))
+      daySlider.parentElement.style.display = (alternateThemesBox == null ? void 0 : alternateThemesBox.checked)
+        ? "flex"
+        : "none";
+    if (shuffleBtn) shuffleBtn.disabled = musicSettings.randomThemesType === RandomThemeType.NONE;
+    let currentSounds = getCurrentPageType() === PageType.MovePlanner ? "Sound Effects" : "Tunes";
+    currentSounds += "\n(Right-Click for Settings)";
+    if (musicSettings.isPlaying) {
+      musicPlayerUI.setHoverText(`Stop ${currentSounds}`, true);
+      musicPlayerUI.setImage(getPlayingImgURL());
+    } else {
+      musicPlayerUI.setHoverText(`Play ${currentSounds}`, true);
+      musicPlayerUI.setImage(getNeutralImgURL());
     }
   }
-  const excludedListGroupID = "Themes Excluded From Randomizer (Click to Remove)";
-  musicPlayerUI.addGroup(excludedListGroupID, GroupType.Horizontal, RIGHT);
-  const excludedListDivMap = /* @__PURE__ */ new Map();
-  musicPlayerUI.addTable(
-    "Excluded Random Themes",
-    tableRows,
-    tableCols,
-    excludedListGroupID,
-    "Removes the override for this specific CO.",
-    /* Remove_Override */
-  );
-  function addExcludedDisplayDiv(coName) {
-    const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, "");
-    displayDiv.addEventListener("click", (_event) => {
-      musicSettings.removeExcludedRandomTheme(coName);
-    });
-    excludedListDivMap.set(coName, displayDiv);
-    musicPlayerUI.addItemToTable("Excluded Random Themes", displayDiv);
-    return displayDiv;
-  }
-  function clearAndRepopulateExcludedList() {
-    excludedListDivMap.forEach((div) => div.remove());
-    excludedListDivMap.clear();
-    musicPlayerUI.clearTable(
-      "Excluded Random Themes",
-      /* Excluded_Table */
+  const parseInputFloat = (event) => parseFloat(event.target.value);
+  const parseInputInt = (event) => parseInt(event.target.value);
+  let volumeSlider;
+  let sfxVolumeSlider;
+  let uiVolumeSlider;
+  let daySlider;
+  let gameTypeRadioMap;
+  let randomRadioMap;
+  let shuffleBtn;
+  let overrideBtn;
+  let uiSFXPagesBox;
+  let captProgressBox;
+  let pipeSeamBox;
+  let autoplayPagesBox;
+  let seamlessLoopsBox;
+  let restartThemesBox;
+  let loopToggle;
+  let introsBox;
+  let alternateThemesBox;
+  let radioNormal;
+  let radioAllRandom;
+  let radioCurrentRandom;
+  let excludeRadio;
+  let overrideGameTypeRadioMap;
+  let overrideDivMap;
+  let excludedListDivMap;
+  let __musicPlayerUI;
+  function getMusicPlayerUI() {
+    if (__musicPlayerUI) return __musicPlayerUI;
+    __musicPlayerUI = new CustomMenuSettingsUI(ScriptName.MusicPlayer, getNeutralImgURL(), "Play Tunes");
+    const musicPlayerUI = __musicPlayerUI;
+    const LEFT = NodeID.Settings_Left;
+    volumeSlider = musicPlayerUI.addSlider(
+      "Music Volume",
+      0,
+      1,
+      5e-3,
+      "Adjust the volume of the CO theme music, power activations, and power themes.",
+      LEFT,
     );
-    for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
+    sfxVolumeSlider = musicPlayerUI.addSlider(
+      "SFX Volume",
+      0,
+      1,
+      5e-3,
+      "Adjust the volume of the unit movement, tag swap, captures, and other unit sounds.",
+      LEFT,
+    );
+    uiVolumeSlider = musicPlayerUI.addSlider(
+      "UI Volume",
+      0,
+      1,
+      5e-3,
+      "Adjust the volume of the UI sound effects like moving your cursor, opening menus, and selecting units.",
+      LEFT,
+    );
+    const soundtrackGroupID = "Soundtrack";
+    musicPlayerUI.addGroup(soundtrackGroupID, GroupType.Horizontal, LEFT);
+    gameTypeRadioMap = /* @__PURE__ */ new Map();
+    for (const gameType of Object.values(GameType)) {
+      const description = Description[gameType];
+      const radio = musicPlayerUI.addRadioButton(gameType, soundtrackGroupID, description);
+      gameTypeRadioMap.set(gameType, radio);
+    }
+    const randomGroupID = "Random Themes";
+    musicPlayerUI.addGroup(randomGroupID, GroupType.Horizontal, LEFT);
+    radioNormal = musicPlayerUI.addRadioButton(
+      "Off",
+      randomGroupID,
+      "Play the music depending on who the current CO is.",
+      /* No_Random */
+    );
+    radioAllRandom = musicPlayerUI.addRadioButton(
+      "All Soundtracks",
+      randomGroupID,
+      "Play random music every turn from all soundtracks.",
+      /* All_Random */
+    );
+    radioCurrentRandom = musicPlayerUI.addRadioButton(
+      "Current Soundtrack",
+      randomGroupID,
+      "Play random music every turn from the current soundtrack.",
+      /* Current_Random */
+    );
+    randomRadioMap = /* @__PURE__ */ new Map([
+      [RandomThemeType.NONE, radioNormal],
+      [RandomThemeType.ALL_THEMES, radioAllRandom],
+      [RandomThemeType.CURRENT_SOUNDTRACK, radioCurrentRandom],
+    ]);
+    shuffleBtn = musicPlayerUI.addButton(
+      "Shuffle",
+      randomGroupID,
+      "Changes the current theme to a new random one.",
+      /* Shuffle */
+    );
+    const sfxGroupID = "Sound Effect (SFX) Options";
+    musicPlayerUI.addGroup(sfxGroupID, GroupType.Vertical, LEFT);
+    uiSFXPagesBox = musicPlayerUI.addCheckbox(
+      "Play Sound Effects Outside Of Game Pages",
+      sfxGroupID,
+      "Play sound effects on other pages like 'Your Games', 'Profile', or during maintenance.",
+      /* SFX_Pages */
+    );
+    captProgressBox = musicPlayerUI.addCheckbox(
+      "Capture Progress SFX",
+      sfxGroupID,
+      "Play a sound effect when a unit makes progress capturing a property.",
+      /* Capture_Progress */
+    );
+    pipeSeamBox = musicPlayerUI.addCheckbox(
+      "Pipe Seam Attack SFX",
+      sfxGroupID,
+      "Play a sound effect when a pipe seam is attacked.",
+      /* Pipe_Seam_SFX */
+    );
+    const musicGroupID = "Music Options";
+    musicPlayerUI.addGroup(musicGroupID, GroupType.Vertical, LEFT);
+    autoplayPagesBox = musicPlayerUI.addCheckbox(
+      "Autoplay Music Outside Of Game Pages",
+      musicGroupID,
+      "Autoplay music on other pages like 'Your Games', 'Profile', or during maintenance.",
+      /* Autoplay_Pages */
+    );
+    seamlessLoopsBox = musicPlayerUI.addCheckbox(
+      "Seamless Loops In Mirror Matches",
+      musicGroupID,
+      "Seamlessly loop the music when playing in mirror matches. If enabled, the music will not restart when the turn changes when both players are using the same CO.",
+      /* Seamless_Loops */
+    );
+    restartThemesBox = musicPlayerUI.addCheckbox(
+      "Restart Themes Every Turn",
+      musicGroupID,
+      "Restart themes at the beginning of each turn (including replays). If disabled, themes will continue from where they left off previously.",
+      /* Restart_Themes */
+    );
+    loopToggle = musicPlayerUI.addCheckbox(
+      "Loop Random Songs Until Turn Changes",
+      musicGroupID,
+      "Loop random songs until a turn change happens. If disabled, when a random song ends a new random song will be chosen immediately even if the turn hasn't changed yet.",
+      /* Random_Loop_Toggle */
+    );
+    introsBox = musicPlayerUI.addCheckbox(
+      "Play CO Intros Every Turn",
+      musicGroupID,
+      "Play CO intros every new turn. If disabled, the intro will only play once at the start of the game.",
+      /* PlayIntros */
+    );
+    alternateThemesBox = musicPlayerUI.addCheckbox(
+      "Alternate Themes",
+      musicGroupID,
+      "Play alternate themes like the Re-Boot Camp factory themes after a certain day. Enable this to be able to select what day alternate themes start.",
+      /* Alternate_Themes */
+    );
+    daySlider = musicPlayerUI.addSlider(
+      "Alternate Themes Start On Day",
+      0,
+      30,
+      1,
+      "After what day should alternate themes like the Re-Boot Camp factory themes start playing? Can you find all the hidden themes?",
+      LEFT,
+    );
+    const RIGHT = NodeID.Settings_Right;
+    const addOverrideGroupID = "Override Themes";
+    musicPlayerUI.addGroup(addOverrideGroupID, GroupType.Horizontal, RIGHT);
+    musicPlayerUI.addCOSelector(
+      addOverrideGroupID,
+      "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
+      onCOSelectorClick,
+    );
+    overrideGameTypeRadioMap = /* @__PURE__ */ new Map();
+    for (const gameType of Object.values(GameType)) {
+      const radio = musicPlayerUI.addRadioButton(gameType, addOverrideGroupID, "Only play songs from " + gameType);
+      overrideGameTypeRadioMap.set(gameType, radio);
+      radio.checked = true;
+    }
+    excludeRadio = musicPlayerUI.addRadioButton(
+      "Exclude Random",
+      addOverrideGroupID,
+      "Add an override for a specific CO to exclude their themes when playing random themes.",
+      /* Add_Excluded */
+    );
+    overrideBtn = musicPlayerUI.addButton(
+      "Add",
+      addOverrideGroupID,
+      "Adds an override for a specific CO so it always plays a specific soundtrack or to exclude it when playing random themes.",
+      /* Add_Override */
+    );
+    const overrideListGroupID = "Current Overrides (Click to Remove)";
+    musicPlayerUI.addGroup(overrideListGroupID, GroupType.Horizontal, RIGHT);
+    overrideDivMap = /* @__PURE__ */ new Map();
+    const tableRows = 4;
+    const tableCols = 7;
+    musicPlayerUI.addTable(
+      "Overrides",
+      tableRows,
+      tableCols,
+      overrideListGroupID,
+      "Removes the override for this specific CO.",
+      /* Remove_Override */
+    );
+    const excludedListGroupID = "Themes Excluded From Randomizer (Click to Remove)";
+    musicPlayerUI.addGroup(excludedListGroupID, GroupType.Horizontal, RIGHT);
+    excludedListDivMap = /* @__PURE__ */ new Map();
+    musicPlayerUI.addTable(
+      "Excluded Random Themes",
+      tableRows,
+      tableCols,
+      excludedListGroupID,
+      "Removes the override for this specific CO.",
+      /* Remove_Override */
+    );
+    musicPlayerUI.addVersion();
+    addMusicUIListeners();
+    return musicPlayerUI;
   }
-  musicPlayerUI.addVersion();
   function initializeMusicPlayerUI() {
+    const musicPlayerUI = getMusicPlayerUI();
     musicPlayerUI.setProgress(100);
     let prepend = false;
     switch (getCurrentPageType()) {
@@ -2608,9 +2635,9 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         break;
     }
     musicPlayerUI.addToAWBWPage(getMenu(), prepend);
-    addMusicUIListeners();
   }
   function addMusicUIListeners() {
+    const musicPlayerUI = getMusicPlayerUI();
     musicPlayerUI.addEventListener("click", onMusicBtnClick);
     addSettingsChangeListener(onSettingsChange$1);
     volumeSlider == null
@@ -2622,46 +2649,118 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     uiVolumeSlider == null
       ? void 0
       : uiVolumeSlider.addEventListener("input", (event) => (musicSettings.uiVolume = parseInputFloat(event)));
-    radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.NONE));
-    radioAllRandom.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.ALL_THEMES));
-    radioCurrentRandom.addEventListener(
-      "click",
-      (_e) => (musicSettings.randomThemesType = RandomThemeType.CURRENT_SOUNDTRACK),
-    );
+    radioNormal == null
+      ? void 0
+      : radioNormal.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.NONE));
+    radioAllRandom == null
+      ? void 0
+      : radioAllRandom.addEventListener("click", (_e) => (musicSettings.randomThemesType = RandomThemeType.ALL_THEMES));
+    radioCurrentRandom == null
+      ? void 0
+      : radioCurrentRandom.addEventListener(
+          "click",
+          (_e) => (musicSettings.randomThemesType = RandomThemeType.CURRENT_SOUNDTRACK),
+        );
     for (const gameType of Object.values(GameType)) {
       const radio = gameTypeRadioMap.get(gameType);
       radio == null ? void 0 : radio.addEventListener("click", (_e) => (musicSettings.gameType = gameType));
     }
-    shuffleBtn.addEventListener("click", (_e) => musicSettings.randomizeCO());
-    captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = captProgressBox.checked));
-    pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = pipeSeamBox.checked));
-    restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = restartThemesBox.checked));
-    autoplayPagesBox.addEventListener("click", (_e) => (musicSettings.autoplayOnOtherPages = autoplayPagesBox.checked));
-    loopToggle.addEventListener("click", (_e) => (musicSettings.loopRandomSongsUntilTurnChange = loopToggle.checked));
-    uiSFXPagesBox.addEventListener("click", (_e) => (musicSettings.sfxOnOtherPages = uiSFXPagesBox.checked));
-    alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = alternateThemesBox.checked));
-    seamlessLoopsBox.addEventListener(
-      "click",
-      (_e) => (musicSettings.seamlessLoopsInMirrors = seamlessLoopsBox.checked),
-    );
-    introsBox.addEventListener("click", (_e) => (musicSettings.playIntroEveryTurn = introsBox.checked));
+    shuffleBtn == null ? void 0 : shuffleBtn.addEventListener("click", (_e) => musicSettings.randomizeCO());
+    captProgressBox == null
+      ? void 0
+      : captProgressBox.addEventListener("click", (_e) => (musicSettings.captureProgressSFX = _e.target.checked));
+    pipeSeamBox == null
+      ? void 0
+      : pipeSeamBox.addEventListener("click", (_e) => (musicSettings.pipeSeamSFX = _e.target.checked));
+    restartThemesBox == null
+      ? void 0
+      : restartThemesBox.addEventListener("click", (_e) => (musicSettings.restartThemes = _e.target.checked));
+    autoplayPagesBox == null
+      ? void 0
+      : autoplayPagesBox.addEventListener("click", (_e) => (musicSettings.autoplayOnOtherPages = _e.target.checked));
+    loopToggle == null
+      ? void 0
+      : loopToggle.addEventListener(
+          "click",
+          (_e) => (musicSettings.loopRandomSongsUntilTurnChange = _e.target.checked),
+        );
+    uiSFXPagesBox == null
+      ? void 0
+      : uiSFXPagesBox.addEventListener("click", (_e) => (musicSettings.sfxOnOtherPages = _e.target.checked));
+    alternateThemesBox == null
+      ? void 0
+      : alternateThemesBox.addEventListener("click", (_e) => (musicSettings.alternateThemes = _e.target.checked));
+    seamlessLoopsBox == null
+      ? void 0
+      : seamlessLoopsBox.addEventListener("click", (_e) => (musicSettings.seamlessLoopsInMirrors = _e.target.checked));
+    introsBox == null
+      ? void 0
+      : introsBox.addEventListener("click", (_e) => (musicSettings.playIntroEveryTurn = _e.target.checked));
     daySlider == null
       ? void 0
       : daySlider.addEventListener("input", (event) => (musicSettings.alternateThemeDay = parseInputInt(event)));
-    overrideBtn.addEventListener("click", (_e) => {
-      if (excludeRadio.checked) {
-        musicSettings.addExcludedRandomTheme(currentSelectedCO);
-        return;
-      }
-      let currentGameType;
-      for (const [gameType, radio] of overrideGameTypeRadioMap) {
-        if (radio.checked) currentGameType = gameType;
-      }
-      if (!currentGameType) return;
-      musicSettings.addOverride(currentSelectedCO, currentGameType);
-    });
+    overrideBtn == null
+      ? void 0
+      : overrideBtn.addEventListener("click", (_e) => {
+          if (!overrideGameTypeRadioMap) return;
+          if (excludeRadio == null ? void 0 : excludeRadio.checked) {
+            musicSettings.addExcludedRandomTheme(currentSelectedCO);
+            return;
+          }
+          let currentGameType;
+          for (const [gameType, radio] of overrideGameTypeRadioMap) {
+            if (radio.checked) currentGameType = gameType;
+          }
+          if (!currentGameType) return;
+          musicSettings.addOverride(currentSelectedCO, currentGameType);
+        });
   }
-  addMusicUIListeners();
+  function addOverrideDisplayDiv(coName, gameType) {
+    if (!overrideDivMap) return;
+    const musicPlayerUI = getMusicPlayerUI();
+    const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, gameType);
+    displayDiv.addEventListener("click", (_event) => {
+      musicSettings.removeOverride(coName);
+    });
+    overrideDivMap.set(coName, displayDiv);
+    musicPlayerUI.addItemToTable("Overrides", displayDiv);
+    return displayDiv;
+  }
+  function clearAndRepopulateOverrideList() {
+    if (!overrideDivMap) return;
+    const musicPlayerUI = getMusicPlayerUI();
+    overrideDivMap.forEach((div) => div.remove());
+    overrideDivMap.clear();
+    musicPlayerUI.clearTable(
+      "Overrides",
+      /* Override_Table */
+    );
+    for (const [coName, gameType] of musicSettings.overrideList) {
+      addOverrideDisplayDiv(coName, gameType);
+    }
+  }
+  function addExcludedDisplayDiv(coName) {
+    if (!excludedListDivMap) return;
+    const musicPlayerUI = getMusicPlayerUI();
+    const displayDiv = musicPlayerUI.createCOPortraitImageWithText(coName, "");
+    displayDiv.addEventListener("click", (_event) => {
+      musicSettings.removeExcludedRandomTheme(coName);
+    });
+    excludedListDivMap.set(coName, displayDiv);
+    musicPlayerUI.addItemToTable("Excluded Random Themes", displayDiv);
+    return displayDiv;
+  }
+  function clearAndRepopulateExcludedList() {
+    if (!excludedListDivMap) return;
+    const musicPlayerUI = getMusicPlayerUI();
+    excludedListDivMap.forEach((div) => div.remove());
+    excludedListDivMap.clear();
+    musicPlayerUI.clearTable(
+      "Excluded Random Themes",
+      /* Excluded_Table */
+    );
+    for (const coName of musicSettings.excludedRandomThemes) addExcludedDisplayDiv(coName);
+  }
   function getQueryTurnFn() {
     return typeof queryTurn !== "undefined" ? queryTurn : null;
   }
@@ -3563,7 +3662,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
       if (!popup) return false;
       const box = popup.querySelector(".flex.row.hv-center");
       if (!box) return false;
-      musicPlayerUI.addToAWBWPage(box, true);
+      getMusicPlayerUI().addToAWBWPage(box, true);
       playMusicURL(SpecialTheme.COSelect);
       return true;
     };
@@ -3595,7 +3694,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     preloadAllCommonAudio(() => {
       logInfo("All common audio has been pre-loaded!");
       musicSettings.themeType = getCurrentThemeType();
-      musicPlayerUI.updateAllInputLabels();
+      getMusicPlayerUI().updateAllInputLabels();
       playThemeSong();
       window.setTimeout(playThemeSong, 500);
       if (!setHashesTimeoutID) {
@@ -3608,7 +3707,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         };
         checkHashesFn();
       }
-      musicPlayerUI.checkIfNewVersionAvailable();
+      getMusicPlayerUI().checkIfNewVersionAvailable();
     });
   }
   let lastCursorCall = Date.now();
@@ -3620,15 +3719,15 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         onLiveQueue();
         break;
       case PageType.Maintenance:
-        musicPlayerUI.openContextMenu();
+        getMusicPlayerUI().openContextMenu();
         break;
       case PageType.MovePlanner:
         musicSettings.isPlaying = true;
         break;
     }
     preloadThemes();
-    allowSettingsToBeSaved();
     initializeMusicPlayerUI();
+    allowSettingsToBeSaved();
     addHandlers();
     const iframe = document.getElementById(IFRAME_ID);
     iframe == null
@@ -3697,7 +3796,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         window.clearInterval(autoplayIntervalID);
         initializeMusicPlayer();
       };
-      musicPlayerUI.addEventListener("click", initfn, { once: true });
+      getMusicPlayerUI().addEventListener("click", initfn, { once: true });
       (_a = document.querySelector("body")) == null ? void 0 : _a.addEventListener("click", initfn, { once: true });
     };
     const autoplayIntervalID = window.setInterval(() => {
@@ -3717,10 +3816,18 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
         });
     }, 100);
   }
-  function main() {
+  async function main() {
     if (self !== top) return;
     const isMainPage = getCurrentPageType() === PageType.MainPage;
     if (!isMainPage && !window.location.href.includes(".php")) return;
+    logInfo("Trying different websites to fetch music data from");
+    const possibleBaseURL = await getWorkingBaseURL();
+    if (!possibleBaseURL) {
+      logError("Could not load data from any URL, stopping music player. Possibly ISP blocked?");
+      return;
+    }
+    logInfo("Using", possibleBaseURL, "double-checking...", getNeutralImgURL());
+    getMusicPlayerUI();
     loadSettingsFromLocalStorage();
     logInfo("Opening database to cache music files.");
     openDB()

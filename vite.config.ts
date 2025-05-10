@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue2";
+//import vue from "@vitejs/plugin-vue2";
 
 import { metablock } from "vite-plugin-userscript";
 import { libInjectCss } from "vite-plugin-lib-inject-css";

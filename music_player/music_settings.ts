@@ -171,6 +171,7 @@ export abstract class musicSettings {
       loopRandomSongsUntilTurnChange: this.__loopRandomSongsUntilTurnChange,
       sfxOnOtherPages: this.__sfxOnOtherPages,
       seamlessLoopsInMirrors: this.__seamlessLoopsInMirrors,
+      playIntroEveryTurn: this.__playIntroEveryTurn,
     });
   }
 
@@ -463,11 +464,11 @@ export function loadSettingsFromLocalStorage() {
   // Store defaults if nothing or undefined is stored
   if (!storageData || storageData === "undefined") {
     logInfo("No saved settings found, storing defaults");
-    updateSettingsInLocalStorage();
+    const jsonSettings = __updateSettingsInLocalStorage();
     storageData = localStorage.getItem(STORAGE_KEY);
     if (!storageData) {
-      logError("Failed to store default settings in local storage");
-      return;
+      logError("Possibly failed to store default settings in local storage");
+      storageData = jsonSettings;
     }
   }
   musicSettings.fromJSON(storageData);
@@ -508,7 +509,7 @@ function __updateSettingsInLocalStorage() {
   const jsonSettings = musicSettings.toJSON();
   localStorage.setItem(STORAGE_KEY, jsonSettings);
   logDebug("Saving settings...", jsonSettings);
-  return;
+  return jsonSettings;
 }
 
 function onStorageBroadcast(event: MessageEvent) {

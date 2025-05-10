@@ -10,7 +10,7 @@ import canAutoplay, { CheckResponse } from "can-autoplay";
 import "../shared/style.css";
 import "../shared/style_sliders.css";
 
-import { initializeMusicPlayerUI, musicPlayerUI } from "./music_ui";
+import { getMusicPlayerUI, initializeMusicPlayerUI } from "./music_ui";
 import {
   allowSettingsToBeSaved,
   getCurrentThemeType,
@@ -19,7 +19,7 @@ import {
 } from "./music_settings";
 import { addHandlers } from "./handlers";
 import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
-import { GameSFX, SpecialTheme } from "./resources";
+import { GameSFX, getNeutralImgURL, getWorkingBaseURL, SpecialTheme } from "./resources";
 import { logDebug, logInfo, logError } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
 import { addThemeListeners, playMusicURL, playThemeSong, stopThemeSong } from "./music/co_themes";
@@ -84,7 +84,7 @@ function onLiveQueue() {
 
     // Prepend the music player UI to the box
     // TODO
-    musicPlayerUI.addToAWBWPage(box as HTMLElement, true);
+    getMusicPlayerUI().addToAWBWPage(box as HTMLElement, true);
     playMusicURL(SpecialTheme.COSelect);
     return true;
   };
@@ -141,7 +141,7 @@ function preloadThemes() {
     // Lastly, update the UI to reflect the current settings
     musicSettings.themeType = getCurrentThemeType();
     // TODO:
-    musicPlayerUI.updateAllInputLabels();
+    getMusicPlayerUI().updateAllInputLabels();
     playThemeSong();
     window.setTimeout(playThemeSong, 500);
 
@@ -158,7 +158,7 @@ function preloadThemes() {
       checkHashesFn();
     }
     // TODO:
-    musicPlayerUI.checkIfNewVersionAvailable();
+    getMusicPlayerUI().checkIfNewVersionAvailable();
     // musicPlayerVue.$emit("initialize");
 
     //window.setTimeout(() => {
@@ -186,15 +186,15 @@ export function initializeMusicPlayer() {
       break;
     case PageType.Maintenance:
       // TODO
-      musicPlayerUI.openContextMenu();
+      getMusicPlayerUI().openContextMenu();
       break;
     case PageType.MovePlanner:
       musicSettings.isPlaying = true;
       break;
   }
   preloadThemes();
-  allowSettingsToBeSaved();
   initializeMusicPlayerUI();
+  allowSettingsToBeSaved();
   // musicPlayerUI.$emit("initialize");
   addHandlers();
 
@@ -281,7 +281,7 @@ export function checkAutoplayThenInitialize() {
     };
     // Listen for any clicks
     // TODO:
-    musicPlayerUI.addEventListener("click", initfn, { once: true });
+    getMusicPlayerUI().addEventListener("click", initfn, { once: true });
     document.querySelector("body")?.addEventListener("click", initfn, { once: true });
   };
 
@@ -308,13 +308,25 @@ export function checkAutoplayThenInitialize() {
 /**
  * Main function that begins the script.
  */
-function main() {
+async function main() {
   // Only run the script if we are the top window and not inside the iframe
   // Also only run the script if we are on a .php page
   if (self !== top) return;
 
   const isMainPage = getCurrentPageType() === PageType.MainPage;
   if (!isMainPage && !window.location.href.includes(".php")) return;
+
+  // Only run the music player if we find a working BASE_URL
+  logInfo("Trying different websites to fetch music data from");
+  const possibleBaseURL = await getWorkingBaseURL();
+  if (!possibleBaseURL) {
+    logError("Could not load data from any URL, stopping music player. Possibly ISP blocked?");
+    return;
+  }
+  logInfo("Using", possibleBaseURL, "double-checking...", getNeutralImgURL());
+
+  // Create UI
+  getMusicPlayerUI();
 
   // Load settings from local storage but don't allow saving yet
   loadSettingsFromLocalStorage();
