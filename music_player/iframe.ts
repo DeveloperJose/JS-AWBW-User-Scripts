@@ -153,10 +153,12 @@ function hijackLinks(doc: Document | null) {
     const isGamePageLink =
       link.href.includes("game.php") || (link.classList.contains("anchor") && link.name.includes("game_"));
     const isJSLink = link.href.startsWith("javascript:");
+    const isOutsideLink = !link.href.includes("https://awbw") && !link.href.includes("http://awbw");
 
     if (link.target === "_blank") continue;
     else if (isJSLink) continue;
     else if (link.href === "") continue;
+    else if (isOutsideLink) continue;
     else if (isGamePageLink) link.target = "_top";
     else link.target = IFRAME_ID;
   }

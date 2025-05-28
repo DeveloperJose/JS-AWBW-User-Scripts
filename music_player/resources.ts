@@ -197,7 +197,7 @@ const alternateThemes = new Map([
 const introThemes = new Map([
   [GameType.AW1, new Set([])],
   [GameType.AW2, new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"])],
-  [GameType.DS, new Set(["jess"])],
+  [GameType.DS, new Set(["jess", "rachel"])],
   [GameType.RBC, new Set([])],
 ]);
 
@@ -312,12 +312,7 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   const overrideType = musicSettings.getOverride(coName);
   if (overrideType) gameType = overrideType;
 
-  // This needs to go BEFORE overriding the game type
-  const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
-
   // Override the game type to a higher game if the CO is not in the current soundtrack
-  // We do this AFTER getting the filename so the getMusicFilename function has the correct gameType
-  // Since we only need the correct gameType for the music directory
   if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
 
   // These special themes vary depending on the game type
@@ -325,6 +320,8 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
 
   // All AW1 COs except the special COs will use the AW2 music
   if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
+
+  const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
