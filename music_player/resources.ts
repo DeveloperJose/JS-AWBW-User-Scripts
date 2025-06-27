@@ -238,33 +238,40 @@ function getAlternateMusicFilename(coName: string, gameType: GameType, themeType
 /**
  * Determines the filename for the music to play given a specific CO and other settings.
  * @param coName - Name of the CO whose music to use.
- * @param gameType - Which game soundtrack to use.
+ * @param actualGameType - Which game soundtrack to use (must be valid for given CO).
+ * @param requestedGameType - Which game soundtrack the user has selected (might not exist for given CO)
  * @param themeType - Which type of music whether regular or power.
  * @returns - The filename of the music to play given the parameters.
  */
-function getMusicFilename(coName: string, gameType: GameType, themeType: ThemeType, useAlternateTheme: boolean) {
-  const hasIntro = introThemes.get(gameType)?.has(coName);
+function getMusicFilename(
+  coName: string,
+  requestedGameType: GameType,
+  actualGameType: GameType,
+  themeType: ThemeType,
+  useAlternateTheme: boolean,
+) {
+  const hasIntro = introThemes.get(actualGameType)?.has(coName);
   // Check if we want to play the map editor theme
   if (coName === SpecialCOs.MapEditor) return "t-map-editor";
   if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
 
   // Check if we need to play an alternate theme
   if (useAlternateTheme) {
-    const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+    const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
     if (alternateFilename) return alternateFilename;
   }
 
   // Regular theme, either no power or we are in AW1 where there's no power themes.
   // We only skip if AW1 mode is enabled and there's no random themes
   const isPowerActive = themeType !== ThemeType.REGULAR;
-  const skipPowerTheme = gameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+  const skipPowerTheme = requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
   if (!isPowerActive || skipPowerTheme) {
     return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
   }
 
   // For RBC, we play the new power themes (if they are not in the DS games obviously)
   const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-  if (gameType === GameType.RBC && isCOInRBC) {
+  if (requestedGameType === GameType.RBC && isCOInRBC) {
     return `t-${coName}-cop-intro`;
   }
 
@@ -311,7 +318,7 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   // First apply player overrides, that way we can override their overrides later...
   const overrideType = musicSettings.getOverride(coName);
   if (overrideType) gameType = overrideType;
-
+  const requestedGameType = gameType;
   // Override the game type to a higher game if the CO is not in the current soundtrack
   if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
 
@@ -321,7 +328,7 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   // All AW1 COs except the special COs will use the AW2 music
   if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
 
-  const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+  const filename = getMusicFilename(coName, requestedGameType, gameType, themeType, useAlternateTheme);
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;

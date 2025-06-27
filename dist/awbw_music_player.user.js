@@ -1913,22 +1913,22 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     return `t-${coName}-2`;
   }
-  function getMusicFilename(coName, gameType, themeType, useAlternateTheme) {
+  function getMusicFilename(coName, requestedGameType, actualGameType, themeType, useAlternateTheme) {
     var _a;
-    const hasIntro = (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
+    const hasIntro = (_a = introThemes.get(actualGameType)) == null ? void 0 : _a.has(coName);
     if (coName === SpecialCOs.MapEditor) return "t-map-editor";
     if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
     if (useAlternateTheme) {
-      const alternateFilename = getAlternateMusicFilename(coName, gameType, themeType);
+      const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
       if (alternateFilename) return alternateFilename;
     }
     const isPowerActive = themeType !== ThemeType.REGULAR;
-    const skipPowerTheme = gameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+    const skipPowerTheme = requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
     if (!isPowerActive || skipPowerTheme) {
       return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
     }
     const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-    if (gameType === GameType.RBC && isCOInRBC) {
+    if (requestedGameType === GameType.RBC && isCOInRBC) {
       return `t-${coName}-cop-intro`;
     }
     const faction = isBlackHoleCO(coName) ? "bh" : "ally";
@@ -1961,10 +1961,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       coName = SpecialCOs.ModeSelect;
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
+    const requestedGameType = gameType;
     if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
     const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
     if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
-    const filename = getMusicFilename(coName, gameType, themeType, useAlternateTheme);
+    const filename = getMusicFilename(coName, requestedGameType, gameType, themeType, useAlternateTheme);
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
     const url = getURLForMusicFile(`${gameDir}/${filename}.ogg`);
@@ -3106,7 +3107,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           }
         });
       }
-      playThemeSong(true);
+      playThemeSong(musicSettings.restartThemes);
       window.setTimeout(playThemeSong, 350);
     }, playDelayMS);
   }
@@ -3199,7 +3200,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function onQueryTurn(gameId, turn, turnPId, turnDay, replay2, initial) {
     const result = ahQueryTurn == null ? void 0 : ahQueryTurn.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay2, initial]);
     if (!musicSettings.isPlaying) return result;
-    refreshMusicForNextTurn(250);
+    if (initial) {
+      syncMusic();
+    } else {
+      refreshMusicForNextTurn(250);
+    }
     return result;
   }
   function onShowEventScreen(event) {

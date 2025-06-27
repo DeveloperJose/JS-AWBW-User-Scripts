@@ -247,7 +247,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
         }
       });
     }
-    playThemeSong(true);
+    playThemeSong(musicSettings.restartThemes);
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);
 }
@@ -382,8 +382,12 @@ function onQueryTurn(
   if (!musicSettings.isPlaying) return result;
   // log("Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
 
-  // syncMusic();
-  refreshMusicForNextTurn(250);
+  // Check if replay is open, if not, don't restart music so it's not as jarring
+  if (initial) {
+    syncMusic();
+  } else {
+    refreshMusicForNextTurn(250);
+  }
   return result;
 }
 
