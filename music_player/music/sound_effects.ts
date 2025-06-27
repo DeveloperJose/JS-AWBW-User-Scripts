@@ -9,10 +9,10 @@ import { preloadURL } from "./preloading";
 
 const currentPlayingSFX = new Map<GameSFX, Howl>();
 const powerActivationSFX = new Set([
-  GameSFX.powerActivateAllyCOP,
-  GameSFX.powerActivateAllySCOP,
-  GameSFX.powerActivateBHCOP,
-  GameSFX.powerActivateBHSCOP,
+  // GameSFX.powerActivateAllyCOP,
+  // GameSFX.powerActivateAllySCOP,
+  // GameSFX.powerActivateBHCOP,
+  // GameSFX.powerActivateBHSCOP,
   GameSFX.powerActivateAW1COP,
 ]);
 

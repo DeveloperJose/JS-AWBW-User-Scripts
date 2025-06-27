@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.15.0
+// @version         5.20.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -1645,10 +1645,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   })(SpecialTheme || {});
   var GameSFX = /* @__PURE__ */ ((GameSFX2) => {
     GameSFX2["coGoldRush"] = "co-gold-rush";
-    GameSFX2["powerActivateAllyCOP"] = "power-activate-ally-cop";
-    GameSFX2["powerActivateAllySCOP"] = "power-activate-ally-scop";
-    GameSFX2["powerActivateBHCOP"] = "power-activate-bh-cop";
-    GameSFX2["powerActivateBHSCOP"] = "power-activate-bh-scop";
     GameSFX2["powerActivateAW1COP"] = "power-activate-aw1-cop";
     GameSFX2["powerSCOPAvailable"] = "power-scop-available";
     GameSFX2["powerCOPAvailable"] = "power-cop-available";
@@ -1893,18 +1889,175 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   ]);
   const introThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set([])],
-    [GameType.AW2, /* @__PURE__ */ new Set(["andy"])],
-    [GameType.DS, /* @__PURE__ */ new Set([])],
-    [GameType.RBC, /* @__PURE__ */ new Set([])]
+    [GameType.AW2, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf"])],
+    [
+      GameType.DS,
+      /* @__PURE__ */ new Set([
+        "andy",
+        "colin",
+        "grit",
+        "hachi",
+        "jess",
+        "jugger",
+        "kanbei",
+        "kindle",
+        "koal",
+        "lash",
+        "mode-select",
+        "olaf",
+        "vonbolt"
+      ])
+    ],
+    [
+      GameType.RBC,
+      /* @__PURE__ */ new Set([
+        "adder-cop",
+        "andy-cop",
+        "andy",
+        "clone-andy-cop",
+        "colin-cop",
+        "colin",
+        "drake-cop",
+        "eagle-cop",
+        "flak-cop",
+        "grit-cop",
+        "grit",
+        "hachi-cop",
+        "hachi",
+        "hawke-cop",
+        "jess-cop",
+        "jess",
+        "kanbei-cop",
+        "kanbei",
+        "lash-cop",
+        "lash",
+        "max-cop",
+        "nell-cop",
+        "olaf-cop",
+        "olaf",
+        "sami-cop",
+        "sensei-cop",
+        "sonja-cop",
+        "sonja",
+        "sturm-cop"
+      ])
+    ]
   ]);
   const preloopThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set(["mode-select"])],
     [
       GameType.AW2,
-      /* @__PURE__ */ new Set(["adder", "ally-co-power", "ally-super-co-power", "andy", "bh-co-power", "bh-super-co-power"])
+      /* @__PURE__ */ new Set([
+        "adder",
+        "ally-co-power",
+        "ally-super-co-power",
+        "andy",
+        "bh-co-power",
+        "bh-super-co-power",
+        "colin",
+        "drake",
+        "eagle",
+        "flak",
+        "grit",
+        "hachi",
+        "hawke",
+        "jess",
+        "kanbei",
+        "lash",
+        "map-editor",
+        "max",
+        "mode-select",
+        "nell",
+        "olaf",
+        "sami",
+        "sensei",
+        "sonja",
+        "sturm"
+      ])
     ],
-    [GameType.DS, /* @__PURE__ */ new Set([])],
-    [GameType.RBC, /* @__PURE__ */ new Set([])]
+    [
+      GameType.DS,
+      /* @__PURE__ */ new Set([
+        "adder",
+        "ally-co-power",
+        "ally-super-co-power",
+        "andy",
+        "bh-co-power",
+        "bh-super-co-power",
+        "colin",
+        "co-select",
+        "drake",
+        "eagle",
+        "flak",
+        "grimm",
+        "grit",
+        "hachi",
+        "hawke",
+        "jake",
+        "javier",
+        "jess",
+        "jugger",
+        "kanbei",
+        "kindle",
+        "koal",
+        "lash",
+        "map-editor",
+        "max",
+        "mode-select",
+        "nell",
+        "olaf",
+        "rachel",
+        "sami",
+        "sasha",
+        "sensei",
+        "sonja",
+        "vonbolt"
+      ])
+    ],
+    [
+      GameType.RBC,
+      /* @__PURE__ */ new Set([
+        "adder-cop",
+        "adder",
+        "andy-cop",
+        "andy",
+        "colin-cop",
+        "colin",
+        "drake-cop",
+        "drake",
+        "eagle-cop",
+        "eagle",
+        "flak-cop",
+        "flak",
+        "grit-cop",
+        "grit",
+        "hachi-cop",
+        "hachi",
+        "hawke-cop",
+        "hawke",
+        "jess-cop",
+        "jess",
+        "kanbei-cop",
+        "kanbei",
+        "lash-cop",
+        "lash",
+        "map-editor",
+        "max-cop",
+        "max",
+        "mode-select-1",
+        "mode-select-2",
+        "nell-cop",
+        "nell",
+        "olaf-cop",
+        "olaf",
+        "sami-cop",
+        "sami",
+        "sonja-cop",
+        "sonja",
+        "sturm-cop",
+        "sturm"
+      ])
+    ]
   ]);
   function hasIntroTheme(coName, gameType) {
     var _a;
@@ -1932,10 +2085,15 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
     if (requestedGameType === GameType.RBC && isCOInRBC) {
-      return `t-${coName}-cop-intro`;
+      coName = `${coName}-cop`;
+    } else {
+      const powerSuffix = themeType === ThemeType.CO_POWER ? "-co-power" : "-super-co-power";
+      coName = isBlackHoleCO(coName) ? "bh" : "ally";
+      coName += powerSuffix;
     }
-    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-    return `t-${faction}-${themeType}`;
+    const hasCopIntro = hasIntroTheme(coName, actualGameType);
+    const hasCopPreloop = hasPreloopTheme(coName, actualGameType);
+    return hasCopIntro ? `t-${coName}-intro` : hasCopPreloop ? `t-${coName}-preloop` : `t-${coName}`;
   }
   function getAlternateMusicFilename(coName, gameType, themeType) {
     if (!alternateThemes.has(gameType)) return;
@@ -1978,9 +2136,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const overrideType = musicSettings.getOverride(coName);
     if (overrideType) gameType = overrideType;
     const requestedGameType = gameType;
-    if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
-    const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
-    if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
+    gameType = getValidGameTypeForCO(coName, gameType);
     const filename = getMusicFilename(coName, requestedGameType, gameType, themeType, useAlternateTheme);
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
@@ -2000,6 +2156,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return gameType;
     }
     return GameType.AW2;
+  }
+  function getValidGameTypeForCO(coName, gameType) {
+    if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+    const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
+    if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
+    return gameType;
   }
   function getSoundEffectURL(sfx) {
     return `${BASE_URL}/music/sfx/${sfx}.ogg`;
@@ -2818,7 +2980,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   let currentDelayTimeoutID = -1;
   async function playMusicURL(srcURL, newPlay = false) {
     const coName = getCONameFromURL(srcURL);
-    const gameType = getGameTypeFromURL(srcURL);
+    const gameType = getValidGameTypeForCO(coName, getGameTypeFromURL(srcURL));
     if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
       await preloadURL(srcURL.replace("-intro", ""));
       if (hasPreloopTheme(coName, gameType)) {
@@ -2929,7 +3091,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return;
     }
     const coName = getCONameFromURL(srcURL);
-    const gameType = getGameTypeFromURL(srcURL);
+    const gameType = getValidGameTypeForCO(coName, getGameTypeFromURL(srcURL));
     if (srcURL.includes("-intro")) {
       let loopURL;
       if (hasPreloopTheme(coName, gameType)) {
@@ -3040,10 +3202,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   addThemeListeners();
   const currentPlayingSFX = /* @__PURE__ */ new Map();
   const powerActivationSFX = /* @__PURE__ */ new Set([
-    GameSFX.powerActivateAllyCOP,
-    GameSFX.powerActivateAllySCOP,
-    GameSFX.powerActivateBHCOP,
-    GameSFX.powerActivateBHSCOP,
+    // GameSFX.powerActivateAllyCOP,
+    // GameSFX.powerActivateAllySCOP,
+    // GameSFX.powerActivateBHCOP,
+    // GameSFX.powerActivateBHSCOP,
     GameSFX.powerActivateAW1COP
   ]);
   async function playSFX(sfx) {
@@ -3191,10 +3353,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     replayBackwardBtn.addEventListener("click", clearThemeDelay);
     const stopExtraSFX = () => {
       stopSFX(GameSFX.powerActivateAW1COP);
-      stopSFX(GameSFX.powerActivateAllyCOP);
-      stopSFX(GameSFX.powerActivateAllySCOP);
-      stopSFX(GameSFX.powerActivateBHCOP);
-      stopSFX(GameSFX.powerActivateBHSCOP);
     };
     replayBackwardActionBtn.addEventListener("click", stopExtraSFX);
     replayForwardBtn.addEventListener("click", stopExtraSFX);
@@ -3525,7 +3683,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ahPower == null ? void 0 : ahPower.apply(actionHandlers.Power, [data]);
     if (!musicSettings.isPlaying) return;
     const coName = data.coName;
-    const isBH = isBlackHoleCO(coName);
+    isBlackHoleCO(coName);
     const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     stopSFX(GameSFX.powerCOPAvailable);
     stopSFX(GameSFX.powerSCOPAvailable);
@@ -3539,22 +3697,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         playSFX(GameSFX.powerActivateAW1COP);
         stopThemeSong(4500);
         return;
-      case GameType.AW2:
-      case GameType.DS:
-      case GameType.RBC: {
-        if (isSuperCOPower) {
-          const sfx2 = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-          const delay2 = isBH ? 1916 : 1100;
-          playSFX(sfx2);
-          stopThemeSong(delay2);
-          break;
-        }
-        const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-        const delay = isBH ? 1019 : 881;
-        playSFX(sfx);
-        stopThemeSong(delay);
-        break;
-      }
     }
     if (coName === "Colin" && !isSuperCOPower) {
       window.setTimeout(() => playSFX(GameSFX.coGoldRush), 800);

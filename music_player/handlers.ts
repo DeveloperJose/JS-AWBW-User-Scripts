@@ -287,10 +287,10 @@ function addReplayHandlers() {
   // Remove extra sound effects if we are moving through the replay quickly
   const stopExtraSFX = () => {
     stopSFX(GameSFX.powerActivateAW1COP);
-    stopSFX(GameSFX.powerActivateAllyCOP);
-    stopSFX(GameSFX.powerActivateAllySCOP);
-    stopSFX(GameSFX.powerActivateBHCOP);
-    stopSFX(GameSFX.powerActivateBHSCOP);
+    // stopSFX(GameSFX.powerActivateAllyCOP);
+    // stopSFX(GameSFX.powerActivateAllySCOP);
+    // stopSFX(GameSFX.powerActivateBHCOP);
+    // stopSFX(GameSFX.powerActivateBHSCOP);
   };
   replayBackwardActionBtn.addEventListener("click", stopExtraSFX);
   replayForwardBtn.addEventListener("click", stopExtraSFX);
@@ -831,24 +831,24 @@ function onPower(data: PowerData) {
       playSFX(GameSFX.powerActivateAW1COP);
       stopThemeSong(4500);
       return;
-    case GameType.AW2:
-    case GameType.DS:
-    case GameType.RBC: {
-      // Super CO Power
-      if (isSuperCOPower) {
-        const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-        const delay = isBH ? 1916 : 1100;
-        playSFX(sfx);
-        stopThemeSong(delay);
-        break;
-      }
-      // Regular CO Power
-      const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-      const delay = isBH ? 1019 : 881;
-      playSFX(sfx);
-      stopThemeSong(delay);
-      break;
-    }
+    // case GameType.AW2:
+    // case GameType.DS:
+    // case GameType.RBC: {
+    //   // Super CO Power
+    //   if (isSuperCOPower) {
+    //     const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
+    //     const delay = isBH ? 1916 : 1100;
+    //     playSFX(sfx);
+    //     stopThemeSong(delay);
+    //     break;
+    //   }
+    //   // Regular CO Power
+    //   const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
+    //   const delay = isBH ? 1019 : 881;
+    //   playSFX(sfx);
+    //   stopThemeSong(delay);
+    //   break;
+    // }
   }
   // Colin's gold rush SFX for AW2, DS, and RBC
   if (coName === "Colin" && !isSuperCOPower) {

@@ -5,7 +5,14 @@ import { currentPlayer } from "../../shared/awbw_game";
 import { getCurrentPageType, PageType } from "../../shared/awbw_page";
 import { addDatabaseReplacementListener } from "../db";
 import { addSettingsChangeListener, musicSettings, RandomThemeType, SettingsKey, ThemeType } from "../music_settings";
-import { getCONameFromURL, getGameTypeFromURL, getMusicURL, hasPreloopTheme, SpecialTheme } from "../resources";
+import {
+  getCONameFromURL,
+  getGameTypeFromURL,
+  getMusicURL,
+  getValidGameTypeForCO,
+  hasPreloopTheme,
+  SpecialTheme,
+} from "../resources";
 import { SpecialCOs } from "../../shared/awbw_game";
 import { logInfo, logDebug, logError, debounce } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
@@ -45,7 +52,7 @@ let currentDelayTimeoutID = -1;
  */
 export async function playMusicURL(srcURL: string, newPlay = false) {
   const coName = getCONameFromURL(srcURL);
-  const gameType = getGameTypeFromURL(srcURL);
+  const gameType = getValidGameTypeForCO(coName, getGameTypeFromURL(srcURL));
   // This song has an intro or preloop, preload the loop song
   if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
     await preloadURL(srcURL.replace("-intro", ""));
@@ -244,7 +251,7 @@ export function onThemeEndOrLoop(srcURL: string) {
   }
 
   const coName = getCONameFromURL(srcURL);
-  const gameType = getGameTypeFromURL(srcURL);
+  const gameType = getValidGameTypeForCO(coName, getGameTypeFromURL(srcURL));
 
   // The song has an intro, so mark it in the special intro map as having done the intro
   if (srcURL.includes("-intro")) {

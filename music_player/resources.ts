@@ -69,10 +69,10 @@ export const enum SpecialTheme {
 export enum GameSFX {
   coGoldRush = "co-gold-rush",
 
-  powerActivateAllyCOP = "power-activate-ally-cop",
-  powerActivateAllySCOP = "power-activate-ally-scop",
-  powerActivateBHCOP = "power-activate-bh-cop",
-  powerActivateBHSCOP = "power-activate-bh-scop",
+  // powerActivateAllyCOP = "power-activate-ally-cop",
+  // powerActivateAllySCOP = "power-activate-ally-scop",
+  // powerActivateBHCOP = "power-activate-bh-cop",
+  // powerActivateBHSCOP = "power-activate-bh-scop",
   powerActivateAW1COP = "power-activate-aw1-cop",
 
   powerSCOPAvailable = "power-scop-available",
@@ -201,19 +201,176 @@ const alternateThemes = new Map([
 
 const introThemes = new Map([
   [GameType.AW1, new Set([])],
-  [GameType.AW2, new Set(["andy"])],
-  [GameType.DS, new Set([])],
-  [GameType.RBC, new Set([])],
+  [GameType.AW2, new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf"])],
+  [
+    GameType.DS,
+    new Set([
+      "andy",
+      "colin",
+      "grit",
+      "hachi",
+      "jess",
+      "jugger",
+      "kanbei",
+      "kindle",
+      "koal",
+      "lash",
+      "mode-select",
+      "olaf",
+      "vonbolt",
+    ]),
+  ],
+  [
+    GameType.RBC,
+    new Set([
+      "adder-cop",
+      "andy-cop",
+      "andy",
+      "clone-andy-cop",
+      "colin-cop",
+      "colin",
+      "drake-cop",
+      "eagle-cop",
+      "flak-cop",
+      "grit-cop",
+      "grit",
+      "hachi-cop",
+      "hachi",
+      "hawke-cop",
+      "jess-cop",
+      "jess",
+      "kanbei-cop",
+      "kanbei",
+      "lash-cop",
+      "lash",
+      "max-cop",
+      "nell-cop",
+      "olaf-cop",
+      "olaf",
+      "sami-cop",
+      "sensei-cop",
+      "sonja-cop",
+      "sonja",
+      "sturm-cop",
+    ]),
+  ],
 ]);
 
 const preloopThemes = new Map([
   [GameType.AW1, new Set(["mode-select"])],
   [
     GameType.AW2,
-    new Set(["adder", "ally-co-power", "ally-super-co-power", "andy", "bh-co-power", "bh-super-co-power"]),
+    new Set([
+      "adder",
+      "ally-co-power",
+      "ally-super-co-power",
+      "andy",
+      "bh-co-power",
+      "bh-super-co-power",
+      "colin",
+      "drake",
+      "eagle",
+      "flak",
+      "grit",
+      "hachi",
+      "hawke",
+      "jess",
+      "kanbei",
+      "lash",
+      "map-editor",
+      "max",
+      "mode-select",
+      "nell",
+      "olaf",
+      "sami",
+      "sensei",
+      "sonja",
+      "sturm",
+    ]),
   ],
-  [GameType.DS, new Set([])],
-  [GameType.RBC, new Set([])],
+  [
+    GameType.DS,
+    new Set([
+      "adder",
+      "ally-co-power",
+      "ally-super-co-power",
+      "andy",
+      "bh-co-power",
+      "bh-super-co-power",
+      "colin",
+      "co-select",
+      "drake",
+      "eagle",
+      "flak",
+      "grimm",
+      "grit",
+      "hachi",
+      "hawke",
+      "jake",
+      "javier",
+      "jess",
+      "jugger",
+      "kanbei",
+      "kindle",
+      "koal",
+      "lash",
+      "map-editor",
+      "max",
+      "mode-select",
+      "nell",
+      "olaf",
+      "rachel",
+      "sami",
+      "sasha",
+      "sensei",
+      "sonja",
+      "vonbolt",
+    ]),
+  ],
+  [
+    GameType.RBC,
+    new Set([
+      "adder-cop",
+      "adder",
+      "andy-cop",
+      "andy",
+      "colin-cop",
+      "colin",
+      "drake-cop",
+      "drake",
+      "eagle-cop",
+      "eagle",
+      "flak-cop",
+      "flak",
+      "grit-cop",
+      "grit",
+      "hachi-cop",
+      "hachi",
+      "hawke-cop",
+      "hawke",
+      "jess-cop",
+      "jess",
+      "kanbei-cop",
+      "kanbei",
+      "lash-cop",
+      "lash",
+      "map-editor",
+      "max-cop",
+      "max",
+      "mode-select-1",
+      "mode-select-2",
+      "nell-cop",
+      "nell",
+      "olaf-cop",
+      "olaf",
+      "sami-cop",
+      "sami",
+      "sonja-cop",
+      "sonja",
+      "sturm-cop",
+      "sturm",
+    ]),
+  ],
 ]);
 
 export function hasAlternateTheme(coName: string, gameType: GameType) {
@@ -248,6 +405,8 @@ function getMusicFilename(
   // Check if we want to play the map editor theme
   if (coName === SpecialCOs.MapEditor)
     return hasIntro ? "t-map-editor-intro" : hasPreloop ? "t-map-editor-preloop" : "t-map-editor";
+
+  // TODO: MODE SELECT 2 FOR RBC
   if (coName === SpecialCOs.ModeSelect)
     return hasIntro ? "t-mode-select-intro" : hasPreloop ? "t-mode-select-preloop" : "t-mode-select";
 
@@ -264,16 +423,21 @@ function getMusicFilename(
   if (!isPowerActive || skipPowerTheme) {
     return hasIntro ? `t-${coName}-intro` : hasPreloop ? `t-${coName}-preloop` : `t-${coName}`;
   }
-
   // For RBC, we play the new power themes (if they are not in the DS games obviously)
   const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-  if (requestedGameType === GameType.RBC && isCOInRBC) {
-    return `t-${coName}-cop-intro`;
-  }
 
-  // For all other games, play the ally or black hole themes during the CO and Super CO powers
-  const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-  return `t-${faction}-${themeType}`;
+  // Change CO name to "andy-cop" for file checking in RBC
+  // Change to "ally" or "bh" for AW2 and DS
+  if (requestedGameType === GameType.RBC && isCOInRBC) {
+    coName = `${coName}-cop`;
+  } else {
+    const powerSuffix = themeType === ThemeType.CO_POWER ? "-co-power" : "-super-co-power";
+    coName = isBlackHoleCO(coName) ? "bh" : "ally";
+    coName += powerSuffix;
+  }
+  const hasCopIntro = hasIntroTheme(coName, actualGameType);
+  const hasCopPreloop = hasPreloopTheme(coName, actualGameType);
+  return hasCopIntro ? `t-${coName}-intro` : hasCopPreloop ? `t-${coName}-preloop` : `t-${coName}`;
 }
 
 /**
@@ -332,6 +496,7 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   coName = coName.toLowerCase().replaceAll(" ", "");
 
   // Check if we want to play a special theme;
+  // TODO: Preloop for CO Select
   if (coName === SpecialCOs.Victory) return getURLForMusicFile(SpecialTheme.Victory);
   if (coName === SpecialCOs.Defeat) return getURLForMusicFile(SpecialTheme.Defeat);
   if (coName === SpecialCOs.Maintenance) return getURLForMusicFile(SpecialTheme.Maintenance);
@@ -349,15 +514,9 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
   const overrideType = musicSettings.getOverride(coName);
   if (overrideType) gameType = overrideType;
   const requestedGameType = gameType;
-  // Override the game type to a higher game if the CO is not in the current soundtrack
-  if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
 
-  // These special themes vary depending on the game type
-  const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
-
-  // All AW1 COs except the special COs will use the AW2 music
-  if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
-
+  // Some COs don't have music in other games (DS COs are not in AW2 for example) so get a valid gameType for the filename
+  gameType = getValidGameTypeForCO(coName, gameType);
   const filename = getMusicFilename(coName, requestedGameType, gameType, themeType, useAlternateTheme);
 
   let gameDir = gameType as string;
@@ -388,6 +547,19 @@ export function getGameTypeFromURL(url: string) {
     return gameType as GameType;
   }
   return GameType.AW2;
+}
+
+export function getValidGameTypeForCO(coName: string, gameType: GameType) {
+  // Override the game type to a higher game if the CO is not in the current soundtrack
+  if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+
+  // These special themes vary depending on the game type
+  const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
+
+  // All AW1 COs except the special COs will use the AW2 music
+  if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
+
+  return gameType;
 }
 
 /**
