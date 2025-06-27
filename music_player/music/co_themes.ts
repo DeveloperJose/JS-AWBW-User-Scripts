@@ -58,12 +58,12 @@ export async function playMusicURL(srcURL: string, newPlay = false) {
 
   // This song has an intro that finished playing
   const specialLoopURL = specialIntroMap.get(srcURL);
-  const preloopURL = specialPreloopMap.get(srcURL);
   if (specialLoopURL) {
     //if (srcURL.includes("-cop")) specialIntroMap.delete(srcURL);
     srcURL = specialLoopURL;
   }
 
+  const preloopURL = specialPreloopMap.get(srcURL);
   if (preloopURL) {
     srcURL = preloopURL;
   }

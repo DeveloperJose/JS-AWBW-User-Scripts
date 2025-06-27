@@ -931,7 +931,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.15.0"],
+    ["music_player", "5.20.0"],
     ["highlight_cursor_coordinates", "2.3.0"]
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -2826,10 +2826,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     }
     const specialLoopURL = specialIntroMap.get(srcURL);
-    const preloopURL = specialPreloopMap.get(srcURL);
     if (specialLoopURL) {
       srcURL = specialLoopURL;
     }
+    const preloopURL = specialPreloopMap.get(srcURL);
     if (preloopURL) {
       srcURL = preloopURL;
     }
