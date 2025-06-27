@@ -2782,7 +2782,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const specialIntroMap = /* @__PURE__ */ new Map();
   let currentlyDelaying = false;
   let currentDelayTimeoutID = -1;
-  async function playMusicURL(srcURL) {
+  async function playMusicURL(srcURL, newPlay = false) {
     if (srcURL.includes("-intro")) {
       await preloadURL(srcURL.replace("-intro", ""));
     }
@@ -2799,10 +2799,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     nextSong.loop(!srcURL.includes("-intro"));
     nextSong.volume(getVolumeForURL(srcURL));
     nextSong.on("play", () => onThemePlay(nextSong, srcURL));
-    nextSong.on("load", () => playThemeSong());
+    nextSong.on("load", () => playThemeSong(true));
     nextSong.on("end", () => onThemeEndOrLoop(srcURL));
-    if (!musicSettings.isPlaying) return;
-    if (nextSong.playing()) return;
+    if (!newPlay) {
+      if (!musicSettings.isPlaying) return;
+      if (nextSong.playing()) return;
+    }
     if (!sameSongRequest) {
       logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
     }
@@ -2810,7 +2812,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (!newID) return;
     audioIDMap.set(srcURL, newID);
   }
-  function playThemeSong() {
+  function playThemeSong(newPlay = false) {
     if (!musicSettings.isPlaying) return;
     if (currentlyDelaying) return;
     let gameType = void 0;
@@ -2828,10 +2830,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     if (!coName) {
       if (!currentThemeURL || currentThemeURL === "") return;
-      playMusicURL(currentThemeURL);
+      playMusicURL(currentThemeURL, newPlay);
       return;
     }
-    playMusicURL(getMusicURL(coName, gameType));
+    playMusicURL(getMusicURL(coName, gameType), newPlay);
   }
   function stopThemeSong(delayMS = 0) {
     if (delayMS > 0) {
@@ -2868,7 +2870,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     if (currentThemeURL !== srcURL && audio.playing()) {
       audio.pause();
-      playThemeSong();
+      playThemeSong(true);
     }
     const audioID = audioIDMap.get(srcURL);
     if (!audioID) return;
@@ -2884,7 +2886,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (srcURL.includes("-intro")) {
       const loopURL = srcURL.replace("-intro", "");
       specialIntroMap.set(srcURL, loopURL);
-      playThemeSong();
+      playThemeSong(true);
     }
     let hasIntro = false;
     specialIntroMap.values().forEach((val) => {
@@ -2901,7 +2903,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         return;
       }
       musicSettings.randomizeCO();
-      playThemeSong();
+      playThemeSong(true);
     }
   }
   function onSettingsChange(key, _value, isFirstLoad) {
@@ -3076,11 +3078,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     playThemeSong();
     window.setTimeout(() => {
       musicSettings.themeType = getCurrentThemeType();
+      playThemeSong();
+    }, 500);
+    window.setTimeout(() => {
+      musicSettings.themeType = getCurrentThemeType();
       if (themeTypeBefore !== ThemeType.REGULAR && musicSettings.themeType === ThemeType.REGULAR) {
         specialIntroMap.forEach((_introURL, loopURL) => {
           if (loopURL.includes("-cop")) specialIntroMap.delete(loopURL);
         });
       }
+      playThemeSong();
     }, 750);
   }
   function refreshMusicForNextTurn(playDelayMS = 0) {
@@ -3099,7 +3106,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           }
         });
       }
-      playThemeSong();
+      playThemeSong(true);
       window.setTimeout(playThemeSong, 350);
     }, playDelayMS);
   }
@@ -3136,9 +3143,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     replayForwardBtn.addEventListener("click", stopExtraSFX);
     replayBackwardBtn.addEventListener("click", stopExtraSFX);
     replayCloseBtn.addEventListener("click", stopExtraSFX);
-    replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
-    replayForwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
-    replayBackwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
     replayBackwardActionBtn.addEventListener("click", syncMusic);
     replayForwardActionBtn.addEventListener("click", syncMusic);
     replayForwardBtn.addEventListener("click", syncMusic);
@@ -3195,7 +3199,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function onQueryTurn(gameId, turn, turnPId, turnDay, replay2, initial) {
     const result = ahQueryTurn == null ? void 0 : ahQueryTurn.apply(ahQueryTurn, [gameId, turn, turnPId, turnDay, replay2, initial]);
     if (!musicSettings.isPlaying) return result;
-    syncMusic();
     refreshMusicForNextTurn(250);
     return result;
   }
@@ -3557,7 +3560,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       logInfo("All common audio has been pre-loaded!");
       musicSettings.themeType = getCurrentThemeType();
       getMusicPlayerUI().updateAllInputLabels();
-      playThemeSong();
+      playThemeSong(true);
       window.setTimeout(playThemeSong, 500);
       if (!setHashesTimeoutID) {
         const checkHashesMS = 1e3 * 60 * 1;

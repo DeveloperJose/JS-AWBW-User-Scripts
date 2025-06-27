@@ -142,7 +142,7 @@ function preloadThemes() {
     musicSettings.themeType = getCurrentThemeType();
     // TODO:
     getMusicPlayerUI().updateAllInputLabels();
-    playThemeSong();
+    playThemeSong(true);
     window.setTimeout(playThemeSong, 500);
 
     // Check for new music files every minute

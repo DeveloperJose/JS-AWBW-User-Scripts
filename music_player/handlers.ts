@@ -201,17 +201,17 @@ function addMovePlannerHandlers() {
 }
 
 /**
- * Syncs the music with the game state. Does not randomize the COs.
+ * Syncs the music with the game state. Does not randomize the COs. You can spam this a little bit.
  */
 function syncMusic() {
   const themeTypeBefore = musicSettings.themeType;
   musicSettings.themeType = getCurrentThemeType();
 
   playThemeSong();
-  //window.setTimeout(() => {
-  //  musicSettings.themeType = getCurrentThemeType();
-  //  playThemeSong();
-  //}, 500);
+  window.setTimeout(() => {
+    musicSettings.themeType = getCurrentThemeType();
+    playThemeSong();
+  }, 500);
 
   window.setTimeout(() => {
     musicSettings.themeType = getCurrentThemeType();
@@ -220,12 +220,13 @@ function syncMusic() {
         if (loopURL.includes("-cop")) specialIntroMap.delete(loopURL);
       });
     }
-    //playThemeSong();
+    playThemeSong();
   }, 750);
 }
 
 /**
  * Refreshes everything needed for the music when finishing a turn. Also randomizes the COs if needed.
+ * Use this only for turn changes, not for music syncs.
  * @param playDelayMS - The delay in milliseconds before the theme song starts playing.
  */
 function refreshMusicForNextTurn(playDelayMS = 0) {
@@ -246,7 +247,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
         }
       });
     }
-    playThemeSong();
+    playThemeSong(true);
     window.setTimeout(playThemeSong, 350);
   }, playDelayMS);
 }
@@ -297,9 +298,9 @@ function addReplayHandlers() {
   replayCloseBtn.addEventListener("click", stopExtraSFX);
 
   // onQueryTurn isn't called when closing the replay viewer, so change the music for the turn change here
-  replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
-  replayForwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
-  replayBackwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+  // replayCloseBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+  // replayForwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
+  // replayBackwardBtn.addEventListener("click", () => refreshMusicForNextTurn(500));
 
   // Keep the music in sync, we do not need to handle turn changes because onQueryTurn will handle that
   replayBackwardActionBtn.addEventListener("click", syncMusic);
@@ -381,7 +382,7 @@ function onQueryTurn(
   if (!musicSettings.isPlaying) return result;
   // log("Query Turn", gameId, turn, turnPId, turnDay, replay, initial);
 
-  syncMusic();
+  // syncMusic();
   refreshMusicForNextTurn(250);
   return result;
 }

@@ -41,7 +41,7 @@ let currentDelayTimeoutID = -1;
  * @param srcURL - URL of song to play.
  * @param startFromBeginning - Whether to start from the beginning.
  */
-export async function playMusicURL(srcURL: string) {
+export async function playMusicURL(srcURL: string, newPlay = false) {
   // This song has an intro, preload the full song
   if (srcURL.includes("-intro")) {
     await preloadURL(srcURL.replace("-intro", ""));
@@ -70,12 +70,14 @@ export async function playMusicURL(srcURL: string) {
 
   // Make sure the theme has the proper event handlers
   nextSong.on("play", () => onThemePlay(nextSong, srcURL));
-  nextSong.on("load", () => playThemeSong());
+  nextSong.on("load", () => playThemeSong(true));
   nextSong.on("end", () => onThemeEndOrLoop(srcURL));
 
   // Play the song if it's not already playing
-  if (!musicSettings.isPlaying) return;
-  if (nextSong.playing()) return;
+  if (!newPlay) {
+    if (!musicSettings.isPlaying) return;
+    if (nextSong.playing()) return;
+  }
 
   if (!sameSongRequest) {
     logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
@@ -90,7 +92,7 @@ export async function playMusicURL(srcURL: string) {
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
  */
-export function playThemeSong() {
+export function playThemeSong(newPlay = false) {
   if (!musicSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -121,11 +123,11 @@ export function playThemeSong() {
   // For pages with no COs that aren't using the random themes, play the stored theme if any.
   if (!coName) {
     if (!currentThemeURL || currentThemeURL === "") return;
-    playMusicURL(currentThemeURL);
+    playMusicURL(currentThemeURL, newPlay);
     return;
   }
 
-  playMusicURL(getMusicURL(coName, gameType));
+  playMusicURL(getMusicURL(coName, gameType), newPlay);
 }
 
 /**
@@ -201,7 +203,7 @@ export function onThemePlay(audio: Howl, srcURL: string) {
   // This check makes sure we aren't playing more than one song at the same time
   if (currentThemeURL !== srcURL && audio.playing()) {
     audio.pause();
-    playThemeSong();
+    playThemeSong(true);
   }
 
   // There's multiple instances this sound playing so stop the extra ones
@@ -228,7 +230,7 @@ export function onThemeEndOrLoop(srcURL: string) {
   if (srcURL.includes("-intro")) {
     const loopURL = srcURL.replace("-intro", "");
     specialIntroMap.set(srcURL, loopURL);
-    playThemeSong();
+    playThemeSong(true);
   }
 
   let hasIntro = false;
@@ -252,7 +254,7 @@ export function onThemeEndOrLoop(srcURL: string) {
       return;
     }
     musicSettings.randomizeCO();
-    playThemeSong();
+    playThemeSong(true);
   }
 }
 
