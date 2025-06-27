@@ -1617,7 +1617,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function notifyCOSelectorListeners(coName) {
     coSelectorListeners.forEach((listener) => listener(coName));
   }
-  const CANDIDATE_BASE_URLS = ["https://developerjose.netlify.app", "https://awbw-devj.duckdns.org"];
+  const CANDIDATE_BASE_URLS = ["https://awbw-devj.duckdns.org", "https://developerjose.netlify.app"];
   let BASE_URL;
   async function getWorkingBaseURL() {
     for (const url of CANDIDATE_BASE_URLS) {
@@ -1886,17 +1886,57 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ]
   ]);
   const alternateThemes = /* @__PURE__ */ new Map([
-    [GameType.AW1, /* @__PURE__ */ new Set(["sturm"])],
-    [GameType.AW2, /* @__PURE__ */ new Set(["sturm"])],
-    [GameType.DS, /* @__PURE__ */ new Set(["sturm", "vonbolt"])],
-    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])]
+    [GameType.AW1, /* @__PURE__ */ new Set(["debug"])],
+    [GameType.AW2, /* @__PURE__ */ new Set([])],
+    [GameType.DS, /* @__PURE__ */ new Set([])],
+    [GameType.RBC, /* @__PURE__ */ new Set([])]
   ]);
   const introThemes = /* @__PURE__ */ new Map([
     [GameType.AW1, /* @__PURE__ */ new Set([])],
-    [GameType.AW2, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"])],
-    [GameType.DS, /* @__PURE__ */ new Set(["jess", "rachel"])],
+    [GameType.AW2, /* @__PURE__ */ new Set(["andy"])],
+    [GameType.DS, /* @__PURE__ */ new Set([])],
     [GameType.RBC, /* @__PURE__ */ new Set([])]
   ]);
+  const preloopThemes = /* @__PURE__ */ new Map([
+    [GameType.AW1, /* @__PURE__ */ new Set(["mode-select"])],
+    [
+      GameType.AW2,
+      /* @__PURE__ */ new Set(["adder", "ally-co-power", "ally-super-co-power", "andy", "bh-co-power", "bh-super-co-power"])
+    ],
+    [GameType.DS, /* @__PURE__ */ new Set([])],
+    [GameType.RBC, /* @__PURE__ */ new Set([])]
+  ]);
+  function hasIntroTheme(coName, gameType) {
+    var _a;
+    return (_a = introThemes.get(gameType)) == null ? void 0 : _a.has(coName);
+  }
+  function hasPreloopTheme(coName, gameType) {
+    var _a;
+    return (_a = preloopThemes.get(gameType)) == null ? void 0 : _a.has(coName);
+  }
+  function getMusicFilename(coName, requestedGameType, actualGameType, themeType, useAlternateTheme) {
+    const hasIntro = hasIntroTheme(coName, actualGameType);
+    const hasPreloop = hasPreloopTheme(coName, actualGameType);
+    if (coName === SpecialCOs.MapEditor)
+      return hasIntro ? "t-map-editor-intro" : hasPreloop ? "t-map-editor-preloop" : "t-map-editor";
+    if (coName === SpecialCOs.ModeSelect)
+      return hasIntro ? "t-mode-select-intro" : hasPreloop ? "t-mode-select-preloop" : "t-mode-select";
+    if (useAlternateTheme) {
+      const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
+      if (alternateFilename) return alternateFilename;
+    }
+    const isPowerActive = themeType !== ThemeType.REGULAR;
+    const skipPowerTheme = requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+    if (!isPowerActive || skipPowerTheme) {
+      return hasIntro ? `t-${coName}-intro` : hasPreloop ? `t-${coName}-preloop` : `t-${coName}`;
+    }
+    const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+    if (requestedGameType === GameType.RBC && isCOInRBC) {
+      return `t-${coName}-cop-intro`;
+    }
+    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
+    return `t-${faction}-${themeType}`;
+  }
   function getAlternateMusicFilename(coName, gameType, themeType) {
     if (!alternateThemes.has(gameType)) return;
     const alternateThemesSet = alternateThemes.get(gameType);
@@ -1908,31 +1948,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (!(alternateThemesSet == null ? void 0 : alternateThemesSet.has(coName)) || isPowerActive) {
       return;
     }
-    if (coName === "andy" && gameType == GameType.RBC) {
-      return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
-    }
     return `t-${coName}-2`;
-  }
-  function getMusicFilename(coName, requestedGameType, actualGameType, themeType, useAlternateTheme) {
-    var _a;
-    const hasIntro = (_a = introThemes.get(actualGameType)) == null ? void 0 : _a.has(coName);
-    if (coName === SpecialCOs.MapEditor) return "t-map-editor";
-    if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
-    if (useAlternateTheme) {
-      const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
-      if (alternateFilename) return alternateFilename;
-    }
-    const isPowerActive = themeType !== ThemeType.REGULAR;
-    const skipPowerTheme = requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
-    if (!isPowerActive || skipPowerTheme) {
-      return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
-    }
-    const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-    if (requestedGameType === GameType.RBC && isCOInRBC) {
-      return `t-${coName}-cop-intro`;
-    }
-    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-    return `t-${faction}-${themeType}`;
   }
   function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
     if (gameType === null || gameType === void 0) gameType = musicSettings.gameType;
@@ -1971,6 +1987,20 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const url = getURLForMusicFile(`${gameDir}/${filename}.ogg`);
     return url.toLowerCase().replaceAll("_", "-").replaceAll(" ", "");
   }
+  function getCONameFromURL(url) {
+    const parts = url.split("/");
+    const filename = parts[parts.length - 1];
+    const coName = filename.split(".")[0].substring(2).replaceAll("-intro", "").replaceAll("-preloop", "");
+    return coName;
+  }
+  function getGameTypeFromURL(url) {
+    const parts = url.split("/");
+    const gameType = parts[parts.length - 2].toUpperCase();
+    if (Object.values(GameType).includes(gameType)) {
+      return gameType;
+    }
+    return GameType.AW2;
+  }
   function getSoundEffectURL(sfx) {
     return `${BASE_URL}/music/sfx/${sfx}.ogg`;
   }
@@ -2001,6 +2031,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       audioList.add(superPowerURL);
       if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
       if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
+      if (regularURL.includes("-preloop")) audioList.add(regularURL.replace("-preloop", ""));
+      if (powerURL.includes("-preloop")) audioList.add(powerURL.replace("-preloop", ""));
     });
     return audioList;
   }
@@ -2781,15 +2813,25 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   let currentThemeURL = "";
   let currentLoops = 0;
   const specialIntroMap = /* @__PURE__ */ new Map();
+  const specialPreloopMap = /* @__PURE__ */ new Map();
   let currentlyDelaying = false;
   let currentDelayTimeoutID = -1;
   async function playMusicURL(srcURL, newPlay = false) {
-    if (srcURL.includes("-intro")) {
+    const coName = getCONameFromURL(srcURL);
+    const gameType = getGameTypeFromURL(srcURL);
+    if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
       await preloadURL(srcURL.replace("-intro", ""));
+      if (hasPreloopTheme(coName, gameType)) {
+        await preloadURL(srcURL.replace("-intro", "-preloop"));
+      }
     }
     const specialLoopURL = specialIntroMap.get(srcURL);
+    const preloopURL = specialPreloopMap.get(srcURL);
     if (specialLoopURL) {
       srcURL = specialLoopURL;
+    }
+    if (preloopURL) {
+      srcURL = preloopURL;
     }
     const sameSongRequest = srcURL === currentThemeURL;
     if (!sameSongRequest) {
@@ -2797,7 +2839,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       currentThemeURL = srcURL;
     }
     const nextSong = audioMap.get(srcURL) ?? await preloadURL(srcURL);
-    nextSong.loop(!srcURL.includes("-intro"));
+    const dontLoop = srcURL.includes("-intro") || srcURL.includes("-preloop");
+    nextSong.loop(!dontLoop);
     nextSong.volume(getVolumeForURL(srcURL));
     nextSong.on("play", () => onThemePlay(nextSong, srcURL));
     nextSong.on("load", () => playThemeSong(true));
@@ -2863,7 +2906,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
     const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
     const isIntro = srcURL.includes("-intro");
-    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme || isIntro;
+    const isPreloop = srcURL.includes("-preloop");
+    const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme || isIntro || isPreloop;
     const currentPosition = audio.seek();
     const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
     if (shouldRestart && isGamePageActive && currentPosition > 0.1) {
@@ -2884,9 +2928,21 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (currentThemeURL !== srcURL) {
       return;
     }
+    const coName = getCONameFromURL(srcURL);
+    const gameType = getGameTypeFromURL(srcURL);
     if (srcURL.includes("-intro")) {
-      const loopURL = srcURL.replace("-intro", "");
+      let loopURL;
+      if (hasPreloopTheme(coName, gameType)) {
+        loopURL = srcURL.replace("-intro", "-preloop");
+      } else {
+        loopURL = srcURL.replace("-intro", "");
+      }
       specialIntroMap.set(srcURL, loopURL);
+      playThemeSong(true);
+    }
+    if (srcURL.includes("-preloop")) {
+      const loopURL = srcURL.replace("-preloop", "");
+      specialPreloopMap.set(srcURL, loopURL);
       playThemeSong(true);
     }
     let hasIntro = false;
@@ -2900,7 +2956,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (currentLoops >= 5) playMusicURL(SpecialTheme.COSelect);
     }
     if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
-      if (srcURL.includes("-intro")) {
+      if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
         return;
       }
       musicSettings.randomizeCO();

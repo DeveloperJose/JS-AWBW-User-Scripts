@@ -9,7 +9,7 @@ import { GameType, RandomThemeType, ThemeType, musicSettings } from "./music_set
  * List of possible URLs to download music files from
  */
 
-const CANDIDATE_BASE_URLS = ["https://developerjose.netlify.app", "https://awbw-devj.duckdns.org"];
+const CANDIDATE_BASE_URLS = ["https://awbw-devj.duckdns.org", "https://developerjose.netlify.app"];
 
 /**
  * Base URL where all the files needed for this script are located.
@@ -60,7 +60,6 @@ export const enum SpecialTheme {
   Defeat = "t-defeat.ogg",
   Maintenance = "t-maintenance.ogg",
   COSelect = "t-co-select.ogg",
-  // ModeSelect = "t-mode-select.ogg",
 }
 
 /**
@@ -188,18 +187,94 @@ const onMovementRolloffMap = new Map([
  * Map that takes a game type and gives you a set of CO names that have alternate themes for that game type.
  */
 const alternateThemes = new Map([
-  [GameType.AW1, new Set(["sturm"])],
-  [GameType.AW2, new Set(["sturm"])],
-  [GameType.DS, new Set(["sturm", "vonbolt"])],
-  [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
+  [GameType.AW1, new Set(["debug"])],
+  [GameType.AW2, new Set([])],
+  [GameType.DS, new Set([])],
+  [GameType.RBC, new Set([])],
 ]);
+// const alternateThemes = new Map([
+//   [GameType.AW1, new Set(["sturm"])],
+//   [GameType.AW2, new Set(["sturm"])],
+//   [GameType.DS, new Set(["sturm", "vonbolt"])],
+//   [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
+// ]);
 
 const introThemes = new Map([
   [GameType.AW1, new Set([])],
-  [GameType.AW2, new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "mode-select"])],
-  [GameType.DS, new Set(["jess", "rachel"])],
+  [GameType.AW2, new Set(["andy"])],
+  [GameType.DS, new Set([])],
   [GameType.RBC, new Set([])],
 ]);
+
+const preloopThemes = new Map([
+  [GameType.AW1, new Set(["mode-select"])],
+  [
+    GameType.AW2,
+    new Set(["adder", "ally-co-power", "ally-super-co-power", "andy", "bh-co-power", "bh-super-co-power"]),
+  ],
+  [GameType.DS, new Set([])],
+  [GameType.RBC, new Set([])],
+]);
+
+export function hasAlternateTheme(coName: string, gameType: GameType) {
+  return alternateThemes.get(gameType)?.has(coName) ?? false;
+}
+
+export function hasIntroTheme(coName: string, gameType: GameType) {
+  return introThemes.get(gameType)?.has(coName);
+}
+
+export function hasPreloopTheme(coName: string, gameType: GameType) {
+  return preloopThemes.get(gameType)?.has(coName);
+}
+
+/**
+ * Determines the filename for the music to play given a specific CO and other settings.
+ * @param coName - Name of the CO whose music to use.
+ * @param actualGameType - Which game soundtrack to use (must be valid for given CO).
+ * @param requestedGameType - Which game soundtrack the user has selected (might not exist for given CO)
+ * @param themeType - Which type of music whether regular or power.
+ * @returns - The filename of the music to play given the parameters.
+ */
+function getMusicFilename(
+  coName: string,
+  requestedGameType: GameType,
+  actualGameType: GameType,
+  themeType: ThemeType,
+  useAlternateTheme: boolean,
+) {
+  const hasIntro = hasIntroTheme(coName, actualGameType);
+  const hasPreloop = hasPreloopTheme(coName, actualGameType);
+  // Check if we want to play the map editor theme
+  if (coName === SpecialCOs.MapEditor)
+    return hasIntro ? "t-map-editor-intro" : hasPreloop ? "t-map-editor-preloop" : "t-map-editor";
+  if (coName === SpecialCOs.ModeSelect)
+    return hasIntro ? "t-mode-select-intro" : hasPreloop ? "t-mode-select-preloop" : "t-mode-select";
+
+  // Check if we need to play an alternate theme
+  if (useAlternateTheme) {
+    const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
+    if (alternateFilename) return alternateFilename;
+  }
+
+  // Regular theme, either no power or we are in AW1 where there's no power themes.
+  // We only skip if AW1 mode is enabled and there's no random themes
+  const isPowerActive = themeType !== ThemeType.REGULAR;
+  const skipPowerTheme = requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
+  if (!isPowerActive || skipPowerTheme) {
+    return hasIntro ? `t-${coName}-intro` : hasPreloop ? `t-${coName}-preloop` : `t-${coName}`;
+  }
+
+  // For RBC, we play the new power themes (if they are not in the DS games obviously)
+  const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+  if (requestedGameType === GameType.RBC && isCOInRBC) {
+    return `t-${coName}-cop-intro`;
+  }
+
+  // For all other games, play the ally or black hole themes during the CO and Super CO powers
+  const faction = isBlackHoleCO(coName) ? "bh" : "ally";
+  return `t-${faction}-${themeType}`;
+}
 
 /**
  * Determines the filename for the alternate music to play given a specific CO and other settings (if any).
@@ -226,58 +301,13 @@ function getAlternateMusicFilename(coName: string, gameType: GameType, themeType
     return;
   }
 
-  // Andy -> Clone Andy
-  if (coName === "andy" && gameType == GameType.RBC) {
-    return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
-  }
+  // TODO: Andy -> Clone Andy
+  // if (coName === "andy" && gameType == GameType.RBC) {
+  //   return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
+  // }
 
   // All other alternate themes
   return `t-${coName}-2`;
-}
-
-/**
- * Determines the filename for the music to play given a specific CO and other settings.
- * @param coName - Name of the CO whose music to use.
- * @param actualGameType - Which game soundtrack to use (must be valid for given CO).
- * @param requestedGameType - Which game soundtrack the user has selected (might not exist for given CO)
- * @param themeType - Which type of music whether regular or power.
- * @returns - The filename of the music to play given the parameters.
- */
-function getMusicFilename(
-  coName: string,
-  requestedGameType: GameType,
-  actualGameType: GameType,
-  themeType: ThemeType,
-  useAlternateTheme: boolean,
-) {
-  const hasIntro = introThemes.get(actualGameType)?.has(coName);
-  // Check if we want to play the map editor theme
-  if (coName === SpecialCOs.MapEditor) return "t-map-editor";
-  if (coName === SpecialCOs.ModeSelect) return hasIntro ? "t-mode-select-intro" : "t-mode-select";
-
-  // Check if we need to play an alternate theme
-  if (useAlternateTheme) {
-    const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
-    if (alternateFilename) return alternateFilename;
-  }
-
-  // Regular theme, either no power or we are in AW1 where there's no power themes.
-  // We only skip if AW1 mode is enabled and there's no random themes
-  const isPowerActive = themeType !== ThemeType.REGULAR;
-  const skipPowerTheme = requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
-  if (!isPowerActive || skipPowerTheme) {
-    return hasIntro ? `t-${coName}-intro` : `t-${coName}`;
-  }
-
-  // For RBC, we play the new power themes (if they are not in the DS games obviously)
-  const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
-  if (requestedGameType === GameType.RBC && isCOInRBC) {
-    return `t-${coName}-cop-intro`;
-  }
-
-  // For all other games, play the ally or black hole themes during the CO and Super CO powers
-  const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-  return `t-${faction}-${themeType}`;
 }
 
 /**
@@ -347,8 +377,17 @@ export function getCONameFromURL(url: string) {
   const filename = parts[parts.length - 1];
 
   // Remove t- prefix and .ogg extension
-  const coName = filename.split(".")[0].substring(2);
+  const coName = filename.split(".")[0].substring(2).replaceAll("-intro", "").replaceAll("-preloop", "");
   return coName;
+}
+
+export function getGameTypeFromURL(url: string) {
+  const parts = url.split("/");
+  const gameType = parts[parts.length - 2].toUpperCase();
+  if (Object.values(GameType).includes(gameType as GameType)) {
+    return gameType as GameType;
+  }
+  return GameType.AW2;
 }
 
 /**
@@ -412,6 +451,8 @@ export function getCurrentThemeURLs(): Set<string> {
     audioList.add(superPowerURL);
     if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
     if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
+    if (regularURL.includes("-preloop")) audioList.add(regularURL.replace("-preloop", ""));
+    if (powerURL.includes("-preloop")) audioList.add(powerURL.replace("-preloop", ""));
   });
   return audioList;
 }
@@ -454,6 +495,12 @@ export function getAllAudioURLs() {
       for (const themeType of Object.values(ThemeType)) {
         const url = getMusicURL(coName, gameType, themeType, false);
         if (url.includes("-intro")) {
+          allSoundURLs.add(url.replace("-intro", ""));
+          if (hasPreloopTheme(coName, gameType)) {
+            allSoundURLs.add(url.replace("-intro", "-preloop"));
+          }
+        }
+        if (url.includes("-preloop")) {
           allSoundURLs.add(url.replace("-intro", ""));
         }
         const alternateURL = getMusicURL(coName, gameType, themeType, true);
