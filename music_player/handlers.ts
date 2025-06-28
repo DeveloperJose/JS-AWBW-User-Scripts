@@ -68,7 +68,14 @@ import {
   getUnloadFn,
   getWaitFn,
 } from "../shared/awbw_handlers";
-import { clearThemeDelay, playThemeSong, restartTheme, specialIntroMap, stopThemeSong } from "./music/co_themes";
+import {
+  clearThemeDelay,
+  playThemeSong,
+  restartTheme,
+  specialIntroMap,
+  specialPreloopMap,
+  stopThemeSong,
+} from "./music/co_themes";
 import { playSFX, stopSFX } from "./music/sound_effects";
 import { stopAllMovementSounds, stopMovementSound, playMovementSound } from "./music/unit_movement";
 import { getCurrentDocument } from "./iframe";
@@ -246,6 +253,10 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
           specialIntroMap.delete(url);
         }
       });
+    }
+
+    if (musicSettings.restartThemes) {
+      specialPreloopMap.clear();
     }
     playThemeSong(musicSettings.restartThemes);
     window.setTimeout(playThemeSong, 350);

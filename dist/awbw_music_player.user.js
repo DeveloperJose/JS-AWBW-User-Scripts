@@ -3325,6 +3325,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           }
         });
       }
+      if (musicSettings.restartThemes) {
+        specialPreloopMap.clear();
+      }
       playThemeSong(musicSettings.restartThemes);
       window.setTimeout(playThemeSong, 350);
     }, playDelayMS);
