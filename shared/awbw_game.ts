@@ -179,6 +179,7 @@ export function isReplayActive() {
   if (getCurrentPageType() !== PageType.ActiveGame) return false;
   // Check if replay mode is open by checking if the replay section is set to display
   const replayControls = getReplayControls();
+
   if (!replayControls) return false;
   const replayOpen = replayControls.style.display !== "none";
   return replayOpen && Object.keys(replay).length > 0;

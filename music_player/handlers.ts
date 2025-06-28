@@ -36,7 +36,6 @@ import { areAnimationsEnabled } from "../shared/awbw_globals";
 
 import { getCurrentThemeType, musicSettings, GameType, ThemeType, RandomThemeType } from "./music_settings";
 import { GameSFX } from "./resources";
-import { isBlackHoleCO } from "../shared/awbw_globals";
 import {
   getAnimExplosionFn,
   getAnimUnitFn,
@@ -823,7 +822,6 @@ function onPower(data: PowerData) {
 
   // Remember, these are in title case with spaces like "Colin" or "Von Bolt"
   const coName = data.coName;
-  const isBH = isBlackHoleCO(coName);
   const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
 
   // Stop the power charge SFX if they're playing
@@ -842,26 +840,8 @@ function onPower(data: PowerData) {
     case GameType.AW1:
       // Advance Wars 1 will use the same sound for both CO and Super CO power activations
       playSFX(GameSFX.powerActivateAW1COP);
-      stopThemeSong(4500);
+      stopThemeSong(4833);
       return;
-    // case GameType.AW2:
-    // case GameType.DS:
-    // case GameType.RBC: {
-    //   // Super CO Power
-    //   if (isSuperCOPower) {
-    //     const sfx = isBH ? GameSFX.powerActivateBHSCOP : GameSFX.powerActivateAllySCOP;
-    //     const delay = isBH ? 1916 : 1100;
-    //     playSFX(sfx);
-    //     stopThemeSong(delay);
-    //     break;
-    //   }
-    //   // Regular CO Power
-    //   const sfx = isBH ? GameSFX.powerActivateBHCOP : GameSFX.powerActivateAllyCOP;
-    //   const delay = isBH ? 1019 : 881;
-    //   playSFX(sfx);
-    //   stopThemeSong(delay);
-    //   break;
-    // }
   }
   // Colin's gold rush SFX for AW2, DS, and RBC
   if (coName === "Colin" && !isSuperCOPower) {

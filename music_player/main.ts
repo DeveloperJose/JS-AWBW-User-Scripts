@@ -28,6 +28,7 @@ import { broadcastChannel, getCurrentDocument, IFRAME_ID, initializeIFrame } fro
 import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
+import { isReplayActive } from "../shared/awbw_game";
 
 // import Vue from "vue";
 // import MusicPlayer from "./components/music_player.vue";
@@ -129,11 +130,16 @@ function onLiveQueue() {
  */
 let setHashesTimeoutID: number | undefined;
 
+let preloaded = false;
+
 /**
  * Preloads all themes and audio files, plays the theme song, and checks for new music files every minute.
  */
 function preloadThemes() {
   addThemeListeners();
+  if (preloaded) return;
+  preloaded = true;
+
   preloadAllCommonAudio(() => {
     logInfo("All common audio has been pre-loaded!");
 
@@ -142,8 +148,34 @@ function preloadThemes() {
     musicSettings.themeType = getCurrentThemeType();
     // TODO:
     getMusicPlayerUI().updateAllInputLabels();
-    playThemeSong();
-    window.setTimeout(playThemeSong, 500);
+
+    // If we are refreshing a replay, wait a little bit before playing the music so the replay controls load and
+    // we play the correct music
+    const ndxInURL = window.location.href.includes("&ndx=");
+    if (!ndxInURL) {
+      playThemeSong();
+    } else {
+      // Inside any function (sync or async)
+      new Promise<void>((resolve) => {
+        const start = performance.now();
+        const timeoutMs = 3000;
+
+        function check() {
+          if (isReplayActive()) {
+            resolve();
+          } else if (performance.now() - start >= timeoutMs) {
+            resolve();
+          } else {
+            requestAnimationFrame(check);
+          }
+        }
+
+        check();
+      }).then(() => {
+        playThemeSong();
+      });
+    }
+    window.setTimeout(playThemeSong, 1000);
 
     // Check for new music files every minute
     if (!setHashesTimeoutID) {

@@ -2,7 +2,6 @@
  * @file This file contains all the functions and variables relevant to the creation and behavior of a custom UI.
  */
 import { getCurrentDocument } from "../music_player/iframe";
-import { getCOImagePrefix } from "./awbw_game";
 import { getAllCONames } from "./awbw_globals";
 import { getCurrentPageType, PageType } from "./awbw_page";
 import { checkIfUpdateIsAvailable, homepageURLs, ScriptName, updateURLs, versions } from "./config";
@@ -132,10 +131,10 @@ export class CustomMenuSettingsUI {
     // Button Background
     const bgDiv = document.createElement("div");
     bgDiv.classList.add("game-tools-bg");
-    // bgDiv.style.position = "relative";
+    bgDiv.style.position = "relative";
     bgDiv.style.width = "100%";
     bgDiv.style.height = "20px"; // or whatever size fits
-    bgDiv.style.backgroundColor = "#888888"; // fallback background
+    bgDiv.style.backgroundColor = "transparent"; // fallback background
     bgDiv.style.overflow = "hidden"; // ensures child doesn't overflow
 
     // Create the inner fill div
@@ -144,9 +143,9 @@ export class CustomMenuSettingsUI {
     fillDiv.style.top = "0";
     fillDiv.style.left = "0";
     fillDiv.style.bottom = "0";
-    fillDiv.style.width = "0%"; // start empty
-    fillDiv.style.backgroundColor = "#ffffff";
-    fillDiv.style.transition = "width 0.3s ease";
+    fillDiv.style.width = "0%";
+    fillDiv.style.backgroundColor = "blue";
+    fillDiv.style.transition = "width 0.6s ease, opacity 0.3 ease";
     fillDiv.style.zIndex = "0";
 
     // Attach it
@@ -366,6 +365,7 @@ export class CustomMenuSettingsUI {
       }
 
       fillDiv.style.width = `${this.visualProgress}%`;
+      fillDiv.style.opacity = `${1 - this.visualProgress / 100}`;
     };
 
     this.animationFrame = requestAnimationFrame(animStep);
@@ -751,8 +751,11 @@ export class CustomMenuSettingsUI {
     const location = "javascript:void(0)";
     const internalName = coName.toLowerCase().replaceAll(" ", "");
 
-    const coPrefix = getCOImagePrefix();
-    const imgSrc = `terrain/ani/${coPrefix}${internalName}.png?v=1`;
+    // const coPrefix = getCOImagePrefix();
+    // Need ID conversions to access the prefix array
+    const prefix = internalName === "sturm" ? "aw2" : "ds";
+    const imgSrc = `terrain/co-portraits/${prefix}/${internalName}.png?v=1`;
+
     const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
 
     return (
@@ -779,8 +782,10 @@ export class CustomMenuSettingsUI {
     const imgCO = document.createElement("img");
     imgCO.classList.add("co_portrait");
 
-    const coPrefix = getCOImagePrefix();
-    imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
+    // const coPrefix = getCOImagePrefix();
+    // imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
+    const prefix = coName.toLowerCase() === "sturm" ? "aw2" : "ds";
+    imgCO.src = `terrain/co-portraits/${prefix}/${coName}.png?v=1`;
 
     // Allows other icons to be used
     if (!getAllCONames().includes(coName)) {
@@ -811,8 +816,9 @@ export class CustomMenuSettingsUI {
 
     // Change the CO portrait
     const imgCO = this.getNodeByID(NodeID.CO_Portrait) as HTMLImageElement;
-    const coPrefix = getCOImagePrefix();
-    imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
+    // const coPrefix = getCOImagePrefix();
+    const prefix = coName.toLowerCase() === "sturm" ? "aw2" : "ds";
+    imgCO.src = `terrain/co-portraits/${prefix}/${coName}.png?v=1`;
   }
 }
 

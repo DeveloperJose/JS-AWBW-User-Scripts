@@ -59,7 +59,7 @@ let currentDelayTimeoutID = -1;
  * @param srcURL - URL of song to play.
  * @param startFromBeginning - Whether to start from the beginning.
  */
-export async function playMusicURL(srcURL: string, newPlay = false) {
+export async function playMusicURL(srcURL: string) {
   // This song has an intro that finished playing
   const specialLoopURL = specialIntroMap.get(srcURL);
   if (specialLoopURL) {
@@ -111,7 +111,7 @@ export async function playMusicURL(srcURL: string, newPlay = false) {
  * Plays the appropriate music based on the settings and the current game state.
  * Determines the music automatically so just call this anytime the game state changes.
  */
-export function playThemeSong(newPlay = false) {
+export function playThemeSong() {
   if (!musicSettings.isPlaying) return;
 
   // Someone wants us to delay playing the theme, so wait a little bit then play
@@ -142,11 +142,11 @@ export function playThemeSong(newPlay = false) {
   // For pages with no COs that aren't using the random themes, play the stored theme if any.
   if (!coName) {
     if (!currentThemeURL || currentThemeURL === "") return;
-    playMusicURL(currentThemeURL, newPlay);
+    playMusicURL(currentThemeURL);
     return;
   }
 
-  playMusicURL(getMusicURL(coName, gameType), newPlay);
+  playMusicURL(getMusicURL(coName, gameType));
 }
 
 /**

@@ -2,7 +2,7 @@
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
 import { getAllPlayingCONames, getCurrentGameDay, SpecialCOs } from "../shared/awbw_game";
-import { getAllCONames, AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
+import { AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
 import { GameType, RandomThemeType, ThemeType, musicSettings } from "./music_settings";
 
 /**
@@ -34,7 +34,7 @@ export async function getWorkingBaseURL() {
   return false;
 }
 
-const getURLForMusicFile = (fname: string) => `${BASE_URL}/music/${fname}-preloop`;
+const getURLForMusicFile = (fname: string) => `${BASE_URL}/music/${fname}`;
 
 /**
  * Image URL for static music player icon
@@ -56,10 +56,10 @@ export const getHashesJSONURL = () => `${BASE_URL}/music/hashes.json`;
  * @enum {string}
  */
 export const enum SpecialTheme {
-  Victory = "t-victory.ogg",
-  Defeat = "t-defeat.ogg",
-  Maintenance = "t-maintenance.ogg",
-  COSelect = "t-co-select.ogg",
+  Victory = "t-victory-preloop.ogg",
+  Defeat = "t-defeat-preloop.ogg",
+  Maintenance = "t-maintenance-preloop.ogg",
+  COSelect = "t-co-select-preloop.ogg",
 }
 
 /**
@@ -199,179 +199,28 @@ const alternateThemes = new Map([
 //   [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
 // ]);
 
+// ls ~/local-debian/website/public/music/aw2 | grep "intro" | sed -E 's/^t-(.+)-intro\.ogg$/\"\1\"/' | sort | paste -sd "," - | sed 's/^/new Set([/' | sed 's/$/])/'
 const introThemes = new Map([
-  [GameType.AW1, new Set([])],
-  [GameType.AW2, new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf"])],
-  [
-    GameType.DS,
-    new Set([
-      "andy",
-      "colin",
-      "grit",
-      "hachi",
-      "jess",
-      "jugger",
-      "kanbei",
-      "kindle",
-      "koal",
-      "lash",
-      "mode-select",
-      "olaf",
-      "vonbolt",
-    ]),
-  ],
-  [
-    GameType.RBC,
-    new Set([
-      "adder-cop",
-      "andy-cop",
-      "andy",
-      "clone-andy-cop",
-      "colin-cop",
-      "colin",
-      "drake-cop",
-      "eagle-cop",
-      "flak-cop",
-      "grit-cop",
-      "grit",
-      "hachi-cop",
-      "hachi",
-      "hawke-cop",
-      "jess-cop",
-      "jess",
-      "kanbei-cop",
-      "kanbei",
-      "lash-cop",
-      "lash",
-      "max-cop",
-      "nell-cop",
-      "olaf-cop",
-      "olaf",
-      "sensei-cop",
-      "sonja-cop",
-      "sonja",
-      "sturm-cop",
-    ]),
-  ],
+  // prettier-ignore
+  [GameType.AW1, new Set()],
+  // prettier-ignore
+  [GameType.AW2, new Set(["andy","colin","grit","hachi","jess","kanbei","lash","olaf"])],
+  // prettier-ignore
+  [GameType.DS, new Set(["andy","colin","grit","hachi","jess","jugger","kanbei","kindle","koal","lash","mode-select","olaf","vonbolt"])],
+  // prettier-ignore
+  [GameType.RBC, new Set(["andy","colin","grit","hachi","jess","kanbei","lash","olaf","sonja"])],
 ]);
 
+// ls ~/local-debian/website/public/music/aw2 | grep "preloop" | sed -E 's/^t-(.+)-preloop\.ogg$/\"\1\"/' | sort | paste -sd "," - | sed 's/^/new Set([/' | sed 's/$/])/'
 const preloopThemes = new Map([
+  // prettier-ignore
   [GameType.AW1, new Set(["mode-select"])],
-  [
-    GameType.AW2,
-    new Set([
-      "adder",
-      "ally-co-power",
-      "ally-super-co-power",
-      "andy",
-      "bh-co-power",
-      "bh-super-co-power",
-      "colin",
-      "drake",
-      "eagle",
-      "flak",
-      "grit",
-      "hachi",
-      "hawke",
-      "jess",
-      "kanbei",
-      "lash",
-      "map-editor",
-      "max",
-      "mode-select",
-      "nell",
-      "olaf",
-      "sami",
-      "sensei",
-      "sonja",
-      "sturm",
-    ]),
-  ],
-  [
-    GameType.DS,
-    new Set([
-      "adder",
-      "ally-co-power",
-      "ally-super-co-power",
-      "andy",
-      "bh-co-power",
-      "bh-super-co-power",
-      "colin",
-      "co-select",
-      "drake",
-      "eagle",
-      "flak",
-      "grimm",
-      "grit",
-      "hachi",
-      "hawke",
-      "jake",
-      "javier",
-      "jess",
-      "jugger",
-      "kanbei",
-      "kindle",
-      "koal",
-      "lash",
-      "map-editor",
-      "max",
-      "mode-select",
-      "nell",
-      "olaf",
-      "rachel",
-      "sami",
-      "sasha",
-      "sensei",
-      "sonja",
-      "vonbolt",
-    ]),
-  ],
-  [
-    GameType.RBC,
-    new Set([
-      "adder-cop",
-      "adder",
-      "andy-cop",
-      "andy",
-      "colin-cop",
-      "colin",
-      "drake-cop",
-      "drake",
-      "eagle-cop",
-      "eagle",
-      "flak-cop",
-      "flak",
-      "grit-cop",
-      "grit",
-      "hachi-cop",
-      "hachi",
-      "hawke-cop",
-      "hawke",
-      "jess-cop",
-      "jess",
-      "kanbei-cop",
-      "kanbei",
-      "lash-cop",
-      "lash",
-      "map-editor",
-      "max-cop",
-      "max",
-      "mode-select-1",
-      "mode-select-2",
-      "nell-cop",
-      "nell",
-      "olaf-cop",
-      "olaf",
-      "sami-cop",
-      "sami",
-      "sensei-cop",
-      "sensei",
-      "sonja-cop",
-      "sonja",
-      "sturm-cop",
-      "sturm",
-    ]),
-  ],
+  // prettier-ignore
+  [GameType.AW2, new Set(["adder","ally-co-power","ally-super-co-power","andy","bh-co-power","bh-super-co-power","colin","drake","eagle","flak","grit","hachi","hawke","jess","kanbei","lash","map-editor","max","mode-select","nell","olaf","sami","sensei","sonja","sturm"])],
+  // prettier-ignore
+  [GameType.DS, new Set(["adder","ally-co-power","ally-super-co-power","andy","bh-co-power","bh-super-co-power","colin","drake","eagle","flak","grimm","grit","hachi","hawke","jake","javier","jess","jugger","kanbei","kindle","koal","lash","map-editor","max","mode-select","nell","olaf","rachel","sami","sasha","sensei","sonja","vonbolt"])],
+  // prettier-ignore
+  [GameType.RBC, new Set(["adder","adder-cop","ally-co-power","ally-super-co-power","andy","andy-cop","bh-co-power","bh-super-co-power","colin","colin-cop","drake","drake-cop","eagle","eagle-cop","flak","flak-cop","grit","grit-cop","hachi","hachi-cop","hawke","hawke-cop","jess","jess-cop","kanbei","kanbei-cop","lash","lash-cop","map-editor","max","max-cop","mode-select","mode-select-2","nell","nell-cop","olaf","olaf-cop","sami","sami-cop","sensei","sensei-cop","sonja","sonja-cop","sturm","sturm-cop"])],
 ]);
 
 export function hasAlternateTheme(coName: string, gameType: GameType) {

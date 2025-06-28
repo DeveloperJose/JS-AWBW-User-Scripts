@@ -335,10 +335,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const numberOfRemainingPlayers = Object.values(playersInfo).filter((info) => info.players_eliminated === "N").length;
     return numberOfRemainingPlayers === 1;
   }
-  function getCOImagePrefix() {
-    if (typeof coTheme === "undefined") return "aw2";
-    return coTheme;
-  }
   function getServerTimeZone() {
     if (getCurrentPageType() !== PageType.ActiveGame) return "-05:00";
     if (typeof serverTimezone === "undefined") return "-05:00";
@@ -1068,9 +1064,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       );
       const bgDiv = document.createElement("div");
       bgDiv.classList.add("game-tools-bg");
+      bgDiv.style.position = "relative";
       bgDiv.style.width = "100%";
       bgDiv.style.height = "20px";
-      bgDiv.style.backgroundColor = "#888888";
+      bgDiv.style.backgroundColor = "transparent";
       bgDiv.style.overflow = "hidden";
       const fillDiv = document.createElement("div");
       fillDiv.style.position = "absolute";
@@ -1078,8 +1075,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       fillDiv.style.left = "0";
       fillDiv.style.bottom = "0";
       fillDiv.style.width = "0%";
-      fillDiv.style.backgroundColor = "#ffffff";
-      fillDiv.style.transition = "width 0.3s ease";
+      fillDiv.style.backgroundColor = "blue";
+      fillDiv.style.transition = "width 0.6s ease, opacity 0.3 ease";
       fillDiv.style.zIndex = "0";
       bgDiv.appendChild(fillDiv);
       this.parent.appendChild(bgDiv);
@@ -1274,6 +1271,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           this.animationFrame = requestAnimationFrame(animStep);
         }
         fillDiv.style.width = `${this.visualProgress}%`;
+        fillDiv.style.opacity = `${1 - this.visualProgress / 100}`;
       };
       this.animationFrame = requestAnimationFrame(animStep);
     }
@@ -1609,8 +1607,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     createCOSelectorItem(coName) {
       const location = "javascript:void(0)";
       const internalName = coName.toLowerCase().replaceAll(" ", "");
-      const coPrefix = getCOImagePrefix();
-      const imgSrc = `terrain/ani/${coPrefix}${internalName}.png?v=1`;
+      const prefix = internalName === "sturm" ? "aw2" : "ds";
+      const imgSrc = `terrain/co-portraits/${prefix}/${internalName}.png?v=1`;
       const onClickFn = `awbw_music_player.notifyCOSelectorListeners('${internalName}');`;
       return `<tr><td class=borderwhite><img class=co_portrait src=${imgSrc}></td><td class=borderwhite align=center valign=center><span class=small_text><a onclick="${onClickFn}" href=${location}>${coName}</a></b></span></td></tr>`;
     }
@@ -1624,8 +1622,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     createCOPortraitImage(coName) {
       const imgCO = document.createElement("img");
       imgCO.classList.add("co_portrait");
-      const coPrefix = getCOImagePrefix();
-      imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
+      const prefix = coName.toLowerCase() === "sturm" ? "aw2" : "ds";
+      imgCO.src = `terrain/co-portraits/${prefix}/${coName}.png?v=1`;
       if (!getAllCONames().includes(coName)) {
         imgCO.src = `terrain/${coName}`;
       }
@@ -1648,8 +1646,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         "co-portrait"
         /* CO_Portrait */
       );
-      const coPrefix = getCOImagePrefix();
-      imgCO.src = `terrain/ani/${coPrefix}${coName}.png?v=1`;
+      const prefix = coName.toLowerCase() === "sturm" ? "aw2" : "ds";
+      imgCO.src = `terrain/co-portraits/${prefix}/${coName}.png?v=1`;
     }
   }
   const coSelectorListeners = [];
@@ -1674,15 +1672,15 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     return false;
   }
-  const getURLForMusicFile = (fname) => `${BASE_URL}/music/${fname}-preloop`;
+  const getURLForMusicFile = (fname) => `${BASE_URL}/music/${fname}`;
   const getNeutralImgURL = () => `${BASE_URL}/img/music-player-icon.png`;
   const getPlayingImgURL = () => `${BASE_URL}/img/music-player-playing.gif`;
   const getHashesJSONURL = () => `${BASE_URL}/music/hashes.json`;
   var SpecialTheme = /* @__PURE__ */ ((SpecialTheme2) => {
-    SpecialTheme2["Victory"] = "t-victory.ogg";
-    SpecialTheme2["Defeat"] = "t-defeat.ogg";
-    SpecialTheme2["Maintenance"] = "t-maintenance.ogg";
-    SpecialTheme2["COSelect"] = "t-co-select.ogg";
+    SpecialTheme2["Victory"] = "t-victory-preloop.ogg";
+    SpecialTheme2["Defeat"] = "t-defeat-preloop.ogg";
+    SpecialTheme2["Maintenance"] = "t-maintenance-preloop.ogg";
+    SpecialTheme2["COSelect"] = "t-co-select-preloop.ogg";
     return SpecialTheme2;
   })(SpecialTheme || {});
   var GameSFX = /* @__PURE__ */ ((GameSFX2) => {
@@ -1930,177 +1928,24 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     [GameType.RBC, /* @__PURE__ */ new Set([])]
   ]);
   const introThemes = /* @__PURE__ */ new Map([
-    [GameType.AW1, /* @__PURE__ */ new Set([])],
+    // prettier-ignore
+    [GameType.AW1, /* @__PURE__ */ new Set()],
+    // prettier-ignore
     [GameType.AW2, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf"])],
-    [
-      GameType.DS,
-      /* @__PURE__ */ new Set([
-        "andy",
-        "colin",
-        "grit",
-        "hachi",
-        "jess",
-        "jugger",
-        "kanbei",
-        "kindle",
-        "koal",
-        "lash",
-        "mode-select",
-        "olaf",
-        "vonbolt"
-      ])
-    ],
-    [
-      GameType.RBC,
-      /* @__PURE__ */ new Set([
-        "adder-cop",
-        "andy-cop",
-        "andy",
-        "clone-andy-cop",
-        "colin-cop",
-        "colin",
-        "drake-cop",
-        "eagle-cop",
-        "flak-cop",
-        "grit-cop",
-        "grit",
-        "hachi-cop",
-        "hachi",
-        "hawke-cop",
-        "jess-cop",
-        "jess",
-        "kanbei-cop",
-        "kanbei",
-        "lash-cop",
-        "lash",
-        "max-cop",
-        "nell-cop",
-        "olaf-cop",
-        "olaf",
-        "sensei-cop",
-        "sonja-cop",
-        "sonja",
-        "sturm-cop"
-      ])
-    ]
+    // prettier-ignore
+    [GameType.DS, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "jugger", "kanbei", "kindle", "koal", "lash", "mode-select", "olaf", "vonbolt"])],
+    // prettier-ignore
+    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "sonja"])]
   ]);
   const preloopThemes = /* @__PURE__ */ new Map([
+    // prettier-ignore
     [GameType.AW1, /* @__PURE__ */ new Set(["mode-select"])],
-    [
-      GameType.AW2,
-      /* @__PURE__ */ new Set([
-        "adder",
-        "ally-co-power",
-        "ally-super-co-power",
-        "andy",
-        "bh-co-power",
-        "bh-super-co-power",
-        "colin",
-        "drake",
-        "eagle",
-        "flak",
-        "grit",
-        "hachi",
-        "hawke",
-        "jess",
-        "kanbei",
-        "lash",
-        "map-editor",
-        "max",
-        "mode-select",
-        "nell",
-        "olaf",
-        "sami",
-        "sensei",
-        "sonja",
-        "sturm"
-      ])
-    ],
-    [
-      GameType.DS,
-      /* @__PURE__ */ new Set([
-        "adder",
-        "ally-co-power",
-        "ally-super-co-power",
-        "andy",
-        "bh-co-power",
-        "bh-super-co-power",
-        "colin",
-        "co-select",
-        "drake",
-        "eagle",
-        "flak",
-        "grimm",
-        "grit",
-        "hachi",
-        "hawke",
-        "jake",
-        "javier",
-        "jess",
-        "jugger",
-        "kanbei",
-        "kindle",
-        "koal",
-        "lash",
-        "map-editor",
-        "max",
-        "mode-select",
-        "nell",
-        "olaf",
-        "rachel",
-        "sami",
-        "sasha",
-        "sensei",
-        "sonja",
-        "vonbolt"
-      ])
-    ],
-    [
-      GameType.RBC,
-      /* @__PURE__ */ new Set([
-        "adder-cop",
-        "adder",
-        "andy-cop",
-        "andy",
-        "colin-cop",
-        "colin",
-        "drake-cop",
-        "drake",
-        "eagle-cop",
-        "eagle",
-        "flak-cop",
-        "flak",
-        "grit-cop",
-        "grit",
-        "hachi-cop",
-        "hachi",
-        "hawke-cop",
-        "hawke",
-        "jess-cop",
-        "jess",
-        "kanbei-cop",
-        "kanbei",
-        "lash-cop",
-        "lash",
-        "map-editor",
-        "max-cop",
-        "max",
-        "mode-select-1",
-        "mode-select-2",
-        "nell-cop",
-        "nell",
-        "olaf-cop",
-        "olaf",
-        "sami-cop",
-        "sami",
-        "sensei-cop",
-        "sensei",
-        "sonja-cop",
-        "sonja",
-        "sturm-cop",
-        "sturm"
-      ])
-    ]
+    // prettier-ignore
+    [GameType.AW2, /* @__PURE__ */ new Set(["adder", "ally-co-power", "ally-super-co-power", "andy", "bh-co-power", "bh-super-co-power", "colin", "drake", "eagle", "flak", "grit", "hachi", "hawke", "jess", "kanbei", "lash", "map-editor", "max", "mode-select", "nell", "olaf", "sami", "sensei", "sonja", "sturm"])],
+    // prettier-ignore
+    [GameType.DS, /* @__PURE__ */ new Set(["adder", "ally-co-power", "ally-super-co-power", "andy", "bh-co-power", "bh-super-co-power", "colin", "drake", "eagle", "flak", "grimm", "grit", "hachi", "hawke", "jake", "javier", "jess", "jugger", "kanbei", "kindle", "koal", "lash", "map-editor", "max", "mode-select", "nell", "olaf", "rachel", "sami", "sasha", "sensei", "sonja", "vonbolt"])],
+    // prettier-ignore
+    [GameType.RBC, /* @__PURE__ */ new Set(["adder", "adder-cop", "ally-co-power", "ally-super-co-power", "andy", "andy-cop", "bh-co-power", "bh-super-co-power", "colin", "colin-cop", "drake", "drake-cop", "eagle", "eagle-cop", "flak", "flak-cop", "grit", "grit-cop", "hachi", "hachi-cop", "hawke", "hawke-cop", "jess", "jess-cop", "kanbei", "kanbei-cop", "lash", "lash-cop", "map-editor", "max", "max-cop", "mode-select", "mode-select-2", "nell", "nell-cop", "olaf", "olaf-cop", "sami", "sami-cop", "sensei", "sensei-cop", "sonja", "sonja-cop", "sturm", "sturm-cop"])]
   ]);
   function hasIntroTheme(coName, gameType) {
     var _a;
@@ -2159,19 +2004,19 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     coName = coName.toLowerCase().replaceAll(" ", "");
     if (coName === SpecialCOs.Victory) return getURLForMusicFile(
-      "t-victory.ogg"
+      "t-victory-preloop.ogg"
       /* Victory */
     );
     if (coName === SpecialCOs.Defeat) return getURLForMusicFile(
-      "t-defeat.ogg"
+      "t-defeat-preloop.ogg"
       /* Defeat */
     );
     if (coName === SpecialCOs.Maintenance) return getURLForMusicFile(
-      "t-maintenance.ogg"
+      "t-maintenance-preloop.ogg"
       /* Maintenance */
     );
     if (coName === SpecialCOs.COSelect) return getURLForMusicFile(
-      "t-co-select.ogg"
+      "t-co-select-preloop.ogg"
       /* COSelect */
     );
     if (coName === SpecialCOs.ModeSelect || coName === SpecialCOs.MainPage || coName === SpecialCOs.LiveQueue || coName === SpecialCOs.Default)
@@ -3028,7 +2873,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const specialPreloopMap = /* @__PURE__ */ new Map();
   let currentlyDelaying = false;
   let currentDelayTimeoutID = -1;
-  async function playMusicURL(srcURL, newPlay = false) {
+  async function playMusicURL(srcURL) {
     const specialLoopURL = specialIntroMap.get(srcURL);
     if (specialLoopURL) {
       srcURL = specialLoopURL;
@@ -3058,7 +2903,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (!newID) return;
     audioIDMap.set(srcURL, newID);
   }
-  function playThemeSong(newPlay = false) {
+  function playThemeSong() {
     if (!musicSettings.isPlaying) return;
     if (currentlyDelaying) return;
     let gameType = void 0;
@@ -3076,10 +2921,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     if (!coName) {
       if (!currentThemeURL || currentThemeURL === "") return;
-      playMusicURL(currentThemeURL, newPlay);
+      playMusicURL(currentThemeURL);
       return;
     }
-    playMusicURL(getMusicURL(coName, gameType), newPlay);
+    playMusicURL(getMusicURL(coName, gameType));
   }
   function stopThemeSong(delayMS = 0) {
     if (delayMS > 0) {
@@ -3745,7 +3590,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ahPower == null ? void 0 : ahPower.apply(actionHandlers.Power, [data]);
     if (!musicSettings.isPlaying) return;
     const coName = data.coName;
-    isBlackHoleCO(coName);
     const isSuperCOPower = data.coPower === COPowerEnum.SuperCOPower;
     stopSFX(GameSFX.powerCOPAvailable);
     stopSFX(GameSFX.powerSCOPAvailable);
@@ -3757,7 +3601,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     switch (gameType) {
       case GameType.AW1:
         playSFX(GameSFX.powerActivateAW1COP);
-        stopThemeSong(4500);
+        stopThemeSong(4833);
         return;
     }
     if (coName === "Colin" && !isSuperCOPower) {
@@ -3819,14 +3663,37 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }, 500);
   }
   let setHashesTimeoutID;
+  let preloaded = false;
   function preloadThemes() {
     addThemeListeners();
+    if (preloaded) return;
+    preloaded = true;
     preloadAllCommonAudio(() => {
       logInfo("All common audio has been pre-loaded!");
       musicSettings.themeType = getCurrentThemeType();
       getMusicPlayerUI().updateAllInputLabels();
-      playThemeSong();
-      window.setTimeout(playThemeSong, 500);
+      const ndxInURL = window.location.href.includes("&ndx=");
+      if (!ndxInURL) {
+        playThemeSong();
+      } else {
+        new Promise((resolve) => {
+          const start = performance.now();
+          const timeoutMs = 3e3;
+          function check() {
+            if (isReplayActive()) {
+              resolve();
+            } else if (performance.now() - start >= timeoutMs) {
+              resolve();
+            } else {
+              requestAnimationFrame(check);
+            }
+          }
+          check();
+        }).then(() => {
+          playThemeSong();
+        });
+      }
+      window.setTimeout(playThemeSong, 1e3);
       if (!setHashesTimeoutID) {
         const checkHashesMS = 1e3 * 60 * 1;
         const checkHashesFn = () => {
