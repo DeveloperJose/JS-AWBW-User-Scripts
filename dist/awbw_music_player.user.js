@@ -931,7 +931,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.20.0"],
+    ["music_player", "5.21.0"],
     ["highlight_cursor_coordinates", "2.3.0"]
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -981,6 +981,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     NodeID2["Parent"] = "parent";
     NodeID2["Hover"] = "hover";
     NodeID2["Background"] = "background";
+    NodeID2["ProgressFill"] = "progress-fill";
     NodeID2["Button_Image"] = "button-image";
     NodeID2["Settings"] = "settings";
     NodeID2["Settings_Left"] = "settings-left";
@@ -1043,6 +1044,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
        * The keys are the names of the tables, and the values are the table elements.
        */
       __publicField(this, "tableMap", /* @__PURE__ */ new Map());
+      __publicField(this, "visualProgress", 0);
+      __publicField(this, "animationFrame", null);
       this.prefix = prefix;
       this.parentHoverText = hoverText;
       this.parent = document.createElement("div");
@@ -1065,17 +1068,36 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       );
       const bgDiv = document.createElement("div");
       bgDiv.classList.add("game-tools-bg");
-      bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
+      bgDiv.style.width = "100%";
+      bgDiv.style.height = "20px";
+      bgDiv.style.backgroundColor = "#888888";
+      bgDiv.style.overflow = "hidden";
+      const fillDiv = document.createElement("div");
+      fillDiv.style.position = "absolute";
+      fillDiv.style.top = "0";
+      fillDiv.style.left = "0";
+      fillDiv.style.bottom = "0";
+      fillDiv.style.width = "0%";
+      fillDiv.style.backgroundColor = "#ffffff";
+      fillDiv.style.transition = "width 0.3s ease";
+      fillDiv.style.zIndex = "0";
+      bgDiv.appendChild(fillDiv);
       this.parent.appendChild(bgDiv);
       this.setNodeID(
         bgDiv,
         "background"
         /* Background */
       );
+      this.setNodeID(
+        fillDiv,
+        "progress-fill"
+        /* ProgressFill */
+      );
       bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
       bgDiv.addEventListener("mouseout", () => this.setHoverText(""));
       const btnLink = document.createElement("a");
       btnLink.classList.add("norm2");
+      btnLink.style.zIndex = "20";
       bgDiv.appendChild(btnLink);
       const btnImg = document.createElement("img");
       btnImg.src = buttonImageURL;
@@ -1223,17 +1245,37 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
      * Sets the progress of the UI by coloring the background of the main button.
      * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
      */
-    setProgress(progress) {
-      const bgDiv = this.getNodeByID(
-        "background"
-        /* Background */
+    setProgress(targetProgress, immediate = false) {
+      const fillDiv = this.getNodeByID(
+        "progress-fill"
+        /* ProgressFill */
       );
-      if (!bgDiv) return;
-      if (progress <= 0 || progress >= 100) {
-        bgDiv.style.backgroundImage = "";
+      if (!fillDiv) return;
+      const clamped = Math.max(0, Math.min(targetProgress, 100));
+      if (this.animationFrame) {
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
+      }
+      if (clamped === 0) {
+        this.visualProgress = 0;
+        fillDiv.style.width = "0%";
         return;
       }
-      bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
+      if (immediate) {
+        this.visualProgress = targetProgress;
+        fillDiv.style.width = `${this.visualProgress}%`;
+        return;
+      }
+      const animStep = () => {
+        this.visualProgress += (clamped - this.visualProgress) * 0.1;
+        if (Math.abs(clamped - this.visualProgress) < 0.5) {
+          this.visualProgress = clamped;
+        } else {
+          this.animationFrame = requestAnimationFrame(animStep);
+        }
+        fillDiv.style.width = `${this.visualProgress}%`;
+      };
+      this.animationFrame = requestAnimationFrame(animStep);
     }
     /**
      * Sets the image of the main button.
@@ -1935,7 +1977,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         "nell-cop",
         "olaf-cop",
         "olaf",
-        "sami-cop",
         "sensei-cop",
         "sonja-cop",
         "sonja",
@@ -2052,6 +2093,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         "olaf",
         "sami-cop",
         "sami",
+        "sensei-cop",
+        "sensei",
         "sonja-cop",
         "sonja",
         "sturm-cop",
@@ -2151,7 +2194,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function getGameTypeFromURL(url) {
     const parts = url.split("/");
-    const gameType = parts[parts.length - 2].toUpperCase();
+    const gameType = parts[parts.length - 2].replace("aw-rbc", "RBC").replace("aw-ds", "DS").toUpperCase();
     if (Object.values(GameType).includes(gameType)) {
       return gameType;
     }
@@ -2159,6 +2202,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function getValidGameTypeForCO(coName, gameType) {
     if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+    if (coName.toLowerCase() === "sturm" && gameType === GameType.DS) gameType = GameType.AW2;
     const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
     if (gameType === GameType.AW1 && !isSpecialCO) gameType = GameType.AW2;
     return gameType;
@@ -2187,14 +2231,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
       const superPowerURL = getMusicURL(name, musicSettings.gameType, ThemeType.SUPER_CO_POWER, false);
       const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
+      const url = regularURL.replace("-intro", "").replace("-preloop", "");
+      if (hasIntroTheme(name, musicSettings.gameType)) audioList.add(url.replace(".ogg", "-intro.ogg"));
+      if (hasPreloopTheme(name, musicSettings.gameType)) audioList.add(url.replace(".ogg", "-preloop.ogg"));
+      const copName = name + "-cop";
+      const copURL = url.replace(name, copName);
+      if (hasIntroTheme(copName, musicSettings.gameType)) audioList.add(copURL.replace(".ogg", "-intro.ogg"));
+      if (hasPreloopTheme(copName, musicSettings.gameType)) audioList.add(copURL.replace(".ogg", "-preloop.ogg"));
       audioList.add(regularURL);
       audioList.add(alternateURL);
       audioList.add(powerURL);
       audioList.add(superPowerURL);
-      if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
-      if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
-      if (regularURL.includes("-preloop")) audioList.add(regularURL.replace("-preloop", ""));
-      if (powerURL.includes("-preloop")) audioList.add(powerURL.replace("-preloop", ""));
     });
     return audioList;
   }
@@ -2395,6 +2442,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (afterPreloadFunction) afterPreloadFunction();
     }
   }
+  function needsPreloading(srcURL) {
+    return !audioMap.has(srcURL);
+  }
   async function preloadURL(srcURL) {
     const audio = audioMap.get(srcURL);
     if (audio) return audio;
@@ -2503,7 +2553,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         musicPlayerUI.addItemToTable("Excluded Random Themes", noExcluded);
       }
     }
-    if (key === SettingsKey.GAME_TYPE) {
+    if (key === SettingsKey.GAME_TYPE && !isFirstLoad) {
       preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
     }
     const canUpdateDaySlider = (daySlider == null ? void 0 : daySlider.parentElement) && getCurrentPageType() === PageType.ActiveGame;
@@ -2979,14 +3029,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   let currentlyDelaying = false;
   let currentDelayTimeoutID = -1;
   async function playMusicURL(srcURL, newPlay = false) {
-    const coName = getCONameFromURL(srcURL);
-    const gameType = getValidGameTypeForCO(coName, getGameTypeFromURL(srcURL));
-    if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
-      await preloadURL(srcURL.replace("-intro", ""));
-      if (hasPreloopTheme(coName, gameType)) {
-        await preloadURL(srcURL.replace("-intro", "-preloop"));
-      }
-    }
     const specialLoopURL = specialIntroMap.get(srcURL);
     if (specialLoopURL) {
       srcURL = specialLoopURL;
@@ -3005,12 +3047,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     nextSong.loop(!dontLoop);
     nextSong.volume(getVolumeForURL(srcURL));
     nextSong.on("play", () => onThemePlay(nextSong, srcURL));
-    nextSong.on("load", () => playThemeSong(true));
+    nextSong.on("load", () => playThemeSong());
     nextSong.on("end", () => onThemeEndOrLoop(srcURL));
-    if (!newPlay) {
-      if (!musicSettings.isPlaying) return;
-      if (nextSong.playing()) return;
-    }
+    if (!musicSettings.isPlaying) return;
+    if (nextSong.playing()) return;
     if (!sameSongRequest) {
       logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
     }
@@ -3028,7 +3068,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     else if (getCurrentPageType() === PageType.MainPage) coName = SpecialCOs.MainPage;
     else if (getCurrentPageType() === PageType.LiveQueue) coName = SpecialCOs.LiveQueue;
     else if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
-    const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat;
+    const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat || coName === SpecialCOs.COSelect;
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
     if (isRandomTheme && !isEndTheme) {
       coName = musicSettings.currentRandomCO;
@@ -3064,6 +3104,23 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function onThemePlay(audio, srcURL) {
     currentLoops = 0;
     audio.volume(getVolumeForURL(srcURL));
+    const coName = getCONameFromURL(srcURL);
+    const requestedGameType = getGameTypeFromURL(srcURL);
+    const loopURL = srcURL.replace("-intro", "").replace("-preloop", "");
+    const introURL = loopURL.replace(".ogg", "-intro.ogg");
+    const preloopURL = loopURL.replace(".ogg", "-preloop.ogg");
+    const preloadURLs = [];
+    if (needsPreloading(loopURL)) preloadURLs.push(loopURL);
+    if (hasIntroTheme(coName, requestedGameType) && needsPreloading(introURL)) preloadURLs.push(introURL);
+    if (hasPreloopTheme(coName, requestedGameType) && needsPreloading(preloopURL)) preloadURLs.push(preloopURL);
+    const preloadPromises = preloadURLs.map((url) => preloadURL(url));
+    const useProgress = getMusicPlayerUI().visualProgress === 100;
+    if (useProgress && preloadPromises.length > 0) {
+      getMusicPlayerUI().setProgress(0);
+      Promise.all(preloadPromises).then(() => {
+        getMusicPlayerUI().setProgress(100);
+      });
+    }
     broadcastChannel.postMessage("pause");
     const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
     const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
@@ -3077,7 +3134,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     if (currentThemeURL !== srcURL && audio.playing()) {
       audio.pause();
-      playThemeSong(true);
+      playThemeSong();
     }
     const audioID = audioIDMap.get(srcURL);
     if (!audioID) return;
@@ -3100,12 +3157,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         loopURL = srcURL.replace("-intro", "");
       }
       specialIntroMap.set(srcURL, loopURL);
-      playThemeSong(true);
+      playThemeSong();
     }
     if (srcURL.includes("-preloop")) {
       const loopURL = srcURL.replace("-preloop", "");
       specialPreloopMap.set(srcURL, loopURL);
-      playThemeSong(true);
+      playThemeSong();
     }
     let hasIntro = false;
     specialIntroMap.values().forEach((val) => {
@@ -3122,7 +3179,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         return;
       }
       musicSettings.randomizeCO();
-      playThemeSong(true);
+      playThemeSong();
     }
   }
   function onSettingsChange(key, _value, isFirstLoad) {
@@ -3313,7 +3370,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     visibilityMap.clear();
     musicSettings.randomizeCO();
     musicSettings.themeType = getCurrentThemeType();
-    window.setTimeout(() => {
+    const refreshMusic = () => {
       musicSettings.themeType = getCurrentThemeType();
       if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
       if (musicSettings.playIntroEveryTurn) {
@@ -3328,9 +3385,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (musicSettings.restartThemes) {
         specialPreloopMap.clear();
       }
-      playThemeSong(musicSettings.restartThemes);
+      playThemeSong();
       window.setTimeout(playThemeSong, 350);
-    }, playDelayMS);
+    };
+    if (playDelayMS > 0) window.setTimeout(refreshMusic, playDelayMS);
+    else refreshMusic();
   }
   function addReplayHandlers() {
     queryTurn = onQueryTurn;
@@ -3766,7 +3825,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       logInfo("All common audio has been pre-loaded!");
       musicSettings.themeType = getCurrentThemeType();
       getMusicPlayerUI().updateAllInputLabels();
-      playThemeSong(true);
+      playThemeSong();
       window.setTimeout(playThemeSong, 500);
       if (!setHashesTimeoutID) {
         const checkHashesMS = 1e3 * 60 * 1;
@@ -3909,15 +3968,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           const elapsedMS = Date.now() - startTime;
           const elapsedSeconds = elapsedMS / 1e3;
           const secondsLeft = totalSeconds - elapsedSeconds;
-          const displayMinutes = Math.floor(secondsLeft / 60);
-          const displaySeconds = Math.floor(secondsLeft % 60);
-          const displayMS = Math.floor(secondsLeft % 1 * 1e3);
-          maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. This automatically updating message is brought to you by the AWBW Improved Music Player.`;
+          const displayMinutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+          const displaySeconds = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
+          const displayMS = String(Math.floor(secondsLeft % 1 * 1e3)).padStart(3, "0");
+          maintenanceDiv.innerHTML = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. <br> This automatic message is brought to you by the AWBW Improved Music Player.`;
+          maintenanceDiv.style.fontFamily = "Chivo Mono, monospace";
+          maintenanceDiv.style.fontSize = "16";
           if (secondsLeft <= 0) {
             window.clearInterval(ID);
             maintenanceDiv.textContent = "The site is back up! Please refresh the page to continue.";
+            window.location.reload();
           }
-        }, 10);
+        }, 1);
         return;
       }
       initializeIFrame(checkAutoplayThenInitialize);

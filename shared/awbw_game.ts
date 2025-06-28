@@ -311,6 +311,7 @@ export abstract class currentPlayer {
     const endGameTheme = isSpectator || myWin ? SpecialCOs.Victory : SpecialCOs.Defeat;
 
     // Play victory/defeat themes after the game ends for everyone
+
     if (hasGameEnded()) {
       // We were watching or playing a game that just ended or ended today
       if (endedToday) return endGameTheme;

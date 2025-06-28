@@ -247,7 +247,6 @@ const introThemes = new Map([
       "nell-cop",
       "olaf-cop",
       "olaf",
-      "sami-cop",
       "sensei-cop",
       "sonja-cop",
       "sonja",
@@ -365,6 +364,8 @@ const preloopThemes = new Map([
       "olaf",
       "sami-cop",
       "sami",
+      "sensei-cop",
+      "sensei",
       "sonja-cop",
       "sonja",
       "sturm-cop",
@@ -542,7 +543,7 @@ export function getCONameFromURL(url: string) {
 
 export function getGameTypeFromURL(url: string) {
   const parts = url.split("/");
-  const gameType = parts[parts.length - 2].toUpperCase();
+  const gameType = parts[parts.length - 2].replace("aw-rbc", "RBC").replace("aw-ds", "DS").toUpperCase();
   if (Object.values(GameType).includes(gameType as GameType)) {
     return gameType as GameType;
   }
@@ -552,6 +553,9 @@ export function getGameTypeFromURL(url: string) {
 export function getValidGameTypeForCO(coName: string, gameType: GameType) {
   // Override the game type to a higher game if the CO is not in the current soundtrack
   if (gameType !== GameType.DS && AW_DS_ONLY_COs.has(coName)) gameType = GameType.DS;
+
+  // Sturm isn't in DS
+  if (coName.toLowerCase() === "sturm" && gameType === GameType.DS) gameType = GameType.AW2;
 
   // These special themes vary depending on the game type
   const isSpecialCO = coName === SpecialCOs.MapEditor || coName === SpecialCOs.ModeSelect;
@@ -617,14 +621,22 @@ export function getCurrentThemeURLs(): Set<string> {
     const powerURL = getMusicURL(name, musicSettings.gameType, ThemeType.CO_POWER, false);
     const superPowerURL = getMusicURL(name, musicSettings.gameType, ThemeType.SUPER_CO_POWER, false);
     const alternateURL = getMusicURL(name, musicSettings.gameType, musicSettings.themeType, true);
+
+    // Preload intros and loops if they exist
+    const url = regularURL.replace("-intro", "").replace("-preloop", "");
+    if (hasIntroTheme(name, musicSettings.gameType)) audioList.add(url.replace(".ogg", "-intro.ogg"));
+    if (hasPreloopTheme(name, musicSettings.gameType)) audioList.add(url.replace(".ogg", "-preloop.ogg"));
+
+    // Mostly for RBC, preload power intros and preloops if they exist
+    const copName = name + "-cop";
+    const copURL = url.replace(name, copName);
+    if (hasIntroTheme(copName, musicSettings.gameType)) audioList.add(copURL.replace(".ogg", "-intro.ogg"));
+    if (hasPreloopTheme(copName, musicSettings.gameType)) audioList.add(copURL.replace(".ogg", "-preloop.ogg"));
+
     audioList.add(regularURL);
     audioList.add(alternateURL);
     audioList.add(powerURL);
     audioList.add(superPowerURL);
-    if (regularURL.includes("-intro")) audioList.add(regularURL.replace("-intro", ""));
-    if (powerURL.includes("-intro")) audioList.add(powerURL.replace("-intro", ""));
-    if (regularURL.includes("-preloop")) audioList.add(regularURL.replace("-preloop", ""));
-    if (powerURL.includes("-preloop")) audioList.add(powerURL.replace("-preloop", ""));
   });
   return audioList;
 }
@@ -634,58 +646,58 @@ export function getCurrentThemeURLs(): Set<string> {
  * These include game effects, UI effects, and unit movement sounds.
  * @returns - Set with all the URLs for all the music player sound effects.
  */
-function getAllSoundEffectURLs() {
-  const allSoundURLs = new Set<string>();
-  for (const sfx of Object.values(GameSFX)) {
-    allSoundURLs.add(getSoundEffectURL(sfx));
-  }
-
-  // for (const unitName of onMovementStartMap.keys()) {
-  //   allSoundURLs.add(getMovementSoundURL(unitName));
-  // }
-  // for (const unitName of onMovementRolloffMap.keys()) {
-  //   allSoundURLs.add(getMovementRollOffURL(unitName));
-  // }
-
-  return allSoundURLs;
-}
+// function getAllSoundEffectURLs() {
+//   const allSoundURLs = new Set<string>();
+//   for (const sfx of Object.values(GameSFX)) {
+//     allSoundURLs.add(getSoundEffectURL(sfx));
+//   }
+//
+//   // for (const unitName of onMovementStartMap.keys()) {
+//   //   allSoundURLs.add(getMovementSoundURL(unitName));
+//   // }
+//   // for (const unitName of onMovementRolloffMap.keys()) {
+//   //   allSoundURLs.add(getMovementRollOffURL(unitName));
+//   // }
+//
+//   return allSoundURLs;
+// }
 
 /**
  * Gets a list of the URLs for all the audio the music player might ever use.
  * @returns - Set with all the URLs for all the audio.
  */
-export function getAllAudioURLs() {
-  // Sound effects
-  const allSoundURLs = getAllSoundEffectURLs();
-
-  // Themes
-  const coNames = getAllCONames();
-  coNames.push(SpecialCOs.MapEditor);
-  coNames.push(SpecialCOs.ModeSelect);
-  for (const coName of coNames) {
-    for (const gameType of Object.values(GameType)) {
-      for (const themeType of Object.values(ThemeType)) {
-        const url = getMusicURL(coName, gameType, themeType, false);
-        if (url.includes("-intro")) {
-          allSoundURLs.add(url.replace("-intro", ""));
-          if (hasPreloopTheme(coName, gameType)) {
-            allSoundURLs.add(url.replace("-intro", "-preloop"));
-          }
-        }
-        if (url.includes("-preloop")) {
-          allSoundURLs.add(url.replace("-intro", ""));
-        }
-        const alternateURL = getMusicURL(coName, gameType, themeType, true);
-        allSoundURLs.add(url);
-        allSoundURLs.add(alternateURL);
-      }
-    }
-  }
-
-  // Special themes
-  allSoundURLs.add(SpecialTheme.COSelect);
-  allSoundURLs.add(SpecialTheme.Maintenance);
-  allSoundURLs.add(SpecialTheme.Victory);
-  allSoundURLs.add(SpecialTheme.Defeat);
-  return allSoundURLs;
-}
+// export function getAllAudioURLs() {
+//   // Sound effects
+//   const allSoundURLs = getAllSoundEffectURLs();
+//
+//   // Themes
+//   const coNames = getAllCONames();
+//   coNames.push(SpecialCOs.MapEditor);
+//   coNames.push(SpecialCOs.ModeSelect);
+//   for (const coName of coNames) {
+//     for (const gameType of Object.values(GameType)) {
+//       for (const themeType of Object.values(ThemeType)) {
+//         const url = getMusicURL(coName, gameType, themeType, false);
+//         if (url.includes("-intro")) {
+//           allSoundURLs.add(url.replace("-intro", ""));
+//           if (hasPreloopTheme(coName, gameType)) {
+//             allSoundURLs.add(url.replace("-intro", "-preloop"));
+//           }
+//         }
+//         if (url.includes("-preloop")) {
+//           allSoundURLs.add(url.replace("-intro", ""));
+//         }
+//         const alternateURL = getMusicURL(coName, gameType, themeType, true);
+//         allSoundURLs.add(url);
+//         allSoundURLs.add(alternateURL);
+//       }
+//     }
+//   }
+//
+//   // Special themes
+//   allSoundURLs.add(SpecialTheme.COSelect);
+//   allSoundURLs.add(SpecialTheme.Maintenance);
+//   allSoundURLs.add(SpecialTheme.Victory);
+//   allSoundURLs.add(SpecialTheme.Defeat);
+//   return allSoundURLs;
+// }

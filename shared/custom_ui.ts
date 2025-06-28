@@ -32,6 +32,7 @@ export enum NodeID {
   Parent = "parent",
   Hover = "hover",
   Background = "background",
+  ProgressFill = "progress-fill",
   Button_Image = "button-image",
 
   Settings = "settings",
@@ -102,6 +103,9 @@ export class CustomMenuSettingsUI {
    */
   private tableMap: Map<string, TableData> = new Map();
 
+  visualProgress = 0;
+  animationFrame: number | null = null;
+
   /**
    * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
    * @param prefix - A string used to prefix the IDs of the elements in the menu.
@@ -128,9 +132,36 @@ export class CustomMenuSettingsUI {
     // Button Background
     const bgDiv = document.createElement("div");
     bgDiv.classList.add("game-tools-bg");
-    bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
+    // bgDiv.style.position = "relative";
+    bgDiv.style.width = "100%";
+    bgDiv.style.height = "20px"; // or whatever size fits
+    bgDiv.style.backgroundColor = "#888888"; // fallback background
+    bgDiv.style.overflow = "hidden"; // ensures child doesn't overflow
+
+    // Create the inner fill div
+    const fillDiv = document.createElement("div");
+    fillDiv.style.position = "absolute";
+    fillDiv.style.top = "0";
+    fillDiv.style.left = "0";
+    fillDiv.style.bottom = "0";
+    fillDiv.style.width = "0%"; // start empty
+    fillDiv.style.backgroundColor = "#ffffff";
+    fillDiv.style.transition = "width 0.3s ease";
+    fillDiv.style.zIndex = "0";
+
+    // Attach it
+    bgDiv.appendChild(fillDiv);
     this.parent.appendChild(bgDiv);
+
+    // Store the fill node so we can animate it later
     this.setNodeID(bgDiv, NodeID.Background);
+    this.setNodeID(fillDiv, NodeID.ProgressFill);
+
+    // const bgDiv = document.createElement("div");
+    // bgDiv.classList.add("game-tools-bg");
+    // bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff 0% , #888888 0%)";
+    // this.parent.appendChild(bgDiv);
+    // this.setNodeID(bgDiv, NodeID.Background);
 
     // Reset hover text for parent button
     bgDiv.addEventListener("mouseover", () => this.setHoverText(this.parentHoverText));
@@ -139,6 +170,7 @@ export class CustomMenuSettingsUI {
     // Button
     const btnLink = document.createElement("a");
     btnLink.classList.add("norm2");
+    btnLink.style.zIndex = "20";
     bgDiv.appendChild(btnLink);
 
     const btnImg = document.createElement("img") as HTMLImageElement;
@@ -299,14 +331,44 @@ export class CustomMenuSettingsUI {
    * Sets the progress of the UI by coloring the background of the main button.
    * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
    */
-  setProgress(progress: number) {
-    const bgDiv = this.getNodeByID(NodeID.Background) as HTMLDivElement;
-    if (!bgDiv) return;
-    if (progress <= 0 || progress >= 100) {
-      bgDiv.style.backgroundImage = "";
+  setProgress(targetProgress: number, immediate = false) {
+    const fillDiv = this.getNodeByID(NodeID.ProgressFill) as HTMLDivElement;
+    if (!fillDiv) return;
+
+    const clamped = Math.max(0, Math.min(targetProgress, 100));
+
+    // Cancel any ongoing animation
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+
+    // Instantly clear if target is 0
+    if (clamped === 0) {
+      this.visualProgress = 0;
+      fillDiv.style.width = "0%";
       return;
     }
-    bgDiv.style.backgroundImage = "linear-gradient(to right, #ffffff " + String(progress) + "% , #888888 0%)";
+
+    if (immediate) {
+      this.visualProgress = targetProgress;
+      fillDiv.style.width = `${this.visualProgress}%`;
+      return;
+    }
+
+    const animStep = () => {
+      this.visualProgress += (clamped - this.visualProgress) * 0.1;
+
+      if (Math.abs(clamped - this.visualProgress) < 0.5) {
+        this.visualProgress = clamped;
+      } else {
+        this.animationFrame = requestAnimationFrame(animStep);
+      }
+
+      fillDiv.style.width = `${this.visualProgress}%`;
+    };
+
+    this.animationFrame = requestAnimationFrame(animStep);
   }
 
   /**

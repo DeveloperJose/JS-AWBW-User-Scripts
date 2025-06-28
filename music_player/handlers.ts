@@ -242,7 +242,7 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
   musicSettings.randomizeCO();
   musicSettings.themeType = getCurrentThemeType();
 
-  window.setTimeout(() => {
+  const refreshMusic = () => {
     musicSettings.themeType = getCurrentThemeType();
     if (!musicSettings.seamlessLoopsInMirrors) restartTheme();
     if (musicSettings.playIntroEveryTurn) {
@@ -258,9 +258,11 @@ function refreshMusicForNextTurn(playDelayMS = 0) {
     if (musicSettings.restartThemes) {
       specialPreloopMap.clear();
     }
-    playThemeSong(musicSettings.restartThemes);
+    playThemeSong();
     window.setTimeout(playThemeSong, 350);
-  }, playDelayMS);
+  };
+  if (playDelayMS > 0) window.setTimeout(refreshMusic, playDelayMS);
+  else refreshMusic();
 }
 
 /**

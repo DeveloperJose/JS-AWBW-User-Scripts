@@ -72,11 +72,11 @@ export function preloadAllCommonAudio(afterPreloadFunction: () => void) {
  * Run this after the common audios since we have more time to get things ready for these.
  * @param afterPreloadFunction - Function to run after the audio is pre-loaded.
  */
-export function preloadAllAudio(afterPreloadFunction: () => void) {
-  const audioList = getAllAudioURLs();
-  logDebug("Pre-loading extra audio", audioList);
-  preloadAudioList(audioList, afterPreloadFunction);
-}
+// export function preloadAllAudio(afterPreloadFunction: () => void) {
+//   const audioList = getAllAudioURLs();
+//   logDebug("Pre-loading extra audio", audioList);
+//   preloadAudioList(audioList, afterPreloadFunction);
+// }
 
 /**
  * Preloads the given list of songs and adds them to the {@link urlAudioMap}.
@@ -134,6 +134,10 @@ function preloadAudioList(audioURLs: Set<string>, afterPreloadFunction = () => {
   if (numLoadedAudios >= audioURLs.size) {
     if (afterPreloadFunction) afterPreloadFunction();
   }
+}
+
+export function needsPreloading(srcURL: string) {
+  return !audioMap.has(srcURL);
 }
 
 /**

@@ -172,9 +172,10 @@ function onSettingsChange(key: SettingsKey, _value: unknown, isFirstLoad: boolea
     }
   }
 
-  if (key === SettingsKey.GAME_TYPE) {
+  if (key === SettingsKey.GAME_TYPE && !isFirstLoad) {
     preloadAllCommonAudio(() => logInfo("Preloaded common audio for", _value));
   }
+
   // Update UI
   const canUpdateDaySlider = daySlider?.parentElement && getCurrentPageType() === PageType.ActiveGame;
   if (canUpdateDaySlider && daySlider?.parentElement)

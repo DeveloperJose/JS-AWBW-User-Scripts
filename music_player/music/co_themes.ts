@@ -10,15 +10,17 @@ import {
   getGameTypeFromURL,
   getMusicURL,
   getValidGameTypeForCO,
+  hasIntroTheme,
   hasPreloopTheme,
   SpecialTheme,
 } from "../resources";
 import { SpecialCOs } from "../../shared/awbw_game";
 import { logInfo, logDebug, logError, debounce } from "../utils";
 import { audioIDMap, audioMap, getVolumeForURL } from "./core";
-import { preloadURL, promiseMap, urlQueue } from "./preloading";
+import { needsPreloading, preloadURL, promiseMap, urlQueue } from "./preloading";
 import { stopAllMovementSounds } from "./unit_movement";
 import { broadcastChannel } from "../iframe";
+import { getMusicPlayerUI } from "../music_ui";
 
 /**
  * The URL of the current theme that is playing.
@@ -33,16 +35,23 @@ let currentLoops = 0;
 /**
  * Map containing the URLs for themes that have intros. These get added after the original intro ends.
  * The keys are the intro theme URLs.
- * The values are the loop URLs to play after the intro ends.
+ * The values are the loop or preloop URLs to play after the intro ends.
  */
 export const specialIntroMap = new Map<string, string>();
 
+/**
+ * Map containing the URLS for themes that have preloops. These get populated after the preloop ends.
+ * The keys are the preloop theme URLs.
+ * The values are the loop URLs to play after the preloop ends.
+ */
 export const specialPreloopMap = new Map<string, string>();
 
 /**
  * If set to true, calls to playMusic() will set a timer after which the music will play again.
  */
 let currentlyDelaying = false;
+
+/** ID for timeout currently delaying the music player from playing */
 let currentDelayTimeoutID = -1;
 
 /**
@@ -51,18 +60,6 @@ let currentDelayTimeoutID = -1;
  * @param startFromBeginning - Whether to start from the beginning.
  */
 export async function playMusicURL(srcURL: string, newPlay = false) {
-  const coName = getCONameFromURL(srcURL);
-  const gameType = getValidGameTypeForCO(coName, getGameTypeFromURL(srcURL));
-  // This song has an intro or preloop, preload the loop song
-  if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
-    await preloadURL(srcURL.replace("-intro", ""));
-
-    // It has a preloop, preload that too
-    if (hasPreloopTheme(coName, gameType)) {
-      await preloadURL(srcURL.replace("-intro", "-preloop"));
-    }
-  }
-
   // This song has an intro that finished playing
   const specialLoopURL = specialIntroMap.get(srcURL);
   if (specialLoopURL) {
@@ -92,14 +89,14 @@ export async function playMusicURL(srcURL: string, newPlay = false) {
 
   // Make sure the theme has the proper event handlers
   nextSong.on("play", () => onThemePlay(nextSong, srcURL));
-  nextSong.on("load", () => playThemeSong(true));
+  nextSong.on("load", () => playThemeSong());
   nextSong.on("end", () => onThemeEndOrLoop(srcURL));
 
   // Play the song if it's not already playing
-  if (!newPlay) {
-    if (!musicSettings.isPlaying) return;
-    if (nextSong.playing()) return;
-  }
+  // if (!newPlay) {
+  if (!musicSettings.isPlaying) return;
+  if (nextSong.playing()) return;
+  // }
 
   if (!sameSongRequest) {
     logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
@@ -131,7 +128,7 @@ export function playThemeSong(newPlay = false) {
   else if (getCurrentPageType() === PageType.Default) coName = SpecialCOs.Default;
 
   // Don't randomize during victory and defeat themes
-  const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat;
+  const isEndTheme = coName === SpecialCOs.Victory || coName === SpecialCOs.Defeat || coName === SpecialCOs.COSelect;
   const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
   if (isRandomTheme && !isEndTheme) {
     coName = musicSettings.currentRandomCO;
@@ -202,6 +199,27 @@ export function onThemePlay(audio: Howl, srcURL: string) {
   currentLoops = 0;
   audio.volume(getVolumeForURL(srcURL));
 
+  // Preload the normal looping song and any others if we still need to, this makes everything play seamlessly
+  const coName = getCONameFromURL(srcURL);
+  const requestedGameType = getGameTypeFromURL(srcURL);
+  const loopURL = srcURL.replace("-intro", "").replace("-preloop", "");
+  const introURL = loopURL.replace(".ogg", "-intro.ogg");
+  const preloopURL = loopURL.replace(".ogg", "-preloop.ogg");
+  const preloadURLs = [];
+  if (needsPreloading(loopURL)) preloadURLs.push(loopURL);
+  if (hasIntroTheme(coName, requestedGameType) && needsPreloading(introURL)) preloadURLs.push(introURL);
+  if (hasPreloopTheme(coName, requestedGameType) && needsPreloading(preloopURL)) preloadURLs.push(preloopURL);
+
+  // Progress bar for audio preloading
+  const preloadPromises = preloadURLs.map((url) => preloadURL(url));
+  const useProgress = getMusicPlayerUI().visualProgress === 100;
+  if (useProgress && preloadPromises.length > 0) {
+    getMusicPlayerUI().setProgress(0);
+    Promise.all(preloadPromises).then(() => {
+      getMusicPlayerUI().setProgress(100);
+    });
+  }
+
   // Tell all other music players to pause
   broadcastChannel.postMessage("pause");
 
@@ -227,10 +245,10 @@ export function onThemePlay(audio: Howl, srcURL: string) {
   // This check makes sure we aren't playing more than one song at the same time
   if (currentThemeURL !== srcURL && audio.playing()) {
     audio.pause();
-    playThemeSong(true);
+    playThemeSong();
   }
 
-  // There's multiple instances this sound playing so stop the extra ones
+  // There are multiple instances of this sound playing so stop the extra ones
   const audioID = audioIDMap.get(srcURL);
   if (!audioID) return;
   for (const id of audio._getSoundIds()) {
@@ -263,14 +281,14 @@ export function onThemeEndOrLoop(srcURL: string) {
       loopURL = srcURL.replace("-intro", "");
     }
     specialIntroMap.set(srcURL, loopURL);
-    playThemeSong(true);
+    playThemeSong();
   }
 
   // The song has a preloop, so mark it in the map as having already been completed
   if (srcURL.includes("-preloop")) {
     const loopURL = srcURL.replace("-preloop", "");
     specialPreloopMap.set(srcURL, loopURL);
-    playThemeSong(true);
+    playThemeSong();
   }
 
   // Always restart power intros (I think?)
@@ -290,12 +308,12 @@ export function onThemeEndOrLoop(srcURL: string) {
   // The song ended and we are playing random themes, so switch to the next random theme if
   // the user does not want to loop the current song until the turn changes
   if (musicSettings.randomThemesType !== RandomThemeType.NONE && !musicSettings.loopRandomSongsUntilTurnChange) {
-    // This is an intro or preloop, so we won't play a random theme yet
+    // This is an intro or preloop, don't randomize until we get to the actual theme
     if (srcURL.includes("-intro") || srcURL.includes("-preloop")) {
       return;
     }
     musicSettings.randomizeCO();
-    playThemeSong(true);
+    playThemeSong();
   }
 }
 

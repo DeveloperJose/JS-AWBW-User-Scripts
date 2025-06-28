@@ -142,7 +142,7 @@ function preloadThemes() {
     musicSettings.themeType = getCurrentThemeType();
     // TODO:
     getMusicPlayerUI().updateAllInputLabels();
-    playThemeSong(true);
+    playThemeSong();
     window.setTimeout(playThemeSong, 500);
 
     // Check for new music files every minute
@@ -345,7 +345,7 @@ async function main() {
         // The site is currently down for daily maintenance. Please try again in 2m 24s.
         // const el = document.createElement("div"); el.id = "server-maintenance-alert"; el.textContent = "The site is currently down for daily maintenance. Please try again in 12m 24s."; document.body.appendChild(el);
         const startTime = Date.now();
-        const maintenanceDiv = document.querySelector("#server-maintenance-alert");
+        const maintenanceDiv = document.querySelector("#server-maintenance-alert") as HTMLDivElement;
         if (!maintenanceDiv) return;
         const currentText = maintenanceDiv.textContent;
         const minutesStr = currentText?.match(/\d+m/)?.[0].replace("m", "");
@@ -358,19 +358,22 @@ async function main() {
         const ID = window.setInterval(() => {
           const elapsedMS = Date.now() - startTime;
           const elapsedSeconds = elapsedMS / 1000;
-
           const secondsLeft = totalSeconds - elapsedSeconds;
 
-          const displayMinutes = Math.floor(secondsLeft / 60);
-          const displaySeconds = Math.floor(secondsLeft % 60);
-          const displayMS = Math.floor((secondsLeft % 1) * 1000);
-          maintenanceDiv.textContent = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. This automatically updating message is brought to you by the AWBW Improved Music Player.`;
+          const displayMinutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+          const displaySeconds = String(Math.floor(secondsLeft % 60)).padStart(2, "0");
+          const displayMS = String(Math.floor((secondsLeft % 1) * 1000)).padStart(3, "0");
+
+          maintenanceDiv.innerHTML = `The site is currently down for daily maintenance. Please try again in ${displayMinutes}m ${displaySeconds}s ${displayMS}ms. <br> This automatic message is brought to you by the AWBW Improved Music Player.`;
+          maintenanceDiv.style.fontFamily = "Chivo Mono, monospace";
+          maintenanceDiv.style.fontSize = "16";
 
           if (secondsLeft <= 0) {
             window.clearInterval(ID);
             maintenanceDiv.textContent = "The site is back up! Please refresh the page to continue.";
+            window.location.reload();
           }
-        }, 10);
+        }, 1);
         return;
       }
 
