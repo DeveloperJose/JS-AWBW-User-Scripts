@@ -20,7 +20,7 @@ import {
 import { addHandlers } from "./handlers";
 import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
 import { GameSFX, getNeutralImgURL, getWorkingBaseURL, SpecialTheme } from "./resources";
-import { logDebug, logInfo, logError } from "./utils";
+import { logDebug, logInfo, logError, deepEqual } from "./utils";
 import { checkHashesInDB, openDB } from "./db";
 import { addThemeListeners, playMusicURL, playThemeSong, stopThemeSong } from "./music/co_themes";
 import { preloadAllCommonAudio } from "./music/preloading";
@@ -29,30 +29,6 @@ import { playSFX } from "./music/sound_effects";
 import { toggleDebugOverrides } from "./debugging";
 import { notifyCOSelectorListeners } from "../shared/custom_ui";
 import { isReplayActive } from "../shared/awbw_game";
-
-// import Vue from "vue";
-// import MusicPlayer from "./components/music_player.vue";
-// import COSelector from "../shared/components/co_selector.vue";
-// import { notifyCOSelectorListeners } from "../shared/components/co_selector.vue";
-
-/******************************************************************
- * Vue
- ******************************************************************/
-// const vueElement = document.createElement("div");
-// vueElement.id = "music_player_vue";
-// document.querySelector("#nav-options")?.prepend(vueElement);
-
-// const musicPlayerVue = new Vue({
-//   el: "#music_player_vue",
-//   render: (h) => h(MusicPlayer),
-// });
-
-// const musicPlayerVue = new Vue({
-//   el: "#music_player_vue",
-//   render: (h) => h(COSelector),
-// });
-
-// musicPlayerVue.$emit("initialize");
 
 /******************************************************************
  * MODULE EXPORTS
@@ -146,24 +122,26 @@ function preloadThemes() {
     // Set dynamic settings based on the current game state
     // Lastly, update the UI to reflect the current settings
     musicSettings.themeType = getCurrentThemeType();
-    // TODO:
     getMusicPlayerUI().updateAllInputLabels();
 
-    // If we are refreshing a replay, wait a little bit before playing the music so the replay controls load and
-    // we play the correct music
     const ndxInURL = window.location.href.includes("&ndx=");
     if (!ndxInURL) {
+      // We aren't opening in the middle of a replay, so just play based on the current game state
       playThemeSong();
+      window.setTimeout(playThemeSong, 1000);
     } else {
-      // Inside any function (sync or async)
+      // We are refreshing with a replay open, wait until the replay finishes loading or 3 seconds pass to start the music
+      // Pause any music and sounds until then, and update the music player internals to sync with the game state
+      musicSettings.runWithoutSavingSettings(() => (musicSettings.isPlaying = false));
       new Promise<void>((resolve) => {
         const start = performance.now();
         const timeoutMs = 3000;
 
         function check() {
-          if (isReplayActive()) {
+          if (isReplayActive() && deepEqual(Object.values(replay)[0].gameState.playersInfo, playersInfo)) {
             resolve();
           } else if (performance.now() - start >= timeoutMs) {
+            console.log("TIMED POIT");
             resolve();
           } else {
             requestAnimationFrame(check);
@@ -172,10 +150,11 @@ function preloadThemes() {
 
         check();
       }).then(() => {
+        musicSettings.runWithoutSavingSettings(() => (musicSettings.isPlaying = true));
+        musicSettings.themeType = getCurrentThemeType();
         playThemeSong();
       });
     }
-    window.setTimeout(playThemeSong, 1000);
 
     // Check for new music files every minute
     if (!setHashesTimeoutID) {

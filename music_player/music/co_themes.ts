@@ -80,26 +80,35 @@ export async function playMusicURL(srcURL: string) {
   }
 
   // Get the audio player for the song, or preload it if it's not loaded yet
-  const nextSong = audioMap.get(srcURL) ?? (await preloadURL(srcURL));
+  let nextSong = audioMap.get(srcURL);
+  let preloaded = true;
+  if (!nextSong) {
+    preloaded = false;
+    const useProgress = getMusicPlayerUI().visualProgress === 100;
+    if (useProgress) getMusicPlayerUI().setProgress(0);
+    nextSong = await preloadURL(srcURL);
+    if (useProgress) getMusicPlayerUI().setProgress(100);
+  }
 
   // Loop all themes except for the intros and preloops
   const dontLoop = srcURL.includes("-intro") || srcURL.includes("-preloop");
   nextSong.loop(!dontLoop);
   nextSong.volume(getVolumeForURL(srcURL));
 
-  // Make sure the theme has the proper event handlers
+  // Make sure the theme has the proper event handlers and that they only have one
+  nextSong.off("play", null, null);
+  nextSong.off("load", null, null);
+  nextSong.off("end", null, null);
   nextSong.on("play", () => onThemePlay(nextSong, srcURL));
   nextSong.on("load", () => playThemeSong());
   nextSong.on("end", () => onThemeEndOrLoop(srcURL));
 
   // Play the song if it's not already playing
-  // if (!newPlay) {
   if (!musicSettings.isPlaying) return;
   if (nextSong.playing()) return;
-  // }
 
   if (!sameSongRequest) {
-    logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL);
+    logInfo("Now Playing: ", srcURL, " | Cached? =", nextSong._src !== srcURL, " | Preloaded? =", preloaded);
   }
 
   const newID = nextSong.play();
@@ -212,10 +221,27 @@ export function onThemePlay(audio: Howl, srcURL: string) {
 
   // Progress bar for audio preloading
   const preloadPromises = preloadURLs.map((url) => preloadURL(url));
+  const total = preloadURLs.length;
+  let completed = 0;
+
   const useProgress = getMusicPlayerUI().visualProgress === 100;
-  if (useProgress && preloadPromises.length > 0) {
-    getMusicPlayerUI().setProgress(0);
-    Promise.all(preloadPromises).then(() => {
+  if (total > 0) {
+    if (useProgress) getMusicPlayerUI().setProgress(0);
+
+    for (const url of preloadURLs) {
+      const p = preloadURL(url).finally(() => {
+        if (!useProgress) return;
+        completed++;
+        const percent = Math.round((completed / total) * 100);
+        getMusicPlayerUI().setProgress(percent);
+      });
+
+      preloadPromises.push(p);
+    }
+
+    // Optional: if you want to wait for all to finish before continuing
+    Promise.allSettled(preloadPromises).then(() => {
+      if (!useProgress) return;
       getMusicPlayerUI().setProgress(100);
     });
   }
@@ -227,14 +253,12 @@ export function onThemePlay(audio: Howl, srcURL: string) {
   // 1. The user wants to restart themes
   // 2. It's a power theme
   // 3. We are starting a new random theme
-  // 4. The song is an intro
-  // 5. The song is a preloop
   // AND we are on the game page AND the song has played for a bit
   const isRandomTheme = musicSettings.randomThemesType !== RandomThemeType.NONE;
   const isPowerTheme = musicSettings.themeType !== ThemeType.REGULAR;
-  const isIntro = srcURL.includes("-intro");
-  const isPreloop = srcURL.includes("-preloop");
-  const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme || isIntro || isPreloop;
+  // const isIntro = srcURL.includes("-intro");
+  // const isPreloop = srcURL.includes("-preloop");
+  const shouldRestart = musicSettings.restartThemes || isPowerTheme || isRandomTheme;
   const currentPosition = audio.seek() as number;
   const isGamePageActive = getCurrentPageType() === PageType.ActiveGame;
   if (shouldRestart && isGamePageActive && currentPosition > 0.1) {

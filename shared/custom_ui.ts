@@ -104,6 +104,7 @@ export class CustomMenuSettingsUI {
 
   visualProgress = 0;
   animationFrame: number | null = null;
+  fadeTimeout: number | null = null;
 
   /**
    * Creates a new Custom Menu UI, to add it to AWBW you need to call {@link addToAWBWPage}.
@@ -133,9 +134,9 @@ export class CustomMenuSettingsUI {
     bgDiv.classList.add("game-tools-bg");
     bgDiv.style.position = "relative";
     bgDiv.style.width = "100%";
-    bgDiv.style.height = "20px"; // or whatever size fits
-    bgDiv.style.backgroundColor = "transparent"; // fallback background
-    bgDiv.style.overflow = "hidden"; // ensures child doesn't overflow
+    bgDiv.style.height = "20px";
+    bgDiv.style.backgroundColor = "transparent";
+    bgDiv.style.overflow = "hidden";
 
     // Create the inner fill div
     const fillDiv = document.createElement("div");
@@ -144,8 +145,7 @@ export class CustomMenuSettingsUI {
     fillDiv.style.left = "0";
     fillDiv.style.bottom = "0";
     fillDiv.style.width = "0%";
-    fillDiv.style.backgroundColor = "blue";
-    fillDiv.style.transition = "width 0.6s ease, opacity 0.3 ease";
+    fillDiv.style.backgroundColor = "#0066CC";
     fillDiv.style.zIndex = "0";
 
     // Attach it
@@ -330,45 +330,31 @@ export class CustomMenuSettingsUI {
    * Sets the progress of the UI by coloring the background of the main button.
    * @param progress - A number between 0 and 100 representing the percentage of the progress bar to fill.
    */
-  setProgress(targetProgress: number, immediate = false) {
+  setProgress(targetProgress: number) {
     const fillDiv = this.getNodeByID(NodeID.ProgressFill) as HTMLDivElement;
     if (!fillDiv) return;
 
     const clamped = Math.max(0, Math.min(targetProgress, 100));
-
-    // Cancel any ongoing animation
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
+    if (this.fadeTimeout) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
     }
 
-    // Instantly clear if target is 0
     if (clamped === 0) {
-      this.visualProgress = 0;
+      fillDiv.style.opacity = "1";
       fillDiv.style.width = "0%";
-      return;
+      fillDiv.style.transition = "";
+    } else if (clamped >= 100) {
+      fillDiv.style.width = "100%";
+      this.fadeTimeout = window.setTimeout(() => (fillDiv.style.opacity = "0"), 300);
+      fillDiv.style.transition = "width 0.25s ease, opacity 0.5s ease";
+    } else {
+      fillDiv.style.opacity = "1";
+      fillDiv.style.width = `${clamped}%`;
+      fillDiv.style.transition = "width 0.25s ease, opacity 0.5s ease";
     }
 
-    if (immediate) {
-      this.visualProgress = targetProgress;
-      fillDiv.style.width = `${this.visualProgress}%`;
-      return;
-    }
-
-    const animStep = () => {
-      this.visualProgress += (clamped - this.visualProgress) * 0.1;
-
-      if (Math.abs(clamped - this.visualProgress) < 0.5) {
-        this.visualProgress = clamped;
-      } else {
-        this.animationFrame = requestAnimationFrame(animStep);
-      }
-
-      fillDiv.style.width = `${this.visualProgress}%`;
-      fillDiv.style.opacity = `${1 - this.visualProgress / 100}`;
-    };
-
-    this.animationFrame = requestAnimationFrame(animStep);
+    this.visualProgress = clamped;
   }
 
   /**

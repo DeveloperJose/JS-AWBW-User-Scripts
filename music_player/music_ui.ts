@@ -380,7 +380,7 @@ export function initializeMusicPlayerUI() {
     default:
       musicPlayerUI.parent.style.border = "none";
       musicPlayerUI.parent.style.backgroundColor = "#0000";
-      musicPlayerUI.setProgress(-1);
+      musicPlayerUI.setProgress(100);
       prepend = true;
       break;
   }
