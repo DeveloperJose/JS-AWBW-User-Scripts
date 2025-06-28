@@ -34,7 +34,7 @@ export async function getWorkingBaseURL() {
   return false;
 }
 
-const getURLForMusicFile = (fname: string) => `${BASE_URL}/music/${fname}`;
+const getURLForMusicFile = (fname: string) => `${BASE_URL}/music/${fname}-preloop`;
 
 /**
  * Image URL for static music player icon

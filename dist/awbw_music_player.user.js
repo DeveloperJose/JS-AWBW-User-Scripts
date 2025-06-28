@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.21.0
+// @version         5.22.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -931,7 +931,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.21.0"],
+    ["music_player", "5.22.0"],
     ["highlight_cursor_coordinates", "2.3.0"]
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1674,7 +1674,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     return false;
   }
-  const getURLForMusicFile = (fname) => `${BASE_URL}/music/${fname}`;
+  const getURLForMusicFile = (fname) => `${BASE_URL}/music/${fname}-preloop`;
   const getNeutralImgURL = () => `${BASE_URL}/img/music-player-icon.png`;
   const getPlayingImgURL = () => `${BASE_URL}/img/music-player-playing.gif`;
   const getHashesJSONURL = () => `${BASE_URL}/music/hashes.json`;
