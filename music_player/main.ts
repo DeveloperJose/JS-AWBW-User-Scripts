@@ -141,7 +141,6 @@ function preloadThemes() {
           if (isReplayActive() && deepEqual(Object.values(replay)[0].gameState.playersInfo, playersInfo)) {
             resolve();
           } else if (performance.now() - start >= timeoutMs) {
-            console.log("TIMED POIT");
             resolve();
           } else {
             requestAnimationFrame(check);

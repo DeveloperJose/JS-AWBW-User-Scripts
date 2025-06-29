@@ -115,6 +115,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     "koal",
     "kindle",
     "vonbolt",
+    "bh",
   ]);
   function getAllCONames(properCase = false) {
     if (!properCase)
@@ -141,7 +142,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.24.0"],
+    ["music_player", "5.25.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([

@@ -2,7 +2,7 @@
  * @file All external resources used by this userscript like URLs and convenience functions for those URLs.
  */
 import { getAllPlayingCONames, getCurrentGameDay, SpecialCOs } from "../shared/awbw_game";
-import { AW_DS_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
+import { AW_DS_ONLY_COs, AW_RBC_ONLY_COs, isBlackHoleCO } from "../shared/awbw_globals";
 import { GameType, RandomThemeType, ThemeType, musicSettings } from "./music_settings";
 
 /**
@@ -69,10 +69,6 @@ export const enum SpecialTheme {
 export enum GameSFX {
   coGoldRush = "co-gold-rush",
 
-  // powerActivateAllyCOP = "power-activate-ally-cop",
-  // powerActivateAllySCOP = "power-activate-ally-scop",
-  // powerActivateBHCOP = "power-activate-bh-cop",
-  // powerActivateBHSCOP = "power-activate-bh-scop",
   powerActivateAW1COP = "power-activate-aw1-cop",
 
   powerSCOPAvailable = "power-scop-available",
@@ -190,14 +186,12 @@ const alternateThemes = new Map([
   [GameType.AW1, new Set(["debug"])],
   [GameType.AW2, new Set([])],
   [GameType.DS, new Set([])],
-  [GameType.RBC, new Set([])],
+  [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
 ]);
 // const alternateThemes = new Map([
 //   [GameType.AW1, new Set(["sturm"])],
 //   [GameType.AW2, new Set(["sturm"])],
 //   [GameType.DS, new Set(["sturm", "vonbolt"])],
-//   [GameType.RBC, new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
-// ]);
 
 // ls ~/local-debian/website/public/music/aw2 | grep "intro" | sed -E 's/^t-(.+)-intro\.ogg$/\"\1\"/' | sort | paste -sd "," - | sed 's/^/new Set([/' | sed 's/$/])/'
 const introThemes = new Map([
@@ -208,7 +202,7 @@ const introThemes = new Map([
   // prettier-ignore
   [GameType.DS, new Set(["andy","colin","grit","hachi","jess","jugger","kanbei","kindle","koal","lash","mode-select","olaf","vonbolt"])],
   // prettier-ignore
-  [GameType.RBC, new Set(["andy","colin","grit","hachi","jess","kanbei","lash","olaf","sonja"])],
+  [GameType.RBC, new Set(["andy","clone-andy-cop","colin","grit","hachi","jess","kanbei","lash","olaf","sonja"])],
 ]);
 
 // ls ~/local-debian/website/public/music/aw2 | grep "preloop" | sed -E 's/^t-(.+)-preloop\.ogg$/\"\1\"/' | sort | paste -sd "," - | sed 's/^/new Set([/' | sed 's/$/])/'
@@ -243,13 +237,7 @@ export function hasPreloopTheme(coName: string, gameType: GameType) {
  * @param themeType - Which type of music whether regular or power.
  * @returns - The filename of the music to play given the parameters.
  */
-function getMusicFilename(
-  coName: string,
-  requestedGameType: GameType,
-  actualGameType: GameType,
-  themeType: ThemeType,
-  useAlternateTheme: boolean,
-) {
+function getMusicFilename(coName: string, requestedGameType: GameType, actualGameType: GameType, themeType: ThemeType) {
   const hasIntro = hasIntroTheme(coName, actualGameType);
   const hasPreloop = hasPreloopTheme(coName, actualGameType);
   // Check if we want to play the map editor theme
@@ -260,12 +248,6 @@ function getMusicFilename(
   if (coName === SpecialCOs.ModeSelect)
     return hasIntro ? "t-mode-select-intro" : hasPreloop ? "t-mode-select-preloop" : "t-mode-select";
 
-  // Check if we need to play an alternate theme
-  if (useAlternateTheme) {
-    const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
-    if (alternateFilename) return alternateFilename;
-  }
-
   // Regular theme, either no power or we are in AW1 where there's no power themes.
   // We only skip if AW1 mode is enabled and there's no random themes
   const isPowerActive = themeType !== ThemeType.REGULAR;
@@ -274,7 +256,7 @@ function getMusicFilename(
     return hasIntro ? `t-${coName}-intro` : hasPreloop ? `t-${coName}-preloop` : `t-${coName}`;
   }
   // For RBC, we play the new power themes (if they are not in the DS games obviously)
-  const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+  const isCOInRBC = AW_RBC_ONLY_COs.has(coName);
 
   // Change CO name to "andy-cop" for file checking in RBC
   // Change to "ally" or "bh" for AW2 and DS
@@ -291,37 +273,36 @@ function getMusicFilename(
 }
 
 /**
- * Determines the filename for the alternate music to play given a specific CO and other settings (if any).
+ * Determines the coName for the alternate music to play given a specific CO and other settings (if any).
  * @param coName - Name of the CO whose music to use.
  * @param gameType - Which game soundtrack to use.
  * @param themeType - Which type of music whether regular or power.
- * @returns - The filename of the alternate music to play given the parameters, if any.
+ * @returns - The coName of the alternate music to play given the parameters, if any.
  */
-function getAlternateMusicFilename(coName: string, gameType: GameType, themeType: ThemeType) {
-  // Check if this CO has an alternate theme
-  if (!alternateThemes.has(gameType)) return;
-  const alternateThemesSet = alternateThemes.get(gameType);
-
-  const faction = isBlackHoleCO(coName) ? "bh" : "ally";
-
+function getAlternateCOName(coName: string, gameType: GameType, themeType: ThemeType) {
   // RBC individual CO power themes -> RBC shared factory themes
   const isPowerActive = themeType !== ThemeType.REGULAR;
   if (gameType === GameType.RBC && isPowerActive) {
-    return `t-${faction}-${themeType}`;
+    coName = isBlackHoleCO(coName) ? "bh" : "ally";
+    return coName;
   }
+
+  // RBC Andy -> Clone Andy
+  if (coName === "andy" && gameType == GameType.RBC) {
+    return "clone-andy";
+  }
+
+  // Check if this CO has an alternate theme
+  if (!alternateThemes.has(gameType)) return;
+  const alternateThemesSet = alternateThemes.get(gameType);
 
   // No alternate theme or it's a power
   if (!alternateThemesSet?.has(coName) || isPowerActive) {
     return;
   }
 
-  // TODO: Andy -> Clone Andy
-  // if (coName === "andy" && gameType == GameType.RBC) {
-  //   return isPowerActive ? "t-clone-andy-cop-intro" : "t-clone-andy";
-  // }
-
   // All other alternate themes
-  return `t-${coName}-2`;
+  return `${coName}-2`;
 }
 
 /**
@@ -367,7 +348,24 @@ export function getMusicURL(coName: string, gameType?: GameType, themeType?: The
 
   // Some COs don't have music in other games (DS COs are not in AW2 for example) so get a valid gameType for the filename
   gameType = getValidGameTypeForCO(coName, gameType);
-  const filename = getMusicFilename(coName, requestedGameType, gameType, themeType, useAlternateTheme);
+
+  // Check if we need to play an alternate theme
+  let alternateName = null;
+  if (useAlternateTheme) {
+    // First check the actual game type
+    alternateName = getAlternateCOName(coName, gameType, themeType);
+    if (!alternateName) {
+      // Next check the requested game type
+      alternateName = getAlternateCOName(coName, requestedGameType, themeType)?.toLowerCase();
+      if (alternateName) gameType = requestedGameType;
+    }
+  }
+
+  if (alternateName) {
+    coName = alternateName;
+  }
+
+  const filename = getMusicFilename(coName, requestedGameType, gameType, themeType);
 
   let gameDir = gameType as string;
   if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;

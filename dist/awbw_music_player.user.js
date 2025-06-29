@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.24.0
+// @version         5.25.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -255,6 +255,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     "koal",
     "kindle",
     "vonbolt",
+    "bh",
   ]);
   const AW_DS_ONLY_COs = /* @__PURE__ */ new Set([
     "jake",
@@ -266,6 +267,27 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     "jugger",
     "koal",
     "vonbolt",
+  ]);
+  const AW_RBC_ONLY_COs = /* @__PURE__ */ new Set([
+    "andy",
+    "nell",
+    "sami",
+    "max",
+    "hachi",
+    "olaf",
+    "grit",
+    "colin",
+    "kanbei",
+    "sonja",
+    "sensei",
+    "eagle",
+    "drake",
+    "jess",
+    "flak",
+    "lash",
+    "adder",
+    "hawke",
+    "sturm",
   ]);
   function getAllCONames(properCase = false) {
     if (!properCase)
@@ -963,7 +985,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.24.0"],
+    ["music_player", "5.25.0"],
     ["highlight_cursor_coordinates", "2.3.0"],
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -1971,7 +1993,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     [GameType.AW1, /* @__PURE__ */ new Set(["debug"])],
     [GameType.AW2, /* @__PURE__ */ new Set([])],
     [GameType.DS, /* @__PURE__ */ new Set([])],
-    [GameType.RBC, /* @__PURE__ */ new Set([])],
+    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "olaf", "eagle", "drake", "grit", "kanbei", "sonja", "sturm"])],
   ]);
   const introThemes = /* @__PURE__ */ new Map([
     // prettier-ignore
@@ -1981,7 +2003,7 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     // prettier-ignore
     [GameType.DS, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "jugger", "kanbei", "kindle", "koal", "lash", "mode-select", "olaf", "vonbolt"])],
     // prettier-ignore
-    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "sonja"])],
+    [GameType.RBC, /* @__PURE__ */ new Set(["andy", "clone-andy-cop", "colin", "grit", "hachi", "jess", "kanbei", "lash", "olaf", "sonja"])],
   ]);
   const preloopThemes = /* @__PURE__ */ new Map([
     // prettier-ignore
@@ -2001,24 +2023,20 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     var _a;
     return (_a = preloopThemes.get(gameType)) == null ? void 0 : _a.has(coName);
   }
-  function getMusicFilename(coName, requestedGameType, actualGameType, themeType, useAlternateTheme) {
+  function getMusicFilename(coName, requestedGameType, actualGameType, themeType) {
     const hasIntro = hasIntroTheme(coName, actualGameType);
     const hasPreloop = hasPreloopTheme(coName, actualGameType);
     if (coName === SpecialCOs.MapEditor)
       return hasIntro ? "t-map-editor-intro" : hasPreloop ? "t-map-editor-preloop" : "t-map-editor";
     if (coName === SpecialCOs.ModeSelect)
       return hasIntro ? "t-mode-select-intro" : hasPreloop ? "t-mode-select-preloop" : "t-mode-select";
-    if (useAlternateTheme) {
-      const alternateFilename = getAlternateMusicFilename(coName, actualGameType, themeType);
-      if (alternateFilename) return alternateFilename;
-    }
     const isPowerActive = themeType !== ThemeType.REGULAR;
     const skipPowerTheme =
       requestedGameType === GameType.AW1 && musicSettings.randomThemesType === RandomThemeType.NONE;
     if (!isPowerActive || skipPowerTheme) {
       return hasIntro ? `t-${coName}-intro` : hasPreloop ? `t-${coName}-preloop` : `t-${coName}`;
     }
-    const isCOInRBC = !AW_DS_ONLY_COs.has(coName);
+    const isCOInRBC = AW_RBC_ONLY_COs.has(coName);
     if (requestedGameType === GameType.RBC && isCOInRBC) {
       coName = `${coName}-cop`;
     } else {
@@ -2030,20 +2048,24 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     const hasCopPreloop = hasPreloopTheme(coName, actualGameType);
     return hasCopIntro ? `t-${coName}-intro` : hasCopPreloop ? `t-${coName}-preloop` : `t-${coName}`;
   }
-  function getAlternateMusicFilename(coName, gameType, themeType) {
-    if (!alternateThemes.has(gameType)) return;
-    const alternateThemesSet = alternateThemes.get(gameType);
-    const faction = isBlackHoleCO(coName) ? "bh" : "ally";
+  function getAlternateCOName(coName, gameType, themeType) {
     const isPowerActive = themeType !== ThemeType.REGULAR;
     if (gameType === GameType.RBC && isPowerActive) {
-      return `t-${faction}-${themeType}`;
+      coName = isBlackHoleCO(coName) ? "bh" : "ally";
+      return coName;
     }
+    if (coName === "andy" && gameType == GameType.RBC) {
+      return "clone-andy";
+    }
+    if (!alternateThemes.has(gameType)) return;
+    const alternateThemesSet = alternateThemes.get(gameType);
     if (!(alternateThemesSet == null ? void 0 : alternateThemesSet.has(coName)) || isPowerActive) {
       return;
     }
-    return `t-${coName}-2`;
+    return `${coName}-2`;
   }
   function getMusicURL(coName, gameType, themeType, useAlternateTheme) {
+    var _a;
     if (gameType === null || gameType === void 0) gameType = musicSettings.gameType;
     if (themeType === null || themeType === void 0) themeType = musicSettings.themeType;
     if (useAlternateTheme === null || useAlternateTheme === void 0) {
@@ -2081,7 +2103,19 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
     if (overrideType) gameType = overrideType;
     const requestedGameType = gameType;
     gameType = getValidGameTypeForCO(coName, gameType);
-    const filename = getMusicFilename(coName, requestedGameType, gameType, themeType, useAlternateTheme);
+    let alternateName = null;
+    if (useAlternateTheme) {
+      alternateName = getAlternateCOName(coName, gameType, themeType);
+      if (!alternateName) {
+        alternateName =
+          (_a = getAlternateCOName(coName, requestedGameType, themeType)) == null ? void 0 : _a.toLowerCase();
+        if (alternateName) gameType = requestedGameType;
+      }
+    }
+    if (alternateName) {
+      coName = alternateName;
+    }
+    const filename = getMusicFilename(coName, requestedGameType, gameType, themeType);
     let gameDir = gameType;
     if (!gameDir.startsWith("AW")) gameDir = "AW_" + gameDir;
     const url = getURLForMusicFile(`${gameDir}/${filename}.ogg`);
@@ -3853,7 +3887,6 @@ var awbw_music_player = (function (exports, canAutoplay2, SparkMD52) {
             if (isReplayActive() && deepEqual(Object.values(replay)[0].gameState.playersInfo, playersInfo)) {
               resolve();
             } else if (performance.now() - start >= timeoutMs) {
-              console.log("TIMED POIT");
               resolve();
             } else {
               requestAnimationFrame(check);

@@ -3,7 +3,6 @@
  */
 import { logInfo } from "../utils";
 import { loadMusicFromDB } from "../db";
-// import { musicPlayerUI } from "../music_ui";
 import { getCurrentThemeURLs, getSoundEffectURL, GameSFX } from "../resources";
 import { logError, logDebug } from "../utils";
 import { audioMap, getVolumeForURL } from "./core";
