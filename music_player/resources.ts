@@ -260,17 +260,17 @@ function getMusicFilename(coName: string, requestedGameType: GameType, actualGam
 
   // Change CO name to "andy-cop" for file checking in RBC
   // Change to "ally" or "bh" for AW2 and DS
-  let powerThemeName: string; // ADDED: Declare separate variable for power theme name
+  let powerThemeName: string;
   if (requestedGameType === GameType.RBC && isCOInRBC) {
-    powerThemeName = `${coName}-cop`; // CHANGED: Use powerThemeName instead of coName
+    powerThemeName = `${coName}-cop`;
   } else {
     const powerSuffix = themeType === ThemeType.CO_POWER ? "-co-power" : "-super-co-power";
-    powerThemeName = isBlackHoleCO(coName) ? "bh" : "ally"; // CHANGED: Use powerThemeName instead of coName
-    powerThemeName += powerSuffix; // CHANGED: Use powerThemeName instead of coName
+    powerThemeName = isBlackHoleCO(coName) ? "bh" : "ally";
+    powerThemeName += powerSuffix;
   }
-  const hasCopIntro = hasIntroTheme(powerThemeName, actualGameType); // CHANGED: Use powerThemeName instead of coName
-  const hasCopPreloop = hasPreloopTheme(powerThemeName, actualGameType); // CHANGED: Use powerThemeName instead of coName
-  return hasCopIntro ? `t-${powerThemeName}-intro` : hasCopPreloop ? `t-${powerThemeName}-preloop` : `t-${powerThemeName}`; // CHANGED: Use powerThemeName instead of coName
+  const hasCopIntro = hasIntroTheme(powerThemeName, actualGameType);
+  const hasCopPreloop = hasPreloopTheme(powerThemeName, actualGameType);
+  return hasCopIntro ? `t-${powerThemeName}-intro` : hasCopPreloop ? `t-${powerThemeName}-preloop` : `t-${powerThemeName}`;
 }
 
 /**
