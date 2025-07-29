@@ -40,7 +40,6 @@ const BLACK_HOLE_COs = new Set([
   "koal",
   "kindle",
   "vonbolt",
-  "bh",
 ]);
 
 /**
