@@ -30,17 +30,7 @@ const YELLOW_COMET_COs = new Set(["kanbei", "sonja", "sensei", "grimm"]);
  * List of Black Hole COs, stored in a set for more efficient lookups.
  * @constant
  */
-const BLACK_HOLE_COs = new Set([
-  "flak",
-  "lash",
-  "adder",
-  "hawke",
-  "sturm",
-  "jugger",
-  "koal",
-  "kindle",
-  "vonbolt",
-]);
+const BLACK_HOLE_COs = new Set(["flak", "lash", "adder", "hawke", "sturm", "jugger", "koal", "kindle", "vonbolt"]);
 
 /**
  * List of COs that are only available in Advance Wars 2, stored in a set for more efficient lookups.
