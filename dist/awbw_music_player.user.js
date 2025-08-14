@@ -9,7 +9,7 @@
 // @require         https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js
 // @require         https://cdn.jsdelivr.net/npm/can-autoplay@3.0.2/build/can-autoplay.min.js
 // @run-at          document-end
-// @version         5.25.0
+// @version         5.26.0
 // @supportURL      https://github.com/DeveloperJose/JS-AWBW-User-Scripts/issues
 // @contributionURL https://ko-fi.com/developerjose
 // @license         MIT
@@ -201,9 +201,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function getReplayBackwardActionBtn() {
     return getCurrentDocument().querySelector(".replay-backward-action");
-  }
-  function getReplayDaySelectorCheckBox() {
-    return getCurrentDocument().querySelector(".replay-day-selector");
   }
   function getConnectionErrorDiv() {
     return getCurrentDocument().querySelector(".connection-error-msg");
@@ -964,7 +961,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return ScriptName2;
   })(ScriptName || {});
   const versions = /* @__PURE__ */ new Map([
-    ["music_player", "5.26.0"],
+    ["music_player", "5.27.0"],
     ["highlight_cursor_coordinates", "2.3.0"]
   ]);
   const updateURLs = /* @__PURE__ */ new Map([
@@ -3306,7 +3303,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const replayBackwardBtn = getReplayBackwardBtn();
     const replayOpenBtn = getReplayOpenBtn();
     const replayCloseBtn = getReplayCloseBtn();
-    const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
     window.addEventListener("keydown", function(event) {
       if (!event.key) return;
       const key = event.key.toLowerCase();
@@ -3331,7 +3327,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     replayForwardActionBtn.addEventListener("click", syncMusic);
     replayForwardBtn.addEventListener("click", syncMusic);
     replayBackwardBtn.addEventListener("click", syncMusic);
-    replayDaySelectorCheckBox.addEventListener("change", syncMusic);
     replayCloseBtn.addEventListener("click", syncMusic);
     replayOpenBtn.addEventListener("click", syncMusic);
   }

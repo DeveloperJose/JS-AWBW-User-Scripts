@@ -24,7 +24,6 @@ import {
   getReplayBackwardActionBtn,
   getReplayBackwardBtn,
   getReplayCloseBtn,
-  getReplayDaySelectorCheckBox,
   getReplayForwardActionBtn,
   getReplayForwardBtn,
   getReplayOpenBtn,
@@ -276,7 +275,6 @@ function addReplayHandlers() {
   const replayBackwardBtn = getReplayBackwardBtn();
   const replayOpenBtn = getReplayOpenBtn();
   const replayCloseBtn = getReplayCloseBtn();
-  const replayDaySelectorCheckBox = getReplayDaySelectorCheckBox();
 
   window.addEventListener("keydown", function (event) {
     if (!event.key) return;
@@ -319,7 +317,6 @@ function addReplayHandlers() {
   replayForwardActionBtn.addEventListener("click", syncMusic);
   replayForwardBtn.addEventListener("click", syncMusic);
   replayBackwardBtn.addEventListener("click", syncMusic);
-  replayDaySelectorCheckBox.addEventListener("change", syncMusic);
   replayCloseBtn.addEventListener("click", syncMusic);
   replayOpenBtn.addEventListener("click", syncMusic);
 }
