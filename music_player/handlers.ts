@@ -104,7 +104,7 @@ let lastCursorY = -1;
  * Enum representing the type of menu that is currently open, if any.
  * @enum {string}
  */
-enum MenuOpenType {
+export enum MenuOpenType {
   None = "None",
   DamageSquare = "DamageSquare",
   Regular = "Regular",
@@ -115,6 +115,10 @@ enum MenuOpenType {
  * The current type of menu that is open, if any.
  */
 let currentMenuType = MenuOpenType.None;
+
+export function changeCurrentMenuType(next: MenuOpenType) {
+  currentMenuType = next;
+}
 
 /**
  * Map of unit IDs to their visibility status. Used to check if a unit that was visible disappeared in the fog.

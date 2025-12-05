@@ -17,7 +17,7 @@ import {
   loadSettingsFromLocalStorage,
   musicSettings,
 } from "./music_settings";
-import { addHandlers } from "./handlers";
+import { addHandlers, changeCurrentMenuType, MenuOpenType } from "./handlers";
 import { getLiveQueueBlockerPopup, getLiveQueueSelectPopup, getCurrentPageType, PageType } from "../shared/awbw_page";
 import { GameSFX, getNeutralImgURL, getWorkingBaseURL, SpecialTheme } from "./resources";
 import { logDebug, logInfo, logError, deepEqual } from "./utils";
@@ -36,6 +36,19 @@ import { isReplayActive } from "../shared/awbw_game";
 // Exporting this function is necessary for the CO Selector to work
 export { notifyCOSelectorListeners as notifyCOSelectorListeners };
 export { toggleDebugOverrides as toggleDebugOverrides };
+//exports for Advanced Hotkeys user script
+exports.playUiMenuOpen = function () {
+  playSFX(GameSFX.uiMenuOpen);
+};
+exports.playUiMenuClose = function () {
+  playSFX(GameSFX.uiMenuClose);
+};
+exports.resetMenuState = function () {
+  changeCurrentMenuType(MenuOpenType.None);
+};
+exports.playUiUnitSelect = function () {
+  playSFX(GameSFX.uiUnitSelect);
+};
 
 /******************************************************************
  * Functions
